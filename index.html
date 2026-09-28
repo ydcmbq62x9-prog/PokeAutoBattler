@@ -1939,7 +1939,7 @@ const TUNING = {
      prices on purpose: Sean wants the Elite Four harder, with the reference
      clear rate in the low 70s (was 77–78%). Scale these to move it: against the
      v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
-  gauntletRatio:  [0.4191, 0.475, 0.4501, 0.445, 0.5308],   // v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary)
+  gauntletRatio:  [0.4233, 0.4798, 0.4546, 0.4495, 0.5361],   // v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt)
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -2050,8 +2050,8 @@ const TUNING = {
   /* Mono-type scales opponents per type, measured so each type clears ~50% for
      the reference player (as Rich does): a Colorless team has no weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
-  mods: { richIncome: 2, richFoes: 1.235, nopcFoes: 0.975,
-          monoFoes: { Grass:1.028, Fire:0.94, Water:0.936, Lightning:1.004, Fighting:0.968, Psychic:1.002, Colorless:1.057 } },
+  mods: { richIncome: 2, richFoes: 1.219, nopcFoes: 0.961,     // 2.5.0: re-measured after the starter lines swapped jobs
+          monoFoes: { Grass:0.908, Fire:0.933, Water:0.892, Lightning:0.974, Fighting:0.953, Psychic:1.02, Colorless:1.038 } },
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
   legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
@@ -2579,6 +2579,14 @@ const M = {
       u.pos = to; arr.sort((a, b) => a.pos - b.pos); B.fx(u,'buff'); B.log(`${u.nm} teleported to the back!`); } }),
 };
 
+/* 2.5.0: every move remembers what KIND of effect it is (`kind`, plus a status and
+   target for afflicting moves) as `sig`. One move name must mean one effect on
+   every pokémon that has it; only the percentages may differ. movenames.js checks it. */
+for(const k of Object.keys(M)){
+  const f = M[k];
+  M[k] = (...a) => Object.assign(f(...a), { kind:k, sig: k === 'afflict' ? `afflict:${a[2]}:${a[4] || 'front'}` : k });
+}
+
 /* A second move fires INSTEAD of the main move when its trigger is met:
      open    — its first action of the battle (priority: before anyone else)
      every   — every nth action
@@ -2608,6 +2616,11 @@ const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:
    A pokémon with no `evo` left gets TUNING.levelUpBonusMax on level up
    instead of an evolution, so final forms and non-evolvers keep pace.
    =================================================================== */
+/* 2.5.0: the starter lines swapped jobs — Bulbasaur's is a Tank now, Squirtle's a
+   Bruiser. [hp, atk, spd] for the base, middle and final form of each. */
+const BULB   = { b:[18, 12, 29], i:[28, 21, 39], v:[46, 39, 52] };
+const SQUIRT = { b:[16, 12, 30], w:[26, 24, 40], l:[42, 42, 53] };
+const JOLT_TB = 0.5; const JOLT_N = 3;   // Jolteon's Thunderbolt: the front rank's share; the ranks behind take half (M.all)
 const SPECIES = {
 
   /* ============ TIER 1 — starters and early routes ============ */
@@ -2616,13 +2629,13 @@ const SPECIES = {
   metapod:    { name:'Metapod',    type:'Grass', gen1:'Bug', tier:1, role:'tank', hp:32, atk:12,  spd:20, token:true,
                 evo:{into:'butterfree', by:'level'}, move:M.guard('Harden', 5, 1) },
   butterfree: { name:'Butterfree', type:'Grass', gen1:'Bug/Flying', tier:1, role:'support', hp:30, atk:30, spd:47, token:true,
-                move:M.hush('Stun Spore', 0.5, 6) },
+                move:M.hush('Silver Wind', 0.5, 6) },
 
-  bulbasaur:  { name:'Bulbasaur',  type:'Grass', gen1:'Grass/Poison', tier:1, role:'bruiser', hp:16, atk:12,  spd:30,
-                evo:{into:'ivysaur', by:'level'},    move:M.drain('Leech Seed', 1.1, 0.5) },
-  ivysaur:    { name:'Ivysaur',    type:'Grass', gen1:'Grass/Poison', tier:1, role:'bruiser', hp:26, atk:24,  spd:40, token:true,
+  bulbasaur:  { name:'Bulbasaur',  type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.b[0], atk:BULB.b[1],  spd:BULB.b[2],
+                evo:{into:'ivysaur', by:'level'},    move:M.drain('Absorb', 1.1, 0.5) },
+  ivysaur:    { name:'Ivysaur',    type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.i[0], atk:BULB.i[1],  spd:BULB.i[2], token:true,
                 evo:{into:'venusaur', by:'level'},   move:M.drain('Mega Drain', 1.2, 0.5) },
-  venusaur:   { name:'Venusaur',   type:'Grass', gen1:'Grass/Poison', tier:1, role:'bruiser', hp:42, atk:42, spd:53, token:true,
+  venusaur:   { name:'Venusaur',   type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.v[0], atk:BULB.v[1], spd:BULB.v[2], token:true,
                 move:M.drain('Giga Drain', 1.35, 0.6) },
 
   charmander: { name:'Charmander', type:'Fire', gen1:'Fire',  tier:1, role:'cannon', hp:14, atk:15,  spd:43,
@@ -2632,12 +2645,12 @@ const SPECIES = {
   charizard:  { name:'Charizard',  type:'Fire', gen1:'Fire/Flying',  tier:1, role:'cannon', hp:40, atk:48, spd:67, token:true,
                 move:M.charge('Fire Blast', 2.1, 'Slash', 1.0) },
 
-  squirtle:   { name:'Squirtle',   type:'Water', gen1:'Water', tier:1, role:'tank', hp:18, atk:12,  spd:29,
-                evo:{into:'wartortle', by:'level'},  move:M.guard('Withdraw', 4, 1) },
-  wartortle:  { name:'Wartortle',  type:'Water', gen1:'Water', tier:1, role:'tank', hp:28, atk:21,  spd:39, token:true,
-                evo:{into:'blastoise', by:'level'},  move:M.heal('Water Gun', 1.0, 0.06) },
-  blastoise:  { name:'Blastoise',  type:'Water', gen1:'Water', tier:1, role:'tank', hp:46, atk:39, spd:52, token:true,
-                move:M.heal('Hydro Pump', 1.4, 0.08) },
+  squirtle:   { name:'Squirtle',   type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.b[0], atk:SQUIRT.b[1],  spd:SQUIRT.b[2],
+                evo:{into:'wartortle', by:'level'},  move:M.hit('Water Gun', 1.05) },
+  wartortle:  { name:'Wartortle',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.w[0], atk:SQUIRT.w[1],  spd:SQUIRT.w[2], token:true,
+                evo:{into:'blastoise', by:'level'},  move:M.hit('Water Gun', 1.2) },
+  blastoise:  { name:'Blastoise',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.l[0], atk:SQUIRT.l[1], spd:SQUIRT.l[2], token:true,
+                move:M.charge('Hydro Pump', 2.1, 'Water Gun', 1.1) },
 
   pidgey:     { name:'Pidgey',     type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:12, atk:12,  spd:37,
                 evo:{into:'pidgeotto', by:'level'},  move:M.two('Gust', 0.7) },
@@ -2688,11 +2701,11 @@ const SPECIES = {
                 evo:{into:'ninetales', by:'stone', stone:'firestone'},
                 move:M.hit('Ember', 1.4) },
   ninetales:  { name:'Ninetales',  type:'Fire', gen1:'Fire', tier:2, role:'cannon', hp:32, atk:36, spd:67, token:true,
-                move:M.hit('Fire Blast', 1.9) },
+                move:M.hit('Flamethrower', 1.9) },
 
   /* ============ TIER 3 ============ */
   abra:       { name:'Abra',       type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:12, atk:21,  spd:60,
-                evo:{into:'kadabra', by:'level'},    move:M.fast('Psybeam', 1.0) },
+                evo:{into:'kadabra', by:'level'},    move:M.fast('Confusion', 1.0) },
   kadabra:    { name:'Kadabra',    type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:20, atk:33, spd:70, token:true,
                 evo:{into:'alakazam', by:'level'},   move:M.fast('Confusion', 1.1) },
   alakazam:   { name:'Alakazam',   type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:26, atk:48, spd:80, token:true,
@@ -2708,7 +2721,7 @@ const SPECIES = {
   magnemite:  { name:'Magnemite',  type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:18, atk:21,  spd:30,
                 evo:{into:'magneton', by:'level'},   move:M.guard('Barrier', 4, 1) },
   magneton:   { name:'Magneton',   type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:30, atk:36, spd:47, token:true,
-                move:M.wall('Thunderbolt', 1.1, 1.8) },
+                move:M.wall('Flash Cannon', 1.1, 1.8) },
 
   growlithe:  { name:'Growlithe',  type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:22, atk:24,  spd:40,
                 evo:{into:'arcanine', by:'stone', stone:'firestone'},
@@ -2729,7 +2742,7 @@ const SPECIES = {
   seel:       { name:'Seel',       type:'Water', gen1:'Water', tier:4, role:'support', hp:30, atk:21,  spd:30,
                 evo:{into:'dewgong', by:'level'},    move:M.weaken('Aurora Beam', 1.1, 11) },
   dewgong:    { name:'Dewgong',    type:'Water', gen1:'Water/Ice', tier:4, role:'support', hp:44, atk:36, spd:47, token:true,
-                move:M.hush('Blizzard', 0.4, 8) },
+                move:M.hush('Powder Snow', 0.4, 8) },
 
   drowzee:    { name:'Drowzee',    type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:24, atk:24,  spd:28,
                 evo:{into:'hypno', by:'level'},      move:M.mend('Dream Eater', 1.1, 0.08) },
@@ -2739,7 +2752,7 @@ const SPECIES = {
   dratini:    { name:'Dratini',    type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:20, atk:21,  spd:33,
                 evo:{into:'dragonair', by:'level'},  move:M.hit('Wrap', 1.3) },
   dragonair:  { name:'Dragonair',  type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:32, atk:36, spd:47, token:true,
-                evo:{into:'dragonite', by:'level'},  move:M.hit('Dragon Rage', 1.6) },
+                evo:{into:'dragonite', by:'level'},  move:M.hit('Dragon Breath', 1.6) },
   dragonite:  { name:'Dragonite',  type:'Colorless', gen1:'Dragon/Flying', tier:4, role:'bruiser', hp:50, atk:57, spd:53, token:true,
                 move:M.charge('Hyper Beam', 2.4, 'Slam', 1.0) },
 
@@ -2766,16 +2779,16 @@ const SPECIES = {
                 move:M.hush('Hyper Voice', 0.55, 7) },
 
   oddish:     { name:'Oddish',     type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:18, atk:15, spd:28,
-                evo:{into:'gloom', by:'level'},      move:M.mend('Absorb', 1.0, 0.07) },
+                evo:{into:'gloom', by:'level'},      move:M.mend('Heal Pulse', 1.0, 0.07) },
   gloom:      { name:'Gloom',      type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:28, atk:24, spd:36, token:true,
-                evo:{into:'vileplume', by:'level'},  move:M.mend('Mega Drain', 1.1, 0.09) },
+                evo:{into:'vileplume', by:'level'},  move:M.mend('Floral Healing', 1.1, 0.09) },
   vileplume:  { name:'Vileplume',  type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:40, atk:36, spd:46, token:true,
                 move:M.mend('Petal Dance', 1.3, 0.12) },
 
   voltorb:    { name:'Voltorb',    type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:16, atk:15, spd:63,
                 evo:{into:'electrode', by:'level'},  move:M.hit('Sonic Boom', 1.3) },
   electrode:  { name:'Electrode',  type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:30, spd:84, token:true,
-                move:M.charge('Explosion', 1.8, 'Swift', 0.9) },
+                move:M.charge('Explosion', 1.8, 'Tackle', 0.9) },
 
   clefairy:   { name:'Clefairy',   type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
                 evo:{into:'clefable', by:'stone', stone:'moonstone'}, move:M.rally('Metronome', 0.8, 0.05) },
@@ -2808,19 +2821,19 @@ const SPECIES = {
   mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', role:'cannon', hp:66, atk:86, spd:112, legendary:true,
                 move:M.big('Psystrike', 1.6) },
   articuno:   { name:'Articuno',   type:'Water', gen1:'Ice/Flying', role:'tank', hp:102, atk:62, spd:88, legendary:true,
-                move:M.wall('Ice Beam', 1.2, 1.8) },
+                move:M.wall('Icicle Crash', 1.2, 1.8) },
   moltres:    { name:'Moltres',    type:'Fire', gen1:'Fire/Flying', role:'bruiser', hp:80, atk:86, spd:94, legendary:true,
-                move:M.hit('Wing Attack', 1.5) },
+                move:M.hit('Air Slash', 1.5) },
 
   /* ============ 1.3.0 — Eevee and three of its evolutions (Sean) ============
      The first BRANCHING line: the stone you use decides what it becomes, and
      each evolution plays a different role. Eevee itself is a Support. */
   eevee:      { name:'Eevee',      type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:22, atk:18, spd:40,
                 evo:{ by:'stone', branches:{ waterstone:'vaporeon', thunderstone:'jolteon', firestone:'flareon' } },
-                move:M.rally('Quick Attack', 0.8, 0.05) },
+                move:M.rally('Helping Hand', 0.8, 0.05) },
   vaporeon:   { name:'Vaporeon',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:56, atk:33, spd:46, token:true,
-                move:M.wall('Water Gun', 1.0, 1.7) },
-  jolteon:    { name:'Jolteon',    type:'Lightning', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:42, spd:80, token:true,
+                move:M.wall('Waterfall', 1.0, 1.7) },
+  jolteon:    { name:'Jolteon',    type:'Lightning', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:38, spd:72, token:true,
                 move:M.multi('Pin Missile', 0.6, 3) },
   flareon:    { name:'Flareon',    type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:42, atk:48, spd:60, token:true,
                 move:M.ramp('Rage', 1.5, 12) },
@@ -2834,22 +2847,22 @@ const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECI
 const MOVE2 = {
   // ---- tier 1
   caterpie:   on('every', M.random('Bug Bite', 0.9), { n:3 }),
-  metapod:    on('low',   M.shield('Harden', 0.3, 'self')),
+  metapod:    on('low',   M.shield('Iron Defense', 0.3, 'self')),
   butterfree: on('every', M.afflict('Sleep Powder', 0, 'slp', 1, 'random'), { n:3 }),
   bulbasaur:  on('every', M.afflict('Poison Powder', 0.3, 'psn', 1, 'front'), { n:3 }),
   ivysaur:    on('every', M.afflict('Poison Powder', 0.4, 'psn', 1, 'front'), { n:3 }),
-  venusaur:   on('every', M.hit('Solar Beam', 2.2), { n:4 }),
+  venusaur:   on('every', M.afflict('Poison Powder', 0.5, 'psn', 1, 'front'), { n:3 }),
   charmander: on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.7, 'front'), { n:3 }),
   charmeleon: on('every', M.afflict('Fire Spin', 0.7, 'brn', 0.8, 'front'), { n:3 }),
   charizard:  on('every', M.afflict('Fire Spin', 0.8, 'brn', 1, 'front'), { n:3 }),
-  squirtle:   on('allyLow', M.shield('Reflect', 0.15, 'hurt')),
-  wartortle:  on('allyLow', M.shield('Reflect', 0.2, 'hurt')),
-  blastoise:  on('allyLow', M.shield('Reflect', 0.25, 'hurt')),
+  squirtle:   on('every', M.slow('Bubble', 0.9, 6), { n:3 }),
+  wartortle:  on('every', M.slow('Bubble', 1.0, 8), { n:3 }),
+  blastoise:  on('every', M.slow('Bubble', 1.1, 10), { n:3 }),
   pidgey:     on('open',  M.hit('Quick Attack', 0.7), { priority:true }),
   pidgeotto:  on('open',  M.hit('Quick Attack', 0.8), { priority:true }),
   pidgeot:    on('open',  M.hit('Quick Attack', 0.9), { priority:true }),
-  rattata:    on('every', M.weakest('Bite', 1.0), { n:3 }),
-  raticate:   on('every', M.weakest('Bite', 1.3), { n:3 }),
+  rattata:    on('every', M.weakest('Pursuit', 1.0), { n:3 }),
+  raticate:   on('every', M.weakest('Pursuit', 1.3), { n:3 }),
   jigglypuff: on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
   wigglytuff: on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
   // ---- tier 2
@@ -2868,7 +2881,7 @@ const MOVE2 = {
   raichu:     on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
   vulpix:     on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
   ninetales:  on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
-  oddish:     on('every', M.afflict('Poison Powder', 0.3, 'psn', 1, 'random'), { n:3 }),
+  oddish:     on('every', M.afflict('Poison Sting', 0.3, 'psn', 1, 'random'), { n:3 }),
   gloom:      on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
   vileplume:  on('allyLow', M.cleanse('Aromatherapy', 0.15)),
   voltorb:    on('open',  M.afflict('Spark', 0.5, 'par', 0.3, 'front'), { priority:true }),
@@ -2877,16 +2890,16 @@ const MOVE2 = {
   abra:       on('low',   M.teleport('Teleport')),
   kadabra:    on('low',   M.teleport('Teleport')),
   alakazam:   on('every', M.afflict('Psybeam', 1.3, 'cnf', 0.3, 'random'), { n:3 }),   // v33: Cannons don't heal
-  gastly:     on('every', M.afflict('Hypnosis', 0, 'slp', 0.6, 'random'), { n:3 }),
-  haunter:    on('every', M.afflict('Hypnosis', 0, 'slp', 0.7, 'random'), { n:3 }),
-  gengar:     on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'random'), { n:3 }),
+  gastly:     on('every', M.afflict('Dark Void', 0, 'slp', 0.6, 'random'), { n:3 }),
+  haunter:    on('every', M.afflict('Dark Void', 0, 'slp', 0.7, 'random'), { n:3 }),
+  gengar:     on('every', M.afflict('Dark Void', 0, 'slp', 0.8, 'random'), { n:3 }),
   magnemite:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
   magneton:   on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
-  growlithe:  on('every', M.afflict('Ember', 0.6, 'brn', 0.5, 'front'), { n:3 }),
+  growlithe:  on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.5, 'front'), { n:3 }),
   arcanine:   on('open',  M.hit('Extreme Speed', 1.2), { priority:true }),
   staryu:     on('every', M.hit('Water Gun', 1.3), { n:3 }),
-  starmie:    on('every', M.back('Hydro Pump', 1.4), { n:3 }),
-  onix:       on('low',   M.shield('Harden', 0.35, 'self')),
+  starmie:    on('every', M.back('Water Pulse', 1.4), { n:3 }),
+  onix:       on('low',   M.shield('Iron Defense', 0.35, 'self')),
   clefairy:   on('allyLow', M.shield('Light Screen', 0.1, 'team')),
   clefable:   on('allyLow', M.shield('Light Screen', 0.14, 'team')),
   shellder:   on('every', M.afflict('Supersonic', 0, 'cnf', 0.8, 'front'), { n:3 }),
@@ -2911,12 +2924,12 @@ const MOVE2 = {
   snorlax:    on('low',   M.recover('Rest', 0.6, true)),
   zapdos:     on('every', M.afflict('Zap Cannon', 2.0, 'par', 0.7, 'biggest'), { n:4 }),   // 2.2.0 (Sean)
   articuno:   on('every', M.all('Blizzard', 0.45), { n:4 }),
-  moltres:    on('every', M.afflict('Fire Blast', 1.6, 'brn', 1, 'front'), { n:3 }),
-  mewtwo:     on('every', M.trueHit('Psychic', 1.5), { n:3 }),
+  moltres:    on('every', M.afflict('Sacred Fire', 1.6, 'brn', 1, 'front'), { n:3 }),
+  mewtwo:     on('every', M.trueHit('Psyshock', 1.5), { n:3 }),
   // 1.3.0 — the Eevee line
   eevee:      on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
   vaporeon:   on('low',   M.shield('Acid Armor', 0.35, 'self')),
-  jolteon:    on('open',  M.afflict('Thunder Wave', 0, 'par', 1, 'fastest')),
+  jolteon:    on('every', M.all('Thunderbolt', JOLT_TB), { n:JOLT_N }),
   flareon:    on('every', M.afflict('Fire Spin', 1.4, 'brn', 1, 'front'), { n:3 }),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
@@ -5046,7 +5059,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TCG_FROM_GEN1, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TCG_FROM_GEN1, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
@@ -5210,7 +5223,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'2.4.0', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'2.5.0', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7953,6 +7966,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'2.5.0', date:'Sep 28, 2026', title:'Balance patch', sub:'Bulbasaur line is a Tank, Squirtle line a Bruiser, Jolteon gets Thunderbolt, and every move name now means one thing', items:[
+    'The Bulbasaur line is now a Tank (it grows HP and guards the front rank), with Absorb, Mega Drain and Giga Drain. Its second move is Poison Powder all the way up; Venusaur’s Solar Beam is gone.',
+    'The Squirtle line is now a Bruiser: Water Gun hits harder with each evolution, plus a Bubble that slows the enemy. Blastoise’s Hydro Pump is a big charged hit every 2nd turn. Withdraw, Reflect and Water Gun’s healing are gone.',
+    'Jolteon’s Thunder Wave is now Thunderbolt, a hit on every enemy, so it deals more damage. To keep it fair its Attack went 42 → 38 and its Speed 80 → 72.',
+    'A move name now has one effect on every pokémon that has it, and only the percentages differ. Renamed to keep that true: Oddish’s Absorb is Heal Pulse and Gloom’s Mega Drain is Floral Healing (they heal a teammate), Oddish’s Poison Powder is Poison Sting, Butterfree’s Stun Spore is Silver Wind, Gastly’s line’s Hypnosis is Dark Void, Magneton’s Thunderbolt is Flash Cannon, Vaporeon’s Water Gun is Waterfall, Starmie’s Hydro Pump is Water Pulse, Ninetales’ Fire Blast is Flamethrower, Moltres’ Fire Blast is Sacred Fire and its Wing Attack is Air Slash, Growlithe’s Ember is Fire Spin, Metapod’s and Onix’s Harden barrier is Iron Defense, Abra’s Psybeam is Confusion, Mewtwo’s Psychic is Psyshock, Dragonair’s Dragon Rage is Dragon Breath, Eevee’s Quick Attack is Helping Hand, Articuno’s Ice Beam is Icicle Crash, Dewgong’s Blizzard is Powder Snow, Rattata’s and Raticate’s Bite is Pursuit, and Electrode’s Swift is Tackle.',
+    'The Elite Four and Champion are 1% tougher, and the run rules (Rich, No PC and each Mono type) were re-tuned so every rule is still about as hard as the others.' ] },
   { v:'2.4.0', date:'Sep 28, 2026', title:'Minor gameplay changes', sub:'Hardcore Badge for clearing One Life, and a Trainer Card on the title screen', items:[
     'New: the Hardcore Badge. Beat the Champion on One Life (the Daily Challenge counts too) and it’s yours for good. The badge art is a placeholder for now.',
     'It shows on the title screen next to your name, on your Trainer Card (there’s an empty slot that tells you how to earn it), on the victory screen, and in your Daily Challenge result and the copied result line.',
@@ -8499,7 +8518,7 @@ function openHelp(){
         fln:`skips its next action.` }[k])}</span>`; }).join('')}
     </p>
     <p>A pokémon has one status at a time, and can suffer each one only <b>once per battle</b> (flinching
-    aside), so nobody gets put to sleep forever. <b>Barriers</b> (Reflect, Light Screen, Harden…) soak
+    aside), so nobody gets put to sleep forever. <b>Barriers</b> (Light Screen, Defense Curl, Iron Defense…) soak
     damage before HP does.</p>
 
     <h4>Roles</h4>
