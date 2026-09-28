@@ -581,6 +581,10 @@ h2 .btn.arrange{flex:none;width:auto;float:right;font-size:10.5px;padding:3px 9p
 .carry.pinned{left:50%!important;transform:translateX(-50%) rotate(0);
   top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 body.carrying{cursor:grabbing}
+/* 2.2.1 (Sean): `.carry{display:flex}` beat the [hidden] attribute, so the chip could
+   sit on screen with nothing picked up — and with no position set yet it showed up at
+   the page's bottom-left before jumping to the mouse on its first move. */
+.carry[hidden]{display:none!important}
 
 /* ---------- PokeMart: one scrollable shelf ---------- */
 /* The shelf was capped at 328px when it held five rows. It now grows to ten,
@@ -813,16 +817,12 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-radius:5px;pad
 /* backdrops: a route for trainers, dusk for your rival, a gym floor in the
    leader's colour, and the League's hall */
 .bstage.bg-route .ground{background:
-  radial-gradient(38% 13% at 24% 80%,rgba(214,190,120,.55),transparent 70%),
-  radial-gradient(38% 13% at 76% 80%,rgba(214,190,120,.55),transparent 70%),
   repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 3cqw,transparent 3cqw 6cqw),
   linear-gradient(180deg,#3b73a8 0%,#6fa6d2 17%,#b7dbe6 27%,#79b862 27.3%,#5a9c4c 55%,#447f3c 100%)}
 .bstage.bg-route::after{content:'';position:absolute;left:0;right:0;top:19%;height:9%;z-index:0;pointer-events:none;
   background:radial-gradient(30% 100% at 12% 100%,#5b8f6a,transparent 70%),radial-gradient(26% 90% at 46% 100%,#6a9c72,transparent 70%),
     radial-gradient(34% 100% at 84% 100%,#56885f,transparent 70%)}
 .bstage.bg-dusk .ground{background:
-  radial-gradient(38% 13% at 24% 80%,rgba(190,140,110,.45),transparent 70%),
-  radial-gradient(38% 13% at 76% 80%,rgba(190,140,110,.45),transparent 70%),
   radial-gradient(30% 30% at 70% 24%,rgba(255,200,120,.7),transparent 70%),
   linear-gradient(180deg,#3a2a5e 0%,#a2537a 15%,#f09a6a 26%,#5c7e4c 27.3%,#46663e 60%,#35512f 100%)}
 .bstage.bg-gym{--gymc:#8a93a8}
@@ -879,7 +879,7 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-radius:5px;pad
 .ftr.acting .fshadow{background:radial-gradient(closest-side,rgba(255,196,71,.95),rgba(255,196,71,.35) 60%,transparent);
   box-shadow:0 0 12px rgba(255,196,71,.55)}
 .ftr.down .fmove{visibility:hidden}
-.ftr.down .fshadow{opacity:.25}
+.ftr.down .fshadow{opacity:0;transition:opacity .25s}   /* 2.2.1 (Sean): a fallen pokémon leaves no shadow behind */
 
 /* effects layer */
 .fxl{position:absolute;inset:0;z-index:20;pointer-events:none}
@@ -1291,7 +1291,7 @@ kbd{background:var(--panel2);border-color:var(--line2)}
 .smi{display:flex;align-items:center;gap:6px;width:100%;background:none;border:0;border-radius:6px;font-family:var(--font);font-size:19px;
   text-align:left;color:var(--text);padding:5px 6px 5px 26px;position:relative;cursor:pointer;letter-spacing:.6px;text-transform:uppercase}
 .smi.cur::before{content:'▶';position:absolute;left:6px;top:50%;transform:translateY(-50%);font-size:13px}
-.smi:focus-visible{outline:none;background:rgba(63,74,92,.08)}
+.smi:focus-visible{outline:none}   /* 2.2.1: arrow only, no tint */
 .smi.red{color:#b8302b}
 .smi .newdot{margin-left:auto}
 .smenu hr{border:0;border-top:2px dotted var(--line2);margin:4px 0}
@@ -1451,7 +1451,8 @@ body.titled{overflow:hidden}
 .tpress{font:inherit;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--edge);background:none;border:0;padding:10px 18px;cursor:pointer;
   animation:gbblink 1.1s steps(1) infinite}
 .tpress:focus,.tmi:focus{outline:none}
-.tmi:focus-visible:not(.cur){outline:2px dashed var(--edge);outline-offset:2px}
+/* 2.2.1 (Sean): the ▶ arrow is the only selection marker — no dashed focus box beside it */
+.tmi:focus-visible{outline:none}
 .tmenu{width:min(300px,100%);display:flex;flex-direction:column;gap:2px;padding:10px 12px;background:var(--panel);
   border:3px solid var(--edge);border-radius:10px;box-shadow:var(--gbbox);text-align:left}
 .tmenu[hidden],.tpress[hidden]{display:none!important}
@@ -1488,7 +1489,11 @@ html.dark .tfield::before,html.dark .tfield::after{background:#f3eed8;opacity:.2
 /* ===================================================================
    v40 — POKéBALL WIPE (rolling iris)
    =================================================================== */
-.wipe{position:fixed;inset:0;z-index:90;pointer-events:auto;overflow:hidden}
+.wipe{position:fixed;left:0;right:0;top:-240px;bottom:-240px;z-index:90;pointer-events:auto;overflow:hidden}
+/* 2.2.1: the dark shade is clipped to this box, and on some phones (iOS with the
+   toolbar / home-bar area) a plain inset:0 stops short of the screen's bottom edge,
+   leaving a pale strip. The box now runs 240px past the top and bottom — equally,
+   so the iris still centres on the screen. */
 .wiris{position:absolute;left:50%;top:50%;border-radius:50%;box-shadow:0 0 0 300vmax #22262f;transform:translate(-50%,-50%)}
 .wiris.flat{inset:0;left:0;top:0;transform:none;border-radius:0;box-shadow:none;background:#22262f}
 .wball{position:absolute;left:50%;top:50%;width:clamp(64px,16vw,84px);height:clamp(64px,16vw,84px);transform-origin:50% 50%;
@@ -1785,6 +1790,44 @@ html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a
 .poppips i.on{background:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold2);opacity:1}
 .poppips.max{font-size:10px;color:var(--gold2);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .clv.leg{background:linear-gradient(135deg,#ffd76a,#e0a526);color:#4a3300}
+/* 2.2.1 (Sean): the dock keeps one shape. On wide screens it was a flex row of
+   [Undo][next-fight box][BATTLE], so a visible Undo squeezed the box to a narrow
+   column (text wrapping over 5 lines) and stretched BATTLE to match. Undo now has its
+   own row above; the box and BATTLE always sit side by side at the same height. The
+   box also carried the .nextup top margin, so it sat 10px lower than BATTLE. */
+.dock .speech{margin-top:0}
+.dock .btn.undo{margin-bottom:0}
+@media (min-width:620px){
+  .dock{display:grid;grid-template-columns:minmax(0,1fr) 210px;column-gap:7px;row-gap:0;align-items:stretch}
+  .dock .btn.undo{grid-column:1/-1;grid-row:1;justify-self:center;margin-bottom:7px}
+  .dock .speech{grid-column:1;grid-row:2;flex:none;min-width:0}
+  .dock .btn.fight{grid-column:2;grid-row:2;width:auto;min-width:0;max-height:none}
+}
+/* ===== 2.2.1 — phone pass ===== */
+/* Small phones: the badge row (8 gems) ran into "NEXT TURN +25₽" — the gems shrink a little
+   and "Next turn" shortens to "Next" (gone entirely below 340px) so both always fit. */
+@media (max-width:400px){
+  .stat.badges .pips{gap:2.5px}
+  .stat.badges .pips .bdg{width:9px;height:9px}
+  .tcol.tright .stat.next .lbl{font-size:0}
+  .tcol.tright .stat.next .lbl::after{content:'Next';font-size:10.5px;letter-spacing:.4px}
+}
+@media (max-width:340px){ .tcol.tright .stat.next .lbl{display:none} }
+/* Phones on their side: the START menu was taller than the screen and its last entries
+   (Restart, Exit, the description) sat off the bottom. Tighter rows, and it scrolls if it must. */
+@media (max-height:520px){
+  .modal.startmenu .box{max-height:calc(100vh - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .modal.startmenu .smi{padding-top:2px;padding-bottom:2px;font-size:16px}
+  .modal.startmenu .sdesc,.modal.startmenu .yesno{min-height:0;margin-top:3px;padding-top:4px;font-size:12px}
+  .modal.startmenu .smenu hr{margin:2px 0}
+}
+/* …and the battle field was 16:9 of the full width, taller than a landscape phone's screen, so the
+   back row sat below the fold. It is now capped to what fits, centred. */
+@media (orientation:landscape) and (max-height:520px){
+  .stage,.bstage{width:min(100%,calc((100vh - 140px) * 16 / 9));margin-left:auto;margin-right:auto}
+}
+/* 2.3.0 — every What's new entry has a type as its title and a one-line summary under it */
+.clog .csub{display:block;font-size:12px;color:var(--muted);margin:2px 0 1px 18px;line-height:1.35;font-weight:400}
 </style>
 </head>
 <body>
@@ -4043,7 +4086,7 @@ const MOD_INFO = {
   mono:    { name: t => `Mono-${t}`, text: t => `The Daycare only sells ${t} pokémon. Opponents are tuned so every type is about as hard.` },
   nopc:    { name: () => 'No PC', text: () => 'No PC box: just the six you carry, no bench.' },
   rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
-  onelife: { name: () => 'One Life', text: () => 'One life. Lose a battle that costs a life and the run is over.' },
+  onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
 };
 const modList = G => { const m = (G && G.mods) || {}; return Object.keys(MOD_INFO).filter(k => m[k]); };
 const modName = (G, k) => MOD_INFO[k].name(G.mods[k]);
@@ -4879,7 +4922,7 @@ function applyBattleResult(G, result, opp, sim){
       G.blackout = lost;
       // you lose, but you learn: the rematch shows you exactly what they field
       if(boss && opp) scout(G, boss, opp);
-      if(G.attempt > TUNING.freeAttempts) G.lives--;
+      if(G.attempt > freeAttemptsFor(G)) G.lives--;
       // fall anywhere in the gauntlet and it starts again from Lorelei, healed
       if(gauntlet){ G.stage = gauntletStart(); G.gauntlet = null; }
       makeGameApi(G).log(`You blacked out! Lost ${lost}₽.`);
@@ -4893,6 +4936,9 @@ function applyBattleResult(G, result, opp, sim){
 }
 
 /** Remember a boss's team. A rematch is rebuilt from this, so it is the truth. */
+/** 2.2.1 (Sean): One Life means every lost battle takes the life — the free boss
+    rematches don't apply, so a first defeat by a gym leader ends the run too. */
+function freeAttemptsFor(G){ return G && G.mods && G.mods.onelife ? 0 : TUNING.freeAttempts; }
 function scout(G, boss, opp){
   G.scouted = G.scouted || {};
   G.scouted[boss.id] = opp.team.map(u => ({
@@ -4912,7 +4958,7 @@ function nextUp(G){
     kind: st.kind, boss, badge: st.badge,
     stage: (G.stage || 0) + 1, total: plan.length, untilGym,
     attempt: G.attempt || 0,
-    lifeAtRisk: isBoss(st) && (G.attempt || 0) >= TUNING.freeAttempts,
+    lifeAtRisk: isBoss(st) && (G.attempt || 0) >= freeAttemptsFor(G),
     scouted: boss ? (G.scouted || {})[boss.id] || null : null,
     gauntlet: isGauntletStage(st) ? {
       at: (G.stage || 0) - gauntletStart(),
@@ -4983,7 +5029,7 @@ if(typeof module !== 'undefined' && module.exports){
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
-    daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, championLegend,
+    daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, modList, modName, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
@@ -5141,7 +5187,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'2.2.0', date:'Sep 27, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'2.3.0', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -5856,6 +5902,9 @@ function updateCarry(){
   if(!held && !item){ carryEl.hidden = true; return; }
   carryEl.hidden = false;
   carryEl.classList.toggle('pinned', !finePointer());
+  // 2.2.1: start ON the pointer — never at a stale or default spot — and stay hidden
+  // until the page has seen the pointer at all
+  if(finePointer()) placeCarry();
   const verb = finePointer() ? 'click' : 'tap';
   const ch = held
     ? `${SPRITES[held.id] ? `<img src="${SPRITES[held.id]}" alt="">` : ''}
@@ -6046,7 +6095,7 @@ function nextUpHtml(){
     ${n.attempt ? `<p class="nwarn ${n.lifeAtRisk ? 'hot' : ''}">
       Attempt ${n.attempt + 1}. ${n.lifeAtRisk
         ? 'Losing now costs a life as well as your money.'
-        : `${TUNING.freeAttempts - n.attempt} more before a defeat costs a life.`}</p>` : ''}
+        : `${freeAttemptsFor(G) - n.attempt} more before a defeat costs a life.`}</p>` : ''}
     ${scout}
   </div>`;
 }
@@ -7336,11 +7385,24 @@ document.addEventListener('click', e => {
   SFX.play(m === 'close' || m === 'restart-no' ? 'back' : b.dataset.o ? 'tap' : 'select');
 });
 
-document.addEventListener('pointermove', e => {
-  if(!carryEl || carryEl.hidden || !finePointer()) return;
-  carryEl.style.left = (e.clientX + 14) + 'px';
-  carryEl.style.top  = (e.clientY + 14) + 'px';
-});
+/* 2.2.1: the pointer is tracked all the time (not only while something is lifted), so
+   the chip can appear exactly under it the moment you pick something up. */
+const lastPtr = { x: 0, y: 0, seen: false };
+function placeCarry(){
+  if(!carryEl || carryEl.hidden) return;
+  carryEl.style.visibility = lastPtr.seen ? '' : 'hidden';
+  if(!lastPtr.seen) return;
+  const w = carryEl.offsetWidth || 150, h = carryEl.offsetHeight || 40;
+  carryEl.style.left = Math.max(4, Math.min(innerWidth - w - 4, lastPtr.x + 14)) + 'px';
+  carryEl.style.top  = Math.max(4, Math.min(innerHeight - h - 4, lastPtr.y + 14)) + 'px';
+}
+const trackPtr = e => {
+  if(e.pointerType === 'touch') return;
+  lastPtr.x = e.clientX; lastPtr.y = e.clientY; lastPtr.seen = true;
+  if(carryEl && !carryEl.hidden && finePointer()) placeCarry();
+};
+document.addEventListener('pointermove', trackPtr, true);
+document.addEventListener('pointerdown', trackPtr, true);
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ sel = null; hidePopup(); save(); render(); }
 });
@@ -7867,19 +7929,30 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
-  { v:'2.2.0', date:'Sep 27, 2026', title:'Zap Cannon, the Champion’s legendary', items:[
+  { v:'2.3.0', date:'Sep 28, 2026', title:'Minor gameplay changes', sub:'One Life now ends the run on any lost battle', items:[
+    'One Life now works the way it says: every lost battle takes your life, including the first defeat by a gym leader or Elite Four member (they used to get two free rematches).' ] },
+  { v:'2.2.1', date:'Sep 28, 2026', title:'Visual bug fixes', sub:'Battle transition, title menu, battle button, faint shadow, pick-up chip, battlefield and phone layout', items:[
+    'Fixed a pale strip along the bottom of the screen during the pokéball transition on some phones.',
+    'The title menu now shows just the ▶ arrow as your selection — a dotted box could appear on a second item on computers.',
+    'The next-fight box and the BATTLE button now keep the same size and line up, even when the Undo button is showing (it used to squeeze the box and stretch BATTLE on computers).',
+    'A pokémon that faints in battle no longer leaves a faint shadow on the ground.',
+    'The pick-up chip that follows your mouse now appears right under the pointer when you select a pokémon or item, instead of starting in the wrong place and jumping, and it only shows while something is selected.',
+    'The pale sandy patches on the battlefield are gone; each pokémon keeps its own shadow.',
+    'Small phones: the badge row no longer runs into the “Next turn” income at the top of the screen.',
+    'Phones on their side: the START menu fits the screen, and the battle field is sized to fit instead of running off the bottom.' ] },
+  { v:'2.2.0', date:'Sep 27, 2026', title:'Minor gameplay changes', sub:'Guaranteed legendary, the Champion’s legendary, Zap Cannon and EXP pips in the summary', items:[
     'Every run now meets a legendary: if none has appeared by the 7th gym, one always does.',
     'The Champion brings a legendary of his own — always one you didn’t recruit.',
     'Zapdos’s second move is now Zap Cannon: every 4th action, 200% to the enemy with the most HP, with a 70% chance to paralyse it.',
     'A pokémon’s summary now shows its EXP pips next to its level, so you can see how close anything in the PC is to levelling up.',
     'The Elite Four and Champion are a little tougher to make up for the guaranteed legendary, and the run rules were re-tuned to match.' ] },
-  { v:'2.1.0', date:'Sep 27, 2026', title:'Articuno and Moltres, legendary rules', items:[
+  { v:'2.1.0', date:'Sep 27, 2026', title:'Minor gameplay changes', sub:'Articuno and Moltres join, and legendaries get their own rules', items:[
     'Articuno (Water · Tank) and Moltres (Fire · Bruiser) join Zapdos and Mewtwo as legendary encounters after the 5th gym.',
     'Legendaries now play by their own rules: they have no tier and never level up (no copies, no Rare Candy), marked with a gold ★ instead of a level.',
     'To make up for it, every legendary has a much higher base stat total than any regular pokémon and grows 20% faster from battles, Exp. Share and catching up to your trainer.',
     'Mewtwo’s Psystrike hits harder. With four legendaries around, each one appears a little less often per gym — about half of runs meet one.',
     'Legendaries are yours alone: no trainer, gym leader or Elite Four member fields one.' ] },
-  { v:'2.0.0', date:'Sep 27, 2026', title:'Daily Challenge, rules, legendaries', items:[
+  { v:'2.0.0', date:'Sep 27, 2026', title:'Major gameplay update', sub:'Daily Challenge, run rules, legendary encounters, undo, battle recap and formations', items:[
     'Daily Challenge (title screen): one run a day that’s the same for everyone — same shops, same trainers, same bosses — sometimes with a rule of the day. It has its own save, so your normal run is safe. Copy your result to compare with friends.',
     'Run rules: start a New Run with Mono-type (pick a type; the Daycare sells only that type), No PC, Rich & Ruthless (double income, tougher opponents) or One Life. Runs with rules keep their own records.',
     'Legendary encounters: Zapdos and Mewtwo are no longer sold in the Daycare. After the 5th gym, a legendary may appear for one turn. Recruit it for 12₽ or let it go.',
@@ -7887,25 +7960,25 @@ const CHANGELOG = [
     'Battle recap after every fight: damage dealt and taken, healing and knockouts for each of your pokémon, with the MVP, the Wall and the Medic called out.',
     'Formations: save up to three line-ups (Your Party → Formations) and snap back to one with a tap.',
     'START → Title screen takes you back to the title, where you can switch between your run and the Daily Challenge.' ] },
-  { v:'1.5.0', date:'Sep 27, 2026', title:'Stone preview', items:[
+  { v:'1.5.0', date:'Sep 27, 2026', title:'Minor gameplay changes', sub:'Evolution stones preview what they would do to your pokémon', items:[
     'Evolution stones in the PokéMart now show what they would do to your pokémon before you buy: “Yours: Eevee → Jolteon” right on the shelf.',
     'Tap a stone to see every pokémon it would evolve, party and PC, with the new type, role and how its stats change.' ] },
-  { v:'1.4.1', date:'Sep 27, 2026', title:'Tidier What’s new', items:[
+  { v:'1.4.1', date:'Sep 27, 2026', title:'Visual bug fixes', sub:'What’s new tags no longer split across two lines', items:[
     'The “new to you” and “current” tags in What’s new no longer break across two lines; each update’s date and tag stay together.' ] },
-  { v:'1.4.0', date:'Sep 27, 2026', title:'Blue’s Eevee', items:[
+  { v:'1.4.0', date:'Sep 27, 2026', title:'Minor gameplay changes', sub:'Your rival raises an Eevee and brings its Eeveelution to the Champion fight', items:[
     'Your rival raises an Eevee, like in the games. It joins his team at your second meeting and has evolved by the third, into whichever Eeveelution covers his starter’s weakness (Vaporeon for a Charmander, Jolteon for a Squirtle, Flareon for a Bulbasaur).',
     'Blue brings that same Eeveelution to the Champion fight, fully trained, alongside his starter.',
     'Vaporeon, Jolteon and Flareon are Water, Lightning and Fire, with matching weaknesses; only Eevee is Colorless.' ] },
-  { v:'1.3.0', date:'Sep 27, 2026', title:'Eevee, and transfer codes', items:[
+  { v:'1.3.0', date:'Sep 27, 2026', title:'Minor gameplay changes', sub:'Eevee and its evolutions, transfer codes and the version on the title screen', items:[
     'Eevee joins the Daycare (from shop tier 3) as a Support, and it’s the first pokémon with a choice of evolutions: a Water Stone makes Vaporeon (a Tank), a Thunder Stone makes Jolteon (a glass Cannon), a Fire Stone makes Flareon (a Bruiser). The stone you use decides.',
     'Transfer codes: START → Transfer save turns your run into a code you can paste on another phone or computer, or into the home-screen app. Your records and trainer name come along.',
     'The title screen shows the version under the logo. The date now only appears here in What’s new, next to each update from 1.2.0 on.' ] },
-  { v:'1.2.0', was:'v54', date:'Sep 27, 2026', title:'Rarity sparkle, and new version numbers', items:[
+  { v:'1.2.0', was:'v54', date:'Sep 27, 2026', title:'Balance patch', sub:'X items cut to 2 uses, rarity sparkle, Choice Band sprite and new version numbers', items:[
     'Updates now have three-part numbers like 1.2.0. The first number goes up for a big change to how the game plays, the middle one for fixes and things added or removed, the last one for small visual and wording touch-ups. Everything before 1.2.0 is gathered under 1.1.0 beta.',
     'When a Rare or Very rare item turns up in the PokéMart it sparkles and chimes: a blue shine for Rare, a gold one with a longer chime for Very rare.',
     'X Attack and X Speed: 2 uses of each per battle (was 3), still +5% each.',
     'Choice Band has its own sprite.' ] },
-  { v:'1.1.0 beta', wasAny:/^v\d+$/, title:'The beta (v1–v53, all in one)', items:[
+  { v:'1.1.0 beta', wasAny:/^v\d+$/, title:'Major gameplay update', sub:'The whole game up to v53, gathered in one entry', items:[
     'The auto battler itself: buy pokémon in the Daycare, line them up on a 3×2 field, and they fight on their own on a speed-based action clock. 37 battles a run: trainers, 8 gym leaders, your rival, then the Elite Four and the Champion back to back.',
     '60+ Gen 1 pokémon in four roles (Tank, Bruiser, Support, Cannon), each with a main move and a second move, status conditions, type matchups, levelling by merging copies, and evolution by level or stone.',
     'A PC box for a bench, trainer EXP so late buys arrive strong, lives and blackouts, badge rewards to pick from, a scouting report for rematches.',
@@ -7926,7 +7999,7 @@ function openChangelog(){
         <summary><b>${esc(e.v)}</b> ${esc(e.title)}${(() => {
           // 1.4.1: the date and the tag travel together, so a tag never splits across two lines
           const tag = e.v === GAME_VERSION.v ? '<i class="cnow">current</i>' : idx > 0 && i < idx ? '<i class="cnew">new to you</i>' : '';
-          return e.date || tag ? ` <span class="cmeta">${e.date ? `<span class="cdate">${esc(e.date)}</span>` : ''}${tag}</span>` : ''; })()}</summary>
+          return e.date || tag ? ` <span class="cmeta">${e.date ? `<span class="cdate">${esc(e.date)}</span>` : ''}${tag}</span>` : ''; })()}${e.sub ? `<span class="csub">${esc(e.sub)}</span>` : ''}</summary>
         <ul>${e.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
       </details>`).join('')}</div>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
