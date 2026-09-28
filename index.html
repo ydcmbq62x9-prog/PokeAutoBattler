@@ -1828,6 +1828,29 @@ html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a
 }
 /* 2.3.0 — every What's new entry has a type as its title and a one-line summary under it */
 .clog .csub{display:block;font-size:12px;color:var(--muted);margin:2px 0 1px 18px;line-height:1.35;font-weight:400}
+
+/* ---- 2.4.0: the Hardcore Badge ---- */
+.hcb{width:30px;height:30px;display:inline-block;vertical-align:middle;flex:none;object-fit:contain;image-rendering:pixelated}
+.hcb.sm{width:18px;height:18px;margin:-3px 4px 0 0}
+.smi .hcb.sm{margin:-3px 0 0 4px}
+.hcb.big{width:58px;height:58px}
+.hcb.locked{filter:grayscale(1) brightness(.75);opacity:.35}
+.twho .thc{display:inline-block}
+.twho .hcb.sm{width:22px;height:22px;margin-top:-4px}
+.hcrow{display:flex;align-items:center;gap:10px;margin-top:8px;padding:7px 9px;border:2px dashed var(--line2);border-radius:8px}
+.hcrow.on{border:2px solid #e0a526;background:color-mix(in srgb,#e0a526 14%,transparent)}
+.hcrow .hcb{width:38px;height:38px}
+.hcrow div{display:flex;flex-direction:column;min-width:0}
+.hcrow b{font-size:14px;letter-spacing:.5px}
+.hcrow span{font-size:12px;color:var(--muted);line-height:1.35}
+.hcaward{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px auto 6px;padding:10px 14px;max-width:340px;
+  border:2px solid #e0a526;border-radius:10px;background:color-mix(in srgb,#e0a526 14%,transparent);text-align:left;animation:pop .55s ease-out}
+.hcaward div{display:flex;flex-direction:column}
+.hcaward b{font-size:15px;letter-spacing:.5px;white-space:nowrap}
+.hcaward span{font-size:13px;color:var(--muted)}
+.hcnote{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:#b07a10;white-space:nowrap}
+html.dark .hcnote{color:#f2c14e}
+@media (prefers-reduced-motion:reduce){ .hcaward{animation:none} }
 </style>
 </head>
 <body>
@@ -5187,7 +5210,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'2.3.0', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'2.4.0', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7081,6 +7104,7 @@ function renderOver(){
       ? `All ${G.badges} badges, the Elite Four and the Champion, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
+    ${won && G.mods && G.mods.onelife ? (() => { const h = hardcoreRec(); return `<div class="hcaward">${hcBadge('big')}<div><b>HARDCORE BADGE${G.hcNew ? ' <i class="newdot">NEW</i>' : ''}</b><span>${G.hcNew ? 'You cleared a run on One Life.' : `Another One Life clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; })() : ''}
     ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
     <div class="row overteam" style="margin:14px 0">${G.team.map(u => `<div class="slot" style="border-style:solid">${unitHtml(u)}</div>`).join('')}</div>
     <div class="shopbar">
@@ -7292,7 +7316,7 @@ function openNewRun(onStart){
     <div class="mods">
       <button class="modt" data-mod="mono"><b>Mono-type</b><span>Pick a type: the Daycare sells only that type. Opponents are tuned so every type is about as hard.</span></button>
       <div class="monotypes" hidden>${types.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
-      ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}</span></button>`).join('')}
+      ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}${k === 'onelife' ? ' Clear it for the Hardcore Badge.' : ''}</span></button>`).join('')}
     </div>
     <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
     <div class="btnrow"><button class="btn primary" data-n="go">Start run</button><button class="btn ghost" data-n="close">Cancel</button></div>`);
@@ -7327,7 +7351,7 @@ function openNewRun(onStart){
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
   const mods = dailyMods(date), label = Object.keys(mods).length ? modsLabel({ mods }) : 'no special rules';
-  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? 'Champion! 🏆' : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
   const text = dailyShareText(date || (G && G.daily) || localDate());
@@ -7348,7 +7372,7 @@ function openDaily(onGo){
     <div class="drules"><h4>Today’s rule</h4><p>${rules}</p></div>
     ${inToday ? `<p class="dim">Your run today: turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
     ${older ? `<p class="dim">Unfinished: the ${esc(prettyDate(sg.daily))} challenge, turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
-    ${res ? `<p>Today’s best: <b>${esc(res.cleared ? 'Champion!' : bestRunLabel(res.best))}</b></p>` : ''}
+    ${res ? `<p>Today’s best: <b>${esc(res.cleared ? 'Champion!' : bestRunLabel(res.best))}</b>${res.hardcore ? ` <span class="hcnote">${hcBadge('sm')} Hardcore</span>` : ''}</p>` : ''}
     <div class="btnrow dbtns">
       ${inToday ? '<button class="btn primary" data-d="continue">Continue today’s</button>' : ''}
       ${older ? '<button class="btn" data-d="continue">Finish the older one</button>' : ''}
@@ -7929,6 +7953,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'2.4.0', date:'Sep 28, 2026', title:'Minor gameplay changes', sub:'Hardcore Badge for clearing One Life, and a Trainer Card on the title screen', items:[
+    'New: the Hardcore Badge. Beat the Champion on One Life (the Daily Challenge counts too) and it’s yours for good. The badge art is a placeholder for now.',
+    'It shows on the title screen next to your name, on your Trainer Card (there’s an empty slot that tells you how to earn it), on the victory screen, and in your Daily Challenge result and the copied result line.',
+    'The title screen menu now has TRAINER CARD, so you can check your records without starting a run.',
+    'The New Run screen reminds you that a One Life clear earns the badge.' ] },
   { v:'2.3.0', date:'Sep 28, 2026', title:'Minor gameplay changes', sub:'One Life now ends the run on any lost battle', items:[
     'One Life now works the way it says: every lost battle takes your life, including the first defeat by a gym leader or Elite Four member (they used to get two free rematches).' ] },
   { v:'2.2.1', date:'Sep 28, 2026', title:'Visual bug fixes', sub:'Battle transition, title menu, battle button, faint shadow, pick-up chip, battlefield and phone layout', items:[
@@ -8028,7 +8057,7 @@ function openMenu(){
   ];
   const d = modal(`<div class="smenu" role="menu" aria-label="Menu">
     ${items.map(([id, label, desc], k) => `${id === 'restart' ? '<hr>' : ''}<button class="smi ${k === 0 ? 'cur' : ''} ${id === 'restart' ? 'red' : ''}"
-      role="menuitem" data-m="${id}" data-d="${esc(desc)}">${label}${id === 'news' && hasUnseen() ? ' <i class="newdot">NEW</i>' : ''}</button>`).join('')}
+      role="menuitem" data-m="${id}" data-d="${esc(desc)}">${label}${id === 'trainer' && hardcoreRec() ? ' ' + hcBadge('sm') : ''}${id === 'news' && hasUnseen() ? ' <i class="newdot">NEW</i>' : ''}</button>`).join('')}
     <div class="sdesc">${esc(items[0][2])}</div>
     <div class="yesno" hidden>${G.daily ? 'Restart today’s challenge?' : 'Start over?'} Turn ${G.turn} and ${G.badges} badge${G.badges === 1 ? '' : 's'} will be lost.
       <div class="btnrow"><button class="btn" data-m="restart-no">No</button><button class="btn danger" data-m="restart-yes">Yes</button></div></div>
@@ -8089,6 +8118,34 @@ function records(){
   return Object.assign({ runs:0, cleared:0, best:-1 }, r || {});
 }
 function saveRecords(r){ try{ localStorage.setItem(REC_KEY, JSON.stringify(r)); }catch(e){} }
+
+/* ---- 2.4.0 · THE HARDCORE BADGE ---------------------------------------
+   Earned by clearing a run with One Life on (a One Life daily counts). Kept in
+   this device's records as { count, first, last } and it rides along in a
+   transfer code. The art is a drawn placeholder: drop a hardcore.png into the
+   Sprites folder and gen-sprites.py picks it up as SPRITES.hardcore. */
+const HC_HOW = 'Clear a run on One Life.';
+function hcBadge(cls = ''){
+  return SPRITES.hardcore
+    ? `<img class="hcb ${cls}" src="${SPRITES.hardcore}" alt="Hardcore badge">`
+    : `<svg class="hcb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Hardcore badge"><polygon points="10,1.5 22,1.5 30.5,10 30.5,22 22,30.5 10,30.5 1.5,22 1.5,10" fill="#2b1a22" stroke="#e0a526" stroke-width="2"/><polygon points="10.6,5 21.4,5 27,10.6 27,21.4 21.4,27 10.6,27 5,21.4 5,10.6" fill="none" stroke="#7a1f2b" stroke-width="1"/><path d="M16 25.5C7 19.5 5.8 12.2 10.4 9.4c2.6-1.4 4.8-.3 5.6 1.4.8-1.7 3-2.8 5.6-1.4 4.6 2.8 3.4 10.1-5.6 16.1z" fill="#e8462a" stroke="#ffd36b" stroke-width="1"/><text x="16" y="19.4" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" font-family="monospace,sans-serif">1</text></svg>`;
+}
+function hardcoreRec(){ const h = records().hardcore; return h && h.count > 0 ? h : null; }
+const hcLine = h => `${h.count > 1 ? `${h.count} clears` : '1 clear'}${h.first ? ` · first ${prettyDate(h.first)}` : ''}`;
+/** Called once when a finished run is a One Life win. */
+function awardHardcore(){
+  if(!G || G.over !== 'won' || !(G.mods && G.mods.onelife) || G.hcDone) return;
+  const r = records(), h = r.hardcore || { count:0, first:null, last:null };
+  G.hcNew = !h.count; G.hcDone = true;
+  h.count++; h.first = h.first || localDate(); h.last = localDate();
+  r.hardcore = h; saveRecords(r);
+}
+const mergeHardcore = (a, b) => {
+  if(!(a && a.count) && !(b && b.count)) return undefined;
+  a = a || {}; b = b || {};
+  const firsts = [a.first, b.first].filter(Boolean).sort();
+  return { count: Math.max(a.count || 0, b.count || 0), first: firsts[0] || null, last: [a.last, b.last].filter(Boolean).sort().pop() || null };
+};
 const reachedStage = () => G.over === 'won' ? runPlan().length : (G.stage || 0);
 /* 2.0.0: a daily run keeps its own result per day, and a run with rules keeps
    its own record per rule set — neither muddies your plain-run records. */
@@ -8097,7 +8154,8 @@ function dailyResults(){ try{ return JSON.parse(localStorage.getItem(DAILY_REC) 
 function noteDaily(){
   const all = dailyResults(), was = all[G.daily] || { best:-1, cleared:false, tries:0 };
   all[G.daily] = { ...was, best: Math.max(was.best, reachedStage()), badges: Math.max(was.badges || 0, G.badges),
-                   cleared: was.cleared || G.over === 'won', mods: modsLabel(G) };
+                   cleared: was.cleared || G.over === 'won', mods: modsLabel(G),
+                   hardcore: !!(was.hardcore || (G.over === 'won' && G.mods && G.mods.onelife)) };
   try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
 }
 function recBucket(r){
@@ -8106,7 +8164,7 @@ function recBucket(r){
   return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
 }
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ awardHardcore(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
 function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
@@ -8139,8 +8197,10 @@ function partnerOf(){
   for(const u of G.team.concat(G.pc)) if(f[u.uid] && (!best || f[u.uid] > f[best.uid])) best = u;
   return best ? { u: best, n: f[best.uid] } : null;
 }
-function openTrainerCard(){
-  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit;
+function openTrainerCard(fromTitle){
+  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null;
+  const live = !fromTitle || runInProgress();     // from the title with no run going, only who you are
+  const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
   const cells = GYMS.slice(0, TUNING.badgesToWin).map((g, i) => i < G.badges
     ? `<div class="bcell2 on" title="${esc(g.badge)} Badge — ${esc(g.name)}"><i class="bdg g${i} on"></i>${bossArt(g, 'case')}<span>${esc(g.badge)}</span></div>`
@@ -8149,21 +8209,24 @@ function openTrainerCard(){
     <div class="trow">
       <div class="facts">
         <div><span>Name</span><b>${esc(playerName())}</b></div>
-        <div><span>Money</span><b>₽${G.credits}</b></div>
+        ${live ? `<div><span>Money</span><b>₽${G.credits}</b></div>
         <div><span>Turn</span><b>${G.turn}</b></div>
         <div><span>Lives</span><b>${Math.max(0, G.lives)}/${G.mods && G.mods.onelife ? 1 : TUNING.startingLives}</b></div>
-        <div><span>Streak</span><b>${streak}</b></div>
+        <div><span>Streak</span><b>${streak}</b></div>` : `<div><span>Runs played</span><b>${R.runs}</b></div>
+        <div><span>Runs cleared</span><b>${R.cleared}</b></div>`}
       </div>
-      <div class="tface" title="${P ? esc(P.u.nm) + ', your partner' : ''}">${P && SPRITES[P.u.id] ? `<img src="${SPRITES[P.u.id]}" alt="">` : '<i class="pball"></i>'}</div>
+      <div class="tface" title="${P ? esc(P.u.nm) + ', your partner' : ''}">${SPRITES[face] ? `<img src="${SPRITES[face]}" alt="">` : '<i class="pball"></i>'}</div>
     </div>
     <h4>Badges</h4><div class="bcase">${cells}</div>
+    <div class="hcrow ${HC ? 'on' : ''}" title="${HC ? 'Hardcore Badge' : esc(HC_HOW)}">${hcBadge(HC ? '' : 'locked')}
+      <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
     <h4>Records</h4><div class="recs">
-      <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, reachedStage())))}</b></div>
+      <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
-      <div><span>Partner</span><b>${P ? `${esc(SPECIES[P.u.id].name)} · ${P.n} battle${P.n === 1 ? '' : 's'}` : '—'}</b></div>
-      <div><span>Biggest hit</span><b>${hit ? `${esc(SPECIES[hit.id] ? SPECIES[hit.id].name : '?')} · ${hit.dmg}` : '—'}</b></div>
+      ${live ? `<div><span>Partner</span><b>${P ? `${esc(SPECIES[P.u.id].name)} · ${P.n} battle${P.n === 1 ? '' : 's'}` : '—'}</b></div>
+      <div><span>Biggest hit</span><b>${hit ? `${esc(SPECIES[hit.id] ? SPECIES[hit.id].name : '?')} · ${hit.dmg}` : '—'}</b></div>` : ''}
       ${Object.entries(R.modes || {}).filter(([, b]) => b.runs).map(([k, b]) => `<div><span>${esc(k)}</span><b>${b.cleared} of ${b.runs} cleared · ${esc(bestRunLabel(b.best))}</b></div>`).join('')}
-      ${(() => { const t = dailyResults()[localDate()]; return t ? `<div><span>Today’s daily</span><b>${esc(t.cleared ? 'Champion!' : bestRunLabel(t.best))}</b></div>` : ''; })()}
+      ${(() => { const t = dailyResults()[localDate()]; return t ? `<div><span>Today’s daily</span><b>${esc(t.cleared ? 'Champion!' : bestRunLabel(t.best))}${t.hardcore ? ' · Hardcore' : ''}</b></div>` : ''; })()}
     </div>
   </div>
   <div class="btnrow"><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
@@ -8312,7 +8375,8 @@ function applyTransfer(data){
     if(!d) throw new Error('bad save');
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
-    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best) });
+    const hc = mergeHardcore(a.hardcore, b.hardcore);
+    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -8512,7 +8576,7 @@ function openHelp(){
     <b>Reserve</b> a Mart item to keep it through a reroll, and each shop rerolls separately.</p>
 
     <h4>Daily Challenge, rules and legendaries</h4>
-    <p>The <b>Daily Challenge</b> (title screen) is one run a day that’s the same for everyone, sometimes with a rule of the day, in its own save. A <b>New Run</b> can have rules: Mono-type, No PC, Rich &amp; Ruthless or One Life.
+    <p>The <b>Daily Challenge</b> (title screen) is one run a day that’s the same for everyone, sometimes with a rule of the day, in its own save. A <b>New Run</b> can have rules: Mono-type, No PC, Rich &amp; Ruthless or One Life. Beat the Champion on <b>One Life</b> and you earn the <b>Hardcore Badge</b>, kept on your Trainer Card.
     <b>Legendaries</b> (Zapdos, Articuno, Moltres, Mewtwo) aren’t sold in the Daycare: after the 5th gym one may appear for one turn, and by the 7th gym one always has. The Champion brings one you didn’t recruit. They never level up but start far stronger and grow faster. Made a wrong buy? <b>Undo</b> (above Battle) takes back your last buy, once a turn.
     <b>Formations</b> (Your Party) saves a line-up to snap back to, and every fight ends with a <b>recap</b> of who did what.</p>
     <h4>The Bag and held items</h4>
@@ -8688,7 +8752,7 @@ function titlePartner(){
 let titleEl = null;
 function showTitle(then){
   if(titleEl) return;
-  const mon = titlePartner(), R = records(), best = Math.max(R.best, 0);
+  const mon = titlePartner(), R = records(), best = Math.max(R.best, 0), HC0 = R.hardcore && R.hardcore.count ? R.hardcore : null;
   const M = mainRun();                                   // 2.0.0: CONTINUE is always your own run
   const cont = !!(M && !M.over && ((M.stage || 0) > 0 || M.turn > 1));
   const runLine = cont ? `Turn ${M.turn} · ${M.badges} badge${M.badges === 1 ? '' : 's'} · ${Math.max(0, M.lives)} ${M.lives === 1 ? 'life' : 'lives'}${modList(M).length ? ' · ' + esc(modsLabel(M)) : ''}` : '';
@@ -8702,12 +8766,13 @@ function showTitle(then){
     <div class="tsub">A Pokémon Auto Battler</div>
     <div class="tver">${GAME_VERSION.v}</div>
     <div class="tfield"><div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
-    <div class="twho">${who}</div>
+    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
-      <button class="tmi" role="menuitem" data-t="daily">DAILY CHALLENGE<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="daily">DAILY CHALLENGE<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="trainer">TRAINER CARD<small>${HC0 ? `Hardcore Badge · ${HC0.count > 1 ? HC0.count + ' clears' : '1 clear'}` : 'your badges and records'}</small></button>
       <button class="tmi" role="menuitem" data-t="options">OPTIONS</button>
     </div>
     <div class="tfoot">${best > 0 ? `<span>Best: ${esc(bestRunLabel(best))}${R.cleared ? ` · ${R.cleared} cleared` : ''}</span>` : ''}
@@ -8732,6 +8797,7 @@ function showTitle(then){
     } else if(t === 'continue'){ if(G && G.daily) switchSlot(SAVE_KEY); leave(); }
     else if(t === 'new'){ if(document.activeElement) document.activeElement.blur(); openNewRun(leave); }
     else if(t === 'daily'){ if(document.activeElement) document.activeElement.blur(); openDaily(leave); }
+    else if(t === 'trainer'){ if(document.activeElement) document.activeElement.blur(); openTrainerCard(true); }
     else if(t === 'options'){ if(document.activeElement) document.activeElement.blur(); openOptions(); }
   };
   d.addEventListener('click', ev => {
