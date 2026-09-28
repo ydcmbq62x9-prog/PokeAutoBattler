@@ -1700,6 +1700,91 @@ body.calm .martrow.fx-rare::after,body.calm .martrow.fx-vrare::after{animation:n
 .modal.xfer .xconfirm p{font-size:13px}
 .line .stage.branch{white-space:nowrap}
 .line .stage.branch img.pix{width:14px;height:14px;vertical-align:-2px}
+
+/* 1.4.1 — What's new: the date and tag are one unbreakable group */
+.clog .cmeta{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;vertical-align:1px;margin-left:2px}
+.clog .cmeta .cdate{margin-left:0}
+.clog .cmeta .cnow,.clog .cmeta .cnew{margin-left:0;white-space:nowrap;line-height:1.5}
+
+/* 1.5.0 — stone preview */
+.mtext .mprev{display:block;margin-top:2px;font-size:10.5px;color:var(--text);font-weight:600}
+.mtext .mprev b{font-weight:800;display:inline;font-size:inherit}
+.mtext .mprev .mp{white-space:nowrap;display:inline-block;margin-right:8px}
+.mtext .mprev img.pix,.sprev img.pix{width:18px;height:18px;vertical-align:-4px;image-rendering:pixelated;margin-right:2px}
+.sprevs{margin-top:6px;display:flex;flex-direction:column;gap:4px}
+.sprev{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12.5px;padding:4px 6px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.sprev .arr{color:var(--dim)}
+.sprev .poptype{font-size:10px;padding:0 6px;border-radius:6px;color:#10131a;font-weight:700}
+.sprev .rchip{font-size:10px}
+.sprev .sdel{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+/* ===================================================================
+   2.0.0 — daily challenge, rules, legendaries, undo, recap, formations
+   =================================================================== */
+.modebar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px;padding:6px 10px;border:2px solid var(--edge);border-radius:10px;
+  background:var(--panel);font-size:12.5px;box-shadow:var(--gbbox)}
+.modechip{display:inline-block;font-size:11px;font-weight:800;padding:1px 7px;border-radius:6px;background:var(--edge);color:#fff;letter-spacing:.3px}
+.btn.undo{align-self:center;font-size:13px;padding:6px 14px;min-height:0;background:var(--panel);border-style:dashed}
+.btn.undo .dim{font-size:11px;margin-left:4px}
+.panel.legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-color:#c98a12;
+  background:linear-gradient(135deg,var(--panel) 60%,#f6e3b0);animation:legin .5s ease-out both}
+html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a14)}
+@keyframes legin{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+.legart{width:64px;height:64px;flex:0 0 auto;border:2px solid var(--edge);border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--tcol) 35%,transparent),transparent 70%)}
+.legart img{width:52px;height:52px;object-fit:contain;image-rendering:pixelated}
+.legtext{flex:1;min-width:180px;display:flex;flex-direction:column;gap:3px}
+.legtext b{font-size:15px;letter-spacing:.5px}
+.legtext .poptype{font-size:10.5px;padding:0 6px;border-radius:6px;color:#10131a;font-weight:700}
+.legbtns{display:flex;gap:8px;flex-wrap:wrap}
+.panel.recap{margin-top:8px;padding:8px 10px}
+.panel.recap summary{cursor:pointer;font-size:13px}
+.recap .rhead,.recap .rrow{display:grid;grid-template-columns:minmax(90px,1.3fr) 1fr 1fr 44px 30px;gap:6px;align-items:center}
+.recap .rhead{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin:6px 0 2px}
+.recap .rhead span:nth-child(n+4){text-align:right}
+.recap .rrow{font-size:12px;padding:3px 0;border-top:1px dotted var(--line)}
+.recap .rrow.down{opacity:.6}
+.recap .rname img.pix{width:20px;height:20px;image-rendering:pixelated}
+.recap .rname{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-weight:700}
+.recap .rbar{position:relative;height:14px;border-radius:4px;background:var(--panel2);overflow:hidden}
+.recap .rbar u{position:absolute;left:0;top:0;bottom:0;text-decoration:none}
+.recap .rbar.dealt u{background:color-mix(in srgb,var(--atk,#d9534f) 55%,transparent)}
+.recap .rbar.taken u{background:color-mix(in srgb,var(--hp,#3a9a5b) 45%,transparent)}
+.recap .rbar b{position:relative;font-size:10.5px;padding-left:4px;line-height:14px}
+.recap .rnum{text-align:right;font-size:11.5px;color:var(--muted)}
+.rtag{font-style:normal;font-size:8.5px;font-weight:800;letter-spacing:.6px;padding:0 4px;border-radius:4px;color:#fff}
+.rtag.rt-mvp{background:#c98a12}.rtag.rt-wall{background:#3a6fc9}.rtag.rt-medic{background:#2e8f5a}
+.panel.legend{margin-bottom:10px}
+.presets{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.preset{border:2px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel2)}
+.preset .pmons{display:flex;gap:4px;flex-wrap:wrap;min-height:26px;align-items:center;margin:4px 0}
+.preset .pmons img.pix{width:26px;height:26px;image-rendering:pixelated}
+.preset .btnrow{margin:4px 0 0}
+.modal.newrun .mods{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.modal.newrun .modt{text-align:left;display:flex;flex-direction:column;gap:1px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);cursor:pointer;font:inherit}
+.modal.newrun .modt b{font-size:13.5px}
+.modal.newrun .modt span{font-size:11.5px;color:var(--muted)}
+.modal.newrun .modt.on{border-color:var(--edge);box-shadow:inset 0 0 0 2px var(--gold)}
+.modal.newrun .modt.on b::before{content:'✓ ';color:var(--good)}
+.modal.newrun .monotypes{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px 4px}
+.modal.newrun .ntype{font:inherit;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;border:2px solid var(--c);background:transparent;color:var(--text);cursor:pointer}
+.modal.newrun .ntype.on{background:var(--c);color:#10131a}
+.modal .warn{color:var(--bad);font-size:13px}
+.modal.newrun h4,.modal.daily h4{margin:12px 0 4px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.modal.daily .drules{border:2px solid var(--line);border-radius:10px;padding:4px 10px;background:var(--panel2)}
+.modal.daily .drules p{font-size:13px;margin:4px 0 6px}
+.modal.daily .dbtns{flex-wrap:wrap}
+.modal .small{font-size:11.5px}
+.tmi small{display:block}
+/* 2.1.0 — legendaries: a gold star where the level badge goes */
+.unit .lvl.leg{background:linear-gradient(135deg,#ffd76a,#e0a526);color:#4a3300;font-size:10px}
+.poplv.legend{color:#e0a526;font-weight:700}
+/* 2.2.0 — EXP pips on the summary */
+.poppips{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.poppips i{width:7px;height:7px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1.5px var(--edge);opacity:.55}
+.poppips i.on{background:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold2);opacity:1}
+.poppips.max{font-size:10px;color:var(--gold2);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.clv.leg{background:linear-gradient(135deg,#ffd76a,#e0a526);color:#4a3300}
 </style>
 </head>
 <body>
@@ -1788,7 +1873,7 @@ const TUNING = {
      prices on purpose: Sean wants the Elite Four harder, with the reference
      clear rate in the low 70s (was 77–78%). Scale these to move it: against the
      v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
-  gauntletRatio:  [0.403, 0.4567, 0.4328, 0.4279, 0.5104],   // v51 prices x0.995
+  gauntletRatio:  [0.4191, 0.475, 0.4501, 0.445, 0.5308],   // v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary)
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -1894,6 +1979,16 @@ const TUNING = {
 
   /* --- economy --- */
   creditsPerTurn:   10,    // base income each turn
+  /* 2.0.0 — run modifiers. Rich & Ruthless: income is doubled and every
+     opponent's stats are multiplied by `richFoes`. */
+  /* Mono-type scales opponents per type, measured so each type clears ~50% for
+     the reference player (as Rich does): a Colorless team has no weakness to
+     exploit, a Water or Fire team meets gyms that wall it. */
+  mods: { richIncome: 2, richFoes: 1.235, nopcFoes: 0.975,
+          monoFoes: { Grass:1.028, Fire:0.94, Water:0.936, Lightning:1.004, Fighting:0.968, Psychic:1.002, Colorless:1.057 } },
+  /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
+     Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
+  legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
   maxCarryOver:     15,    // unspent credits kept into the next turn (cap)
   winBonus:         2,     // extra for winning the last battle
   lossBonus:        1,     // extra for losing it (keeps a comeback alive)
@@ -2130,7 +2225,7 @@ const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];
 const bossById = id => ALL_BOSSES.find(b => b.id === id) || null;
 /** The species a themed leader can draw on. No theme = the whole roster. */
 function themePool(theme){
-  const all = Object.keys(SPECIES);
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary);   // 2.1.0: no trainer fields a legendary
   if(!theme) return all;
   return all.filter(k => {
     const g = SPECIES[k].gen1 || '';
@@ -2230,9 +2325,10 @@ const roleOf = x => {
    a Tank's 0.6 × 1 Speed is a point every few battles, not never. */
 function growUnit(u, d){
   const w = (TUNING.roles[roleOf(u)] || TUNING.roles.bruiser).grow;
+  const lg = SPECIES[u.id] && SPECIES[u.id].legendary ? TUNING.legend.growth : 1;   // 2.1.0
   u.gf = u.gf || { hp:0, atk:0, spd:0 };
   for(const k of ['hp','atk','spd']){
-    const x = (d[k] || 0) * w[k] + (u.gf[k] || 0);
+    const x = (d[k] || 0) * w[k] * lg + (u.gf[k] || 0);
     const n = Math.floor(x + 1e-9);
     u[k] += n; u.gf[k] = x - n;
   }
@@ -2430,7 +2526,7 @@ const TRIGGER_TEXT = {
 };
 const on = (trig, move, extra) => ({ ...move, trig, ...(extra || {}),
   when: function(){ return TRIGGER_TEXT[trig](this); } });
-const TARGET_TEXT = { front:'the enemy front', random:'a random enemy', fastest:'the fastest enemy', back:'the enemy furthest back', weakest:'the weakest enemy' };
+const TARGET_TEXT = { biggest:'the enemy with the most HP', front:'the enemy front', random:'a random enemy', fastest:'the fastest enemy', back:'the enemy furthest back', weakest:'the weakest enemy' };
 const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:'puts it to sleep', cnf:'confuses it', fln:'makes it flinch' };
 
 /* ===================================================================
@@ -2636,10 +2732,19 @@ const SPECIES = {
   /* ============ TIER 6 ============ */
   snorlax:    { name:'Snorlax',    type:'Colorless', gen1:'Normal', tier:6, role:'tank', hp:62, atk:33, spd:20,
                 move:M.wall('Body Slam', 1.2, 1.7) },
-  zapdos:     { name:'Zapdos',     type:'Lightning', gen1:'Electric/Flying', tier:6, role:'cannon', hp:38, atk:45, spd:67,
+  /* ============ LEGENDARIES (2.1.0) ============
+     Encounter only. A legendary has NO tier and NEVER levels up — no copies,
+     no Rare Candy, no evolution. It pays for that up front with a higher base
+     stat total than any regular pokémon, and grows TUNING.legend.growth times
+     as fast from every EXP source (battles, Exp. Share, the trainer's bank). */
+  zapdos:     { name:'Zapdos',     type:'Lightning', gen1:'Electric/Flying', role:'cannon', hp:62, atk:75, spd:106, legendary:true,
                 move:M.all('Thunder', 0.55) },
-  mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', tier:6, role:'cannon', hp:44, atk:63, spd:87,
-                move:M.big('Psystrike', 1.2) },
+  mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', role:'cannon', hp:66, atk:86, spd:112, legendary:true,
+                move:M.big('Psystrike', 1.6) },
+  articuno:   { name:'Articuno',   type:'Water', gen1:'Ice/Flying', role:'tank', hp:102, atk:62, spd:88, legendary:true,
+                move:M.wall('Ice Beam', 1.2, 1.8) },
+  moltres:    { name:'Moltres',    type:'Fire', gen1:'Fire/Flying', role:'bruiser', hp:80, atk:86, spd:94, legendary:true,
+                move:M.hit('Wing Attack', 1.5) },
 
   /* ============ 1.3.0 — Eevee and three of its evolutions (Sean) ============
      The first BRANCHING line: the stone you use decides what it becomes, and
@@ -2655,7 +2760,9 @@ const SPECIES = {
                 move:M.ramp('Rage', 1.5, 12) },
 };
 
-const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token);
+const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary);
+/** 2.1.0: a legendary has no tier and never levels. */
+const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECIES[typeof u === 'string' ? u : u.id].legendary);
 /* Second moves (v32), kept apart from the species table so the main moves stay
    readable. Each fires instead of the main move when its trigger is met. */
 const MOVE2 = {
@@ -2736,7 +2843,9 @@ const MOVE2 = {
   tauros:     on('every', M.afflict('Stomp', 1.0, 'fln', 0.3, 'front'), { n:3 }),
   chansey:    on('allyLow', M.shield('Light Screen', 0.12, 'team')),
   snorlax:    on('low',   M.recover('Rest', 0.6, true)),
-  zapdos:     on('every', M.back('Drill Peck', 0.9), { n:3 }),
+  zapdos:     on('every', M.afflict('Zap Cannon', 2.0, 'par', 0.7, 'biggest'), { n:4 }),   // 2.2.0 (Sean)
+  articuno:   on('every', M.all('Blizzard', 0.45), { n:4 }),
+  moltres:    on('every', M.afflict('Fire Blast', 1.6, 'brn', 1, 'front'), { n:3 }),
   mewtwo:     on('every', M.trueHit('Psychic', 1.5), { n:3 }),
   // 1.3.0 — the Eevee line
   eevee:      on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
@@ -2807,6 +2916,7 @@ const ITEMS = {
                   apply:(u,G)=>G.boost(u,{spd:10}) },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
+                  eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
                   apply:(u,G)=>G.addExp(u,1) },
   expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rarity:'rare',
                   text:'Everyone in your party gets EXP as if they had just won a fight. (Not the PC, and not pokémon you buy later.)',
@@ -3022,9 +3132,10 @@ function makeUnit(id, exp){
   return { uid:_uid++, id, nm:sp.name, hp:sp.hp, atk:sp.atk, spd:sp.spd, exp:exp||0,
            tmpAtk:0, tmpSpd:0, rest:0 };
 }
-const unitLevel = u => levelFromExp(u.exp);
+const unitLevel = u => isLegend(u) ? 1 : levelFromExp(u.exp);
 
 function expPipsToNext(u){
+  if(isLegend(u)) return { have:0, need:0 };   // 2.1.0: no levels, no pips
   const l = levelFromExp(u.exp || 0);
   if(l === 3) return { have:0, need:0 };
   const base = l === 1 ? 0 : TUNING.expForLevel2;
@@ -3064,6 +3175,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
   const byPos = (a, b) => a.pos - b.pos;
   const B = { teams: { p: playerTeam.map((u, i)=>clone(u,'p',i)).sort(byPos), e: enemyTeam.map((u, i)=>clone(u,'e',i)).sort(byPos) },
               steps: [], rnd };
+  const everyone = [...B.teams.p, ...B.teams.e];   // 2.0.0: kill() removes the fallen, the recap needs them all
 
   const other = s => (s === 'p' ? 'e' : 'p');
   B.enemies  = u => B.teams[other(u.side)].slice();
@@ -3146,6 +3258,9 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       B.log(`${tgt.nm}'s barrier soaked ${soak}${tgt.shield ? '' : ' and broke'}.`);
     }
     tgt.hp -= dealt;
+    // 2.0.0: the recap's numbers
+    if(src !== tgt){ src.rDealt = (src.rDealt || 0) + dealt; tgt.rTaken = (tgt.rTaken || 0) + dealt;
+      if(tgt.hp <= 0 && !tgt.dead) src.rKos = (src.rKos || 0) + 1; }
     B.fx(tgt, m > 1 ? 'crit' : 'hit');
     if(dealt || !note) B.log(`${tgt.nm} took ${dealt} damage.${note}`);
     itemOnDamaged(tgt);
@@ -3175,6 +3290,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     if(how === 'random')  return foes[Math.floor(rnd() * foes.length)];
     if(how === 'fastest') return B.fastest(u);
     if(how === 'back')    return foes[foes.length - 1];
+    if(how === 'biggest') return B.biggest(u);
     if(how === 'weakest') return foes.slice().sort((a, b) => a.hp - b.hp || b.init - a.init)[0];
     return B.front(u);
   };
@@ -3208,7 +3324,9 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     const sh = src && heldOf(src);
     if(sh && sh.healBoost) n = Math.round(n * (1 + sh.healBoost));
     const was = t.hp;
-    t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff'); return t.hp - was; };
+    t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff');
+    if(src && t.hp > was) src.rHealed = (src.rHealed || 0) + (t.hp - was);   // 2.0.0: recap
+    return t.hp - was; };
   B.boost = (t, d) => {
     if(!t || t.dead) return;
     // a drop can take at most TUNING.dropFloor off the stat it started the battle with
@@ -3444,7 +3562,9 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
   B.log(result === 'win' ? 'You win!' : result === 'lose' ? 'You lost the battle.' : "It's a draw!");
   B.snap(null);
 
-  return { result, steps:B.steps, rounds, actions };
+  const stats = everyone.map(u => ({ uid:u.uid, id:u.id, side:u.side, dealt:u.rDealt || 0, taken:u.rTaken || 0,
+    healed:u.rHealed || 0, kos:u.rKos || 0, fainted:!!u.dead }));
+  return { result, steps:B.steps, rounds, actions, stats };
 }
 
 /* ===================================================================
@@ -3546,6 +3666,9 @@ function generateAiTeam(spec){
       u = makeUnit(spec.ace2, 0); u.exp = TUNING.expForLevel3; srcId = spec.ace2;
       usedSrc.add(spec.ace2); usedFinal.add(spec.ace2);
       const base = evoLine(spec.ace2)[0]; usedSrc.add(base); usedFinal.add(base);   // no second Eevee beside it
+    } else if(!lineup && i === 2 && spec && spec.ace3 && SPECIES[spec.ace3]){
+      // 2.2.0: the Champion's legendary — level 1 forever, like yours
+      u = makeUnit(spec.ace3, 0); srcId = spec.ace3; usedSrc.add(spec.ace3); usedFinal.add(spec.ace3);
     } else if(lineup){
       u = makeUnit(lineup[i].id, 0);
       u.exp = lineup[i].exp || 0;
@@ -3645,7 +3768,17 @@ function hashId(id){
 }
 
 /** The opponent for whatever stage the game is on. */
+/** 2.0.0: Rich & Ruthless makes every opponent tougher. */
 function opponentFor(G){
+  const o = opponentFor0(G);
+  const k = (G.mods && G.mods.rich ? TUNING.mods.richFoes : 1) * (G.mods && G.mods.mono ? (TUNING.mods.monoFoes[G.mods.mono] || 1) : 1)
+          * (G.mods && G.mods.nopc ? TUNING.mods.nopcFoes : 1);   // 2.2.0
+  if(k !== 1 && o && o.team){
+    for(const u of o.team){ u.hp = Math.round(u.hp * k); u.atk = Math.round(u.atk * k); u.spd = Math.round(u.spd * k); }
+  }
+  return o;
+}
+function opponentFor0(G){
   const st = stageOf(G);
   const m = rivalMeeting(G);
   if(m >= 0){
@@ -3667,6 +3800,8 @@ function opponentFor(G){
       ? evoLine(G.rival.starter)[evoLine(G.rival.starter).length - 1] : null,
     // 1.4.0: and, like in the games, an Eeveelution — the one his Eevee became
     ace2: kind === 'champion' ? rivalEevo(G) : null,
+    // 2.2.0: …and a legendary you didn't recruit — his last surprise
+    ace3: kind === 'champion' ? championLegend(G) : null,
     turn: G.turn, seed: G.seed, badges: G.badges || 0, kind, boss,
     lineup: seen ? seen.filter(u => u && SPECIES[u.id]) : null,
     tier: kind === 'elite' || kind === 'champion' ? Math.min(6, tierFor(G) + 1) : tierFor(G),
@@ -3719,6 +3854,12 @@ function partyType(G){
    Vaporeon, a Squirtle's Jolteon, a Bulbasaur's Flareon), or a seeded pick
    when no Eeveelution covers it. The Champion fields the same one. */
 const EEVOS = { Water:'vaporeon', Lightning:'jolteon', Fire:'flareon' };
+/** 2.2.0: the Champion's legendary — seeded, never one you recruited or own. */
+function championLegend(G){
+  const mine = new Set([...(G.legendsCaught || []), ...[...(G.team || []), ...(G.pc || [])].filter(isLegend).map(u => u.id)]);
+  const pool = LEGENDS().filter(k => !mine.has(k));
+  return pool.length ? pool[mix32((G.seed || 1) ^ 0x2545f491, 9) % pool.length] : null;
+}
 function rivalEevo(G){
   if(G.rival && G.rival.eevo) return G.rival.eevo;
   const starter = G.rival && G.rival.starter;
@@ -3780,6 +3921,48 @@ function bossSignatureItem(team, boss, seed){
   const order = pool.slice().sort(() => r() - 0.5);
   for(const k of order){ const u = pick(k); if(u){ u.held = k; return k; } }
   return null;
+}
+
+/* ===================================================================
+   2.0.0 · LEGENDARY ENCOUNTERS
+   After each gym from TUNING.legend.fromBadge on, a legendary you haven't met
+   this run may appear (seeded, so a reload can't re-roll it). It waits in the
+   shop for one turn — recruit it for TUNING.legend.cost or let it go.
+   =================================================================== */
+const LEGENDS = () => Object.keys(SPECIES).filter(k => SPECIES[k].legendary);
+function rollEncounter(G){
+  G.encounter = null;
+  if(G.badges < TUNING.legend.fromBadge) return null;
+  const met = G.legendsMet || [];
+  const mono = G.mods && G.mods.mono;
+  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || SPECIES[k].type === mono));
+  const r = makeRng(mix32(((G.seed || 1) ^ 0x6a09e667) >>> 0, 40 + G.badges));
+  const pity = G.badges === TUNING.legend.pityBadge && !met.length;   // 2.2.0: never a run without one
+  if(!pool.length || (r() >= TUNING.legend.chance && !pity)) return null;
+  const id = pool[Math.floor(r() * pool.length)];
+  G.encounter = { id, cost: TUNING.legend.cost, turn: G.turn + 1 };
+  G.legendsMet = [...met, id];
+  makeGameApi(G).log(`A wild ${SPECIES[id].name} appeared!`);
+  return G.encounter;
+}
+const encounterOpen = G => !!(G.encounter && G.encounter.turn === G.turn && !G.encounter.taken && !inGauntlet(G));
+/** Recruit the waiting legendary: into the party if there's room, else the PC. */
+function recruitLegend(G, pos){
+  if(!encounterOpen(G)) return { ok:false, why:'Nothing is waiting.' };
+  const e = G.encounter;
+  if(G.credits < e.cost) return { ok:false, why:`Not enough pokecredits (it costs ${e.cost}₽).` };
+  fixSlots(G);
+  const u = trainerCatchUp(G, makeUnit(e.id, 0));
+  if(G.team.length < TUNING.maxTeam){
+    u.pos = Number.isInteger(pos) && !teamAt(G, pos) && pos < TUNING.maxTeam ? pos : freePos(G);
+    G.team.push(u);
+  } else if(pcRoom(G) > 0){
+    u.box = freeBox(G); G.pc.push(u);
+  } else return { ok:false, why:'Your party and PC are full.' };
+  G.credits -= e.cost; e.taken = true; fixSlots(G);
+  G.legendsCaught = [...(G.legendsCaught || []), e.id];   // 2.2.0: the Champion brings one you didn't
+  makeGameApi(G).log(`${u.nm} joined your team!`);
+  return { ok:true, unit:u };
 }
 
 /** Level an AI unit up, evolving it the same way the player's would. */
@@ -3850,12 +4033,46 @@ function importTeam(code){
 /* ===================================================================
    GAME STATE
    =================================================================== */
-function newGame(seed){
+/* 2.0.0 — run modifiers, chosen at New Run (the daily challenge draws one):
+     mono:     'Fire' …  the Daycare only sells that type
+     nopc:     true      no PC at all — just the six you carry
+     rich:     true      double income, opponents ×TUNING.mods.richFoes
+     onelife:  true      one life
+   G.daily is the date ('2026-09-27') when this is a daily-challenge run. */
+const MOD_INFO = {
+  mono:    { name: t => `Mono-${t}`, text: t => `The Daycare only sells ${t} pokémon. Opponents are tuned so every type is about as hard.` },
+  nopc:    { name: () => 'No PC', text: () => 'No PC box: just the six you carry, no bench.' },
+  rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
+  onelife: { name: () => 'One Life', text: () => 'One life. Lose a battle that costs a life and the run is over.' },
+};
+const modList = G => { const m = (G && G.mods) || {}; return Object.keys(MOD_INFO).filter(k => m[k]); };
+const modName = (G, k) => MOD_INFO[k].name(G.mods[k]);
+const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
+function cleanMods(m){
+  const out = {};
+  if(m && m.mono && TYPES[m.mono]) out.mono = m.mono;
+  for(const k of ['nopc', 'rich', 'onelife']) if(m && m[k]) out[k] = true;
+  return out;
+}
+/** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
+function dailySeed(date){ let h = 2166136261; for(const c of 'pkb-daily-' + date){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return (h % 999999937) + 1; }
+function dailyMods(date){
+  const r = makeRng(dailySeed(date) ^ 0x9e3779b9), x = r();
+  if(x < 0.35) return {};
+  if(x < 0.55){ const t = Object.keys(TYPES); return { mono: t[Math.floor(r() * t.length)] }; }
+  if(x < 0.70) return { nopc: true };
+  if(x < 0.85) return { rich: true };
+  return { onelife: true };
+}
+
+function newGame(seed, opts){
+  const mods = cleanMods(opts && opts.mods);
   return {
     seed: seed || Math.floor(Math.random() * 1e9),
+    mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
-    lives: TUNING.startingLives,
+    lives: mods.onelife ? 1 : TUNING.startingLives,
     stage: 0,               // index into runPlan() — the run's schedule
     badges: 0,
     attempt: 0,             // consecutive defeats at the current boss
@@ -3904,6 +4121,7 @@ function makeGameApi(G){
     otherwise take the larger flat bonus. */
 function applyLevelUp(G, u){
   const sp = SPECIES[u.id];
+  if(sp.legendary) return { evolved:false };
   const canEvolve = sp.evo && sp.evo.by === 'level';
   if(canEvolve){
     const next = SPECIES[sp.evo.into];
@@ -3922,6 +4140,7 @@ function applyLevelUp(G, u){
 
 /** Grant exp; crossing a threshold levels up (and may evolve). */
 function addExp(G, u, n){
+  if(isLegend(u)) return { leveled:false, level:1, evolved:null };   // 2.1.0: legendaries never level
   const before = unitLevel(u);
   u.exp += n;
   const after = unitLevel(u);
@@ -4076,7 +4295,11 @@ function rollDaycare(G, payCost){
      TUNING comment always said it did. Until v25 this read tierForTurn, which
      opened the whole roster — Mewtwo included — by turn 11 whatever your badges. */
   const maxTier = tierFor(G);
-  const pool = BUYABLE.filter(k => SPECIES[k].tier <= maxTier);
+  // 2.0.0: legendaries only come as encounters; Mono-type sells one type
+  const mono = G.mods && G.mods.mono;
+  // (one tier ahead for Mono-type, or tier 1 would offer a single line)
+  let pool = BUYABLE.filter(k => SPECIES[k].tier <= maxTier + (mono ? 1 : 0) && !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
+  if(!pool.length) pool = BUYABLE.filter(k => !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
   const n = daycareSlotsFor(tierFor(G));
   // Nothing is held here — if you want to keep a pokémon, buy it and park it
   // in the PC. That is what the PC is for.
@@ -4339,7 +4562,7 @@ const freeBox = G => firstFree(new Set(G.pc.map(u => u.box)), pcCap(G));
    cash them in for a level up, so keeping one no longer means freezing a
    Daycare slot. Benched pokémon train at TUNING.pcExpFraction.
    =================================================================== */
-const pcCap  = G => TUNING.pcSlots + perk(G, 'pcRow');
+const pcCap  = G => (G.mods && G.mods.nopc) ? 0 : TUNING.pcSlots + perk(G, 'pcRow');   // 2.0.0: No PC
 const pcRoom = G => pcCap(G) - (G.pc ? G.pc.length : 0);
 
 /** Buy straight from the Daycare into storage. */
@@ -4637,6 +4860,7 @@ function applyBattleResult(G, result, opp, sim){
     if(st.kind === 'gym'){
       G.badges++; G.lastBadge = boss ? boss.badge : null;
       (G.pendingRewards = G.pendingRewards || []).push(G.badges - 1);   // pick one of three
+      rollEncounter(G);                                                 // 2.0.0: maybe a legendary
     }
     /* Beating Lorelei is not a fresh start. The gauntlet as a whole is the
        attempt, or a player who can always beat the first member would never pay
@@ -4714,8 +4938,10 @@ function incomeFor(G){
     const h = heldOf(u); return n + ((h && h.income) || 0); }, 0);
   const badges = perk(G, 'allowance');
   const rival = G.rivalPay || 0;                   // beating your rival pays next turn
-  return { carry, base, result, streak, items, badges, rival,
-           total: carry + base + result + streak + items + badges + rival };
+  // 2.0.0: Rich & Ruthless doubles everything earned (not what you carried over)
+  const rich = G.mods && G.mods.rich ? (TUNING.mods.richIncome - 1) * (base + result + streak + items + badges + rival) : 0;
+  return { carry, base, result, streak, items, badges, rival, rich,
+           total: carry + base + result + streak + items + badges + rival + rich };
 }
 
 function nextTurn(G){
@@ -4757,8 +4983,8 @@ if(typeof module !== 'undefined' && module.exports){
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
-    daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel,
-    expPipsToNext, levelFromExp, moveOf, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, championLegend,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, modList, modName, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
@@ -4789,6 +5015,7 @@ const SPRITES = {
   "agatha": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADkAAAA5CAYAAACMGIOFAAAFgklEQVR42uWaIZCjSBSGf3ZHICIQEYgViBGIEy1OIFYgViCRSGQkEsk6JDKyxQkk4kSLFciIEy1GtFjRYgXiRMQIRKr6BIEFkszMLpBk6rqKYkJg0l//771+/RoNN2ppHKjxtTjNtSV+6+EaQKxMOyDOOACAeAS2RQb3cVGpvCi1dweZxoHqw9gbAiH5CSAAhJEHALODflgakHinMOcA2+vENmfvx6KQ50xSSP7iM1FCEfiuejeQAGCa7pvva++dW01tyWDjOhEAIEtCcFG1PgcAoBlrznlzrqqyg6yqEnGUYi7f/LiUL7pfPKxWFqqqxMMawP4Z7G8O4jyCZgzENmGuV9iVBRzXx/Oz7A4A+GSvcNgfkichv951dK2qsps2AtfFZtP4p5M1iu1kCc54d99S0XYxn2wDjJANoGGfibK1gcB1T4LRa8HpLiDjNNc4411nM8qQxOnZezPKugRh3C5dvxsluaiGfkrzDnQvOHZFAcvbIKU5iGkh31LkWzpQkYtqluDzcSnIJyG/HvaHhDiP+P7PD3x2HqE//4tPtg19bWKFGt6ff8D8ZGCFGk9Sop840IzNFl0XnycBwLR07AWH4/tDn7Qt7AVf/PcXU1JKpr54n/HtOA9+KwXcL5+xKwqsUDcBRkis1wbyssQ4/SPO42xTyGJKxlE68C/T0pHEKWzbghASZVaiYvIkyLTnOc110Rb4rgp8V6VxoNp8NAp8JdlWSbZVLIsVABUFvmrvB9Ae77NFrq+2dKsAqGsCfbgWXOT6KiuLJtPZCZi6gSjwsaVbRK6/KKx2DUCi6yCWDbJNUNc1OO/5omhSOkEZ2kGYu1+LQlIvUMSyGxgpQCwbVHAQXUdQUHAuURYJDNuFoAxE15ucleWz9u3hWv5ILBtcCoTHHDb3QzC9QprFsCwPfJOAS/F+fDJyfdVX8RL0OBnndd0+f9+FrL4Pdp3vKdSaLQDEpgvixqBeMByAxmzVXCarzQXW69yJWlTwLqiMgQZJfV0v4pcPk+FMIDTOV9/INhkP5sVpImT5YAAi10dWFrOo+ds+GQUNYJLGoIKDjhLt42et7WSrdut3l5Rsj5sHnijwVZLGiMKmMOX5dh+sWQz/nPMQub6yQw+7nXjJKgbPHP++vbkKIeGMyhpcioE/tYDEdkGIBaTNwjmP42Gem6awhYdNuLmf6GpYzlGCFIHvAgaQbgJkKTsBDIOwGQAuG1Cggx34sO0i8F1kxXwq/j5k1a0yBpctbzMADG2CXR+CWF1K18L2UzwAiOItgA3yorytT1bGHmkc9BQwT6re4+mkD9rCjgGHoPMl7FNMQvWVPI78UEXH7Ez1xaLXGdgs3dxFjUc7B/iSihdTvKO6nb/OrObsuWvk+i/mrG8BvrsE/ZIvvtVUXymf3N8qZKqKY/+cy2SvUv64dZsV8lcDzrVM9sO9muqcJjs98JjW/8dcp5rqpexnjnLIYoHH2VWgOZ0MOCqH3B7yV6ttfbhLScB4SXYXhaw+qC4FKDBICsZg7fKrf567Tdq6+8O2EugHrNdrPB5W50fxSeIvmuPHwzNwMIarmWp/FrSq9p2Kra8X358A4OtdKHnRp/ISec26KsAlJWlOISibdd6dtJTpvx5m7o03d+q1QlX7f3hdz7I/MllJYpvgokJWFlobAcch/6Qe+8Jg9Kt1nm8Dpo8sL7SbBp7RWx5NZ0woz/mZ/bCdQJYXb8ucAh/9Z+9yqfWKa7x6ZHmhsV7p8q2Dsyjk8V2bi98fVfwlc5tqnldfav2mEqpiEhWT7daBuqlPnutgaBBwNm2vcc6tgiVqPKCCT93T0LKyQFYWILo+Wc1JSuZFOV7UqrC3bTBx51gDgJDlt33dpX1NZfTOuBodN2//AZsw2XLNFO6MAAAAAElFTkSuQmCC",
   "alakazam": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKCAYAAAAc0MJxAAAEfUlEQVR42u2bK5DiQBCGO1cnkJFIJBKJjIxEIiORSGQkEomMREYiIyORSCQyMi4nZprNNPPIk8ded9XVVrglAebj///uzAJwcX1rVfLfV9YfXr9m5b2IJChvAQAATGbZK6/NRL26/r76gkEgyMqyrHoTWVWXbxUT9alEnROQWvUW14WykNf3WaO+1vW07oc1ogsqWtTXdZmoT9UoWrWVHsoFteRyjvpfNIpWTUOavmatFlnO6zFRv0mjwkjNU3k+hSZE1MioWv7+IN8eJurTXQ9JWoY0osvjIre65A+Jd+v52fV+kespWhJvQjE1uJZCo9Jls7MYyHKRGqxPg75HJuqNGlXVCcJqTVJLgsYuJuoNRFlJWgeTQV94kojzzefq4xptanrnx2OiBiaq0yzZVA9NSpCAlicwuN1+L0gKAl/7/3Qmn8SR9TK3u8hh8fFsff9MVAuiKgCA1XoDAACn5CB6pMlk0Lsk0S7F84qEXexaEYQ1bWhyLpIefYA8IdXWGmEeE9UymVcAAGl6Fp/wbCrdZK4Q0IKsSpvEz2eVKEPXjwTFR/H7ZVmqpOxX8vXpNWq5vCtTiiiYtfpAULNqZLFG9cpRt9tdIQq1Kz0dm7qiV/+OI1lhKH4eY9SCUpuLdodUrqSqTXkaaUlCgvoWJYlz1FAa9XADqVVIWJoIlzoexIpaJocVAEB2Wksy1JU6J66k7Td64VSLnlzWoU0uglCb2PU6EKWQQMmiJGHhSmZZpiZySdLzCt21RDUliZL5SOLzieKueNy1k6i9H07mfV3PAwBYrcKq3jPNfNP85w66vGQi4Gel1d8zkWR+PgxCFn29JpKYqL4aRRPzZlsIF1nPlZU2rRiuVLyZat0JNQoT+G5XarWvqdZQMihZVENNWuqasTNRXYnCaksWnT9h0b0EppWk16P5iBJGe8jH82QH4NIcmvdcZDFRHYjSfuLRaqEmXkIUTdwN7quZekbrbhdK2Ha703YSHaYeistzjhp6euByv+R0lY/4irvleWeKFa0II32Cx2NTb4c96UNrzPvZFaLpJDQKxHEUJzzhHIoobe7BXg8fR5I6VGVzQTyviSznXImQRfeINp2lc44ay/Xwu/7UixmIcrkdrijOg556xM3Umq8o8dT9cNqBRaceqLXBYqGfY8UJu95YRFnnVIfD3tRLWZMwThtm5AZd7Y5tp3w18wsrQfg4HuP18aeJJCZqKNdzdu3uXkpLGt6dMWkfumCwPtl3ofi4zyq3kvQ8lZg20iQmakSNcvVovXLT9VrIHs3Xuyudtfv6HXvhKrdqlSnR//z9YMYa9WqNarurpQIAuFwuQknSnUJQfrkr0wiXFuJfjJYFJcquVbTD6FpM1EiU9O7tsChpqFG1ZG9N+GWRGrTqoBxjcsfc5yLLpFVM1Ng5qi+1i8Wi6ki5BwAw8Vfa52M+oz0gFt6ZjqKSNepbiRpLHz2DS1a2vNR6dzIT9Xmu96oSbkj2fNbuxoicJXf80U6A7xQzUZ17Uhd5TBQTNQ55TBQX1/vrH374FnozWK9JAAAAAElFTkSuQmCC",
   "arcanine": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKCAYAAAAc0MJxAAAEIElEQVR42u2cIZSyQBDHx+9dMBqNxi8SjUQi0Ui8aCQSjcSLRKPRSDQaLxqNRhsXYHjuPJadXRbw7s00FWRxf/ef/84st4C/HxV5vXD5kn8gwYrFXyfoeTspHy43sdO9C1EzEFXNTGnVRdBQkoSoGYhSZpIxc77I69UijF16BgCANFoDAMA2yUSj3o0o1kx2kGVLnpMW0biWV+V1WpQAAFCWpdX1hagRiKoAAC5FpszMudj3noTkePAzViRxSeNqlhDlkSiFJIwgDLwMgJslfZHkOg4hihkftif4IumQH+GV1G2SzersX7Jx5ziEKA9EKdpA/cjQbBMF/5X3wzBEf8PyaVOHEOWQ9WaZSR2pXJ821jiovxKiLDSqAgAo89pHlLflW5B0SELlONdsS8+nrzH7Us0UjfKlUZSsdL/zesEoyfv9VUMSJcvWx5lIwnHQ76eBWiVEjeXMh5J0Tlb9xxGSkKyWOMNKwUQS1w9K1vNYPfC6WqckXR7NjMVJ9wll0ZD16NQQnXbZBvd7RKPm0iiazbJ49StJetEm0ShfGsXTqnUEAADLZe23ns+nmp3Smpw0ePKINJBEfZZrdBDD+k2EKF8adTkV6ow0GoMkZUznjsSYHLnpfVfCXDvEQtTYPgoJ2654FzBmO8NajRJEnb1O23yRJEQNrR5g7bqdQU2FkWqXVhssScL6UHm9s9aGOrJ8kSREDSXqXboetlWH3bne/3Q6ftF70+0KtuojClFjVw8wK52v3yoBTe2ZW4lETWqXfI02YazWai37GN07ScLYb+vPw309ftRc1Fq6u4a7q0aIGuDMF80vXfU57/SAWU+tOSJhJqJoxxj9ElYd2qy5urNuBElD30ZJwnDVYCHKQ/VA0Sy6P0oXtl0SJJCShdqEmmNaCSBJ+aXWrMf9u9cH2u74E6J8E6Xb1WLbwaVZTteh1ZGVnR6Kr6IkYZiIsiVLiPJIlEIWZkFTBxnJweNMPX5aJaD+CQmhWZGSRMnDtR/t69muBYWosYjC7Eezla4TS48zaZHOYbfOPY97B0mzHq1TybMwb0SUk6/iBiWrowqgXB+dN2oWalKrkZ4rnkLUiER1zqxrv023xkNCOp6C6nwmZyyShKipiYp3n71ZxpYk6ouOh0jnoFlaKV2YiePDlST0M/lFddJ0twjOKNUUPB7rTbRSiSSZ/hrSoqym+KGEqLF9lMkhvzjqzm4IahuNtiYeJtzVvet4hKi5NUqZuevlVq/xthtbeqtXclCbaHeFO558FyhvOoxLiJo166FjzuKNFy3QkcStPJ7utQ8LRtImIWqqrOfwnXXtvYhZF1kmbBKqEe5RiJrSmQ+aIeyaYHb6jGqt+zo7Z6tJnmoXot5pNvr8DxKEhO2P1znHJkT9RqJM2eot/5OjEMWMHxAXI++aooh4AAAAAElFTkSuQmCC",
+  "articuno": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAFS0lEQVR42u2dIXTqQBBFh38qKpHIykpkJBKJRCKRSGRlJBKJrKxERkYikZVIZF2+2EzKTnfDblggm7w55wsKzU9y3p15M9ktRI+NovyHKOMfbsFzY/BA5dP0Y09ERPuP6aP//9rzeuZ5gIAnx0tPr7sgIlrvf4iIKJ2++pJQhMokIKDjNaDVuZ8J4Einr67nJwlqfF0goE82NJmtKJmt0A+AgJ7VgFL1NBxPY68Ft9YOENCXPkBzP+fDHncaBKATjiZu6JC9O2UQAAKe7wJZ6dLdTCYTIiLKsszV/dg+ZyUJBHSMAKP7aaH/d+vc1+zepo36CbigvtcAVn7steDnfWH8Ja4Rv6SQd4cMAvrggmLL/X+UPptrr/M0HNkgoCMEaO6nL3FL7gcB6ITjc0PZ16eqCRblG2rD1VkSCAAB8bohm/IxCwIBwSPYSrSQwcq3uSH0AX0jYJxMiIjokGdhlb/N1atlEkUf4NMPgIAu1oDz6URERMPR6FpOH9S9P8y/1fEOp6huKtcG+UQNLqitnV+oXC39r6wFPBWtlJ28yfOoV/5vDXjIij7fJ1yyH3idrI3Xf3n+IKAjNcA4Q5G1gHPigTtLkSOr1+7KLwKT7aR8Jlu6Pql49AHohOsjm6eKBFLKOaS7UmInt46Y+wMZy+Quux9tyrf1Pz9ZyoQTXFAfCeDpIc/RuS/09fVV7WBCbMe5k0uqngOU1xNC+SAgkj6g6RRScxOsIHZDlULKGjAcj4zKnnzqtcFKTjjlO/UzMvh6KmIclA8CoiLg7zRy0ERJVS047owESOXz+9a4s/Ilub7hsh4KBLTcBQ00X/1LwjWfbeyM2UXkZU6vlE6pl/J/f6+dIWsCakBX+oBkr3Ji7k6CWSHlamOuBdeUz+9X51E+icqy11uvv1Hur3E9vjUWBLTdBd3VFfH8fDFXROw+9U53v1dKT1czIiJab76IiOhDCK7BTvXaqaev+7ll9TcIiIQAXfnNfbg292fly2ASOLdmG0VAslTKnKX6LIZJqulAtY7eV/ky59vm/k1IAAFRdcLhOtCCiGi3VUr/yvTjn09Hze3IWQwr3xYXNaFW8a6zHpsLMrgf1ICuEGBUftUHfG2CzmCYBM79TddaylUJtuNwrufwzfkh97yBgDYTkCyU0vMkCZX7ja6kysVnlauXa6XQbapmR595mIv19fc1uR4EdJUATfl/4vzdtAZoipfHz3crjQBbrDeZkwvyVfxFTieiv7s9q/fLmpjkuXbecEG9IcBOQm3YjueqfBlcI2x7tlx9fY2bMa4/qpSf6PsUDESgE+6UCwodMnf6EmAj4ZryZa6nhrOwkCSAgCfHSx0Z+W5VuORyV6UblBfk70fblO+zQs0pU/ATwGv3weOJIQhoaQ3w6mADHL/wqQX54Vt7vStbZZvfDzC7MU8GZO4XP3eZHICAltaAu80+GrkmoXjfuPgGj2Y1p8zpuVB8dX4NlA8CIq0B946CiGibHZ0+bMv98lkxz/PZFf28zW4j0q54dMIg4IEkSAJsU1LDqgny6W9q+pmb7yMIAAHXSeB1RPOPrUq5k3ftQ9dWPTisnCuedZ9AAAjwJ8Ew2wn+7UaPChAQWSf8EKXLWK90F2JbkcY7cpiUGAIEgICLHF4qPT8clD8fj3U/Xv7cNXjF3WK5ePo3Z4MAEGBX/ql8DjCfTY3KTzcbm3sz1gzbvgPUAERr+wBNyUzEaFj/raac449HVRve33VyFssF+gBEHC5IU+hoaP1r44WJEPb9TIDcbYkagGh9DWjaKQ/qyIjh+kAACHgIISAAYY7/uLGqcN1LFfcAAAAASUVORK5CYII=",
   "band": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAB+klEQVR42pWVIZejMBDH/+lDFBlZB7LIddePsP0GIJGsu3OLZNW1rrjFXXDnjpUnqUNSmTjqkK3LCZq8QGnh8h4PJsn8MjOZYQhmDMdxpCkLIciUDpkDPcR2b+4tuUzCyRSU8wRtvUd5vOLEXb2WshrPvFjMCQX1vuPEXQ1LWQ3OE1QFxSG2cYjtu3DNiq+Uv6RSVPKfz7V+q8eEz7J4F+eoCqrjXWQf2IbvAIDNt6XeFwWettyayoKqoAAavGxbVAVFlq9uIfnAW3LROsMLXgyBjuPIqqCoCooo8AAA5fGKKPBQHq/6MHWRQggihCDqEGW1ZUI764AsX+lLWru2/o4C72atpw942UIqeMoglTELM62yfKWha5f3XFNQpagMULG/y2MF3cV5b8HMUxOm5tVc6HfxV3nsOI4UQhDLVFCbU1b3Ej5lkMNCSBlkVVAd9+F6B45P4DyB68ajVWTKP99fZcpqjEHNoS1u6z04TwAArhuPVlEUeAj9BqH/HHqXx229R3NuwPlOy/3RoDk3qtDngWn+itb/AgDUf3+M7/4N4GsJZNfJarUA4FKWneTjOfA/xgIA7M2mc1S7aQDDJTwawguCUcCjf7MlhCAuY13Vne8tfASc3UFUSWurH7l/iy/n9GknIWN/tWLicrbhcrL3kTnNczjmNNN/yyYtQgbEOE8AAAAASUVORK5CYII=",
   "bell": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAACE0lEQVR42s2UIXDbMBSGv/QKMhZBMRtWMNAw0GHr0DJY1AstasZaFJqxjdlwRTZ10cLmogg2QTZLghoxDdRynJu9u95ud/vvBCxZn/739PTgH6j3N5tv53P79PiI1hqAzWbzNp7nedYNB2z7p9OpW2xq9j0mlD4AQRB0OvvtMOekKApr7bN1Wr1sbVEUNkoSa+2zDcPQRkli2w4Pw9CeN4HL5RIpDSCJ0xTQXEiB3x8AMBkrvuUlAEYK7hYLZtOpbTp2+aXpLkoSGyWJ3a5WldvXsXrZWmufbVEU9uvPHyf/Nx17nnd0KqUhTjWh7yPUu2r2NYf6sEPsDeW+T5bnvPd9Hso1lNBvuZMzF7YDGCFOgABib8jynCzP60ND6fPw+R4jxcmdbDabHp7n1WEcQz7KXVBzrSgKu3rZ1qHfzuc2DMM6Beev4Q24aJzoVJbliTun3aCP2Jv6+/7m5qS0zgCesiXDYVBt9DuAPjt9qPObZRmj4bD1oZwBzKZT9GHXmF4f81kB9WGHEYKbD58IgoDRaFSVXwdUKcVYDdGHAbBmpw+1SwcUe8PV1RVaa5RSSGnIq5pthX68vq7Bvj+i9CWTscIIQVmWiL3hSxwfC7uqjsvLSetT7TVfk3PSJaUUAGm6II6XzGazbqgDr9cZAOPxtBWapgvAJ47jTmBne2s+z6aiKDppf29q0n/a9OZG/F/rF/A+jkAWEhooAAAAAElFTkSuQmCC",
   "blaine": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAGvElEQVR42tVbLZCzOhQ9dFZUIiuRkZGVkZFIJBKZ5/IcEonkucpKJBJZiYxEfhJZxxOQbKA/Cy10+TLTKcP/ybn33HPTXQcbGWUStXr7XNYAgKwonDWe5WwBLCEELjkO9jfqAqUUmMycXwWt2WAyc+ztdwAf/RDwKFBXN8fXAr6b+4Lnsh5svzMIId3GHcD2iDhvPw5aP1SIGFlRgMkMQsQImAcA7ass2yHdqMvg+CU/DSdmwfE1NefirECa50hPAqqqQbMCAYtQJhGYzGY/uIuSkwGllALpv9cCO4vpOCsQeYDvhxB5F9JVxG2wL7Ht8hgHX0AphXNZI84KuDwGkxnC7GImY+kQ/5FpJjOH86A9uQx5HmK/36Pmwc152aloo5A7U9MlTWPsycGwGhMCpRQoPdxOesTN5C5Rxr4mCQ5lSOKwY1pmCAMfAFAUZ50COAYMQNECwFTw1z6PdT4TQm722Wx/jGk9fD9Enp+gVAMAoPRgXtAXKXIBhAHrzy5MKN6bgKwonCD3unKl87nPYQ1W7yN9BBBCgDerxew6zXnQ2uxqhpOym4S8V9vxOJ3LAXghs7Zj1bMmCWYyAaApYsN8X6cRcb6YQ5t9EyGzlhAP1TntSixc+EE4APAMPNBFhPB9pHk+OHakdGhOingVS7p79UIaCNRwDYifRhgwhAGDUh2INM8hfB9KNajOKcif3DAMAJeqApMZariLe/CXbqbZBoD8fEKSpCDEnXy9jE9I4i6fhe/b6jwsk0mXMlIKLZzOrzGdJpGjVA2lahDKcDrng5ycM6LkhDgrBkp98AWy4ntfkqRIktToyma6LC1QqirNiz7P8RyEeCaP7fpcJhHyhprSeKkq5OfTYkx/LQU6TSJnVNtbVZU3qm4L2pFSXKrKrhCQzEVSNiAU5tiRUuTnroIsAfwLKw09CTLuwNvMhwGDjE83ip14DVA38EzEMMM2oQy9jrTv5vcOK480iRxCGaQUuFSVUXothDbLWe89dFXQqTIwSUEIPwjfyu/VQdusj+uwUfNenWu4Bvg4/3WlyM8nI6BaRzYT3uPRh2P7U3mLPECOgF+rHnRvZkajvacpmwA9FjPNumb5ziR11lOGSNN4IIK2GdL1HkA7Ffjuk2AJZQ/328c8NPiTpwiYhzjiZhUlPLoIj+6gAnyLoz+5r/8oaFWVg9Aes2wD152V/m7UxXRgUcihVDP4bE7ItHl51IkNRK12EXkwqzK64dA9td1n2zV+k6B1vR2zPA553bpWEUeYXYwd1eAPvkDEOSg9IAr5dkF3DYo7+zo9AQdfYE/9rgnhHHvqQ8gMbdtCSgFKD9rGbkPIhMzaMctzGRJ9qGdFt0CpI+eff//TpdCZ00fs1gbcuS93stA9MTioIg5Cvafn/WqdFjJrkzi8KS/7/R7cWk21ARDK4KEZWFMN+Pv8Gok3LFNzjMkqoDVYbSZsI6GbjKI4D4APJ8AdODKd10JmoEmEqvpjhHBKNVgdtA147LU1YMM4GuTWQkHEOWggnua8kJnpu3We989rf8WG3hMsncu+H5rS5HMOKa4ArpCCIUn3RqRgTYI+lzFAyOJG1DaZ0+bFLcAAesDaXOzBGHCk3QQAQJJ2+wCgLLWIcQgZ3QBWqgEh7uzc3i3Nsm0Jx/awrnJcqr35HOkVR3p9eF/GvoE/WnL6FabvhbUGK6W4cVzPQL4C/JUFyY82HIw9P36p9jf7yoklOQz8yaspu6VZtr21zXJd5bNZ1hPFWJfXdr1+J8Q/yvRPoywxELGpLG9Gvce5PDW0NdCfzn9nrML0eHFgSmgLWRiz8gjwPRe3GdD2z7lTRpweIGQGIbOBS7sBzZq7eb2pnFZVCVWVT0P1yMsbF7b2eAt0mkTOWD2lFOA8gKpKFMXZ2aOZpNp6gq5wVxOwVYVs6k8uve92xungP/lLIs4DpEkEzoOHq6urh/c9tu2XH4e2bjAu1f5h/uZF4Txim7PGTKyODh1hUyd7kZxOk8h5tGj/qDz1oJyf6vbUiJojnrslQ/rRbGt27Q7qmUo/A35vIuYsCi6u3jbgcWjbvrrvj5++ZG79nYkGaju2EcPOR3N6TqMx12XZZkUDLsvOh+P7Jxzn40I2VcCW8OT292bNySO7+Qo7Y+B/Deh3Gdos049C+0WGnLHKa8C9XW03AfpeKdKAXw3tv6K1XIDhvwu0z/lgnfpdARtfkxeF+bzaka0Rau34ZayQf/V57b3Ws7/vr9fp1uccgnkQ3X/yLNUjO+P7COah7BYU2t9mur0HcAGmB4y/y/Yq4f2BZ7Xv3Pd/juDFrFtW/KMAAAAASUVORK5CYII=",
@@ -4861,6 +5088,7 @@ const SPRITES = {
   "metapod": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAABS0lEQVR42mNkoD74j0OckRjNTAyDDLBQO0TmnPNBkUwx2kKSYYMuhBgpDRn0EMESMoxDOoRYqB0y98/9p8hBQzqEaBoyQz+EOFg4GBgYGBg4OTghIXL9O4q8ohHjyA2h/wwMDAyZPcZYJauDNkMKG0ZGlJK6eo43AwMDA0Nrytb/I6Mu4+IRYGBgYGC4duwbSpqZe94XEoz/UXPZMo4wlLT348+P4VeX/UdOC7AQgZU3hHIVLDee2fWMgYGBgaG/4ChRddsQCiEWSAgtvRTKwMDAwPD9x3esJTOukIKFEAzA9BNqBQy9XHZy1xMGBgYGBj07YZIMhqWd6SVn0XMZ47DJZVhreWJz2chrMRIbMstKvg2v2p6U+MVacuNqMbambB25vQ6sITJsW4zkeIuk3gepaWlYpCFGaEmMEhSw3DeahgilLUrtGHQhBAAHMW8+oOHH2QAAAABJRU5ErkJggg==",
   "mewtwo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAYAAAAcaxDBAAAEHElEQVR42u2dL3CjQBTGP25OnIysjKyMrERGViIjIyORlcjKykhkJBJ5ElkZWRkZx4nty7Gvu0BggSW8b6YzTcIsNPnl/fn2JQXGU/n989D6BZFTBSORiez0FwCwfX0Z89xC6Nz1eywy+64z8rtKCF0CoW3JC+oeP58v2p3r9ar0mVQhdK6E5sUJDcRp4sd9Fp9jvWN6VUJC6FwJ3e9itCHx45iMRaZGZJbk2oNFUQAA4vRwV8wWQmdAqDE7N4nIJJI5mQ47rNJEJNdms1G/pJLlH4bQTmQ2xVjnnVsDmZXYKVl+6Z1SrZ43z66yfAkASfRufHAbh3BRfwqhHhPaK3a2VcVP7dXL942RQqjEUGcdkjF2DkWmEDoXQoksnqXptk2HeKfq0WiYenRoMoVQjwkNgP++Zts9pN3uFQCwelqplvmomuY8Kwb5Q8NQ1Zt5ng/q+AuhjjXEq2SsS7NUEZgVGQDglJ4AANfrVTvORmgPt0nL9pLlF0xoCQAfyYciKoqMB63XKmaS6xMeXmrJTN5V1o+2ar19vL/32ketR4VQ3wm19fRtO59KrESV+FssZjH4XlK5H1pxmwIhdElZnurR86eKjevnjTE23rJ7ntuuqTSR2iGWjkKqEDoDQjUSqEP50VsfEiPBA8bQWkJdkSqEzojQu2Iqd6PIfbp8XfrWoaPGUiHUsSZz7G3+KPdFiWiHZNaKiN3GYSdXSgidW5anLJ1mqRYLbzGL9fzcleIOvusZJ+rxaZZJJkeW0inx+pEIPR5PRiJJtnqU7wS48kc5mXS7a7YXQj0ktKwjiXp26oyadj/JL7X19LQ+rVNzvPH6bDNOfckUQj0kVOvViUDuItH9RWreDY2SXVtCtfOS70q7pxW3Cm2ItKmvky+EekBoWRcreRYnguLtm3Exyq41pPJrNe4M0Hm2T6+dnghXe0xC6IS9vNE1stWXTWTy7JrGRwDAavMHJgJpMsXmr3aV691PIXRCQluR2VXZl1rnGJnX41mdi66jKZZWiBykWxRCJyQ0AIB9vHcay5LsTatXm8RJbHqHDE2kEOpbDKVXuDJnWSvu4vD7SU09fuus/U36VN++I4R6QKj2ylN9SFmYZph+9PaFmwvmsZP8VHL+qQqZSkKoR4QaSSWRY097SFS3du21bdN7tBt6tsyjCqEz12i7niQbqbdOidWVNjIpi3NvYaz9eyH0UQiljorvx1dI0klt+JyTob706rvxhFCPCdVIaUGm8dxhqGaKbL091bU1E8+S5YXQmmxum2Hq+vkiW2z1lVQh1FdCu8bMe8/jcMZJCF1UL0/+qGGCI1jSEyqEekjoUCRqWX6Cb7wVQh+9l3dSNdiceVKLaT0hVGLoAGrab/eNTCF0QTG0VZYXQoVQv4mF/C+QZegfbE0AscHjx28AAAAASUVORK5CYII=",
   "misty": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAFQ0lEQVR42uVaLXSzPBi97ExUViIjI5GVyMhIZCUSiaxEIpHIyEgkEolERkYi6/KJEAZt926jhXb7ck5P/yDk5j6/F4AXGG2eGPyfRpsn5tw1poz5ZsDfnw66U/BJAwAoY24CSgAAQZJ7a13TeybgMuaGsXD8vqeH8XNXidWAv7+Sqfddg6qq0fVAJqT3Z837WO5QHs8AgKqqcSzk6ta3+gWaxAaoQ34NhoWxwT4AAER+tQngzZgO4hRnRoyQyrJbSM/6MwVwxrHcoeu3sy5vTXY7a7WIknR+gBIQUqHrgSQKkYt65sNNws0ty3hZ0GXMTZSkgBL2BxJ9frAS2LF8tpYm4SZgBG2lcMjlKmtcjekdIaAs+veBw8acSgXuA7Nzhv+GTfFeGnSbJ+YSbFtkuNqEAVTXAWelEDDycXylZuc/mvH3NQE7sEGcXoF1I1cnFOz08QOJEDCBtlKQ+sV9+tKXT6XC6ZRegWyra1ZPiqGSMc5VcsX0Gn7tPTqIAQDd2e+OqdPRgnQRm/tAwMho2hcA0eaJq79fP5BNU5UDDtgA1XYKrs7ORQ3uf/wvtd0Iqcfy06wZaN8eOdkhl57UFrDUAAnDK8BaKUQH8pW/emtWi2+PnjATFnh0IOjpEUGSI6AEe3qAVgqiUdix0wx4EoVTllcfb2tMmgnp+YSAkB3SiI+pirIImZAgZAefkBHs1mO1nb2Vry/bSGfuPiHwebJZf/+2GuhO3QQ5/VxVNYIk3xTw6hdyysieHtAMBQpN+LR3fop6s8UFTRlzBJSgly0U3T8N7OZa2JB7DQCTRvypkq+3EWAIzZCFHQAgremmSsmmoBkvDAD4JEIWltBKIa2p3YxBF/N58nd8mvHC+J8ICFlYYs9iQLXouwZaqVV17s1S1pdDtQCs1k1ZtOmtnfWEwb6FVta0p0MrAa3UWJQ4gd8Ct43G2qyvZ94Tedf5tR5660rGAOClETd0PxcOneD/ryDnov/SWn01pjO+g0+svOsYHsCOm+0W3fUwdI+xE2MsRNrDtNr2n1VdeFOwSRSONcAS4Ksw7eruaen5nVLTMe/Ap/XRnqvte3QgsxKXsWv5+CmgLxuN75jrrdwuNBtdQmbWTUSewd3VBADRqEUm/tDozXhhHAtTln86joX0KhmjzPfjXCLPZscsBbxKyqp3JeKCQk+0r8FczQLX8yoZw+cJAkpGlu8B/NBAxsJ4VoykNYWvKAA6Ru17Moxo1F0R++E+Xcbc1Ltylotv5WeXqp7dAD3EvANKUMTdvYz+HtDTaC2zALpN/z5on5C5qScU6NtZc1HEHWQWII347wfd5onZ0wNAPsrNqqoRUQ3dpijibvbwjCsufjXoS5aHktLm2brwLnM1ZRGerZo8JpCRYGwTRZ7NUkpV1VeHvwLbd4Gemm7fNVfPjRwL6XWVeDm2F4PWMjdTMaCqbhf+l/r3n4jeU1Y/+/2S7Web+CLQZcyNVmpsKi6bgaviJclnwJ9t4ouZ9gmBAz5t9z4bolEz/0+i8GnAFzUc3wF5paQI6dE9zOV9aoCbrW7RLma6jLlx+dm9D49JfDm6HqMo+Ez/3lQCzoT0pmY+lYl+Fehc1D9qF28Bz4R8baaPhfSm5rlkwZ8x/tJMP7rgGB6hMr/CvAfGvaX+/d0A+KsD2a2R1tS+Nuy1f5yn08hq0qIEgt19Zp5GHEx/VGqZNXHv5UBbNcTeXO9lf9dCme5xSK0A0WQtXnWY8/k8vuowNHcEINN1/fi6c64fDW/BQuf9Md0vDWaPnGtV0LdSyz2LfORc3x7/AahD6KmhznigAAAAAElFTkSuQmCC",
+  "moltres": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAEcElEQVR42u2cLXSrQBCFh3eeiKysjHwyMhKJjIxEIpGRlZFIZCQSiURWRlZWRlbiqNgd+hh2WUKB7JIZkxP+CR+XO7NDPNBE6vu1anpUlh5wDI4//BPMG3915IbRi2YVMZ9JZoLtIrghd6te8JJ+sQYPeFbR34cJXlqDmyi+Rl3JtRNOie0+q9q/AxM8c3haF6HT4s+21tDl6fy1katzV7pnFBP8MA3GCOQVC3LxefDhKcndqok1ZbhM8NIE45WIAGoAgCppzw/zUrqMwyi34XzI86V3LmdytrgIkOS+J0Jry/dXAACI0wwAAJLoKL5vbkqtXkvG13EN5E4d+sxhgh/tIvz9rUVu8x3JPlSgzmzczOx0fjepXtV3LrAGW+6DjT45b7uKtYQ8r+aZc9qIybGYfWSC7SXYAwDYx2XLTaD2mq74RWZ6zmov+nxDDD0/Jth6DSbhiosw1a+p9o4NJvgBmVxvZkejpH54ZMZDybpX68b6XMw8UXt15AaxOJHyzuNhgp3RYA25TR1Vo3mdMa4tTSWn0fJOXVe6njCYVnOZYNcIprWJl9tNTaLJd2rqy6Y7YPwdJ/aX5P3EovYywQ4TrMzsdCRfc+h1ER0tjHF7ag2fy00guai5ybnqXb4cuX8m2AIfPMgXI7lUU+noq1abZxoR6dR3g/yujG2s/2WCXXERHXKB+ExQuwPabzFXFe5ne5LkYBlymWCLCW65itT3e32midylY66MjQl2yEUoXUWVaYjVxNw+V1eDaEaHZ9ZeJtgBFyHIDf1R5M5N7L3bn5pcJtg5DQ79QeSGiRDDze4y5TEsPlLBBK9Ogw0uAcnFqK4hklxPSfJSIxVM8FpqESatpXE8C2087cUnVuUwM5yK5KVqDUywwwR7AACbSznIRaBrqCoxcnBNg1kytZ8Rkn6/i92R5UQ+mgl2XYN12nstPwet78uqXFkO02Ld+2uB3F2RqP1usVW7nM72JiKZCbY4k6sBAIr0jRD70Xp6o2vYg/hu6jM+5YAk9x4rEpeRhQpyB1FytXfedp6aCRPsGsEY50wQeD60p+/jNpm6PgskGden66FmFxq/bSK3GVn5ZTcoE+wgwb3kBtHbvftU9lnsfIEe7bgxZWaNFpvIpVo80xuqTLBFPlhJroLYUQQ0nfKEUFMVrNFazTvFncD5GpK5FrFCDW6ROxWxdPtYHzYFanIh+5AL2lGk6ccw/a9DxCMaKyd4QmJ/RTCtbaBf7pAsq2qP/i8hJtjiTA6WJNlUlUOSjwtpKxPsoA9+SJjIxYwP8k8riGWCn1iDe2sTWnJJTN0xxAQzwdOSTEc8qOtggplgO0n+b9SZHnsNAHA+Cgd8yjImmAm2kOAk2okSQ3rVHbuVJDPBT5jJtap3A8i1OpjgJyC4RSyOnHzIl6D/7Q5YlehdH9fDfgwmmF3EMuRS8tDnKsYAvb71sSeOfTBr8LKhILQeQ/7pKGsWGbsIJvjB+u9Jsgd1uqNmNwSzD+ZwJWqi1/UA/WaC1xbfy+1zFiavRaEAAAAASUVORK5CYII=",
   "moonstone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAABu0lEQVR42s2UrXLjMBRGjzt5AJvZTFRlMUtgoKADyxq4gQsTVljYwsKUNY/gspSlbAVtJjPrDbxgVxq5ttPd6ezMXmJbP8f3++6dC/8goq9cFkJ0H9fquo5mX4GozZosS1FKsd/tiZMYXsou+huY2qwByLLU7xnTUFcVi+UCgKe7R64+gwkhuvvDA+WPE3VVYW2LMQ3GNLyd3npApdRlT4UQ3Wb3DSmlX8vnObv9bvR8HCdkWcrT3SOzKeD94QGtNVprAA+3rf0FSWIPAtBaU1cVwFB+CHThgNvt1gNDT41pKIrCrw8yvV7l/nB40cv8nWFYsHB/ABVCdLebW47H48ASJ9tF2AHu/fRS9vvUV7l8xbaWxXLhZefznMPzAa11z8eP9ri4Citdlq9Y2/oWcb6e38+TbeeA32+21HUd9eRLKX0mYYxZYUxDlqU9JZOeAljb9p7hT6xtybK0V5h8nrO6XvosASIhRLdcr0Z7cKwwWmuKovCS3RAZZCqlxJgG29rRlgnbpiiKSdgA6uSNAd23lLJXkKmYhUa7aodApRRJnHB+P/8R0A+UcLSFVQ19uyT34uSfmuT8D/ETVXLedtqdKfkAAAAASUVORK5CYII=",
   "ninetales": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACa0lEQVR42u1ZIVjzMBS88k0gJ5GVk5XIyMlK5OQkEolETiInJysrK5GTyMnKybr+ojv+5UiassLHt5TnkqZJd/fevfcy4Mot+YY92h/Yc7DdXDsDs7GIHw8vAIB5+vQrP+BmSjHQAkDTNACApt4o8snI2Llon6gZcPo67QvIO5HebpYAgDw3l+4brwq154jnq3JUflCki6JyIk/bVw8AgMzsBuWXePMAkSq2S+e8A6lkCPKh83pirnUxERUDLQAYY5w+ejjsO8SzOQDg8bl2+jzf57oP1Sm6/LF5vutFXs/lczK6eiwtJuKLAfV5Ik8j8lyXr7r5VX5rIe17X+eVGc7v90cnM+a0vqqqNk4GfIgRESIfUpWxRmY+qeBpPE+r+FQoOdd1Rj1NVUURYcZmLDBWVHVC5lA3i3H9jngzMaOeMbG43wIA6jzrkHjKepkYirSPIVWlD08wO0SVBxJfFap2XHcMvJ3GC2EgTe2xMkFEFXn1eWWE6kffj5KBXuRDGVkRIxOqGiGk9TnVzId8VD2xVUX6fFBrnKH6rj7sQ9zHSFVVcXdkyYB7GmfPeinyoczrq4ajjYHZwDuiTwxRbYiQjkNqRYZ8+UDPOR4yZ288qdtpq1olIkQyTT2+X9S99f4ms1WIGZxjzfDTuRcKmdb/vk5Ofd7n4/+tHNQhTpqB5PxWADCWr6uqkKFQr6t2+94x1iwir4VmYzfw3Qcp4rTXh259XXY1zt3SWDHF574O7C8GILfPRFh9nVXk+6vt6+tdI1Vmaa1brMu+ei3uavRLDNC0j3DU8aGzR/3TP0kGehn55r3jZ+Dq7R+tt09bWSNgOAAAAABJRU5ErkJggg==",
   "oddish": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABiklEQVR42uWYrZKDMBSFT3ZW8AiVyJVIJBJZiVyJRPIISGTlykokEomsXInsI9SlInN2SCYQSrszDVzDZHJzh3xz7g8IrDdprMVCP5c/AOADb2riATJivE7LBADQVh1s+7RTn1qD5nE7+w5eEpMA8H1SN/7J1Q1Jinbr1bPrOo1Qf9GD8fwmNSZtNx/ONwBAEOuksirQDtM/jpZpyTtin0sdSeZcKnJhNk+KliQJNfhQPfOX2HVQhBAF1v2mUfvHo75PstRkGuvZPKp/26n8Wh0jOWYjSRxCnRSz12Wse1Pv4n9WuswkxSw2O8BfD61Ss3dqPdn/6cLUGrVlrk0z65pluvBLY86sLOt2vs4FtVVjlqzb+HRBUnlbqCxK60UBqyJdNU14SUwCQFYoMmH4NXtwiuQw/KpeWRdPkfOv8vPmJEftUHtTpF5l/miME+chOj4VeBcaE+PZPFtJ7Hpp9qOx2b80rG8uQqMeKXZDTNoIjbJM+158NantaMzi6yIrdkdsqcl/iPm+xO6zTZwhHM7B2gAAAABJRU5ErkJggg==",
@@ -4913,7 +5141,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'1.4.0', date:'Sep 27, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'2.2.0', date:'Sep 27, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -5093,12 +5321,18 @@ let toast = '';
 
 /* ---------------- persistence (best effort, never required) --------- */
 const SAVE_KEY = 'pokebattler.save.v3';
+/* 2.0.0: the daily challenge has its own save, so it never touches your run.
+   Which slot a run lives in is a fact about the run (G.daily), not a mode. */
+const DAILY_KEY = 'pokebattler.save.daily';
+const slotKey = g => (g && g.daily) ? DAILY_KEY : SAVE_KEY;
 function save(){
-  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({ G, phase: phase === 'battle' ? 'shop' : phase })); }catch(e){}
+  if(!G) return;
+  try{ localStorage.setItem(slotKey(G), JSON.stringify({ G, phase: phase === 'battle' ? 'shop' : phase })); }catch(e){}
+  PREF.set('slot', G.daily ? 'daily' : 'main');
 }
-function load(){
+function load(key){
   try{
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(key || SAVE_KEY);
     if(!raw) return null;
     const d = JSON.parse(raw);
     if(!d || !d.G || !Array.isArray(d.G.team)) return null;
@@ -5141,7 +5375,22 @@ function load(){
     return d;
   }catch(e){ return null; }
 }
-function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+function clearSave(){ try{ localStorage.removeItem(slotKey(G)); }catch(e){} }
+/** Put the run in `key` on screen (saving the current one first). */
+function switchSlot(key){
+  save();
+  const d = load(key);
+  if(!d) return false;
+  G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
+  sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
+  if(!G.daycare || !G.daycare.length) rollShop(G, false);
+  save(); render();
+  return true;
+}
+/** The main (non-daily) run as it stands, whether or not it's on screen. */
+const mainRun = () => (G && !G.daily) ? G : ((load(SAVE_KEY) || {}).G || null);
+const localDate = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const prettyDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }); };
 
 /* ---------------- card rendering ----------------------------------- */
 const typeColor = id => (TYPES[SPECIES[id].type] || {}).color || '#8a93a8';
@@ -5258,7 +5507,7 @@ function unitHtml(u, opts){
   const eA = effAtk(u), eS = effSpd(u);
   const eH = opts.bar ? Math.max(0, u.hp) : f != null && f < 1 ? Math.round(effHp(u) * f) : effHp(u);
   return `<div class="unit ${opts.cls||''} ${opts.acting?'acting':''} ${f === 0 ? 'fainted' : ''}" data-uid="${u.uid}" style="--tcol:${typeColor(u.id)}">
-    ${lvl > 1 ? `<div class="lvl">L${lvl}</div>` : ''}${boosted}${twin}
+    ${isLegend(u) ? '<div class="lvl leg" title="Legendary — never levels up">★</div>' : lvl > 1 ? `<div class="lvl">L${lvl}</div>` : ''}${boosted}${twin}
     <div class="artwrap">${spriteHtml(u.id)}${roleBadge(u.id)}${opts.held === false ? '' : heldBadge(u, opts.where, opts.idx)}</div>
     <div class="uname">${esc(SPECIES[u.id].name)}</div>
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
@@ -5393,7 +5642,7 @@ function pcHtml(){
       data-pop="pc:${i}" title="${esc(u.nm)}${f === 0 ? ' — fainted' : f < 1 ? ` — ${Math.round(f*100)}% HP` : ''}">
       ${SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}">`
                       : `<span class="letters">${esc(u.nm.slice(0,2))}</span>`}
-      ${unitLevel(u) > 1 ? `<i class="clv">L${unitLevel(u)}</i>` : ''}
+      ${isLegend(u) ? '<i class="clv leg">★</i>' : unitLevel(u) > 1 ? `<i class="clv">L${unitLevel(u)}</i>` : ''}
       ${ready ? `<i class="cready" title="${pcTwinInBox(G, pcIdx(G, i)) >= 0
         ? 'another copy is in the box' : 'a party member can take this copy'}">＋</i>` : ''}
       ${heldBadge(u, 'pc', i, 'mini')}
@@ -5449,7 +5698,7 @@ function unitAtRef(ref){
    100% — attack now reaches 63 — while speed bars stopped passing 62%. A
    number that has to track another number should be computed from it. */
 const BAR_MAX = (() => {
-  const top = stat => Math.max(...Object.keys(SPECIES).map(k => SPECIES[k][stat]));
+  const top = stat => Math.max(...Object.keys(SPECIES).filter(k => !SPECIES[k].legendary).map(k => SPECIES[k][stat]));   // 2.1.0: a legendary's bar may run full
   return { hp: Math.round(top('hp') * 1.12),
            atk: Math.round(top('atk') * 1.12),
            spd: Math.round(top('spd') * 1.12) };
@@ -5527,6 +5776,16 @@ function vitLineHtml(u){
   }).join('')}${egg ? `<span class="${egg >= TUNING.eggCap ? 'full' : ''}">${itemGlyph('egg', HELD_ITEMS.egg.icon)} Lucky Egg ${egg}/${TUNING.eggCap}</span>` : ''}</div>`;
 }
 
+/* 2.2.0 (Sean): the summary shows the EXP pips too — the PC grid has no room
+   for them, so this is where you check how close a stored pokémon is. */
+function popPipsHtml(u){
+  const l = unitLevel(u);
+  if(l >= 3) return '<span class="poppips max">max</span>';
+  const p = expPipsToNext(u), left = p.need - p.have;
+  let h = '';
+  for(let i = 0; i < p.need; i++) h += `<i class="${i < p.have ? 'on' : ''}"></i>`;
+  return `<span class="poppips" title="${left} more cop${left === 1 ? 'y' : 'ies'} (or Rare Cand${left === 1 ? 'y' : 'ies'}) to reach Lv ${l + 1}">${h}</span>`;
+}
 function popupHtml(u){
   const sp = SPECIES[u.id], l = unitLevel(u), t = TYPES[sp.type];
   const hs = heldStats(u);
@@ -5550,7 +5809,7 @@ function popupHtml(u){
       <div><div class="popname">${esc(sp.name)}</div>
         <span class="poptype" style="background:${typeColor(u.id)}">${esc(sp.type)}</span>
         ${roleChip(u.id)}
-        <span class="poplv">Lv ${l}</span></div>
+        ${sp.legendary ? '<span class="poplv legend">★ Legendary</span>' : `<span class="poplv">Lv ${l}</span>${popPipsHtml(u)}`}</div>
     </div>
     <div class="popbars">
       ${statBar('HP',  effHp(u),  BAR_MAX.hp,  'var(--hp)',  hs.hp)}
@@ -5653,12 +5912,34 @@ function evoLineHtml(id){
 /* v49: a message floats at the top of the screen instead of replacing the
    summary, so the page under it keeps its shape. */
 const toastHtml = () => toast ? `<div class="toastbox" role="status"><b>${esc(toast)}</b></div>` : '';
+/* 1.5.0: what a stone would do to the pokémon you own — before you buy it.
+   For Eevee this is the whole point: the stone picks the evolution. */
+function stonePreview(stone){
+  const out = [];
+  for(const [where, list] of [['party', G.team || []], ['PC', G.pc || []]]) for(const u of list){
+    if(!u || !canUseItem(stone, u)) continue;
+    const n = evoNext(u.id).find(x => x.stone === stone);
+    if(n) out.push({ u, where, into: n.into });
+  }
+  return out;
+}
+const miniSprite = id => SPRITES[id] ? `<img class="pix" src="${SPRITES[id]}" alt="">` : '';
+function stonePreviewHtml(stone){
+  const list = stonePreview(stone);
+  if(!list.length) return '';
+  return `<div class="sprevs">${list.map(({ u, where, into }) => {
+    const a = SPECIES[u.id], b = SPECIES[into], d = k => b[k] - a[k];
+    const sign = n => (n >= 0 ? '+' : '−') + Math.abs(n);
+    return `<div class="sprev">${miniSprite(u.id)}<span>${esc(u.nm)} <i class="dim">(${where})</i></span><span class="arr">→</span>${miniSprite(into)}<b>${esc(b.name)}</b>
+      <span class="poptype" style="background:${TYPES[b.type].color}">${esc(b.type)}</span>${roleChip(into)}
+      <span class="sdel">◆${sign(d('atk'))} ♥${sign(d('hp'))} »${sign(d('spd'))}</span></div>`; }).join('')}</div>`;
+}
 function inspectHtml(){
   if(inspect && inspect.kind === 'mart'){
     const d = ITEMS[inspect.id];
     return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>${rarityTag(d)}<span class="tag">${d.cost}₽</span>
             <span class="tag">permanent</span><br><span class="abil">${esc(d.text)}${
-              d.vitamin ? ` Up to ${TUNING.vitaminCap} per pokémon.` : ''}</span>`;
+              d.vitamin ? ` Up to ${TUNING.vitaminCap} per pokémon.` : ''}</span>${stonePreviewHtml(inspect.id)}`;
   }
   if(inspect && inspect.kind === 'held'){
     const d = HELD_ITEMS[inspect.id];
@@ -5798,7 +6079,7 @@ function badgeCase(count, fresh){
 
 /* v37: lives as a row of pokéballs, spent ones greyed out */
 function livesHtml(){
-  const n = Math.max(0, G.lives), max = Math.max(TUNING.startingLives, n);
+  const n = Math.max(0, G.lives), max = Math.max(G.mods && G.mods.onelife ? 1 : TUNING.startingLives, n);
   let b = '';
   for(let i = 0; i < max; i++) b += `<i class="pball ${i < n ? '' : 'off'}"></i>`;
   return `<div class="stat lives" title="${n} ${n === 1 ? 'life' : 'lives'} left"><span class="lbl">Lives</span><span class="balls">${b}</span></div>`;
@@ -5833,6 +6114,7 @@ function dockHtml(closed){
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
     : b ? `Challenge ${esc(b.name)}` : 'Battle';
   return `<div class="dock">
+    ${undoHtml(closed)}
     <div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
       <span class="who">${b ? bossArt(b, 'dock') : '<i class="pball"></i>'}</span>
       <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
@@ -5940,7 +6222,14 @@ function renderShop(){
     if(!def) return '';
     return martRow(`
       ${itemSpriteHtml(m.id, def.icon, 'row')}
-      <div class="mtext"><b>${esc(def.name)}${rarityTag(def)}</b><span>${esc(def.text)}</span></div>
+      <div class="mtext"><b>${esc(def.name)}${rarityTag(def)}</b><span>${esc(def.text)}</span>${m.held ? '' : (() => {
+        // 1.5.0: a stone says what it would do to YOUR pokémon, right on the shelf
+        const pv = stonePreview(m.id);
+        if(!pv.length) return '';
+        const groups = [];                          // two Eevees read "Eevee ×2 → Vaporeon", not twice
+        for(const p of pv){ const g = groups.find(x => x.from === p.u.id && x.into === p.into); if(g) g.n++; else groups.push({ from: p.u.id, into: p.into, n: 1 }); }
+        const shown = groups.slice(0, 2).map(g => `<span class="mp">${miniSprite(g.from)}${esc(SPECIES[g.from].name)}${g.n > 1 ? ` ×${g.n}` : ''} → ${miniSprite(g.into)}<b>${esc(SPECIES[g.into].name)}</b></span>`).join(' ');
+        return `<span class="mprev">Yours: ${shown}${groups.length > 2 ? ` · +${groups.length - 2} more` : ''}</span>`; })()}</div>
       <div class="mprice">${def.cost}₽</div>
       ${m.reserved ? '<div class="pin">reserved</div>' : ''}`,
       sel && sel.kind==='mart' && sel.idx===i ? 'sel' : '', 'mart', i);
@@ -6035,9 +6324,12 @@ function renderShop(){
     <button class="iconbtn start" data-act="menu" aria-label="Menu">START${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
   </div>
 
+  ${modeBarHtml()}
+  ${closed ? '' : encounterHtml()}
   <div class="panel party">
     <h2>Your Party <span class="sub">the front rank takes the hits · speed decides how often you act</span>
-      ${G.team.length > 1 ? '<button class="btn arrange" data-act="arrange" title="Tanks to the front, Cannons to the back">Line up by role</button>' : ''}</h2>
+      ${G.team.length > 1 ? '<button class="btn arrange" data-act="arrange" title="Tanks to the front, Cannons to the back">Line up by role</button>' : ''}
+      ${G.team.length ? '<button class="btn arrange" data-act="presets" title="Save a formation and snap back to it">Formations</button>' : ''}</h2>
     ${partyGrid}
     ${partyQueue}
   </div>
@@ -6047,8 +6339,8 @@ function renderShop(){
 
   <div class="shelves">
     <section class="panel pc">
-      <h2>PC <span class="sub">${G.pc.length}/${pcCap(G)} · trains at half rate</span></h2>
-      ${pcHtml()}
+      <h2>PC <span class="sub">${pcCap(G) ? `${G.pc.length}/${pcCap(G)} · trains at half rate` : 'closed this run'}</span></h2>
+      ${pcCap(G) ? pcHtml() : '<div class="closed"><b>No PC</b><span>This run’s rule: just the six you carry.</span></div>'}
       ${bagHtml()}
     </section>
 
@@ -6145,6 +6437,7 @@ function renderBattle(){
 
   <div id="bqueue">${battleQueueHtml(st)}</div>
   <div class="blogbox"><div id="blog">${battleLogHtml()}</div></div>
+  ${done ? recapHtml() : ''}
 
   <div class="shopbar">
     ${done
@@ -6739,10 +7032,13 @@ function renderOver(){
       ? `All ${G.badges} badges, the Elite Four and the Champion, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
+    ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
     <div class="row overteam" style="margin:14px 0">${G.team.map(u => `<div class="slot" style="border-style:solid">${unitHtml(u)}</div>`).join('')}</div>
     <div class="shopbar">
-      <button class="btn" data-act="export">Share Team Code</button>
-      <button class="btn primary" data-act="restart">New Run</button>
+      ${G.daily ? `<button class="btn" data-act="dailyshare">Copy result</button>
+      <button class="btn primary" data-act="totitle">Title screen</button>`
+      : `<button class="btn" data-act="export">Share Team Code</button>
+      <button class="btn primary" data-act="restart">New Run</button>`}
     </div>
   </div>`;
 }
@@ -6817,8 +7113,220 @@ function say(msg){ toast = msg; render(); setTimeout(() => {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if(!el) return;
-  handle(el.dataset.act, el.dataset.i !== undefined ? +el.dataset.i : null, el.dataset);
+  const act = el.dataset.act;
+  pendingUndo = { act, before: G && phase === 'shop' ? JSON.stringify(G) : null, c0: G ? G.credits : 0, done: false };
+  handle(act, el.dataset.i !== undefined ? +el.dataset.i : null, el.dataset);
+  // usually the action's own redraw already settled it; if nothing redrew, settle and redraw once
+  if(pendingUndo && !pendingUndo.done && settleUndo()) render();
+  pendingUndo = null;
 });
+
+/* ---- 2.0.0 · UNDO LAST BUY ------------------------------------------
+   One per shop turn. A buy (a pokémon, an item, an X item, a legendary)
+   leaves a snapshot of the run from just before it; Undo puts that back, so
+   the ₽ come back and the shelves are as they were. Anything else that
+   changes the run (a reroll, a sale, a move) clears it — undo is for the
+   tap you just made, not a way to rewind. */
+let undo = null, pendingUndo = null;
+const BUY_ACTS = new Set(['team', 'pc', 'buyheld', 'usex', 'legend']);
+/* Decide what the tap just did, once. It runs during the action's own redraw
+   (so the Undo button appears in the same frame and no second redraw wipes
+   the buy's little animations). Returns whether the undo state changed. */
+function settleUndo(){
+  const p = pendingUndo; if(!p || p.done) return false;
+  p.done = true;
+  if(p.act === 'undo' || p.before === null) return false;
+  if(!G || phase !== 'shop'){ const had = !!undo; undo = null; return had; }
+  const now = JSON.stringify(G);
+  if(now === p.before) return false;
+  if(BUY_ACTS.has(p.act) && G.credits < p.c0){
+    const last = (G.log || [])[G.log.length - 1] || '';
+    const m = last.match(/^(?:Bought|Used) ([^.]+?)(?: for \d+₽)?\.$/);
+    undo = { snap: p.before, turn: G.turn, cost: p.c0 - G.credits, label: m ? m[1] : 'your last buy' };
+    return true;
+  }
+  const had = !!undo; undo = null; return had;
+}
+const undoReady = () => !!(undo && G && undo.turn === G.turn && G.undoTurn !== G.turn && phase === 'shop' && !inGauntlet(G));
+function undoHtml(closed){
+  if(pendingUndo && !pendingUndo.done) settleUndo();
+  if(closed || !undoReady()) return '';
+  return `<button class="btn undo" data-act="undo" title="One undo per turn">↶ Undo ${esc(undo.label)} <span class="dim">+${undo.cost}₽</span></button>`;
+}
+
+/* ---- 2.0.0 · BATTLE RECAP -------------------------------------------
+   Who pulled their weight: damage dealt and taken, healing given and
+   knockouts, for your side, with the standouts called out. */
+function recapHtml(){
+  const all = battle && battle.sim && battle.sim.stats;
+  if(!all) return '';
+  const mine = all.filter(x => x.side === 'p');
+  if(!mine.length) return '';
+  const top = k => { const m = Math.max(...mine.map(x => x[k])); return m > 0 ? mine.find(x => x[k] === m).uid : null; };
+  const mvp = top('dealt'), wall = top('taken'), medic = top('healed');
+  const maxD = Math.max(1, ...mine.map(x => x.dealt)), maxT = Math.max(1, ...mine.map(x => x.taken));
+  const rows = mine.slice().sort((a, b) => b.dealt - a.dealt).map(x => {
+    const tags = [x.uid === mvp ? '<i class="rtag rt-mvp">MVP</i>' : '', x.uid === wall ? '<i class="rtag rt-wall">WALL</i>' : '', x.uid === medic ? '<i class="rtag rt-medic">MEDIC</i>' : ''].join('');
+    return `<div class="rrow ${x.fainted ? 'down' : ''}"><span class="rname">${miniSprite(x.id)}${esc(SPECIES[x.id].name)}${tags}</span>
+      <span class="rbar dealt" title="damage dealt"><u style="width:${Math.round(x.dealt / maxD * 100)}%"></u><b>${x.dealt}</b></span>
+      <span class="rbar taken" title="damage taken"><u style="width:${Math.round(x.taken / maxT * 100)}%"></u><b>${x.taken}</b></span>
+      <span class="rnum" title="healing given">${x.healed ? '+' + x.healed : '—'}</span><span class="rnum" title="knockouts">${x.kos || '—'}</span></div>`; }).join('');
+  return `<details class="panel recap" open><summary><b>Battle recap</b> <span class="dim">damage dealt · taken · healing · KOs</span></summary>
+    <div class="rhead"><span></span><span>Dealt</span><span>Taken</span><span>Heal</span><span>KO</span></div>${rows}</details>`;
+}
+
+/* ---- 2.0.0 · MODE BAR --------------------------------------------- */
+function modeBarHtml(){
+  const bits = [];
+  if(G.daily) bits.push(`<b>Daily Challenge</b> · ${esc(prettyDate(G.daily))}`);
+  for(const k of modList(G)) bits.push(`<span class="modechip" title="${esc(MOD_INFO[k].text(G.mods[k]))}">${esc(modName(G, k))}</span>`);
+  return bits.length ? `<div class="modebar">${bits.join(' ')}</div>` : '';
+}
+
+/* ---- 2.0.0 · LEGENDARY ENCOUNTER ------------------------------------ */
+let encounterSeen = null;
+function encounterHtml(){
+  if(!encounterOpen(G)) return '';
+  const e = G.encounter, sp = SPECIES[e.id];
+  const u = trainerCatchUp(G, makeUnit(e.id, 0));         // what it would arrive as
+  if(encounterSeen !== G.seed + ':' + e.id){ encounterSeen = G.seed + ':' + e.id; setTimeout(() => SFX.play('alert'), 60); }
+  const can = G.credits >= e.cost;
+  return `<section class="panel legend">
+    <div class="legart" style="--tcol:${typeColor(e.id)}">${SPRITES[e.id] ? `<img src="${SPRITES[e.id]}" alt="">` : ''}</div>
+    <div class="legtext"><b>A wild ${esc(sp.name.toUpperCase())} appeared!</b>
+      <span><span class="poptype" style="background:${typeColor(e.id)}">${esc(sp.type)}</span> ${roleChip(e.id)} <i class="rar r-veryrare">LEGENDARY</i></span>
+      <span class="dim">◆${u.atk} ♥${u.hp} »${u.spd} · never levels · grows +${Math.round((TUNING.legend.growth - 1) * 100)}% · leaves after the next battle</span></div>
+    <div class="legbtns"><button class="btn primary" data-act="legend" ${can ? '' : 'disabled'}>Recruit ${e.cost}₽</button>
+      <button class="btn ghost" data-act="legendpass">Let it go</button></div>
+  </section>`;
+}
+
+/* ---- 2.0.0 · FORMATION PRESETS ---------------------------------------- */
+function openPresets(){
+  G.presets = G.presets || [null, null, null];
+  const owned = uid => G.team.find(u => u.uid === uid);
+  const slotHtml = (p, k) => {
+    const units = p ? Object.keys(p).map(Number).map(owned).filter(Boolean) : [];
+    return `<div class="preset"><b>Formation ${k + 1}</b>
+      <div class="pmons">${p ? (units.length ? units.sort((a, b) => p[a.uid] - p[b.uid]).map(u => miniSprite(u.id)).join('') : '<span class="dim">nobody from it is in your party</span>') : '<span class="dim">empty</span>'}</div>
+      <div class="btnrow"><button class="btn" data-p="save" data-k="${k}">Save current</button><button class="btn primary" data-p="use" data-k="${k}" ${units.length ? '' : 'disabled'}>Use</button></div></div>`;
+  };
+  const d = modal(`<h3>Formations</h3><p class="dim">Save where everyone stands, then snap back to it after you rearrange. Pokémon that aren’t in a formation keep a free spot.</p>
+    <div class="presets">${G.presets.map(slotHtml).join('')}</div>
+    <div class="btnrow"><button class="btn ghost" data-p="close">Close</button></div>`);
+  d.classList.add('presetsm');
+  d.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+    const k = +b.dataset.k;
+    if(b.dataset.p === 'close'){ d.remove(); return; }
+    if(b.dataset.p === 'save'){ G.presets[k] = Object.fromEntries(G.team.map(u => [u.uid, u.pos])); save(); d.remove(); SFX.play('select'); say(`Formation ${k + 1} saved.`); return; }
+    if(b.dataset.p === 'use'){ applyPreset(G.presets[k]); save(); d.remove(); SFX.play('select'); say(`Formation ${k + 1} set.`); }
+  });
+}
+function applyPreset(p){
+  if(!p) return;
+  const want = G.team.filter(u => p[u.uid] != null), rest = G.team.filter(u => p[u.uid] == null);
+  const used = new Set();
+  for(const u of want){ u.pos = p[u.uid]; used.add(u.pos); }
+  for(const u of rest){ if(used.has(u.pos)){ let q = 0; while(used.has(q)) q++; u.pos = q; } used.add(u.pos); }
+  fixSlots(G);
+}
+
+/* ---- 2.0.0 · NEW RUN (with rules) ------------------------------------- */
+function openNewRun(onStart){
+  const cur = mainRun();
+  const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
+  const pick = { mono: null, nopc: false, rich: false, onelife: false };
+  const types = Object.keys(TYPES);
+  const d = modal(`<h3>New run</h3>
+    ${live ? `<p class="warn">This ends your current run (turn ${cur.turn} · ${cur.badges} badge${cur.badges === 1 ? '' : 's'}).</p>` : ''}
+    <h4>Rules <span class="dim">optional</span></h4>
+    <div class="mods">
+      <button class="modt" data-mod="mono"><b>Mono-type</b><span>Pick a type: the Daycare sells only that type. Opponents are tuned so every type is about as hard.</span></button>
+      <div class="monotypes" hidden>${types.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
+      ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}</span></button>`).join('')}
+    </div>
+    <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
+    <div class="btnrow"><button class="btn primary" data-n="go">Start run</button><button class="btn ghost" data-n="close">Cancel</button></div>`);
+  d.classList.add('newrun');
+  const types$ = d.querySelector('.monotypes'), go = d.querySelector('[data-n="go"]');
+  const sync = () => {
+    d.querySelectorAll('.modt').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
+    d.querySelectorAll('.ntype').forEach(b => b.classList.toggle('on', b.dataset.type === pick.mono));
+    go.disabled = !types$.hidden && !pick.mono;
+    go.textContent = go.disabled ? 'Pick a type' : 'Start run';
+  };
+  d.querySelectorAll('.modt').forEach(b => b.onclick = () => {
+    const k = b.dataset.mod; SFX.play('tap');
+    if(k === 'mono'){ if(types$.hidden){ types$.hidden = false; } else { types$.hidden = true; pick.mono = null; } }
+    else pick[k] = !pick[k];
+    sync();
+  });
+  d.querySelectorAll('.ntype').forEach(b => b.onclick = () => { pick.mono = b.dataset.type; SFX.play('tap'); sync(); });
+  d.querySelector('[data-n="close"]').onclick = () => d.remove();
+  go.onclick = () => {
+    d.remove();
+    if(G && G.daily){ save(); const m = load(SAVE_KEY); G = m ? m.G : null; }   // the plain run is the one being replaced
+    if(G && !G.daily) noteQuit();
+    newRun({ mods: pick });
+    undo = null; drawnPhase = null; render();
+    if(onStart) onStart();
+  };
+  sync();
+}
+
+/* ---- 2.0.0 · DAILY CHALLENGE ------------------------------------------ */
+function dailyShareText(date){
+  const t = dailyResults()[date]; if(!t) return '';
+  const mods = dailyMods(date), label = Object.keys(mods).length ? modsLabel({ mods }) : 'no special rules';
+  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? 'Champion! 🏆' : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+}
+async function copyDailyResult(date){
+  const text = dailyShareText(date || (G && G.daily) || localDate());
+  if(!text){ fail('No result yet.'); return; }
+  try{ navigator.clipboard ? await navigator.clipboard.writeText(text) : 0; say('Result copied — paste it to your friends.'); }catch(e){ say(text); }
+}
+function openDaily(onGo){
+  const today = localDate(), mods = dailyMods(today);
+  const saved = load(DAILY_KEY), sg = saved && saved.G;
+  const res = dailyResults()[today];
+  const inToday = sg && sg.daily === today && !sg.over;
+  const older = sg && sg.daily !== today && !sg.over;
+  const rules = Object.keys(mods).length
+    ? Object.keys(mods).map(k => `<b>${esc(MOD_INFO[k].name(mods[k]))}</b> — ${esc(MOD_INFO[k].text(mods[k]))}`).join('<br>')
+    : 'No special rules today.';
+  const d = modal(`<h3>Daily Challenge</h3>
+    <p><b>${esc(prettyDate(today))}</b> — everyone gets the same run today: the same shops, the same trainers, the same bosses. It has its own save, so your normal run is safe.</p>
+    <div class="drules"><h4>Today’s rule</h4><p>${rules}</p></div>
+    ${inToday ? `<p class="dim">Your run today: turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
+    ${older ? `<p class="dim">Unfinished: the ${esc(prettyDate(sg.daily))} challenge, turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
+    ${res ? `<p>Today’s best: <b>${esc(res.cleared ? 'Champion!' : bestRunLabel(res.best))}</b></p>` : ''}
+    <div class="btnrow dbtns">
+      ${inToday ? '<button class="btn primary" data-d="continue">Continue today’s</button>' : ''}
+      ${older ? '<button class="btn" data-d="continue">Finish the older one</button>' : ''}
+      <button class="btn ${inToday ? '' : 'primary'}" data-d="start">${inToday || res ? 'Start today’s over' : 'Start today’s'}</button>
+      ${res ? '<button class="btn" data-d="share">Copy result</button>' : ''}
+      <button class="btn ghost" data-d="close">Back</button>
+    </div>
+    ${inToday || older ? '<p class="dim small">Starting today’s over replaces the daily save, not your normal run.</p>' : ''}`);
+  d.classList.add('daily');
+  d.querySelectorAll('[data-d]').forEach(b => b.onclick = async () => {
+    const x = b.dataset.d;
+    if(x === 'close'){ d.remove(); return; }
+    if(x === 'share'){ await copyDailyResult(today); b.textContent = 'Copied!'; return; }
+    if(x === 'continue'){ d.remove(); switchSlot(DAILY_KEY); if(onGo) onGo(); return; }
+    if(x === 'start'){
+      d.remove(); save();
+      if(sg && sg.daily === today && !sg.over && G && G.daily === today) noteDaily();
+      G = newGame(dailySeed(today), { mods, daily: today });
+      rollShop(G, false);
+      phase = 'shop'; sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; undo = null;
+      const all = dailyResults(); all[today] = Object.assign({ best:-1, cleared:false }, all[today], { tries: ((all[today] || {}).tries || 0) + 1 });
+      try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
+      save(); render();
+      if(onGo) onGo();
+    }
+  });
+}
 
 /* v47: buttons inside pop-ups (menus, Options, rewards, the Pokédex jumps) blip too */
 document.addEventListener('click', e => {
@@ -7054,7 +7562,28 @@ function handle(act, i, data){
       sel = null; say('Lined up: Tanks in front, Cannons at the back.'); break;
     }
     case 'export':  openExport(); return;
-    case 'restart': newRun(); break;
+    case 'restart': openNewRun(); return;
+    /* ----- 2.0.0 ----- */
+    case 'undo': {
+      if(!undoReady()){ fail('Nothing to undo.'); return; }
+      const t = G.turn;
+      G = JSON.parse(undo.snap); G.undoTurn = t; syncUid(G);
+      const was = undo; undo = null; sel = null; inspect = null;
+      say(`Undone: ${was.label}. ${was.cost}₽ back.`);
+      return;
+    }
+    case 'legend': {
+      const r = recruitLegend(G);
+      if(!r.ok){ fail(r.why); return; }
+      sel = null; inspect = { kind:'unit', u:r.unit };
+      SFX.play('evolve'); shopSfx = true;
+      say(`${r.unit.nm} joined your team!`);
+      return;
+    }
+    case 'legendpass': if(G.encounter){ G.encounter.taken = 'passed'; say(`The ${SPECIES[G.encounter.id].name} flew off.`); } return;
+    case 'presets': openPresets(); return;
+    case 'totitle': showTitle(afterTitle); return;
+    case 'dailyshare': copyDailyResult(); return;
   }
   save();
   shopSfx = false;
@@ -7062,7 +7591,7 @@ function handle(act, i, data){
   // v47: a plain tap blips; anything the shop celebrates (a buy, a level) has its own sound
   if(!shopSfx && TAP_ACTS.has(act)) SFX.play(act === 'cancel' ? 'back' : 'tap');
 }
-const TAP_ACTS = new Set(['bag', 'dc', 'mart', 'bitem', 'team', 'pc', 'cancel', 'reserve', 'topc', 'release', 'sell', 'arrange', 'rolldc', 'rollmart']);
+const TAP_ACTS = new Set(['bag', 'dc', 'mart', 'bitem', 'team', 'pc', 'cancel', 'reserve', 'topc', 'release', 'sell', 'arrange', 'rolldc', 'rollmart', 'undo', 'legendpass']);
 
 /* ===================================================================
    THE POKéBALL WIPE (v40) — Sean picked "B · Rolling iris"
@@ -7338,6 +7867,31 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'2.2.0', date:'Sep 27, 2026', title:'Zap Cannon, the Champion’s legendary', items:[
+    'Every run now meets a legendary: if none has appeared by the 7th gym, one always does.',
+    'The Champion brings a legendary of his own — always one you didn’t recruit.',
+    'Zapdos’s second move is now Zap Cannon: every 4th action, 200% to the enemy with the most HP, with a 70% chance to paralyse it.',
+    'A pokémon’s summary now shows its EXP pips next to its level, so you can see how close anything in the PC is to levelling up.',
+    'The Elite Four and Champion are a little tougher to make up for the guaranteed legendary, and the run rules were re-tuned to match.' ] },
+  { v:'2.1.0', date:'Sep 27, 2026', title:'Articuno and Moltres, legendary rules', items:[
+    'Articuno (Water · Tank) and Moltres (Fire · Bruiser) join Zapdos and Mewtwo as legendary encounters after the 5th gym.',
+    'Legendaries now play by their own rules: they have no tier and never level up (no copies, no Rare Candy), marked with a gold ★ instead of a level.',
+    'To make up for it, every legendary has a much higher base stat total than any regular pokémon and grows 20% faster from battles, Exp. Share and catching up to your trainer.',
+    'Mewtwo’s Psystrike hits harder. With four legendaries around, each one appears a little less often per gym — about half of runs meet one.',
+    'Legendaries are yours alone: no trainer, gym leader or Elite Four member fields one.' ] },
+  { v:'2.0.0', date:'Sep 27, 2026', title:'Daily Challenge, rules, legendaries', items:[
+    'Daily Challenge (title screen): one run a day that’s the same for everyone — same shops, same trainers, same bosses — sometimes with a rule of the day. It has its own save, so your normal run is safe. Copy your result to compare with friends.',
+    'Run rules: start a New Run with Mono-type (pick a type; the Daycare sells only that type), No PC, Rich & Ruthless (double income, tougher opponents) or One Life. Runs with rules keep their own records.',
+    'Legendary encounters: Zapdos and Mewtwo are no longer sold in the Daycare. After the 5th gym, a legendary may appear for one turn. Recruit it for 12₽ or let it go.',
+    'Undo: made a wrong buy? Undo it once per turn from above the Battle button, with a full refund.',
+    'Battle recap after every fight: damage dealt and taken, healing and knockouts for each of your pokémon, with the MVP, the Wall and the Medic called out.',
+    'Formations: save up to three line-ups (Your Party → Formations) and snap back to one with a tap.',
+    'START → Title screen takes you back to the title, where you can switch between your run and the Daily Challenge.' ] },
+  { v:'1.5.0', date:'Sep 27, 2026', title:'Stone preview', items:[
+    'Evolution stones in the PokéMart now show what they would do to your pokémon before you buy: “Yours: Eevee → Jolteon” right on the shelf.',
+    'Tap a stone to see every pokémon it would evolve, party and PC, with the new type, role and how its stats change.' ] },
+  { v:'1.4.1', date:'Sep 27, 2026', title:'Tidier What’s new', items:[
+    'The “new to you” and “current” tags in What’s new no longer break across two lines; each update’s date and tag stay together.' ] },
   { v:'1.4.0', date:'Sep 27, 2026', title:'Blue’s Eevee', items:[
     'Your rival raises an Eevee, like in the games. It joins his team at your second meeting and has evolved by the third, into whichever Eeveelution covers his starter’s weakness (Vaporeon for a Charmander, Jolteon for a Squirtle, Flareon for a Bulbasaur).',
     'Blue brings that same Eeveelution to the Champion fight, fully trained, alongside his starter.',
@@ -7369,7 +7923,10 @@ function openChangelog(){
   const d = modal(`<h3>What’s new <span class="vsub">you’re on ${GAME_VERSION.v}</span></h3>
     <div class="clog">${CHANGELOG.map((e, i) => `
       <details ${i === 0 || (idx > 0 && i < idx) ? 'open' : ''} class="${idx > 0 && i < idx ? 'unseen' : ''}">
-        <summary><b>${esc(e.v)}</b> ${esc(e.title)}${e.date ? ` <span class="cdate">${esc(e.date)}</span>` : ''}${e.v === GAME_VERSION.v ? ' <i class="cnow">current</i>' : idx > 0 && i < idx ? ' <i class="cnew">new to you</i>' : ''}</summary>
+        <summary><b>${esc(e.v)}</b> ${esc(e.title)}${(() => {
+          // 1.4.1: the date and the tag travel together, so a tag never splits across two lines
+          const tag = e.v === GAME_VERSION.v ? '<i class="cnow">current</i>' : idx > 0 && i < idx ? '<i class="cnew">new to you</i>' : '';
+          return e.date || tag ? ` <span class="cmeta">${e.date ? `<span class="cdate">${esc(e.date)}</span>` : ''}${tag}</span>` : ''; })()}</summary>
         <ul>${e.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
       </details>`).join('')}</div>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
@@ -7392,14 +7949,15 @@ function openMenu(){
     ['help',    'How to play', 'Rules, roles and statuses.'],
     ...(APP.canInstall() ? [['install', 'Install app', 'Put PokéBattler on your home screen and play it full screen, even offline.']] : []),
     ['options', 'Options', 'Your name, theme, speed, sound, transitions and more.'],
-    ['restart', 'Restart', 'Start a new run from turn 1.'],
+    ['title',   'Title screen', 'Back to the title: your run, the Daily Challenge, a new run.'],
+    ['restart', 'Restart', G && G.daily ? 'Start today’s Daily Challenge again from turn 1.' : 'Start a new run from turn 1, with rules if you like.'],
     ['close',   'Exit', 'Back to the game.'],
   ];
   const d = modal(`<div class="smenu" role="menu" aria-label="Menu">
     ${items.map(([id, label, desc], k) => `${id === 'restart' ? '<hr>' : ''}<button class="smi ${k === 0 ? 'cur' : ''} ${id === 'restart' ? 'red' : ''}"
       role="menuitem" data-m="${id}" data-d="${esc(desc)}">${label}${id === 'news' && hasUnseen() ? ' <i class="newdot">NEW</i>' : ''}</button>`).join('')}
     <div class="sdesc">${esc(items[0][2])}</div>
-    <div class="yesno" hidden>Start over? Turn ${G.turn} and ${G.badges} badge${G.badges === 1 ? '' : 's'} will be lost.
+    <div class="yesno" hidden>${G.daily ? 'Restart today’s challenge?' : 'Start over?'} Turn ${G.turn} and ${G.badges} badge${G.badges === 1 ? '' : 's'} will be lost.
       <div class="btnrow"><button class="btn" data-m="restart-no">No</button><button class="btn danger" data-m="restart-yes">Yes</button></div></div>
     <div class="sver">${GAME_VERSION.v}</div>
   </div>`);
@@ -7421,7 +7979,12 @@ function openMenu(){
     if(m === 'restart'){ yn.hidden = false; desc.hidden = true; return; }
     if(m === 'restart-no'){ yn.hidden = true; desc.hidden = false; return; }
     d.remove();
-    if(m === 'restart-yes'){ noteQuit(); newRun(); render(); }
+    if(m === 'restart-yes'){
+      if(G.daily){ noteQuit(); G = newGame(dailySeed(G.daily), { mods: G.mods, daily: G.daily }); rollShop(G, false);
+        phase = 'shop'; sel = null; inspect = null; battle = null; undo = null; save(); render(); }
+      else openNewRun();
+    }
+    if(m === 'title') showTitle(afterTitle);
     if(m === 'trainer') openTrainerCard();
     if(m === 'export')  openExport();
     if(m === 'versus')  openVersus();
@@ -7454,10 +8017,25 @@ function records(){
 }
 function saveRecords(r){ try{ localStorage.setItem(REC_KEY, JSON.stringify(r)); }catch(e){} }
 const reachedStage = () => G.over === 'won' ? runPlan().length : (G.stage || 0);
-function noteProgress(){ const r = records(); if(reachedStage() > r.best){ r.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ const r = records(); r.runs++; if(G.over === 'won') r.cleared++; r.best = Math.max(r.best, reachedStage()); saveRecords(r); }
+/* 2.0.0: a daily run keeps its own result per day, and a run with rules keeps
+   its own record per rule set — neither muddies your plain-run records. */
+const DAILY_REC = 'pkb_daily';
+function dailyResults(){ try{ return JSON.parse(localStorage.getItem(DAILY_REC) || '{}') || {}; }catch(e){ return {}; } }
+function noteDaily(){
+  const all = dailyResults(), was = all[G.daily] || { best:-1, cleared:false, tries:0 };
+  all[G.daily] = { ...was, best: Math.max(was.best, reachedStage()), badges: Math.max(was.badges || 0, G.badges),
+                   cleared: was.cleared || G.over === 'won', mods: modsLabel(G) };
+  try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
+}
+function recBucket(r){
+  if(!modList(G).length) return r;
+  r.modes = r.modes || {}; const k = modsLabel(G);
+  return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
+}
+function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
+function noteRunEnd(){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
-function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ const r = records(); r.runs++; r.best = Math.max(r.best, reachedStage()); saveRecords(r); } }
+function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
   if(!b || b.exhibition || !b.steps || !b.steps.length) return;
   const rec = G.rec || (G.rec = { fought:{}, hit:null });
@@ -7500,7 +8078,7 @@ function openTrainerCard(){
         <div><span>Name</span><b>${esc(playerName())}</b></div>
         <div><span>Money</span><b>₽${G.credits}</b></div>
         <div><span>Turn</span><b>${G.turn}</b></div>
-        <div><span>Lives</span><b>${Math.max(0, G.lives)}/${TUNING.startingLives}</b></div>
+        <div><span>Lives</span><b>${Math.max(0, G.lives)}/${G.mods && G.mods.onelife ? 1 : TUNING.startingLives}</b></div>
         <div><span>Streak</span><b>${streak}</b></div>
       </div>
       <div class="tface" title="${P ? esc(P.u.nm) + ', your partner' : ''}">${P && SPRITES[P.u.id] ? `<img src="${SPRITES[P.u.id]}" alt="">` : '<i class="pball"></i>'}</div>
@@ -7511,6 +8089,8 @@ function openTrainerCard(){
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
       <div><span>Partner</span><b>${P ? `${esc(SPECIES[P.u.id].name)} · ${P.n} battle${P.n === 1 ? '' : 's'}` : '—'}</b></div>
       <div><span>Biggest hit</span><b>${hit ? `${esc(SPECIES[hit.id] ? SPECIES[hit.id].name : '?')} · ${hit.dmg}` : '—'}</b></div>
+      ${Object.entries(R.modes || {}).filter(([, b]) => b.runs).map(([k, b]) => `<div><span>${esc(k)}</span><b>${b.cleared} of ${b.runs} cleared · ${esc(bestRunLabel(b.best))}</b></div>`).join('')}
+      ${(() => { const t = dailyResults()[localDate()]; return t ? `<div><span>Today’s daily</span><b>${esc(t.cleared ? 'Champion!' : bestRunLabel(t.best))}</b></div>` : ''; })()}
     </div>
   </div>
   <div class="btnrow"><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
@@ -7650,23 +8230,25 @@ async function readTransferCode(raw){
   }catch(e){ return { ok:false, why:'This code couldn’t be read. Copy the whole thing and try again.' }; }
 }
 function applyTransfer(data){
-  const before = localStorage.getItem(SAVE_KEY);
+  const key = slotKey(data.s.G);                     // 2.0.0: a daily run lands in the daily slot
+  const before = localStorage.getItem(key);
   try{
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data.s));
-    const d = load();
+    save();                                          // keep whatever is on screen in its own slot
+    localStorage.setItem(key, JSON.stringify(data.s));
+    const d = load(key);
     if(!d) throw new Error('bad save');
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
     saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
-    sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = '';
+    sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
     if(!G.daycare || !G.daycare.length) rollShop(G, false);
     save(); render();
     if(phase === 'shop' && pendingOffer(G)) openRewardPicker();
     return true;
   }catch(e){
-    try{ if(before === null) localStorage.removeItem(SAVE_KEY); else localStorage.setItem(SAVE_KEY, before); }catch(_){}
+    try{ if(before === null) localStorage.removeItem(key); else localStorage.setItem(key, before); }catch(_){}
     return false;
   }
 }
@@ -7856,6 +8438,10 @@ function openHelp(){
     +${Math.round(TUNING.xItems.pct*100)}% Attack or Speed each, up to ${TUNING.xItems.perBattle} of each per battle. You can
     <b>Reserve</b> a Mart item to keep it through a reroll, and each shop rerolls separately.</p>
 
+    <h4>Daily Challenge, rules and legendaries</h4>
+    <p>The <b>Daily Challenge</b> (title screen) is one run a day that’s the same for everyone, sometimes with a rule of the day, in its own save. A <b>New Run</b> can have rules: Mono-type, No PC, Rich &amp; Ruthless or One Life.
+    <b>Legendaries</b> (Zapdos, Articuno, Moltres, Mewtwo) aren’t sold in the Daycare: after the 5th gym one may appear for one turn, and by the 7th gym one always has. The Champion brings one you didn’t recruit. They never level up but start far stronger and grow faster. Made a wrong buy? <b>Undo</b> (above Battle) takes back your last buy, once a turn.
+    <b>Formations</b> (Your Party) saves a line-up to snap back to, and every fight ends with a <b>recap</b> of who did what.</p>
     <h4>The Bag and held items</h4>
     <p>The Bag sits under the PC and holds ${bagCap(G)} items. Tap one, then tap any pokémon — in your
     party or in the PC — to hand it over; each can carry <b>one</b>. Tap the badge on its sprite to take it
@@ -7929,7 +8515,7 @@ function openDex(){
     seen.add(line[0]);
     families.push(line);
   });
-  families.sort((a,b) => SPECIES[a[0]].tier - SPECIES[b[0]].tier
+  families.sort((a,b) => (SPECIES[a[0]].tier || 7) - (SPECIES[b[0]].tier || 7)
     || SPECIES[a[0]].name.localeCompare(SPECIES[b[0]].name));
 
   const rows = families.map(line => line.map((k,i) => {
@@ -7940,8 +8526,8 @@ function openDex(){
       ${spriteHtml(k, 'sm')}
       <div><b>${esc(s.name)}</b>
         <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>
-        ${roleChip(k)}
-        <span class="dim">T${s.tier} · ◆${s.atk} ♥${s.hp} »${s.spd}${via ? ' · ' + via : ''}</span>
+        ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}
+        <span class="dim">${s.legendary ? 'encounter only' : 'T' + s.tier} · ◆${s.atk} ♥${s.hp} »${s.spd}${via ? ' · ' + via : ''}</span>
         <div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}
       </div></div>`;
@@ -8028,9 +8614,12 @@ function titlePartner(){
 }
 let titleEl = null;
 function showTitle(then){
+  if(titleEl) return;
   const mon = titlePartner(), R = records(), best = Math.max(R.best, 0);
-  const cont = runInProgress();
-  const runLine = cont ? `Turn ${G.turn} · ${G.badges} badge${G.badges === 1 ? '' : 's'} · ${Math.max(0, G.lives)} ${G.lives === 1 ? 'life' : 'lives'}` : '';
+  const M = mainRun();                                   // 2.0.0: CONTINUE is always your own run
+  const cont = !!(M && !M.over && ((M.stage || 0) > 0 || M.turn > 1));
+  const runLine = cont ? `Turn ${M.turn} · ${M.badges} badge${M.badges === 1 ? '' : 's'} · ${Math.max(0, M.lives)} ${M.lives === 1 ? 'life' : 'lives'}${modList(M).length ? ' · ' + esc(modsLabel(M)) : ''}` : '';
+  const dres = dailyResults()[localDate()];
   const who = PREF.get('name', '') ? `Welcome back, ${esc(playerName())}!` : 'Ready to battle, Trainer?';
   const d = document.createElement('div');
   d.id = 'title'; d.className = 'title' + (motionOff() ? ' still' : '');
@@ -8044,10 +8633,9 @@ function showTitle(then){
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
-      <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN</button>
+      <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
+      <button class="tmi" role="menuitem" data-t="daily">DAILY CHALLENGE<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}` : esc(prettyDate(localDate()))}</small></button>
       <button class="tmi" role="menuitem" data-t="options">OPTIONS</button>
-      <div class="yesno" hidden><span>Start over? This run ends.</span>
-        <button class="btn danger" data-t="new-yes">YES</button><button class="btn" data-t="new-no">NO</button></div>
     </div>
     <div class="tfoot">${best > 0 ? `<span>Best: ${esc(bestRunLabel(best))}${R.cleared ? ` · ${R.cleared} cleared` : ''}</span>` : ''}
       </div>
@@ -8055,7 +8643,7 @@ function showTitle(then){
   document.body.appendChild(d);
   titleEl = d;
   document.body.classList.add('titled');
-  const menu = d.querySelector('.tmenu'), press = d.querySelector('.tpress'), yn = d.querySelector('.yesno');
+  const menu = d.querySelector('.tmenu'), press = d.querySelector('.tpress');
   const items = () => [...d.querySelectorAll('.tmi')];
   const leave = () => {
     if(!titleEl) return;
@@ -8067,14 +8655,10 @@ function showTitle(then){
     SFX.play(t === 'start' ? 'start' : t === 'new-no' ? 'back' : 'select');
     if(t === 'start'){
       d.querySelector('.tmon').classList.add('hop');
-      if(!cont) return leave();
       press.hidden = true; menu.hidden = false; (d.querySelector('.tmi.cur') || items()[0]).focus();
-    } else if(t === 'continue') leave();
-    else if(t === 'new'){
-      if(cont){ yn.hidden = false; items().forEach(b => b.disabled = true); d.querySelector('[data-t="new-no"]').focus(); }
-      else leave();
-    } else if(t === 'new-yes'){ noteQuit(); newRun(); render(); leave(); }
-    else if(t === 'new-no'){ yn.hidden = true; items().forEach(b => b.disabled = false); d.querySelector('[data-t="new"]').focus(); }
+    } else if(t === 'continue'){ if(G && G.daily) switchSlot(SAVE_KEY); leave(); }
+    else if(t === 'new'){ if(document.activeElement) document.activeElement.blur(); openNewRun(leave); }
+    else if(t === 'daily'){ if(document.activeElement) document.activeElement.blur(); openDaily(leave); }
     else if(t === 'options'){ if(document.activeElement) document.activeElement.blur(); openOptions(); }
   };
   d.addEventListener('click', ev => {
@@ -8103,21 +8687,22 @@ function showTitle(then){
 /* ===================================================================
    BOOT
    =================================================================== */
-function newRun(){
-  G = newGame();
+function newRun(opts){
+  G = newGame(undefined, opts);
   rollShop(G, false);
   phase = 'shop'; sel = null; inspect = null; battle = null;
   save();
 }
+const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); };   // a reward left unchosen
 
 (function boot(){
   applyMotion();
-  const saved = load();
+  // 2.0.0: come back to whichever run you were last in — your own or the daily
+  const saved = (PREF.get('slot', 'main') === 'daily' && load(DAILY_KEY)) || load(SAVE_KEY);
   if(saved){ G = saved.G; phase = saved.phase === 'over' ? 'over' : 'shop'; }
   else newRun();
   if(!G.daycare || !G.daycare.length) rollShop(G, false);
   render();
-  const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); };   // a reward left unchosen
   if(titleWanted()) showTitle(afterTitle); else afterTitle();
 })();
 
