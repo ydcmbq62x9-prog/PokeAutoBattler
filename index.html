@@ -1628,6 +1628,78 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 .ihelp{margin:4px 0 12px;padding-left:22px;line-height:1.6;color:var(--text);font-size:14.5px}
 .ihelp li{margin:4px 0}
 .ishare{display:inline-block;border:2px solid var(--edge);border-radius:5px;padding:0 5px;font-size:12px;vertical-align:1px}
+
+/* ===================================================================
+   v49 — STEADIER ON PHONES
+   Messages float at the top instead of replacing the summary (no page jump),
+   and the held-item badge on a summary picture is a corner badge again —
+   the v46 sprite sizing (.popart img) was catching its icon too.
+   =================================================================== */
+.toastbox{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));z-index:80;pointer-events:none;
+  transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;
+  background:var(--panel);border:3px solid var(--edge);border-radius:10px;box-shadow:var(--gbbox);
+  padding:8px 14px;font-size:14.5px;line-height:1.35;text-align:center;animation:toastin .16s ease-out both}
+.toastbox b{color:var(--text);font-weight:800}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media (prefers-reduced-motion:reduce){ .toastbox{animation:none} }
+.popart .held.pop{width:20px;height:20px;right:-6px;bottom:-6px;border-radius:6px}
+.popart .held.pop img.pix,.isum .popart .held.pop img.pix{width:14px;height:14px;object-fit:contain;image-rendering:pixelated}
+
+/* ===================================================================
+   v50 — ITEM RARITY TAGS
+   Common has no tag; the colour gets warmer as an item gets rarer.
+   =================================================================== */
+.rar{display:inline-block;font-style:normal;font-size:8.5px;letter-spacing:.8px;font-weight:800;margin-left:6px;vertical-align:1px;
+  padding:1px 5px;border-radius:5px;line-height:1.35;white-space:nowrap}
+.rar.r-uncommon{color:#fff;background:#2e8f5a}
+.rar.r-rare{color:#fff;background:#3a6fc9}
+.rar.r-veryrare{color:#1b1406;background:linear-gradient(135deg,#ffe28a,#f0b43c)}
+#inspect .rar{vertical-align:2px}
+
+/* v51: an item that costs a stat shows the cost in red */
+.sb b .sbon.neg,html .sb b .sbon.neg{color:var(--bad,#c0392b)}
+.stats .xdown,html .stats .xdown{color:#c0392b;text-shadow:none}
+html.dark .stats .xdown{color:#ff8e96}
+
+/* v52: a second move a Choice Band has locked out */
+.popmove.locked b,.popmove.locked p{text-decoration:line-through;opacity:.55}
+.popmove.locked .trig{opacity:.55}
+.popmove .lockby{display:block;font-size:10.5px;font-weight:700;color:var(--bad);margin-top:1px}
+
+/* ===================================================================
+   v54 — RARITY SPARKLE
+   A Rare / Very rare item landing on the shelf gets a glow round its row and
+   a shine sweeping across it, after the row has dealt in. The row's own
+   animation (the deal) is untouched: the effect lives on ::before / ::after.
+   =================================================================== */
+.martrow.fx-rare,.martrow.fx-vrare{position:relative;isolation:isolate}
+.martrow.fx-rare::before,.martrow.fx-vrare::before{content:'';position:absolute;inset:-2px;border-radius:11px;pointer-events:none;z-index:1;
+  animation:rareglow 1.3s ease-out var(--sparkdelay,300ms) both}
+.martrow.fx-rare::before{--glow:#3a6fc9}
+.martrow.fx-vrare::before{--glow:#f0b43c;animation-duration:1.9s}
+.martrow.fx-rare::after,.martrow.fx-vrare::after{content:'';position:absolute;inset:0;border-radius:9px;pointer-events:none;z-index:2;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.75) 46%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.75) 54%,transparent 70%) no-repeat;
+  background-size:250% 100%;background-position:130% 0;animation:rareshine .75s ease-in-out var(--sparkdelay,300ms) both}
+.martrow.fx-vrare::after{background-image:linear-gradient(105deg,transparent 30%,rgba(255,236,170,.8) 46%,rgba(255,255,255,1) 50%,rgba(255,236,170,.8) 54%,transparent 70%);
+  animation:rareshine .75s ease-in-out var(--sparkdelay,300ms) 2 both}
+@keyframes rareglow{0%{box-shadow:0 0 0 0 var(--glow)}25%{box-shadow:0 0 0 3px var(--glow),0 0 16px 4px var(--glow)}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes rareshine{from{background-position:130% 0}to{background-position:-30% 0}}
+@media (prefers-reduced-motion:reduce){ .martrow.fx-rare::after,.martrow.fx-vrare::after{animation:none;opacity:0} .martrow.fx-rare::before,.martrow.fx-vrare::before{animation-duration:.01s} }
+body.calm .martrow.fx-rare::after,body.calm .martrow.fx-vrare::after{animation:none;opacity:0}
+
+/* ===================================================================
+   1.3.0 — version under the title logo, dates in What's new, transfer codes,
+   and Eevee's branching evolution line in the summary
+   =================================================================== */
+.tver{font-family:var(--pix);font-size:12px;letter-spacing:1px;color:var(--dim);margin-top:2px}
+.title .tver{animation:tfade .4s .5s both}
+.cdate{font-size:10.5px;color:var(--dim);font-weight:400;margin-left:4px;white-space:nowrap}
+.modal.xfer h4{margin:14px 0 4px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.modal.xfer textarea{width:100%;min-height:74px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;word-break:break-all;box-sizing:border-box}
+.modal.xfer .xmsg{color:var(--bad);font-size:12.5px;min-height:1em;margin:4px 0}
+.modal.xfer .xconfirm p{font-size:13px}
+.line .stage.branch{white-space:nowrap}
+.line .stage.branch img.pix{width:14px;height:14px;vertical-align:-2px}
 </style>
 </head>
 <body>
@@ -1712,7 +1784,11 @@ const TUNING = {
      you; Agatha and Lance grind; the Champion is the single biggest wall.
      Measured falls (400 runs): Lorelei 10% · Bruno 11% · Agatha 24% ·
      Lance 23% · Blue 31%. */
-  gauntletRatio:  [0.405, 0.459, 0.435, 0.43, 0.513],
+  /* v52: each member brings a Very rare item (Sean), and v53 keeps the v51
+     prices on purpose: Sean wants the Elite Four harder, with the reference
+     clear rate in the low 70s (was 77–78%). Scale these to move it: against the
+     v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
+  gauntletRatio:  [0.403, 0.4567, 0.4328, 0.4279, 0.5104],   // v51 prices x0.995
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -1720,7 +1796,7 @@ const TUNING = {
   /* v28: 5% → 3%. Longer fights make every stat edge more decisive (a fight
      is less of a coin flip at the same power gap), so the full package took a
      coin-flip Champion fight up ~40 points at 5%. At 3% it is ~+33. */
-  xItems:         { pct: 0.03, perBattle: 3, cost: 2 },
+  xItems:         { pct: 0.05, perBattle: 2, cost: 2 },   // v50: back to Sean's +5%; v54: 2 uses a battle (Sean)
   bossScaleClamp: [0.45, 3.0],   // never distort a pool beyond this
   bossSize:       { gym:0,    elite:1,    champion:1 },     // extra bodies
   bossHeldFrom:   { gym:2,    elite:0,    champion:0 },     // badge to start holding items
@@ -1739,6 +1815,17 @@ const TUNING = {
        new buys inherit, and it doesn't trigger Lucky Eggs;
      - a Lucky Egg gives a pokémon at most `eggCap` bonus rounds, like vitamins. */
   rareWeight:   0.25,
+  /* Rarity (v50): how often a shop slot, a rival prize or a Gift Item rolls
+     each item, relative to a common one. Tier says WHEN an item can appear;
+     rarity says HOW OFTEN. The rule: the rarer an item, the stronger it is for
+     one slot — rarity is never just an item being hard to find. Exp. Share and
+     Lucky Egg keep the 0.25 they were measured at in v31. */
+  rarity: {
+    common:   { weight: 1,    name: 'Common' },
+    uncommon: { weight: 0.6,  name: 'Uncommon' },
+    rare:     { weight: 0.25, name: 'Rare' },
+    veryrare: { weight: 0.1,  name: 'Very rare' },
+  },
   /* Status conditions (v32), Gen 1's five plus a flinch. One at a time, and a
      pokémon suffers each one at most once per battle (flinch excepted) so a
      sleeper can't be locked down. Rounds are the upkeep clock; actions are the
@@ -2215,7 +2302,7 @@ const M = {
   /* lifesteal */
   drain: (name, p, frac) => ({ name,
     text:l=>`Deals ${pct(p,l)} damage and heals itself for ${Math.round(frac*100)}% of it.`,
-    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; const d=B.hit(u,t,pw(p,l)); B.heal(u,Math.ceil(d*frac)); } }),
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; const d=B.hit(u,t,pw(p,l)); B.heal(u,Math.ceil(d*frac),u); } }),
 
   /* damage + speed debuff */
   slow: (name, p, n) => ({ name,
@@ -2248,14 +2335,14 @@ const M = {
   heal: (name, p, f) => ({ name,
     text:l=>`Deals ${pct(p,l)} damage and heals your front pokémon ${sfp(f,l)} of its HP.`,
     fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
-      const a=B.ownFront(u); if(a && a.hp < a.maxHp){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))));
+      const a=B.ownFront(u); if(a && a.hp < a.maxHp){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))), u);
         if(n) B.log(`${a.nm} was healed (+${n} HP).`); } } }),
 
   /* SUPPORT: damage + heals whichever teammate is most hurt (itself included) */
   mend: (name, p, f) => ({ name,
     text:l=>`Deals ${pct(p,l)} damage, then heals your most-hurt pokémon ${sfp(f,l)} of its HP.`,
     fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
-      const a=B.mostHurt(u); if(a){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))));
+      const a=B.mostHurt(u); if(a){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))), u);
         if(n) B.log(`${a.nm} was healed (+${n} HP).`); } } }),
 
   /* SUPPORT: damage + raises the whole team's Attack by a share of each one's own */
@@ -2316,11 +2403,11 @@ const M = {
   /* heal itself */
   recover: (name, f, sleeps) => ({ name,
     text:l=>`No damage. Heals itself ${sfp(f,l)} of its HP${sleeps ? ', then falls asleep for 2 actions' : ''}.`,
-    fn:(u,B,l)=>{ const n = B.heal(u, Math.round(u.maxHp * sf(f,l))); B.log(`${u.nm} regained ${n} HP.`);
+    fn:(u,B,l)=>{ const n = B.heal(u, Math.round(u.maxHp * sf(f,l)), u); if(n || !heldOf(u) || !heldOf(u).noHeal) B.log(`${u.nm} regained ${n} HP.`);
       if(sleeps){ u.st = { id:'slp', left:2 }; B.log(`${u.nm} fell asleep.`); } } }),
   /* cure the team's statuses, and heal them a little */
   cleanse: (name, f) => ({ name, text:l=>`No damage. Cures your whole team's status conditions and heals each ${sfp(f,l)}.`,
-    fn:(u,B,l)=>{ for(const a of B.teams[u.side]){ if(a.dead) continue; if(a.st){ a.st = null; } B.heal(a, Math.round(a.maxHp * sf(f,l))); }
+    fn:(u,B,l)=>{ for(const a of B.teams[u.side]){ if(a.dead) continue; if(a.st){ a.st = null; } B.heal(a, Math.round(a.maxHp * sf(f,l)), u); }
       B.log('A soothing aroma filled the air.'); } }),
   /* move itself to the back of the formation */
   teleport: (name) => ({ name, text:()=>`No damage. Moves itself to the back of your formation.`,
@@ -2352,6 +2439,8 @@ const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:
    hp/atk/spd : base stats
    evo        : { into, by:'level' }            evolves on level up
                 { into, by:'stone', stone:id }  needs that evolution stone
+                { by:'stone', branches:{ stone:into, … } }  (1.3.0) the stone
+                                                 picks the evolution — Eevee
    token      : true -> never sold in the Daycare (evolved forms only)
    -------------------------------------------------------------------
    A pokémon with no `evo` left gets TUNING.levelUpBonusMax on level up
@@ -2551,6 +2640,19 @@ const SPECIES = {
                 move:M.all('Thunder', 0.55) },
   mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', tier:6, role:'cannon', hp:44, atk:63, spd:87,
                 move:M.big('Psystrike', 1.2) },
+
+  /* ============ 1.3.0 — Eevee and three of its evolutions (Sean) ============
+     The first BRANCHING line: the stone you use decides what it becomes, and
+     each evolution plays a different role. Eevee itself is a Support. */
+  eevee:      { name:'Eevee',      type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:22, atk:18, spd:40,
+                evo:{ by:'stone', branches:{ waterstone:'vaporeon', thunderstone:'jolteon', firestone:'flareon' } },
+                move:M.rally('Quick Attack', 0.8, 0.05) },
+  vaporeon:   { name:'Vaporeon',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:56, atk:33, spd:46, token:true,
+                move:M.wall('Water Gun', 1.0, 1.7) },
+  jolteon:    { name:'Jolteon',    type:'Lightning', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:42, spd:80, token:true,
+                move:M.multi('Pin Missile', 0.6, 3) },
+  flareon:    { name:'Flareon',    type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:42, atk:48, spd:60, token:true,
+                move:M.ramp('Rage', 1.5, 12) },
 };
 
 const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token);
@@ -2636,22 +2738,51 @@ const MOVE2 = {
   snorlax:    on('low',   M.recover('Rest', 0.6, true)),
   zapdos:     on('every', M.back('Drill Peck', 0.9), { n:3 }),
   mewtwo:     on('every', M.trueHit('Psychic', 1.5), { n:3 }),
+  // 1.3.0 — the Eevee line
+  eevee:      on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
+  vaporeon:   on('low',   M.shield('Acid Armor', 0.35, 'self')),
+  jolteon:    on('open',  M.afflict('Thunder Wave', 0, 'par', 1, 'fastest')),
+  flareon:    on('every', M.afflict('Fire Spin', 1.4, 'brn', 1, 'front'), { n:3 }),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
 
-/** The full evolution line a species belongs to, base form first. */
+/** Every evolution a species can take next: [] · [one] · several for a
+    branching line (1.3.0, Eevee), each { into, by, stone }. */
+function evoNext(id){
+  const e = SPECIES[id] && SPECIES[id].evo;
+  if(!e) return [];
+  return e.branches ? Object.keys(e.branches).map(stone => ({ into: e.branches[stone], by:'stone', stone })) : [e];
+}
+/** What a species evolved from, or null. */
+const evoParent = id => Object.keys(SPECIES).find(k => evoNext(k).some(n => n.into === id)) || null;
+
+/** The evolution line a species sits on, base form first. A branching line
+    stays linear here — Eevee alone is ['eevee'], Jolteon is ['eevee','jolteon']
+    — so "the line" always means one path; evoFamily() has every branch. */
 function evoLine(id){
-  // walk back to the base form
-  let base = id, guard = 0;
-  let prev = Object.keys(SPECIES).find(k => SPECIES[k].evo && SPECIES[k].evo.into === base);
-  while(prev && guard++ < 8){
-    base = prev;
-    prev = Object.keys(SPECIES).find(k => SPECIES[k].evo && SPECIES[k].evo.into === base);
-  }
+  let base = id, guard = 0, prev = evoParent(base);
+  while(prev && guard++ < 8){ base = prev; prev = evoParent(base); }
   const line = [base];
   let cur = base; guard = 0;
-  while(SPECIES[cur].evo && guard++ < 8){ cur = SPECIES[cur].evo.into; line.push(cur); }
+  while(guard++ < 8){
+    const nx = evoNext(cur);
+    if(nx.length === 1){ cur = nx[0].into; line.push(cur); continue; }
+    if(nx.length > 1){ const on = nx.find(n => evoLine0(n.into, id)); if(on){ cur = on.into; line.push(cur); continue; } }
+    break;
+  }
   return line;
+}
+/* does the path from `from` onward pass through `id`? (for picking the branch) */
+function evoLine0(from, id){
+  let cur = from, guard = 0;
+  while(cur && guard++ < 8){ if(cur === id) return true; const nx = evoNext(cur); cur = nx.length === 1 ? nx[0].into : null; }
+  return false;
+}
+/** The whole family, base first, every branch included. */
+function evoFamily(id){
+  const base = evoLine(id)[0], out = [base];
+  for(let i = 0; i < out.length; i++) for(const n of evoNext(out[i])) if(!out.includes(n.into)) out.push(n.into);
+  return out;
 }
 
 /* ===================================================================
@@ -2665,38 +2796,38 @@ function evoLine(id){
    use out of the shop entirely.
    =================================================================== */
 const ITEMS = {
-  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, text:'+9 Attack, permanently.',
+  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', text:'+9 Attack, permanently.',
                   eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
                   apply:(u,G)=>G.boost(u,{atk:9}) },
-  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, text:'+8 HP, permanently.',
+  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', text:'+8 HP, permanently.',
                   eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
                   apply:(u,G)=>G.boost(u,{hp:8}) },
-  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, text:'+10 Speed, permanently.',
+  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
                   eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
                   apply:(u,G)=>G.boost(u,{spd:10}) },
-  candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4,
-                  text:'Counts as one extra copy — may trigger a level up and an evolution.',
+  candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
+                  text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   apply:(u,G)=>G.addExp(u,1) },
-  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rare:true,
-                  text:'Your party gains a round of battle EXP right now. (Not the PC, and not pokémon you buy later.)',
+  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rarity:'rare',
+                  text:'Everyone in your party gets EXP as if they had just won a fight. (Not the PC, and not pokémon you buy later.)',
                   apply:(u,G)=>G.shareExp() },
-  thunderstone: { name:'Thunder Stone', icon:'⚡', tier:3, cost:4, text:'Evolves Pikachu.',
-                  eligible:u => stoneFor(u.id) === 'thunderstone', apply:(u,G)=>G.evolve(u) },
-  firestone:    { name:'Fire Stone', icon:'🔥', tier:3, cost:4, text:'Evolves Vulpix or Growlithe.',
-                  eligible:u => stoneFor(u.id) === 'firestone', apply:(u,G)=>G.evolve(u) },
-  moonstone:    { name:'Moon Stone', icon:'🌙', tier:2, cost:4, text:'Evolves Jigglypuff or Clefairy.',
-                  eligible:u => stoneFor(u.id) === 'moonstone', apply:(u,G)=>G.evolve(u) },
-  waterstone:   { name:'Water Stone', icon:'💧', tier:3, cost:4, text:'Evolves Staryu or Shellder.',
-                  eligible:u => stoneFor(u.id) === 'waterstone', apply:(u,G)=>G.evolve(u) },
+  thunderstone: { name:'Thunder Stone', icon:'⚡', tier:3, cost:4, rarity:'common', text:'Evolves Pikachu, or Eevee into Jolteon.',
+                  eligible:u => stonesFor(u.id).includes('thunderstone'), apply:(u,G)=>G.evolve(u, 'thunderstone') },
+  firestone:    { name:'Fire Stone', icon:'🔥', tier:3, cost:4, rarity:'common', text:'Evolves Vulpix or Growlithe, or Eevee into Flareon.',
+                  eligible:u => stonesFor(u.id).includes('firestone'), apply:(u,G)=>G.evolve(u, 'firestone') },
+  moonstone:    { name:'Moon Stone', icon:'🌙', tier:2, cost:4, rarity:'common', text:'Evolves Jigglypuff or Clefairy.',
+                  eligible:u => stonesFor(u.id).includes('moonstone'), apply:(u,G)=>G.evolve(u, 'moonstone') },
+  waterstone:   { name:'Water Stone', icon:'💧', tier:3, cost:4, rarity:'common', text:'Evolves Staryu or Shellder, or Eevee into Vaporeon.',
+                  eligible:u => stonesFor(u.id).includes('waterstone'), apply:(u,G)=>G.evolve(u, 'waterstone') },
 };
 
 /** How many of a vitamin this pokémon has had. */
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
 
-const stoneFor = id => {
-  const e = SPECIES[id] && SPECIES[id].evo;
-  return (e && e.by === 'stone') ? e.stone : null;
-};
+/** The stone a line needs (the first one, for a branching line). */
+const stoneFor = id => { const s = stonesFor(id); return s.length ? s[0] : null; };
+/** Every stone that evolves this species (1.3.0: Eevee takes three). */
+const stonesFor = id => evoNext(id).filter(n => n.by === 'stone').map(n => n.stone);
 
 /* The two always-stocked shelves: X Attack and X Speed. One use boosts EVERY
    pokémon in your party by a share of its own stat for the next battle, and
@@ -2745,30 +2876,53 @@ const BATTLE_ITEMS = [
    and it means a held item is a multiplier on a pokémon you have invested in
    rather than a substitute for investing. */
 const HELD_ITEMS = {
-  band:   { name:'Muscle Band',  icon:'🎽', tier:2, cost:4, kind:'stat',
+  band:   { name:'Muscle Band',  icon:'🎽', tier:2, cost:4, kind:'stat', rarity:'common',
             text:'+25% Attack while held.', pct:{ atk:0.25 } },
-  claw:   { name:'Quick Claw',   icon:'🪝', tier:2, cost:4, kind:'stat',
+  claw:   { name:'Quick Claw',   icon:'🪝', tier:2, cost:4, kind:'stat', rarity:'common',
             text:'+20% Speed while held.', pct:{ spd:0.20 } },
-  evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat',
+  evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat', rarity:'uncommon',
             text:'+25% HP, but only while it can still evolve.',
             pct:{ hp:0.25 }, when:u => !!(SPECIES[u.id] && SPECIES[u.id].evo),
             offText:'No effect — this one has nowhere left to evolve.' },
-  coat:   { name:'Metal Coat',   icon:'🛡️', tier:4, cost:5, kind:'stat',
-            text:'Every hit against it deals 2 less damage.', reduce:2 },
-  char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat',
-            text:'+50% damage on hits that are already super effective.', superBoost:0.5 },
-  lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger',
-            text:'Heals 6% of its HP at the end of every round.', endRoundPct:0.06 },
-  sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:4, kind:'trigger',
-            text:'Once per battle, on dropping below half HP, heals 35%.', berry:0.35 },
-  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:6, kind:'trigger',
-            text:'Once per battle, survives a fatal hit on 1 HP.', endure:true },
-  egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy',
-            text:`Gains an extra round of battle EXP after every fight, up to ${TUNING.eggCap} rounds per pokémon.`, expTick:1, rare:true,
+  coat:   { name:'Metal Coat',   icon:'🛡️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
+            text:'Takes 15% less damage from every hit.', cutPct:0.15 },
+  char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
+            text:'Its hits are never resisted: a “not very effective” hit deals full damage instead.', unresist:true },
+  lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Heals 12% of its max HP on a steady beat, all fight long.', endRoundPct:0.12 },
+  sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
+  egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
+            text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
             when:u => (u.eggTicks || 0) < TUNING.eggCap,
             offText:`Fully trained — this pokémon has had all ${TUNING.eggCap} bonus rounds. Pass the egg on.` },
-  coin:   { name:'Amulet Coin',  icon:'🪙', tier:2, cost:5, kind:'economy',
+  coin:   { name:'Amulet Coin',  icon:'🪙', tier:2, cost:5, kind:'economy', rarity:'uncommon',
             text:'+2₽ at the start of each turn.', income:2 },
+  /* v53 — two items for the two ends of a formation. `boss:'none'` keeps them
+     off gym leaders, whose difficulty was measured with the older list. */
+  bell:   { name:'Shell Bell',   icon:'🐚', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
+            text:'35% of the damage it deals heals your most-hurt pokémon (itself included).', bell:0.35 },
+  helmet: { name:'Rocky Helmet', icon:'🪖', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
+            text:'Anything that hits it takes 10% of its own max HP.', helmet:0.10 },
+  /* v51 — the trade-off items (Very rare). Each is a big number with a real
+     cost attached, so where you put it is a decision. Two are Sean's (Iron
+     Ball, Heart Scale). `boss:'elite'`: gym leaders never hold them, but each
+     Elite Four member and the Champion carries one (v52, Sean) — see
+     generateAiTeam. */
+  /* v52 (Sean): like the real item, it locks the holder into one move — the
+     second move never fires — instead of costing Speed. */
+  choice: { name:'Choice Band',  icon:'🎀', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
+            text:'+30% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.30, hp:-0.05 }, lockMain:true },
+  orb:    { name:'Life Orb',     icon:'🔮', tier:4, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
+            text:'Its attacks deal 50% more damage, but each attack that lands costs it 6% of its max HP.',
+            dmgBoost:0.50, orbCost:0.06 },
+  iron:   { name:'Iron Ball',    icon:'⚫', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
+            text:'Takes 35% less damage from every hit, but nothing can heal it for the whole battle — not even its own moves. (Resting in the PC still works.)',
+            cutPct:0.35, noHeal:true },
+  scale:  { name:'Heart Scale',  icon:'💗', tier:3, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
+            text:'Every heal it gives is doubled (its healing moves, and a Support’s Aftercare), but −15% Attack.', healBoost:1.0, pct:{ atk:-0.15 } },
 };
 
 const heldOf = u => (u && u.held && HELD_ITEMS[u.held]) || null;
@@ -2784,7 +2938,8 @@ function heldStats(u){
   if(h.pct){
     const base = { hp:u.hp, atk:u.atk + (u.tmpAtk||0), spd:u.spd + (u.tmpSpd||0) };
     for(const k of ['hp','atk','spd'])
-      if(h.pct[k]) out[k] += Math.max(1, Math.round(base[k] * h.pct[k]));
+      if(h.pct[k]) out[k] += h.pct[k] > 0 ? Math.max(1, Math.round(base[k] * h.pct[k]))
+                                          : Math.min(-1, Math.round(base[k] * h.pct[k]));   // Choice Band's cost (v51)
   }
   return out;
 }
@@ -2902,7 +3057,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       role:roleOf(u), atk0:effAtk(u), spd0:effSpd(u), rallies:0,
       st:null, stHad:{}, shield:0, focus:0,
       // the held item rides along: its flat reduction, and one use of a trigger
-      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0,
+      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct) || 0,
       moveHp:0, moveHpCap: Math.max(1, Math.round(hp * TUNING.moveGuardCap.hpPct)) };
   };
 
@@ -2931,7 +3086,8 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
   /* Covering Fire: behind its own front rank, with a Tank or Bruiser in it */
   B.covered  = u => { if(B.isFront(u)) return false; const f = frontNo(u.side);
     return B.teams[u.side].some(x => !x.dead && rankNo(x) === f && (x.role === 'tank' || x.role === 'bruiser')); };
-  B.mostHurt = u => B.teams[u.side].filter(x => !x.dead && x.hp < x.maxHp)
+  // an Iron Ball holder can't be healed, so healers look past it (v51)
+  B.mostHurt = u => B.teams[u.side].filter(x => !x.dead && x.hp < x.maxHp && !(heldOf(x) && heldOf(x).noHeal))
     .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.init - b.init)[0] || null;
   B.ownFront = u => B.teams[u.side][0] || null;
   B.isFront  = u => rankNo(u) === frontNo(u.side);
@@ -2959,6 +3115,8 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     if(!opts.noType){
       m = typeMult(src.type, tgt.type);
       if(m < 1 && opts.ignoreResist) m = 1;
+      // Expert Belt (v50): the holder's hits are never resisted
+      if(m < 1 && heldOf(src) && heldOf(src).unresist) m = 1;
       // Steady: a Bruiser takes super-effective hits at a reduced multiplier
       if(m > 1 && tgt.role === 'bruiser') m = TUNING.roles.bruiser.superTaken;
     }
@@ -2967,8 +3125,12 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     // …and a Bruiser shrugs a share of every hit off
     if(tgt.role === 'bruiser') mult *= TUNING.roles.bruiser.dmgTaken || 1;
     const srcItem = heldOf(src);
-    // Expert Belt only pays out on a hit that is already super effective
+    // (the old Expert Belt, before v50: a bonus on hits that were already super effective)
     const boost = (srcItem && srcItem.superBoost && m > 1) ? 1 + srcItem.superBoost : 1;
+    // Metal Coat (v50) / Iron Ball (v51): a share off every hit, so it still matters late in a run
+    if(tgt.itemCut) mult *= 1 - tgt.itemCut;
+    // Life Orb (v51): harder hits, paid for once per action in act()
+    if(srcItem && srcItem.dmgBoost && src !== tgt){ mult *= 1 + srcItem.dmgBoost; src.orbHit = true; }
     // a burned pokémon hits softer (v33) — like the real games' halved Attack, but gentler
     if(src.st && src.st.id === 'brn' && src !== tgt) mult *= 1 - TUNING.status.brn.atkCut;
     // Focus Energy and friends: the next hit lands harder, then it's spent
@@ -2988,6 +3150,21 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     if(dealt || !note) B.log(`${tgt.nm} took ${dealt} damage.${note}`);
     itemOnDamaged(tgt);
     if(tgt.hp <= 0) kill(tgt);
+    // v53: Shell Bell turns a share of the damage it deals into healing for
+    // whichever teammate is most hurt (itself included) — a back-row hitter
+    // rarely needs the HP itself, so it rings for the front line
+    if(srcItem && srcItem.bell && src !== tgt && src.side !== tgt.side && dealt > 0 && !src.dead){
+      const a = B.mostHurt(src);
+      const n = a ? B.heal(a, Math.max(1, Math.round(dealt * srcItem.bell)), src) : 0;
+      if(n) B.log(`${src.nm}'s ${srcItem.name} rang: ${a === src ? 'itself' : a.nm} +${n} HP.`);
+    }
+    // …and a Rocky Helmet hurts whoever hits its holder
+    const tgtItem = heldOf(tgt);
+    if(tgtItem && tgtItem.helmet && src !== tgt && src.side !== tgt.side && !src.dead){
+      const n = Math.max(1, Math.round(src.maxHp * tgtItem.helmet));
+      src.hp -= n; B.fx(src, 'hit'); B.log(`${src.nm} was hurt by ${tgt.nm}'s ${tgtItem.name} (${n}).`);
+      if(src.hp <= 0) kill(src);
+    }
     return dealt;
   };
 
@@ -3023,7 +3200,14 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     return true;
   };
 
-  B.heal = (t, n) => { if(!t || t.dead) return 0; const was = t.hp;
+  /* Every in-battle heal from a pokémon goes through here (v51: with its source).
+     Heart Scale makes the healer's heals bigger; Iron Ball refuses them. */
+  B.heal = (t, n, src) => { if(!t || t.dead) return 0;
+    const th = heldOf(t);
+    if(th && th.noHeal){ if(!t.ironSaid){ t.ironSaid = true; B.log(`${t.nm}'s ${th.name} stops it from being healed for the rest of this battle.`); } return 0; }
+    const sh = src && heldOf(src);
+    if(sh && sh.healBoost) n = Math.round(n * (1 + sh.healBoost));
+    const was = t.hp;
     t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff'); return t.hp - was; };
   B.boost = (t, d) => {
     if(!t || t.dead) return;
@@ -3100,7 +3284,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     for(const u of [...B.teams.p, ...B.teams.e]){
       if(u.dead || u.role !== 'support') continue;
       const a = B.mostHurt(u); if(!a) continue;
-      const n = B.heal(a, Math.max(1, Math.round(a.maxHp * TUNING.roles.support.careRound)));
+      const n = B.heal(a, Math.max(1, Math.round(a.maxHp * TUNING.roles.support.careRound)), u);
       if(n){ B.log(`${u.nm} tended to ${a === u ? 'itself' : a.nm} (+${n} HP).`); any = true; }
     }
     for(const u of [...B.teams.p, ...B.teams.e]){
@@ -3158,7 +3342,8 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       if(!u.st) B.log(`${u.nm} snapped out of confusion.`);
     }
     u.turns++;
-    const m2 = move2Of(u);
+    // Choice Band (v52): locked into the main move, so the second never fires
+    const m2 = heldOf(u) && heldOf(u).lockMain ? null : move2Of(u);
     if(secondFires(u, m2)){
       B.log(`${u.nm} used ${m2.name}!`);
       m2.fn(u, B, u.lvl);
@@ -3167,6 +3352,10 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       actMain(u);
     }
     if(u.focusSpent){ u.focus = 0; u.focusSpent = false; }
+    // Life Orb: the cost of an action that hit something
+    if(u.orbHit){ u.orbHit = false; const h = heldOf(u);
+      if(h && h.orbCost && !u.dead){ const n = Math.max(1, Math.round(u.maxHp * h.orbCost));
+        u.hp -= n; B.fx(u, 'hit'); B.log(`${u.nm} lost ${n} HP to its ${h.name}.`); if(u.hp <= 0) kill(u); } }
     B.fx(u, 'act');
     B.snap(u.uid);
   }
@@ -3339,7 +3528,8 @@ function generateAiTeam(spec){
        the high-tier slice first and only then falling back is what gave Erika
        four Scythers. Unused species win, whatever their tier. */
     // the last `offSlots` bodies are the bodyguards, drawn from outside the theme
-    const table = (offSlots && i >= size - offSlots) ? offPool : pool;
+    const table = ((offSlots && i >= size - offSlots) ? offPool : pool)
+      .filter(k => !(spec && spec.ace2 && evoFamily(spec.ace2).includes(k)));   // 1.4.0: his one Eeveelution — no spare Eevee or second Eeveelution
     const pick = () => {
       const unused = boss ? table.filter(k => !usedSrc.has(k)) : table;
       const from = unused.length ? unused : table;
@@ -3351,6 +3541,11 @@ function generateAiTeam(spec){
     if(!lineup && i === 0 && spec && spec.ace && SPECIES[spec.ace]){
       u = makeUnit(spec.ace, 0); u.exp = TUNING.expForLevel3; srcId = spec.ace;
       usedSrc.add(spec.ace); usedFinal.add(spec.ace);
+    } else if(!lineup && i === 1 && spec && spec.ace2 && SPECIES[spec.ace2] && !usedFinal.has(spec.ace2)){
+      // 1.4.0: the Champion's second fixed member (his Eeveelution)
+      u = makeUnit(spec.ace2, 0); u.exp = TUNING.expForLevel3; srcId = spec.ace2;
+      usedSrc.add(spec.ace2); usedFinal.add(spec.ace2);
+      const base = evoLine(spec.ace2)[0]; usedSrc.add(base); usedFinal.add(base);   // no second Eevee beside it
     } else if(lineup){
       u = makeUnit(lineup[i].id, 0);
       u.exp = lineup[i].exp || 0;
@@ -3385,9 +3580,14 @@ function generateAiTeam(spec){
   if(lineup){
     team.forEach((u, i) => { u.held = lineup[i].held && HELD_ITEMS[lineup[i].held] ? lineup[i].held : null; });
   } else if(boss && heldFrom !== undefined && badges >= heldFrom){
-    const ids = Object.keys(HELD_ITEMS);
+    const ids = Object.keys(HELD_ITEMS).filter(k => !HELD_ITEMS[k].boss);
     const howMany = Math.min(team.length, 1 + Math.floor((badges - heldFrom) / 3) + (kind === 'trainer' ? 0 : 1));
     for(let i = 0; i < howMany; i++) team[i].held = ids[Math.floor(rnd() * ids.length)];
+    /* v52 (Sean): the Elite Four and the Champion each bring one Very rare
+       item, on the pokémon it suits — a Choice Band or Life Orb on their
+       hardest hitter, an Iron Ball on their sturdiest, a Heart Scale on a
+       Support. Its own seeded roll, so the rest of the team is unchanged. */
+    if(kind === 'elite' || kind === 'champion') bossSignatureItem(team, boss, seed);
   }
 
   /* Price the boss against the player curve. Building first and scaling second
@@ -3432,9 +3632,9 @@ const playerPowerAt = t =>
 
 /** How many evolutions deep a species sits in its own line. */
 function evoDepth(id){
-  const line = evoLine(id);
-  const i = line.indexOf(id);
-  return i < 0 ? 0 : i;
+  let d = 0, p = evoParent(id), guard = 0;
+  while(p && guard++ < 8){ d++; p = evoParent(p); }
+  return d;
 }
 
 /** A stable small number from a boss id, so each leader rolls differently. */
@@ -3465,6 +3665,8 @@ function opponentFor(G){
     // the Champion is your rival — if you've met, his starter leads, fully evolved
     ace: kind === 'champion' && G.rival && G.rival.starter
       ? evoLine(G.rival.starter)[evoLine(G.rival.starter).length - 1] : null,
+    // 1.4.0: and, like in the games, an Eeveelution — the one his Eevee became
+    ace2: kind === 'champion' ? rivalEevo(G) : null,
     turn: G.turn, seed: G.seed, badges: G.badges || 0, kind, boss,
     lineup: seen ? seen.filter(u => u && SPECIES[u.id]) : null,
     tier: kind === 'elite' || kind === 'champion' ? Math.min(6, tierFor(G) + 1) : tierFor(G),
@@ -3512,6 +3714,17 @@ function partyType(G){
   (G.team || []).forEach((u, i) => { const t = SPECIES[u.id].type; n[t] = (n[t] || 0) + 10 - i * 0.1; });
   return Object.keys(n).sort((a, b) => n[b] - n[a])[0] || null;
 }
+/* 1.4.0: Blue raises an Eevee, as in the games. It evolves into whichever
+   Eeveelution covers his starter's weakness (a Charmander's Blue gets
+   Vaporeon, a Squirtle's Jolteon, a Bulbasaur's Flareon), or a seeded pick
+   when no Eeveelution covers it. The Champion fields the same one. */
+const EEVOS = { Water:'vaporeon', Lightning:'jolteon', Fire:'flareon' };
+function rivalEevo(G){
+  if(G.rival && G.rival.eevo) return G.rival.eevo;
+  const starter = G.rival && G.rival.starter;
+  const weak = starter && TYPES[SPECIES[starter].type] ? TYPES[SPECIES[starter].type].weak : null;
+  return EEVOS[weak] || ['vaporeon', 'jolteon', 'flareon'][mix32((G.seed || 1) ^ 0x3b9ac9ff, 5) % 3];
+}
 /** Decide the rival's team the first time you meet, and keep it. */
 function rivalCore(G){
   if(G.rival && G.rival.core) return G.rival;
@@ -3527,8 +3740,11 @@ function rivalCore(G){
     if(pool.length) take.push(pool[Math.floor(rnd() * pool.length)]);
   };
   // early members come from what the Daycare has early; later ones from further up
-  pickRole('tank', 2); pickRole('support', 2); pickRole('cannon', 4); pickRole('bruiser', 5);
+  pickRole('tank', 2);
+  take.push('eevee');                                           // 1.4.0: his Support is always Eevee
+  pickRole('cannon', 4); pickRole('bruiser', 5);
   G.rival = { core: take, starter, versus: yours, met: 0, beaten: 0 };
+  G.rival.eevo = rivalEevo(G);
   return G.rival;
 }
 /** What he fields at meeting m: the first `size` of his core, evolved m times. */
@@ -3537,7 +3753,8 @@ function rivalLineup(G, m){
   const rnd = makeRng(mix32((G.seed || 1) ^ 0x7f4a7c15, 10 + m));
   const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy');   // no Amulet Coins in a fight
   return R.core.slice(0, size).map((base, i) => {
-    const line = evoLine(base);
+    // his Eevee stays an Eevee the first time, then evolves (1.4.0)
+    const line = base === 'eevee' ? ['eevee', 'eevee', R.eevo || rivalEevo(G)] : evoLine(base);
     const id = line[Math.min(line.length - 1, m)];
     // his starter always holds something once you've met; one more item a meeting
     const holds = m > 0 && i < m + 1;
@@ -3549,6 +3766,20 @@ function rivalLineup(G, m){
 function rivalPrize(G, m){
   const pool = heldPool(G), rnd = makeRng(mix32((G.seed || 1) ^ 0x1b873593, 20 + m));
   return { credits: TUNING.rival.winCredits[m] || 0, item: pool.length ? pickWeighted(pool, HELD_ITEMS, rnd()) : null };
+}
+
+function bossSignatureItem(team, boss, seed){
+  if(!team.length) return null;
+  const r = makeRng(mix32(((seed || 1) ^ 0x2c1b3c6d) >>> 0, hashId(boss.id)));
+  const pool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].boss === 'elite');
+  const byAtk = team.slice().sort((a, b) => b.atk - a.atk);
+  const byHp  = team.slice().sort((a, b) => b.hp - a.hp);
+  const pick = k => k === 'scale' ? team.find(u => roleOf(u.id) === 'support')
+    : k === 'iron' ? (byHp.find(u => roleOf(u.id) === 'tank') || byHp[0])
+    : (byAtk.find(u => roleOf(u.id) === 'cannon' || roleOf(u.id) === 'bruiser') || byAtk[0]);
+  const order = pool.slice().sort(() => r() - 0.5);
+  for(const k of order){ const u = pick(k); if(u){ u.held = k; return k; } }
+  return null;
 }
 
 /** Level an AI unit up, evolving it the same way the player's would. */
@@ -3662,7 +3893,7 @@ function makeGameApi(G){
       if(d.spd) u.spd = Math.max(1, u.spd + d.spd);
     },
     addExp: (u, n) => addExp(G, u, n),
-    evolve: u => evolveUnit(G, u),
+    evolve: (u, stone) => evolveUnit(G, u, stone),
     teamExp: () => grantBattleExp(G, 'win'),
     shareExp: () => shareExp(G),
     addCredits: n => { G.credits += n; },
@@ -3704,16 +3935,20 @@ function addExp(G, u, n){
 }
 
 /** Evolution stone: evolve now, regardless of level. */
-function evolveUnit(G, u){
+function evolveUnit(G, u, stone){
   const sp = SPECIES[u.id];
-  if(!sp.evo) return false;
-  const next = SPECIES[sp.evo.into];
+  const opts = evoNext(u.id);
+  if(!opts.length) return false;
+  // a branching line goes where the stone says; otherwise its one evolution
+  const pick = (stone && opts.find(n => n.stone === stone)) || (opts.length === 1 ? opts[0] : null);
+  if(!pick) return false;
+  const next = SPECIES[pick.into];
   if(!next) return false;
   u.hp  += next.hp  - sp.hp;
   u.atk += next.atk - sp.atk;
   u.spd += next.spd - sp.spd;
   const was = u.nm;
-  u.id = sp.evo.into; u.nm = next.name;
+  u.id = pick.into; u.nm = next.name;
   if(G) makeGameApi(G).log(`What? ${was} is evolving… into ${next.name}!`);
   return true;
 }
@@ -3857,7 +4092,8 @@ function rollDaycare(G, payCost){
 }
 
 /** Pick from a list of item ids, a rare one at TUNING.rareWeight the odds. */
-const itemWeight = def => def && def.rare ? TUNING.rareWeight : 1;
+const rarityOf = def => (def && (def.rarity || (def.rare ? 'rare' : 'common'))) || 'common';
+const itemWeight = def => { const r = TUNING.rarity[rarityOf(def)]; return r ? r.weight : 1; };
 function pickWeighted(ids, defs, r){
   const total = ids.reduce((n, k) => n + itemWeight(defs[k]), 0);
   let x = r * total;
@@ -4520,14 +4756,14 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel,
-    expPipsToNext, levelFromExp, moveOf, evoLine, stoneFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
-    trainerCatchUp, shareExp, pickWeighted, itemWeight, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
+    trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
     fightersOf, stageBattle, recordWounds, scout,
     evolveUnit, makeGameApi };
@@ -4554,6 +4790,7 @@ const SPRITES = {
   "alakazam": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKCAYAAAAc0MJxAAAEfUlEQVR42u2bK5DiQBCGO1cnkJFIJBKJjIxEIiORSGQkEomMREYiIyORSCQyMi4nZprNNPPIk8ded9XVVrglAebj///uzAJwcX1rVfLfV9YfXr9m5b2IJChvAQAATGbZK6/NRL26/r76gkEgyMqyrHoTWVWXbxUT9alEnROQWvUW14WykNf3WaO+1vW07oc1ogsqWtTXdZmoT9UoWrWVHsoFteRyjvpfNIpWTUOavmatFlnO6zFRv0mjwkjNU3k+hSZE1MioWv7+IN8eJurTXQ9JWoY0osvjIre65A+Jd+v52fV+kespWhJvQjE1uJZCo9Jls7MYyHKRGqxPg75HJuqNGlXVCcJqTVJLgsYuJuoNRFlJWgeTQV94kojzzefq4xptanrnx2OiBiaq0yzZVA9NSpCAlicwuN1+L0gKAl/7/3Qmn8SR9TK3u8hh8fFsff9MVAuiKgCA1XoDAACn5CB6pMlk0Lsk0S7F84qEXexaEYQ1bWhyLpIefYA8IdXWGmEeE9UymVcAAGl6Fp/wbCrdZK4Q0IKsSpvEz2eVKEPXjwTFR/H7ZVmqpOxX8vXpNWq5vCtTiiiYtfpAULNqZLFG9cpRt9tdIQq1Kz0dm7qiV/+OI1lhKH4eY9SCUpuLdodUrqSqTXkaaUlCgvoWJYlz1FAa9XADqVVIWJoIlzoexIpaJocVAEB2Wksy1JU6J66k7Td64VSLnlzWoU0uglCb2PU6EKWQQMmiJGHhSmZZpiZySdLzCt21RDUliZL5SOLzieKueNy1k6i9H07mfV3PAwBYrcKq3jPNfNP85w66vGQi4Gel1d8zkWR+PgxCFn29JpKYqL4aRRPzZlsIF1nPlZU2rRiuVLyZat0JNQoT+G5XarWvqdZQMihZVENNWuqasTNRXYnCaksWnT9h0b0EppWk16P5iBJGe8jH82QH4NIcmvdcZDFRHYjSfuLRaqEmXkIUTdwN7quZekbrbhdK2Ha703YSHaYeistzjhp6euByv+R0lY/4irvleWeKFa0II32Cx2NTb4c96UNrzPvZFaLpJDQKxHEUJzzhHIoobe7BXg8fR5I6VGVzQTyviSznXImQRfeINp2lc44ay/Xwu/7UixmIcrkdrijOg556xM3Umq8o8dT9cNqBRaceqLXBYqGfY8UJu95YRFnnVIfD3tRLWZMwThtm5AZd7Y5tp3w18wsrQfg4HuP18aeJJCZqKNdzdu3uXkpLGt6dMWkfumCwPtl3ofi4zyq3kvQ8lZg20iQmakSNcvVovXLT9VrIHs3Xuyudtfv6HXvhKrdqlSnR//z9YMYa9WqNarurpQIAuFwuQknSnUJQfrkr0wiXFuJfjJYFJcquVbTD6FpM1EiU9O7tsChpqFG1ZG9N+GWRGrTqoBxjcsfc5yLLpFVM1Ng5qi+1i8Wi6ki5BwAw8Vfa52M+oz0gFt6ZjqKSNepbiRpLHz2DS1a2vNR6dzIT9Xmu96oSbkj2fNbuxoicJXf80U6A7xQzUZ17Uhd5TBQTNQ55TBQX1/vrH374FnozWK9JAAAAAElFTkSuQmCC",
   "arcanine": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKCAYAAAAc0MJxAAAEIElEQVR42u2cIZSyQBDHx+9dMBqNxi8SjUQi0Ui8aCQSjcSLRKPRSDQaLxqNRhsXYHjuPJadXRbw7s00FWRxf/ef/84st4C/HxV5vXD5kn8gwYrFXyfoeTspHy43sdO9C1EzEFXNTGnVRdBQkoSoGYhSZpIxc77I69UijF16BgCANFoDAMA2yUSj3o0o1kx2kGVLnpMW0biWV+V1WpQAAFCWpdX1hagRiKoAAC5FpszMudj3noTkePAzViRxSeNqlhDlkSiFJIwgDLwMgJslfZHkOg4hihkftif4IumQH+GV1G2SzersX7Jx5ziEKA9EKdpA/cjQbBMF/5X3wzBEf8PyaVOHEOWQ9WaZSR2pXJ821jiovxKiLDSqAgAo89pHlLflW5B0SELlONdsS8+nrzH7Us0UjfKlUZSsdL/zesEoyfv9VUMSJcvWx5lIwnHQ76eBWiVEjeXMh5J0Tlb9xxGSkKyWOMNKwUQS1w9K1vNYPfC6WqckXR7NjMVJ9wll0ZD16NQQnXbZBvd7RKPm0iiazbJ49StJetEm0ShfGsXTqnUEAADLZe23ns+nmp3Smpw0ePKINJBEfZZrdBDD+k2EKF8adTkV6ow0GoMkZUznjsSYHLnpfVfCXDvEQtTYPgoJ2654FzBmO8NajRJEnb1O23yRJEQNrR5g7bqdQU2FkWqXVhssScL6UHm9s9aGOrJ8kSREDSXqXboetlWH3bne/3Q6ftF70+0KtuojClFjVw8wK52v3yoBTe2ZW4lETWqXfI02YazWai37GN07ScLYb+vPw309ftRc1Fq6u4a7q0aIGuDMF80vXfU57/SAWU+tOSJhJqJoxxj9ElYd2qy5urNuBElD30ZJwnDVYCHKQ/VA0Sy6P0oXtl0SJJCShdqEmmNaCSBJ+aXWrMf9u9cH2u74E6J8E6Xb1WLbwaVZTteh1ZGVnR6Kr6IkYZiIsiVLiPJIlEIWZkFTBxnJweNMPX5aJaD+CQmhWZGSRMnDtR/t69muBYWosYjC7Eezla4TS48zaZHOYbfOPY97B0mzHq1TybMwb0SUk6/iBiWrowqgXB+dN2oWalKrkZ4rnkLUiER1zqxrv023xkNCOp6C6nwmZyyShKipiYp3n71ZxpYk6ouOh0jnoFlaKV2YiePDlST0M/lFddJ0twjOKNUUPB7rTbRSiSSZ/hrSoqym+KGEqLF9lMkhvzjqzm4IahuNtiYeJtzVvet4hKi5NUqZuevlVq/xthtbeqtXclCbaHeFO558FyhvOoxLiJo166FjzuKNFy3QkcStPJ7utQ8LRtImIWqqrOfwnXXtvYhZF1kmbBKqEe5RiJrSmQ+aIeyaYHb6jGqt+zo7Z6tJnmoXot5pNvr8DxKEhO2P1znHJkT9RqJM2eot/5OjEMWMHxAXI++aooh4AAAAAElFTkSuQmCC",
   "band": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAB+klEQVR42pWVIZejMBDH/+lDFBlZB7LIddePsP0GIJGsu3OLZNW1rrjFXXDnjpUnqUNSmTjqkK3LCZq8QGnh8h4PJsn8MjOZYQhmDMdxpCkLIciUDpkDPcR2b+4tuUzCyRSU8wRtvUd5vOLEXb2WshrPvFjMCQX1vuPEXQ1LWQ3OE1QFxSG2cYjtu3DNiq+Uv6RSVPKfz7V+q8eEz7J4F+eoCqrjXWQf2IbvAIDNt6XeFwWettyayoKqoAAavGxbVAVFlq9uIfnAW3LROsMLXgyBjuPIqqCoCooo8AAA5fGKKPBQHq/6MHWRQggihCDqEGW1ZUI764AsX+lLWru2/o4C72atpw942UIqeMoglTELM62yfKWha5f3XFNQpagMULG/y2MF3cV5b8HMUxOm5tVc6HfxV3nsOI4UQhDLVFCbU1b3Ej5lkMNCSBlkVVAd9+F6B45P4DyB68ajVWTKP99fZcpqjEHNoS1u6z04TwAArhuPVlEUeAj9BqH/HHqXx229R3NuwPlOy/3RoDk3qtDngWn+itb/AgDUf3+M7/4N4GsJZNfJarUA4FKWneTjOfA/xgIA7M2mc1S7aQDDJTwawguCUcCjf7MlhCAuY13Vne8tfASc3UFUSWurH7l/iy/n9GknIWN/tWLicrbhcrL3kTnNczjmNNN/yyYtQgbEOE8AAAAASUVORK5CYII=",
+  "bell": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAACE0lEQVR42s2UIXDbMBSGv/QKMhZBMRtWMNAw0GHr0DJY1AstasZaFJqxjdlwRTZ10cLmogg2QTZLghoxDdRynJu9u95ud/vvBCxZn/739PTgH6j3N5tv53P79PiI1hqAzWbzNp7nedYNB2z7p9OpW2xq9j0mlD4AQRB0OvvtMOekKApr7bN1Wr1sbVEUNkoSa+2zDcPQRkli2w4Pw9CeN4HL5RIpDSCJ0xTQXEiB3x8AMBkrvuUlAEYK7hYLZtOpbTp2+aXpLkoSGyWJ3a5WldvXsXrZWmufbVEU9uvPHyf/Nx17nnd0KqUhTjWh7yPUu2r2NYf6sEPsDeW+T5bnvPd9Hso1lNBvuZMzF7YDGCFOgABib8jynCzP60ND6fPw+R4jxcmdbDabHp7n1WEcQz7KXVBzrSgKu3rZ1qHfzuc2DMM6Beev4Q24aJzoVJbliTun3aCP2Jv6+/7m5qS0zgCesiXDYVBt9DuAPjt9qPObZRmj4bD1oZwBzKZT9GHXmF4f81kB9WGHEYKbD58IgoDRaFSVXwdUKcVYDdGHAbBmpw+1SwcUe8PV1RVaa5RSSGnIq5pthX68vq7Bvj+i9CWTscIIQVmWiL3hSxwfC7uqjsvLSetT7TVfk3PSJaUUAGm6II6XzGazbqgDr9cZAOPxtBWapgvAJ47jTmBne2s+z6aiKDppf29q0n/a9OZG/F/rF/A+jkAWEhooAAAAAElFTkSuQmCC",
   "blaine": "data:image/png;base64,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",
   "blastoise": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEwAAABMCAYAAADHl1ErAAAEpElEQVR42u2cLZiqQBSGj/e5wWjcaDQaiROJRqPRaCQSjUaikUgkEolEo3GjkcYNw3Gdc+cwsCDi7vkKD4KA8O53fmbYGQyniqzP4AfqD4g6aTYUWUopAAAIghAAAHxf/UjShLCO+jsUWVRpmiFpFSHtrb1OCBvRwwzC0jQ1NmZZbqyjp2WnjfG5OiRvRZoQNjZh6FV3YpRnrIfHEwAA5JlJYLhZAADAObvqZVL0vaau3lh9554IYSNGydljFETS0LuyXC+V51kJQ+3U0lg/J0X1HUJ2m7VxPHVIuONUAABlWVoPOp/PG88vhL0g0zeeXBAeDbKojsew0cseSIOm/A2J4ki1RGF4JIt6q6d8/XlwQNKs90gIezVhmGeFyc2oLSlZbZVlmZUojiw8L5JLrwOjuO/7TIWSCmFTiZJWWjE6BWlZk+VbnyDVfutZyTkvupHFrVOhZ1EPk0x/wh5mRsvUzHPyY7NnUFGPWS5urcjiCEIP4yqShzwMJA+bdB5Wk1XkOrqtPdX4JY48L0it+1HS2hKGoqTRborUklMnzA/TVmRRcURezjrzvn1eDM/DqMqRRqMeV8vePW2lvSuMUvGwt/CwvkKyFqXuelxvC2tUpfkb7seRxhEnhE2YsEHJckVTLm+jxFHS+nqXEPbuhCFBNP96FmldyRLCXtCtqNrkUVkc6Se63bciZnNsVyG4FMW5NYouPz70dV2+9xchhD2RMIMozOjL7NiJCCQxDTVZdPSmL1kcadTb1OqjXvroZa1Gq4SwJxBm1Ii368VYzl15Tu1d6GXza6Kf6L7uJkRbTdwqtmb65WrTijxXj57zNvQ08bAX5GEGWVToXa68qW8tGex1HhVmmrAkUFayuOvg8jaOMKklx/Yw9CrUYrl66gVRsijRUBPmIuverai34/5I2ne9TAgbgLBG76LRkcvkXRk+JQpFyQrC/Ck/nM6QlCg5YpSsAAC83cnMXw7aO4Lk08xzQjP/4Xr6lKS2RKWx/p6/Na9nroLGH8blbRg1cfQojg6Gh0mUHIuwoih0FDll5hP6nxTrDL/77Or40JyhE3La7o+EcSRx3RNKGApJc821FcKGzvQ7focljZOLKEoWzbtcI+y4HfM4buT7q3JQQthYhA0lPWv5M+l1EJd3uTxrq3TmGGellTSZW/GqWrIvWehh5ygyNu72zRUA3R+F3Qra+8cl9axyuanJSgb5UULYBAiz1qJx/cQxKnIEcQSuVW7tOiBp924G6VJ8aW94WlfvEsImECUbuxyokpDmUnExa8siK4xoxxPFdCnqLspDxdLpHghhE4qSdsLqqMXVkBxRX162rgnLO5E1lISwqROGov0sf2tGOczMkSgU9sv6koVem4Z+2/czhbCp1JLWaIljAa5RJ9rB5YQdYdeYAY2O9PwP5xPC3sXDZo/egLXkfQ7GMrDmZfheJLR81xtJcY1OcWRJlHx3D8MxAar1ej3UtVhnFVFxZHX1LiFsQoQZBIxwzlY1LI3WUkv+AMKeLeM/nKh91C4fi8xo6noDVwj7xYRZvbLhf+oMcg+EsF9IWKO3dfUoIUzUibRq6IMKYR31DwH7Sz0OkpvVAAAAAElFTkSuQmCC",
   "blue": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAEv0lEQVR42t1aK5SrMBC97HmisrKyEolERiIjkZWRSGQkEomsRCKRSCQyshK5EpcnICmfln5ggTbn9GwL2TZ37szkzgRgxcEcRz6YIp+Y89L4WROwa2V3gWb+ToqzM/tv/lsRrzyYBMyBjNLUACABIPN3OJhET2rufT5g5jgKkGK0A7QUGeKCzP67xpKMMsdRjGmApbjr1h3Ayv1JUBkfw7DnAoAjozTtsPlsjNcGSD/LpRvQ+rNi+RHbJKgATI9nY+G4lZ4LDbA92tcU8LggdzN5XJC3EpqxMMGDraYNrmYfo6Brpt9f++qA++Cubj+8Psc2tbTwMMK4e6H9WTEZxhjEs2tlY0Jlu0qr2XdhnlKEMeCSo2bwYNbu65IjsD8hLoi+puZMlZo/a7h0GANlEnaMQIKqwzbxI7ic1df2p0mJai3Ag/jlzIFNazBVVWlmlRKzLQecOYizi3brqQxPsZZ88ztqzRwwxNkFYcgBAL8iBwDsTVu/14aJ0tk09bsMy+q6KPmGkQ3iRwCAPDlroHvTBgAIIa7ChHqzFhDvKC3JHAeex1EmIYLzL8KEa9Y66siPxhZqRGkqAQc2hQYfZxdw5gyArwVYqmSjFuOf9gA4zIOJJBcIgmucZg37DfCBJ1iEApYF79zo4+JSx/HVjWfXCi8zLISAaZp6US45gtqAuJiDuTY94VfkKJNQCiFA/AjM5/p+nhed96FzhHL1vxJFr8awQfwIPEp15rTpCTY9QZQCYcKxM20dl+1hmmbNaNsgttUBrQzZzJN/AXgOK7br3JvZWAFxwgy2bd38kprhA7y0rL07S/6E6aW0tLQI7TB6C3j7XhRwWISiyJKPBNxxUeZz5HkxyrYyztyAl2wA6IVHAZftOF5yrNWmNZQB2kmrb4Tm7/f0pVViyvPiJvBvYvhu7PbB97eyT4rhp4ZyZwW6tT19BeCB5OxvW3MDNjZAqnzktg1ovVZVE79TRW3OpZ8xUJSmqmMiXwW9KsPM5x13dmntxnFSqP26PRdRwMGcugsihIBNT9jVNbSxeZqYz2VVVYNXlieS+VxmeSKb+NavLGCyErnMAibLJJRZwOSr+/RqlmkADYZit78vF1miCxFVar6D4d9a7NrWsCGfFylcaoHY9Ob+G2cXRBPr5Y9KWnP0tlZ16T7LeZEiTgrsBBAmHB7lnfthwieveTWGiU077Z5WJTUA+i3CQ0asPmoQpYB5uPbERHm7WzkHw6sVDx7lEKXQYK0jhXWkfXDdZOdMf6rnZyWw0rV9uLZfV0RHOmDyllvvdvbk+nj18rDtymPu/PHVUpwHtZxsWB5z5a9oALRdWqupiy4FjXvAp8bxaoBb4PruPJqFp8bxplo8S4zln9OiXPYTVXFJ1FGNMdYN+egYviMqRq/1DbV5htvs1vFaxzGL3Iexq/6vqvJJamt1hkcSlbwlPqzj6TNcuh+76v2r+25xOX9WDLeV1DuqSj3ntekYVuz2q6JXktBckvNnzdh9kKxuqq0mruWmGW7XvH9dHGyC4TDhs4A1D+bk4mKxjodHu033F7oX0qMc2W8B4Hrm1DTpN/uAuD4/6i34adDA8Oi0f+a0ScATFyynrn/xh1oU8HfYmWP8BxKel9to2cShAAAAAElFTkSuQmCC",
@@ -4569,6 +4806,7 @@ const SPRITES = {
   "charizard": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAE+klEQVR42u2bIXTiQBCGh3snIiuRlZFIJDKyEhmJrEQikZXISGQlMhKJRFYiK+NyIvk5dm5nd7NAE7j53+P1QYGE5dt//5kNRCqVSqVSqVRMdXtz6peO03010iGIIpeqfEpEREmxd46lEnxn6QBfqSqfgmarJ+sA31m/dQjivFctQlPEc5CrKUJTxINpNm5ugRWeDvADeHDd8b3qB1kH7N67Tpq/y8rqxVXx1tzPP5Xgoefgmohov1gQEdF0s/GRXBMRbWaZ8eCi3D0G0SB399I+cPqnoiMiouxbF7lnreRGl8SCZAfRo0APvy/558TwHfU8JXiAKcLwXmi62VAIeVhls6L5pueUWJ+8KHf8/YzXQ4f9OPT4cSniNLP/F17MPDcZl8Z5KMFDJ7gruZCP4K4knwlq8+ePkcyPrwQPN0VYvddR0TnJLcvmm56zFBE665L800gjeZ7wSqq+w+wNJldTxAA92CB4Mj05PbDDam+t8AK8OOi8cFwI/7/w6tAxMWck0kObJiTvV4IHQLBz1Q72KP/qHkuyQfDyeDTjav5iJdo3A0NJ9j1fCe4xRdyEXMixugetAyAXhKNnIaWaarJsU8uaEe0m2XKe1vPj3i5JCe7Bg29Kru+bR6qYzWbWys7nuRC8F+RCr6lJ6GlbGN4c4cmdejFK8IAquU5kSkRwSST6ehQ+cqGv49ggeTzPW29uSF6n4yCS+azHDo6jslWC+87BQV5cFM3uar5rvWo7DyI8lEyQDC8O9V5xxnxkzpQjkezzYvXgoRPMv1mQC7KqyrxO4PD+7iRznabOE8Nx0H2D8DofuRKpoRUa/7yxaUIJ7iFFBHkvyJ1viiByIfSBp+1faRUGQai8oKwwew3JYW2QfEHuKGY2o4Lj58UrPOR2reQG5MFB5IKsw/GrSQ/tToIvJTj27px5MjRP33AvzunF0pogfV4l+AcIvqr3wMnl/Vi+6sODIXTHtlQ5iYgg+VqirSSHpiAluO9exLlCyxMnuZzYVdU8fky+ra/bdN9FtgpeyHcs+JVDZVnWkSQbqQLvu6a0E8lK8E+nCL6aw/ssu8J0mQc5uZP01dpT4DkarwcJSCeQNIM4yRAn+gYpo3b1LCSS1YN78GCjz/nXNFnXqe05JElikBsqvkMBjzy0hOeF2Vso8rWTaE6s5M2YKR082TqjUUmeK8wjaS9iaCnC+c0mSVJfkryf5UHe67gyx0qu9DiI9nmzJMtvSjqlHXgtSNYUMaAU0WlV5av/5OPD8GYQkK6WxLpP1l5E9VV2OgmQjArQ58kSaaF7gJiZSDm47+u1KMEDJNiaDy3v6buCx3pN2a5YhVVy+cqan7k381Qh9U4kgiVycd+3tijBffUibkD/qEu+jJXUl5a6b7wy5d0+TjInd/w2acjNwn7VpAQP2IOv8m6JYJBULJvrK8Zs9T+x7l2+3jYeu2u8MMsy+32hR8F7Cjgu12u2iBo7Jfh/I1gi2aczyS2pUk+Ck8uPx3dcrh0rJfgJCY4i+VzBCURzgr3pQ7hO+dZjogQ/McEGyehd8BpfIlrySun3cthjDO0hKMH/QSV3Fw/me3LQRc3v7G1IHjtJ+/mQSvCz5mDsiPDKi1+dGeGRUb0OTRFKcBzJdzzHTiQrwUrwYGR4fJG9sTShOVgJfiSSsZst9YuxC64EK8HDJrmvMVCCVSqVSqVSxekPDEvHsbHTqkUAAAAASUVORK5CYII=",
   "charmander": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAABkElEQVR42u2YK4+DQBSFz24QSGRlJbI/AYmsRCKRyJWVlciRK5GVSH5CJRJZicS1YphN7g1TXrNippykIZkml8zHuY8ZYJe7eg6/UX3bsouvhTveGkMb955GAIDTbz0a1wmihGBXhOTP9n54S2AtUSUe1xqinm6HnCDX8fQA89bTkGftznpvawBF1pQ3dV/KSqKzvKmynZPc6tW/eOmwkLvuUUUyFBUAwPd9Ul83eJWSdCHrZ3mz6eQzzrK3xIFmUVdUnlbvb/ODe51pVHEkPfjIaw3JbdKRtHp6Ip1Cl8VzCS6YqohHg7yxm6iny0Lecf7pjDRZbZw8MxHCTXUBAPQlzf68lc/iOOnV0VzQedP9U2jXCrJ4TksAQBbQesurgyKr8/xUlficCZ93LkWSe1aR5Otz6617WV+eqbfiIhn1qhLPfl4d6nrZfYB7RKtKTvaduAIAxDCfih9KmtdXPs8mt3U3Kx91mwcAiKKI1NMwMEPSaaKziPd9DwC4JbGsBiU9te5E15I1/S5riO4yrRewWKfU4lgQhQAAAABJRU5ErkJggg==",
   "charmeleon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAACE0lEQVR42u2YIZPCMBCFlxtEJfJkZX9CZWVlfwISWYk8iUQikUhkZWQlshKJRMblRHY5kklCdo47pik7w3RSStv58vL2BYDXlsIPuz5gpDV7IWm4rmoAAFjsOvb7jJb4/JkE/3MmJ6txBQDQ1xUAABR59kizhrahlPrYZ2ytT07jJjms4Sx5d2kuSDwHy2XUI/LJEzdcwyZNVXYiTqOldI9R65P2cRUifJPqEK3tGQDAYin0fa+F8eWkXSWKNNWx0Nocsoq0rqLIHT/17w4T6pzzZ96MOidb6ziz1IFjZiyZrBLsiDZRcgHf9dG+7nluyGVGr/GgiwwSiYMmXkjtBhLPy7ZxZpWq0poVItJlrApll9FrnNUhhRAG8VNTR7nMnWZZa8yl9TRdxecmvvy9xuEmC5MPuI7z+a70mdyeU927gk1w7QmD27bU2t/1xnWUZbgzFcr7yWQVBQCwr0ocSiRioiBXufntaWeMzyskiOTJjYh8LOHQziqNztl12i8vmy/joiWSX4re6QJ25bnetTeyN8iStmlsk+fMRBoaJ9Kfa32s6zrYaWktNO3BcJV227M0zNF2mp0z1ud/3EfXHtMjrRVfhvFpmc7fuVb6/2Sx8jKtBVob5D5Zlhl7yNgOGUM6OY1zS8XkfF/msXdYjj7xJv6rmbFd6NaZGaTfxDnEaY96QLdxdOg38T8h/4z3GC3xbx1K/LMCeqX9AAAAAElFTkSuQmCC",
+  "choice": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAACT0lEQVR42pWVIXvqMBSG3/IgmGP/IJVD1oFb5eY2iet1l0gcVw6HBAluciiGzNSKyxzI1IEaKKjLFaxZYXDprcmT0543X79zkngUeIQQNj9PksS7lOMVgfb7zwcxKZsX4d4l6HxuSFOI45jx+HsBpab8718cgLdba7dba6PotxVCuHG7tfbz09rJ5N1OJu/22K7C8Cwxm08m7248BS8VgUvZQmvj/FYqJgwbADQaDfddEDy5QpcvdYHW5ivJR2tDu91CqSn9/jNSNl3OcYFLx0AhhNXaoLUhDO+AfeHC8I44jgF4fdWukEmSeEmSeFI2qVZjp7qch2bq2u2Wq3wGy7og3w1aG4LAtxlcqakNgr015XxbSdk663MY3qHU1P1FJiAPP+jjc9C8sjwsi2exXm9AEPiuj4UQNkkSrwyQphyoUWp60PBKTe3xRlBqarU2zqrj92WA5XLNfG6o1fyTuyg/zzomg45G5qR1ZQBjrpnN9nCAWs0/u4uyAmfQKPLR+gx4tVrz8HDNZtAjffzlFkjTnwnL5RpjFg56TnEJoF6HdNijGoYAbAY9Vqs1G9lkI5ssl2vG4zXd7refGTSK/PNggGoYkvoBlZfhPjDosuv0AbjqSur1fXg0WnyNBRTPZrBR6sfLq648gEfRDQBvb9+Ktf5z8sgsJUniPT0F6JsGFaMLn3r/suHgoBdCWPX4CK0OlZch6WrFLupw1ZUA7Dp9Z8Pt7eWbxDt1qim1V155GZJ+fLDr9JnNYLFYEEU33N8HF28Nr8jlefwUuYb+AqswjwsAB03PAAAAAElFTkSuQmCC",
   "claw": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAA8UlEQVR42qXUrxLCIBwHcNjtJdZGNe4RFrXN6BuwarTpK9hWF61GG7bZpo2tzeYj/AzK/vHbBOSOOw5un/sCv0GJZQvDENS4rmvaX6O2yCVftnPx5jwAqSmkEBakgzUWr7SEs5AUHECWXQcAkCVIwUEKDiq1b5KIBSkhbPGZrO6kunbpXo9nO/asoeaIQpPJfkEKqapm8J2HQaddZAxt86a9ADRZFO81CEPGteajJTADYcjkmbV1NILWh9skomGDVAhkUpielsoR0m9TndW32UDoLyMFhyJLoP86WGMgSyiy5C9IK1qnrWHJnLc294K6tjd9MtcVkIneQAAAAABJRU5ErkJggg==",
   "clefable": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEoAAABKCAYAAAAc0MJxAAADQUlEQVR42u2aLZSqQBiGx3s2GDdu3Gg0EolEo9FIJBKJRqLRSDQSiUajcePGG23cAJ/rfDLODwzi3fc9x8MBGWAOD+/3A0JAEARBEKRX3f5+hf7gfptp5kiSyOJICCFEtiuHOCaI+vVEbVZLaePnxwcnbAaiQJQ9WZfjUQghRLyNpT/3h9PUyKr7zB1EjU2USvMgUJ2r9nBNyuNSlL6uW3opiBqBKFeyxKP9+X4G11g/IueOLMeoDKIM9eb7BHmeCxPiVKTNg6BmBNRd+1PU/fr+9pLfgSjfmXnHMSSvIpKSJOkkjMT/13ncdr22Gkek9c3rQJRvj/raVY0HxKFRT0pHmIoQW48jlcdq0AoBRHkkanZLEpG1KbKHg1TEHMW70ziu81kmbpWkTnmYar4gaqw8ikgqt1urcZwAWl8sAqfxpOUmEY/yLpXXqkRPDoiaSq1HUSuKZFKy8twso4W0XUeUiqSybLaXbWZeVVVLerNcvJtN5jMO4VEv0T1Y53uZKEuSOFFE0JWolqQ0kqOvjiQVQcijPBJV21T71+i1bnvop5PXCdD5kv3BiKii2jX7FYXVUwWiHPKo2oQYVfSh2ioKmmd+Pp8/rtGWy+Y4xc7Ko7h+xh26r/OvTNY6jKXlTa06A1EDEVULIcQh30pEmN/Jbul615w4TqStR+WbVetVWadXkTeR4FG+PYrupO7OqmoyPj7dZL2IG1rkSVxpUcCjfOVRtU20c41SdzWaozepakjKp+7IaT1LlanfZOjIzH1l5lYZueqOc5l2LE0VpSmLegdpXUcaiboNIOoJ3QOjboEpaUMRRmRdz8OIom4D97SOjiii3thEDUKWL3HP4n0rIsqUJBDVo3swSeneJPP8jt4GEVlR+zUL9yZbgahX9SjVWxaeBxE5vFLgHsVl600gakSiepHFSVCtq6TKtDlJNwT1mjOIGpso3ZdwnBBXklTqIGfIOYKoMYnqJItnwr7lGs1A1NQzc06QqtZ6FZJA1BM9SvKqE//m4FRJhNF7tTAMnWoyfhwQ9R8TJZFlcO6GwH0+SW8CURMiyq1mvFzaDP3cZuzNl3n0rcKzrh1EvSBROm976rWCKAiCIAiCmP4BJ+qAVcTCg2sAAAAASUVORK5CYII=",
   "clefairy": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABi0lEQVR42uWYoXKEMBRFbzsVyH5C5UpkJRJZWcknRCJXIpGVyP2ESGQlcuXK/QRcVqSPCW9fIGx3Opv0zjDMQEjgzL0vbwCWZX6OP9czHlRPC6TQqRwAULUDH282zvfPiJGI3Kg78aGsrO5GLk5iRKZs7FnXVdCkDrmb3+Nhib1sGXwcTgCAXf62SHJo9rNxpINuRc9G5bEgYkSECEHbU1sW4nhOiqsbXkVPu16LJpVm5hFV26v94S6LTcQhE8/r/fRecXmMPJJl2WKlR/E5I8pT6yPF5ZKKJpUzb5G8pKjCrxD1kVL5DgBwOp/j3Svt3jiOYgr5l/NK7/MWv690PyPG9dF+RZZKXStLqHwX643PE2uVns9D5JLox0xIGq/2Uv0tkuYem1LJvOZ6K87uYi1lPK1aazHNnFT6Pb+vE93aNfi8JdWv6DxmXM+oprEEUATVp62SSMXtsav2qyhuIsS91Q5HG+K+T4cYQkjy/s1HyiETvH4yxOR/HNTHsc72N+skS8yX4nT/j10Ac3OkPII23MEAAAAASUVORK5CYII=",
@@ -4580,6 +4818,7 @@ const SPRITES = {
   "dragonite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAEHklEQVR42u2cL7SqQBDGx3deIBqNRqORSNx4o9FINBKNRuONRiORSCQSjUajkeYLMNy7y/5DYIHnzDk33KOuLPz4Zr7ZRQB1vKo/Ck38oVPQLRYK8qB4xAAA4K2+dO91GS+LYycC5xZ/Z3CMqjuCNPB/1cCpaOFUtZgIpBNIJ/ADs3AQBAAAkKbpa2At4rSP7c5E4KdmYS0RaZrajqVyEFKfrfmeBRH4oQRKSbzfn9yLG38vJaxIeOfgsZgjTQyJ01hM+QQSgQ698KIi5CXLzrfsgiRKyWOnp0njZkEcETgigVJCfurCPUdknj8AACBKPAAASK4HjrwkWpaal/ZOntO+IRE4AoFShxJGF46sOpKn9vOolR6LuzocVdYf1DkRgQ7rwFZXXsy+NZAioWIdyOJ3j407jl3mAwDA1c+6jksETlUDteTZEjd0IIlFMowmEoFjZ2Hb+I7v3P/h17qvrKy9E56bYe8AInAEAq2076dQvAIAwIGVjqQoipLIg68lsavmNaqBJxtEC4nAqWug53lDDf0CAMhOPkceat7y9nRyAolAhwSW2pcf5a8+cq1XFvt+/tpzMsF0F/JaeP3uVQuJQAcE6snDWG21JCYX/vPb7Uo7nKYe5LTvVHxx2icSJ5KV7sJyPNsqgggcNuzXhfGKIWmWGmgK7FyriMRuDmqoSB5GfIzazKmeF9WBs6sD3yRN5Y1N2Ri7OQyCijzm8u4jAqengT0FalvbfiF+bhmwd7WPnMjcCNSSiFpm21VBgqJ9qWnBKu9E8Ng7G4jAETJRK01srMpVOxRqZ5DknUgU49fqW1cirXY4EIEO60DOg4pkKes4gTiRvN6ickhFzjslb3tstbaCgfPE8KNMOg4R6KoOFK+IKbJ7ufax8eVaGbCtlRaqSG/UjyqP/kOi/ngN8/OjDIjAMQnEzvKJFaYrBAAA57AkIjzqr3xNXkWkKStj3Rnflu1IrDw8Eq2ahy15ROBYTqTFWC+AZifapIW29WFbLy3umCUCZ+xE2jkWxfMgJk1skNqSRCQOY3soPTNjzIpAE3lE4IQJ5OpGcZe+LXmqOvGWlUSL3Z+G504SjjiMvsgjAkfwwp0ci8n7mrJxgzyh3ksiwcEMTB4ROEECpYFXPrqkb2nherOuCDQ4DWFnRL2ap/DSonMC2hsz/yxs1bXBrIxrIqpA8pLLWat9Ks+rqhf7fgKeCJx6HWgise6ynPbS9zUIVHVdDDsm6EmlT/XCtp1sJFKyzgsA7++MQE/8bp1HBM6YQI7EFh1t7e/P2JI4NHlE4Fw0ENdGxH2AHZyAlmhxp+tQ2ZcInAuBeZ5XWTTsW5O0mkgaSATypAzwnSWB1dOf+Zn31rgG8utZPSLwUwl0Ul/iGkidfQcmjwgkApUa63RuRGDH+Ae9wu96O/Jg+QAAAABJRU5ErkJggg==",
   "dratini": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABkElEQVR42u2YoZKDMBCG/9ycyCNUnqzkEZCRlUhkJTKyEomsRCJPIiMrKytP9hFwqeD2hmRY5oB27pL2t2WWzjff7oYAr6yLmPjNznj2YXn77wTfOXJt2wIAlFJ/+geDJPioLHI6KIKOe5Q0TQEAxhi7YBL81O26DgAgpXwSB8uyxJDovjIAgO02dZ7TO2kZkg45Y0ycXSw4Z/LSddEn50fvXLeIHGXgnngOBzlixfdiyXUNAEjSvHf2syfWVmqVc+HPQXKHutYn6s8xIkjk/DnqOykl2/XhErRjXXcsXAeJaFYcAQBNtR8tSO6dTi7Jw6GKs4sFR5ALt1Eo5KLW2jlPDnZ6XKcZwXUxR45LrZVf0w7JqaKd3Dwc0aDmoPDmFMZ28tz45Li6tVaj8zHI08zkVx6lOU+7SLvZz+Uyz+X4CFJXct3dXb8AANdzAwDYJFm/gzcfHCnOyXgcvMuczBL4NxXiN9/N8d0s0C71XSRC7DzkyYW9SZbc+dmpk/MIsTXvipMg13X3rB0OwVfW5gboepxeP6gLxgAAAABJRU5ErkJggg==",
   "drowzee": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAB5ElEQVR42u1YIZCDMBA8fl5UIiuRSGQl8iUS+RL5EomsfImsrERWIiuRlcjKSFxe8DfT3OQCpO10SrKGAZIMs5vd3AHg8VoEFnPkA9e6Gx8uKSABANpjon2Z5t0zVfcKsEqcCfHFd2icHMYt9w1W3nJSAUUJcUmtJtcHAQAA5X6UkFvnRrHAK/BI5qlXymq8j7bjtfw9uOsBaZrAnQNJojLadWJWStkyv0oFjHs7K8ZrU8/b4z/VGQAANpsNAAAMwzAq0uwUxXDdtm2tfLkKBRTmce9ShqpCLNr7S8fd1FJuKfA5dyBl0HYcemRHwgx3QBi30qeQrmrcl/r856pPZBpxOoeLvGSoWt05iYMlHRkCT15kHDGXeQpMKy6l3K1Gudqoqs17fWmqTfUH7pwDnGpp3kmbanVubYXj4m3oe+K7OjVkEjHFPJ33lURqH/HfNzjpAS3zaZoqHda+Eso9gFCYp1UvzX1MM8q89wDHPKbE5SqU+4ikx6nrFSWoNxBTzHsPILh8jpjnyGxW9EalOPRX4T2g9UKRZ8pDzguUwSnPUObrY7OuWujuFKK1z7FR0+OGMdApRcdx76li+B/JewAm/qVynZ1hnDQpRv+hegWeCG11u7qOLHiDb5Smb357BTxejT99L86aIuExWgAAAABJRU5ErkJggg==",
+  "eevee": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAC40lEQVR42t2YW0hUURSGv7HSGYXQLqbYDbuQNlhGEXYh0GTAyYjAKAcSmjAiScLAxKGHEDIxQinwoUkKhEB8KbRAEqQHBUV7UCe6qGAwQoETFI6ZnR7WmWgPo2YonON62ex91l6c/Z9//XutY2Fu02ZZt7BEFoXBbGXkZasGMNx6RllNdT5Z8hcyPEIKMnVNgwCUunYvNO6/ck8LXzcLh8RirGsB6BqYCHFLH4PhJ1MQmRgqV+IkpNeFIRKUyaRPgtjS/sQzB0INLeMA9Pq+AfBh7BMAk32XALDtU0/cdCcPgNO5OwCoqu4FIP/UNgAKs1MBcGXLPK+sxuQ61Dv6E4CHnu2CSHIyAON+QW74VTEAD7wfAciyrwPAUzsAwIo44VpijHBlnCSdgQEAxvqaAdh0KN/4CClZUlaYA8AVV0qYkyofmjVGmYeQCllo/8Vq4V6lY1p5brNOAbAx6wQAmw/fxLBZpiCkaSIHI21FCwoy+FZ0av+uWADcdz8DsDPxl2SbfVXYDuFWjuc1hlfqiEo73Ho+ovNI/wgAbUPRCldsCCfc1WOCTEq0jswMAJ0Dome3nvoUhCLVVcbWodmQeecXbjgqnwHgtCSI7riFa1WPvgDgrTsKwL2aLgC+x60H4JideZExPEIWvSLUAPq8JwGIT4pX9abkgDJ/3jkaUfArrqYBcLteOOOwm7hiVHVIr0+uu0sUp7z0H8o8ELsVAF93vyjxY7mb/L5GCRqUrKtvFAU/vuWrsj+S/pjrtq/13p9zk+/NC6l/rl0ISx4xV2kPAAf3rlk+XYfl79pW04Qbzc3tABTkq3XLTFQo+2QM+hoAKPeIf0fPkD7qbmczADhi32DeLIvYVxUU5Ep/VpGpPEzOPCdKXSTZuCdDuFKsIxQIBi3z9GkW0yOknKy1SjjU1CG6EpgW7lx2rpZb/cbLRfsrYq7ONXRip6dd4YC/xSHdyfup5f/343+/ubZIcYyP0G+amdQ1Zs1JBQAAAABJRU5ErkJggg==",
   "egg": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAA20lEQVR42q2UoRaCMBSG7zgUIk3bTxyPYTX6GkajkUjkNYhU3kCb0JAGSZrGmfC4sTGG/ucsrHz3v3f7LyOLAIjve9u2jFwEQAAQzeP5OZdbI1TwKGaClNdKW2DoejrsdxNnnguEiCjcbigvyknLngkShQFFYWCEqfJopZI0k1z5ppbuw8sJvNqRFmQbsO7l/uKorqvfQTo3zqCh67VuJJCp0hKIFBEAIi/KyWcbC6iQ8+koxcRXh8gtQyUi4jyeDy0AkaTZbIucx9rQMtP+UYEjwLST2NKFZltqbxkHdDTTd00wAAAAAElFTkSuQmCC",
   "electabuzz": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAADmklEQVR42u2bLZOjQBCGm6sTyJUrI0/yEyKRkZHIk5H7E1YiTyKRkUh+AvLkysiVcZyATmUm0/NFDyR13VVbKcLn7jy8/XbPLMB2Mc4/Tx0/QMIa2UbkwPVrDwAA+a7f8lmEoKXxM5aAjSkUgl6RIEU7MPJdP3qSNAIA7Pd7Ieh/16AozTocTgAA0NYDAAB03XuS+3BroxDESFCmaQ4AAJz/HAEA4PC71bVI0azjyXxR1KS+99Yybm0UgtbWIGVEkBydJN9s9fZWwETAw8g/hc8SgtbOYqgFZaV+X5WXWYsKZRuzmn6+h5Yo5Oa7NkmdKQStQFB2rz06AZTfKWeCfIm0ZM+kWiUEhWQkTkeLI68T5EvO7fhZy7oGdG1aJcsJQSsSZKy5fAOzGwZ1/todSCEoYRYbTdmGqrlcxLjIYazdhKCtNcjod3y1JJYcPTA7ig96dSeNRLgI4CJH91OU05Za7FU0iHLKFDEucnz9kCu4/JIQlECDlN40VtVlNRVLeZ5P2eVQRJHTtp9z7VU9xR9ICEpA0AgAMAwTCUUxjfy1aoI0BzUCnXHXfbL8QtzzbUIQI0GK5iA5t9mLSzmRdL1OmnL8MJKj96q7rmMlhttZC0GMPkghCKNu1Q5h16R5UEpb8P5937OSIwQxEqR0CjEqoreMI4okUT3lkrA5p9OHer16ym6n47uRWPw+VVUvBC0gyKg5w9/580vVhPO5VrYxu+Hcux5OAufsVpalmbSZnKYjn0Oy2FMQhNpDjbjl3Y9ak4jEfX8PLq0BE+H6ftDWK4WSJQRFEKRoD6U5lnfe2LN29Ydc2mQh1ppl8fjYlf1C0NJarPiFn5eomociB0c4dK4eSTmfa0VTcFvXJGr2RTRoLQ3S/YmHczVqgm/49qotfsfYM4/1S0IQt5MOqHm8SKK0yKVdvgQvXSUiBHFV84HnBDvyhuj36Md7EOylQb5aJAQxEBQbCjlUbeXtf8L7PSxaJAQtddKx5DxqiKoFdTuN6F0vGe6rf6rf43v/24xvOVgPNqwOyYSglTRotI0IlT1CfUzAeWDrJriC0iIhKAFB0whpM6iu6jxiBlTRkoBaSulk6rMrqG34nK61jkJQag1Ckm6kzOt6cITu3u3Qe1u1yHD9zKaRek3pS7IQtIKTHpnvwZqFPJ5TqvmtnXTS/5WgVtFGrCSLek4haMvR59A2zJK4evbBuT/ul9UdEo8kjQv2C0Ep4x9d19MJ1MNVWQAAAABJRU5ErkJggg==",
   "electrode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABHElEQVR42t2XIRKDMBBFPx1EZGRlj9AjICN7BGSP0WMgOQIyEolEViIrkTgqmNB2CQlpp5Nt4zIkS97Ln0mSILyNnu9JSLEdIrcklHgYBudgIUTQP1gaCCL2NZ8RvgY+JXeY4GvgK+Q+E9ENLBaglIJSKt4CYmTgrb2nlrTWm+bVdf0yP7qBdC2lxohZqSGkfWpkzYQhZ5eBhwFdWgf4yEMzINqWqYFbWUx7XxWbCGlWfKmfyZuGn4EEAA5VOwJAh8nAfo53HlSQpp2SZ1XF6yxYnIbd6QgAyHsJAChlPxnJz9YCzbW3VyZ7bRprA9Z7wdaT8SKl8zsl/71bsUl3lmXWvjFFTTyR8zSQ+qwIIZzvBEruI/7Jt+F/v47v24d4isZNT4sAAAAASUVORK5CYII=",
@@ -4587,6 +4826,7 @@ const SPRITES = {
   "evio": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAxUlEQVR42p2SMRKDIBBFP04KPMJ2ewZLrpFrWOYYKXMNO89gl5S2buV2lokdKRIRDBMn+TPMfJh98IE1yIiZ/eJFxGBPzOz99R5GvMEuMLaTH9spCxYxMDQ9AOBBJYgsVGaozhiaPolcxIDqq6jUB1RnAMiCh4VWnaGyFsbazg0z++5yW4H3CUQ28QBAbOHqar1TDHzzyUP8okJEjKsrENsQYysiG6KJiCmWX3d1leSPAQABAACTa5/m1IW149l9tJP5p/ee6TyHwd11ozkAAAAASUVORK5CYII=",
   "expshare": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAACJElEQVR42sWVIXPbQBSEP3n8A2IopoOiZjHLQcMICorFZTGLYaFhAwUFXSh4YQpT4LG8Y4LpP7iCRNeT7XSapjO9GY1mdHqr3X37TvC/V5ZlPssy/08Lsyzz3n/zz8+3fww+GwuNKTCm4L1CEfkQuXm8UW378EL8fF/v0XoLwLpc0zatB3DOJTGoyBYRQeuDn2wANI3BGIN5athsNlhrWV2uePnxgrUWgGEYAGibNoCPqgG0PpAcS+k6ofyi2Ww23N/fI728qakCYJqmDMNA27RnLXHOJSfAaqnI8zwURfJYl+vAWmsNLylVVSEilKWeWDM7/prWesIkbpq1FukF6QVjTNgXEdRSTXozi9nu632QC6CWCq0PaH2g2lbTlPSCeWooS81uV5Hn+WR/kgprbWDrnEvUUvn6UNM9dhhjePj+kBwnJvZeLRWAd84l82Nvx7u11ksvVEU1YRv7CHiDGd8nz/PQ7InHi4tFiJj0gsgWYwrqfX3S+Zu7G//GkLZpJw0HmGVZ5qtthfRC99ixuFiwu9udnbar6ys/XmmaorUOKiMrAEjG7K5W6q1ZmtXl6tW/ogo+nlvxoIwWpmlKva9fmzcyk14wGIZhoLguqA/1ZOLiZYwJfgJ8va1p2l+pCsBqqUJGxwKt9QQ09joeZQCl1GncOnuYdHSUdzyyR4k4e/qNRObOuWQ8rf4E4HfAsbr53wK9x1h6OT2EPvPb+ozaD62fcypomr8VslAAAAAASUVORK5CYII=",
   "firestone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAABrklEQVR42o2VLX+rMBSHH/arqRsSFyRznVs/QmUlXDc5uSuRTE5OTlJZGbm51HWuyNT1OuZ2XScKgTSQ9ig4SZ78z0uSgCtMCHH0je/3+6D/H1wDUyoDQOuaOA4BiKJnMy+O7y144AMqlaF1bflbaAd+RymNlJKyPIFvfMAoemY+L4xfSmk20bpGqZyfeuWsv/EBWxsCz5INs2Rj1C8WCzNnMgqs1ydnuGyU7UmSOwADA/iqHohjW9jkGiD1muX34fSdcgYMnfAtpRawgV1j/a4wORVCHLXeji76Wb0N+mfJho+PL7/Sc2UOrAl9GqaDVR+GDsFSe2wado61jIhj4Yf6YACsgCcX2G98gEmbz7L8w3IsnpW7UVXtqKodQNNqO7tQh8PrOOi80tsXyvLT9CxAnu+sS2XS35koZJo+danogf9pDbo5YYlq1tw6Ki1oUWxN9U1u0wYG8GArVtWcJHFVGmj/nOuXv13+tBu+qubNeRdkmXSATvXz14LHkVq1sEtAgKCtfp7fG+fj/+8TaNap6psPaC5pIcSxKO6cwRaWZdL7fAxCL71DlyDn9gs+gt3uw9kZagAAAABJRU5ErkJggg==",
+  "flareon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAACDUlEQVR42u2ZIXPCQBCFH52KyEgkspKfcDIyMhKJjEQikZFIJDIyMrISiaxERsZdRViG3d7lAnQobHkzDJPkuAnfvtvdS4CXHlf2+HkIvT0rxdFA0tjNDABguqkv+e2LuNT7g6ydi92g0uPM21JXeN2K8RYA2rZlg5qmAACMx4ve+fV6PP/qvovJbR5uihQAEOclIx9FkQWAw2HVXY9zdMcg8tZFXq/HyYPbLOm8HQc9zrIEkSbFecmOibQUkY+iyHnPqjxuAaDeJuxksk5Cq926CBd7vjjoelo2vTf2WabOiJDnVXjcubopr579Y+dEkrQkWqYxO78VEQ1JRlpfHpekSVRJJ9PYSTbk3Uu1r2t9vYoFAGMMq5DjFffgYVEx0j6FvL2c87z8Ycwg0iardHh8JCtku84AAF87Ti5EmsbLcTICknhIkrQej/vy8cmrdUdu03DvEmkRoFOlreYV63Fo3CSLQoSV9+Mh0tm2IzGjbi11j/eRPu2cqLv8SfaiHZWeXkVWRl8fTePIs0Raykv+xuczevJ4knBysxhOYrKy+irfct327lmvJa+nO6yqqrc7vKLiHUNnfvXG9WQV35OloX2zr7eg+TepGfq0QD9xJxlffs6Eh+t6MDl7TaXUm1VkTyHJUl6XeXl6W5T/Z1bp9SJ1j3Knc9bD3PWdkOq3br5s8Cekn574S/fWNyhV29jw7TxYAAAAAElFTkSuQmCC",
   "focus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAB/ElEQVR42o2VL5yiQBiGH/wRjBJtGqVB241Gt108ItG4G41GNxLZpnHbGokXZxpEphG5aOOCzNyAKJKYf8/3zfu9M+PwxLdYLBq7rZRyxta4z0DTMOz0xdCMwZ0xaLk/UBcSWRSIy8WMJXnOo124z0jhrQKElCR5ztb3SfIcO+DQLiaPgEopZ7n7MBkqpRwNzb5PeKvAzE3DsFOLyTMZH05fiCgyemffJ9a/fgMQrFZm3tb3Ddwdc4GIIgDC4xERRaStJCkQC9HJ+K7GGqhhqZQAyKJg6/tGTx3ALloMzdb3rzWAxrWhfWCS54TTqfnXhbN3Ex6PjVLKUUo5SQs3GmtbpVIaqAba+mm42b6URvu+nBMNPZy+uoeg1S8WwvhXw/setl2k3ePahtfZ6EEzBk3/ICTQiCgyuvfHDbjcH9Ce7Z8iu20XuA+9dcWrpE6vcIDl7qO5t0AXWEOnLxmI2R3wnwCQ1IWkrCoToC7kzYKyqsz/9CUbz9h7hTpts8rOAMw3kuoc3CyabyR/T0sALuE7kN7MGTzS840chM431x1U5+Bhtp3i1bM1XpxxEXIwUL9dlq0t43Tw4p8opZzl+tjprFfvncz7ff8luP9NtJ3CMO4A7CBDfQBRMrv7TDlDl9DPzx6v+OwAveLTQN/edqNvn/PM4zl0dMfu8H+RIjrFAyR8ZgAAAABJRU5ErkJggg==",
   "gastly": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAAB2UlEQVR42u2YLXeDMBSGX3YmkJWT/QmTlZHIykpkZSUysnKychJZGRmJnERWVlbimIB7SrIESMl6DqHXpaQkPPfN/Qjwsuda5PuFWXquu+Pj9zbq/k7jqfY2V+Lvz1rIF+nZE4+matiVqO0MjH0evsZ1AuuP9UOeoOf6/x+NNuFp3EaIbH/87H3xKftx2sjlenE6K+HHcZ0wY8xpvqsHFqXxukuIyA0RHjIppZG8q7aD0ngNAEKcAQBJ4oe0fibIgzbNB585I514VVUAAM45AKAoCq8LDmldzxu2MxBeHGds02i9FI0HbqvHOqLs0BA7fvVq3Zahw4sqnepMrepaQlwDzVe3Xg8QYcYS4/um1i6033A0LqVQxtWet8jMxIQQoxYa8pSNtC2uz584nW7KmBTPk0TVKhEj0nEcK/NtHow9b3z+mdOgJWOtQlrd5MUo4sVuo3jKljldO6L5a9zwZcauncjxlqSN9P1srP5l4+HEcb27p5oi5ydl3vUPWa3nZLtGyzL3qu3wek7bfYretd9yqWbQsgQAbLNUiTZ6nnCtuxfR5feSt3ngXrtQz7o1kh6qQRZ5rzKKPBEk06NQlp4xhehyiY+97xir2anaXg5xX7Z44i97tv0CnpUPAwexsjsAAAAASUVORK5CYII=",
   "gengar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGCAYAAABxLuKEAAADVklEQVR42u2cLXSrQBCFJ+9URFYiKyORSGQkMvLJSmRkJRIZGYmMjERWRlZGIp+Mo2J3crLTXfaHBdq+GZMTEqAw3965s0uzArfoyfsV/PL4Axzjb8xbeYa38owE9XxjmBgmh4mxhG916ZEYhaB6O/a4S1VB43mYGEM8xTgIEtR1FwAAODT7PgaRGhKjEjJ0HiZmSmIwkiSlmTCRQ7drtSuC9ijfP9QfguzrlavSXFUJPDOsHcN0bL/uKgAASLNCyahtvwESle8nLy9aUgaOw8TMojE0sEqZiKDbaeDnqF2uBCMh7Hx/GjEmEjCjtsy6koLVxkiuh7YwMRNVpcnG9lCmUbOQJNv5TPsfmj0Ts6jGxCbFpjm+pNydrwMpTMySVWmstpgcK/3cRgpqC/uYpXslm3+IRYqJHNdw8S1MzETETOpbXDXGt1fjqrQAMT0AQJ7nAADwnGwAAGCblZM63VjdfYifYWICfUz/OC/y0QltaeTYrwx+Yiwhl+4kuvOkmJ0UJiaQGC0peSrveLYW/qAQmuPqZ2yEYNyJvMW5SB9SmJg5eqXOojU2Uhq6X5aJ1zYMGSR8k6irEA8rpFyVYvkYRVtoBu4aI2O/Fuq/k0TYqggScmoOAABw21cqITJaKVnv3TiRaS+VQo6P9jAxMTSG+ovqlsr3qdN+qCVrqiUkTKT4+hsknJLDzneCXklRb+yR8I53cPXKHI0sEczkG3V71Q6TkoAgzmG9Sas1bduy8521u6ZPTiE5GKEE2ZxwKCk0fGbymJiRVWkl77jic5pjLcbu+SLV/hjlj8LjYpR/60HtoP4qRjAxMXslHOuYyWKXawnKt6om+G7H44/VFtREh2cDmZjYxChagxk4Na0246HhSgp1tlRr6NMRXJVm9DFe/gajPpZeWkI1LLSbpkTxSuR3I6bYvWqdr+tTBrGqDg06k8erBEv5mC8Zl70MnS8ZS0IoKabQzP2yj5lbYxStwYxM1XX7kkI1hgbP+S6lMSbNofMr/zox/Y8zabb/Xgl5dm6IlAdCrCOGiZlYY7Ra4zCme5cqEkrMwxwvO9/vqjEr4hNsGXNapfDumTxWA5iYhTUmdgx27z6+hIn5n4ihMfDbEtGuh4n5ocS4khT9OpgYQ3wCChO6wNS45wMAAAAASUVORK5CYII=",
@@ -4598,11 +4838,14 @@ const SPRITES = {
   "growlithe": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAAB90lEQVR42u2YLZDCMBSEl5sTkUhkZGUlsrISiUQikUgksvIkEolEVlZWIiORyLqeCG9IQpKGv7sh9DkS+jNfNtt9GeCxao3fA7y4vvBm9f0I0WO1AgCMxqs/e+FoCbcqUapyV7tWYNATDiRhJSsOJwAAT4bauKLlnnCQhrMss47/B9loNNyqZLfrzHsxaZlqPCt6Dbs03AJAvcwBAOl6Tyr2XrzcSB8uy9Ik+7KM8bYa1ghT7VgCAJjn0hWmy1Kfn+o3m2zt48N56d0zt3wf4nAJIs15IzVanf13xLRxF1EaN1dCIQ3bFzTE16PJEi0AnH7sLkEE93vpJs0m18azLNX+vxjV2nyov9t8/e2zRBBZxXetWi2O95GlfM0T3mcJAACrS+9KUK1nqTftkWbFQVgJq1qOyyW6SBOZpKmtvkz+XQg7aVcpRK/eNw4N0xfI1NZFg9wgLedzfvI+jFagi7QvV8el4WqzCLoJ7XpKc13ZwuUeH0HYew7R1T1TuUgLIdPeomqshEN6ws/yYRfZYsz0tHYmepUdrjNJZ+8X59maSdo8WzN7PSIsjjpZ6lguXfnt3XQ0Z2tab2eSovMIV8+WnoGbuXo4v59snC7RNJLsYTXRdrvLXy3afPoJUJwuQUXEqUtmM0mUMfY0gh9H2Ev8mdqMlvAvSf7dW507DhUAAAAASUVORK5CYII=",
   "gyarados": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAFbUlEQVR42u2bIbCjMBCGl5sTlZXIyicrK5FIZCUSiURWIisrkUgkEomsrKxEVtZxIllK9ggECq90Znfm5k1pkgPy8f+7IQVYX9Ty31fEH+B4K6yFCJoydg0A8Hw+AQBgs9kseY5M4Fri79zkHeIzAACUUVh/A0FMIN9AvoGsgSvI+xr3ZQKZwPfcd6480XVdAADI83zVbs4Erk0DyyjUVRC00qgBAKLTqXe8oigAAMBxnFWSyAR+kQtbbfKQxFMcdzaOoohdmAmc13074zRAmuM4YKh9H9FIJvALK5FOLWxcvCwnPQmfcmsmcG0EdlQQMIYIL3lMIm/u2tz0fJnABQms+yoK6r7bIgcAgOp4AQCA/VHtdPV3CpGofZ7nKe12sv/Lhu+d/ZH0CWTRJ0I5vvUzAAB4JJ4RiUzgAgTWAABuKmYiP3qzuNo+ESTZaaCQ93BUkvD7ipCI/ZuQ7cbmi9StqYaiBtOaXaflTOAvunDd1h5Tr7QJKZQ41E4MSp4uSluMG8tauuX+Rv0peeF9h2qt1uRytQgrphaRFhP4GwTizDZkEKLGEvcueY1bO3vRD0i/fDdrJTJUqzOBCxBotd0X3dhOAiMNm0qcrSF7iEyda5vGS/tEZP62s51urw4TuJZaeIg8dE3ULlPSKGGUVDx+9XdDeaDVl//dC+G+h4trRB4T+NsE6ggb0sQskxoadOdnOPPUXU21rjzaghT/MzeQCVyQQMWNh959IHnJ4yE/F6PyOZ0b64gz1aipYTouE/hmjJm13nVArEGfZ1E7QhAp2qfTtsb9qosRcbiK06p5p5JXt1d5Gi0dSTQT+AsuXPe5LOZ31UFo3yMV32+D/hoSyUMys2PW2x7JoyverZXqtzRwqpYygQtqoNC8QqzMPu+VmKmdrXymJJnmdVT76F6Yw+HQS2ISi7/2PhhLjqJ9BhUME/hRAvEt1Y8vKo5bkiufkcR3A/M/rFzoDgVceUYNzPfiPPwoG+vKTODaXbgGAKiumI9VcqaF5jTKFF96V1GmBmockqgL9yqeABtEuxZRRq7c1NbyOu19MMnNmcCl8sBzpmobut7/ITXxbPe6ro4A3fh0xwJ+7167V2dQE+0B7fs5iRr9Lg/6UcyrMask8CpdELVIt5c59MSc38JKkng1yv+AaKcfBUbED70D0e0Ow+N3ej4HmX8avk9mAhckUNl5gDODNSIe956COD+/KGT+bMXcniV4YdFdiWDlkfu5Mm6lIfLo2r1a+GqfKeO4ECjXgeTtylgZN374rIGr0kCcsdvJUTL0RlNwX54r37LJRummUma2Wd8D9W0arRhwXCQGA0lKZT+qiei6mA/S437af+FIHr1OJnAtLqyrm5EYzxEz6HuCQV+y6OWlQmKqIY8GJQw1EEnEz7Td/66suilqXqOF8i8ev715A5nApQgc+r0ukqft74iq2Q+DtzRGF3lRdro3rZExom2iaN8M71SYwLkJtKQrCeJkzYge1/G7D1XDMplpbUafg9VeDUnOfqeG6rTQBdWNURNpnpfmspI6zHsDmcAFNLCTxB/pXmGR9A6IZGBlQCudIc1B7cRIczHO834fdWG0wtDlt0zgivNAlUR0X/ILI6yNM1mJ0DUUXH/DaI1n9Wnha0W8P5B0dN2X9ql54FyuywTOHKP3xlAysrBUVmceN6GRrfe1nUT2aJGyKqSr1emqipbQMFmEPCbwAwRSN4UuIg12Cpj+jljJC9O8GkXg0uQxgR9Yjemc0db7VNMZt8b8P36Y9GpiB3G92vrm08cErkEDPxX1SDdX+o1ozwSuXQM//bTUbReGF1n1xLyTCWQNnFETaSxFHhPIBA5WOFyJfEP8A5V4lqETgggMAAAAAElFTkSuQmCC",
   "haunter": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAACS0lEQVR42u2aIXODQBCFXzoV/QmVyMhIJBIZGRmJRCKRyMrISGQkEhkZGRmZn4C7Crod2Lnj7oAmTLNvpqIMuRS+e7vv7gqIRCKRm9TPz1P19mpvffUgsjhkFwBAUmwe+d1CWB5YPDyTd0m3+w0AUBy3T/HyyxF+n0pwhtmiHjn7xMO+ZLL9iXsSQ951FR/P429VQngmD/dEpM+3r1nG4zMkKTZqzOd4VxAPT/UyEd6FetK+Xg4+A6/7+fi834uHx4rIZknavukL/pSkbcaYkpx4eKqXm6YBAORJNYncWO/bMrp4eGqVrk9V703zvuhLlGpDGKRONcSW9YXwVNUtYERRNIkoyZUs3RfuU5O3lVTpievenpdN/dWUhGhGUB+PtnGv2vvKtNoSD3OiA6uWlY83ueeqiqo5er+PTXi/NaSupQ+b/Oi16umcIPCxtOPYqm0Uo+dd6udU9W3juO6CviRhL7Imac6MFACU+aGtBXXZI2Tqt6YdE9sMkSw9NmnxBMTJD6xiVgCwyxNGuv18Eu16N5uvl74ZGuJhlyrNkwpPUA6eUd0EReTi9Vo7TnW9asly797vV6cHO1aZJC0tYVtf9e17nDTplOTam7eH9nrwETuR28eFF3FZLbnubIw431VdIrdGn505WU5Uk+0HSXc+Lx72Io2ZzoNtZFz3xDTZXvuMQvgJ0p4KcrLlOXXK+Lb/A5MsvYBZplwyvCtxIbzUukL7yJTQ+KqM9q7CoL3ueoYlVXqBsiU8rwQohJdO2lbdIbuWIpHoP+kbYcErW4lwSVcAAAAASUVORK5CYII=",
+  "helmet": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABaklEQVR42q1ULZqDMBB92Y9LrJvKVCJ7BHCtxHID5FLVrOQGtcjimiNUIonsuD0GKyBpCPRnf57J5Mvk5b2ZJMA/QzxLIKLenzOz+DUhEfV1Xbu5MQZKqYekb69aMcZASomyLGeqfURL1phZ+OqMMZPxEaIla1mW9b4yANBaAwDatsU9EROF1pLFuWTsq8rND0kDAFgXQGeAVM1FMLOIwjpprXGtGQBwko1b21XbIdDAqWgQxzFCF04hMwulVB/HMU5FA7x/DKtfn46sKArnYlcNivejgSRJ5k3xbfmwZKGatQQOGPJT1c5raJN8ZWE5bHNcPeWdi01E/bnkxYTOAHu9nTdHTnNSRZg1pTND4sa7bseFUvhkG3PnYufjZptwGYlzL775nx4IAGlIeAzGzizHIfKwhkTUX2vGZtyUe8RLcYijV4ZVRjeFF3lTkgdk/hgibKTw36R9IT/FKiP3nsWjz/RVPPt0/4RvgB+34EcTHHgAAAAASUVORK5CYII=",
   "hitmonlee": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEIAAABCCAYAAADjVADoAAADd0lEQVR42u2aIXijQBCFh/tORFZWRkZGRiKRyMhKJBKJjERGRiIjkcjIyMhIZCVuT+xOjpnbhYVCk7ubUV1C6Yb5efNmKICERDeCF9iDeoU9/xAWnkcEIeBeHXtPbu6fZL1LskW+gxDxBCKUDwG+ZFgICYSIv4SIL5EwRMRcZAgRCxJBqsLleAAAgPf12yIkzEWGEGHi59wkHD9iAAAoWSYxs0NkjCVAnOULaoSVhMM+euoXG6sVQsTSNyIrK8jKSm7E/1A1iE8Iw9B6UlVpGlarFfETS8f1ciH7quta+WiFEDGBCAUAkJpqsGckzK0HQ9fjVQlJiMxx/LQx612S9ZIhRIyosVYSyrrWmWha80xuzDN5G5VJXvfbtiXHoyjyuo6vY3X5CyFirEZwEnB9Zc9ybT7n3afrmd9+pPqHP2eRk7pUToZv7yJE9GiEcpyjbBlGbcjzo+uaqs9H4HXQd4zVhrl6ECHCcldU15FxZ8gdJNcCjwrkRcZUAvD3Xeejz0hOZyFiiAjVrd+xUfHzqbCukZCxs4wwDNWcz7or4zgPQWJxTsKDkyFEDPkIJIFHtE+0hpTHoa6Odam6umSp6QXiYpZqgCRYtCswmdfaxN+r/CZCNKK3amDG41VDTjy372Sdh2tXXVbaVySEgEfmi4ocxzX2KEgGz/R2t/MiwlUVHlr4SUlYvcVChEsjgu6zHzO15YQArEkvgf0+v+OcAFdU55Rox5BmjCCB/V4jvcZcEyprRvDZRW3xJcCVqUd1cThFToLvPMWlDeIjPIgg9RedGa8aXDOwiuT1nfYAhoxOBqgv2W21RlyuZI1VZIgAX204pSeZR8yiEUjCuaCzyDjdmBHUxVrnLQSQjOW5cabGbyAJ2aEEAID9xP+n8O12xVmOmFBZ7yxWBRcZPU7T6/o47/AlYchBchJ4leP7FCImzBQIGbx6+Kq3b29jybzv3glhvHfhWoZkCBETnGXA5hC6/o+nyzofyE/aR7TNzTpXGBuoNZjxTk8ENg0RIr5yt+eo7ziv4NHzfmTS3+FzEtdaiHgiEb1a8VDzKPnWvQoRL0AEIYO/f8AeJ9vrKhLG9aJ7FiIm+IhZCcBwvYn67hAinkCEAgC43fUzn2aFOWzvMbD3WFobhIgnEhEAAGzWGysZxSEla1c3KkT8687yVfYoREhIWOMXlBGc508WZ0IAAAAASUVORK5CYII=",
   "hpup": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABZUlEQVR42rWVLXPCQBCGnzCI4pDEcTLycJxEnsTiKA7Z/INWFhlZHBYZV2RwVCKDu7jGBUdFByYDuXx1uiY32eS593bfuXUoieFweCnLn04nx5brlkHVh0KPdWE+3IfwzMUG79igYimsUAA91oilsJ6qU3bUcB+2ypWWoi7AFh1bU+Igrvw5DmIa19hXLuZgAKxPX7nWGjs2qKdSJlITBFGl8vfIPCgvbd7uK8RTKZ5KH3JF7yrBg+ULABOpmUj9AMqvr9/WcoXrugj5SZTEKLMtBH7LV6R2McY0t5sUEjMQeLJYVZzE7X3c7/UBWB96AMxHGWmWtvPxfVyh9+s/gfNK56MMgO3RrQR36+w+H2X4m/OvZ2f1VBcqznc6DwXwN2emnmkHToLVreN56DXetk83AUmwalaKc7igJzUzNUUMxIPNjusFSdRvXuNj1AdCJsAubH51OmWzzldu5eVjm33Ofw3THzwKoFrlrTKFAAAAAElFTkSuQmCC",
   "hypno": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAADvElEQVR42u2cL5SqQBTGr++8YNy40Wg0GolEI9G4cSORSDQajUSikWjcaDQajTQ2DHefc98MDjCsy/J953j2gAjj+tvv/uGuRBAEQRD0C1TVj1HpDz63fpr9EPKovARERDRfFF3XVj3jPYHAnvr7UxaSpnMSJLoSVXV8HQgEgR68MwgUeeEWURgE9om+aao/afA04/NS4VbtL4rv8UIQOOI8sGoi6X+y1M/jwRy947g0vq5HXgkCf6sHtiLvUd4oyZP7h84PQeCICOxEnvQ+JsyVSOSBP1yj+wXGcdmJsvISMP1e+44gcAR5oJeoK73QVvs+yhN954UgcMS1cCvZyNvtdkREdDun9fNX8bphozIIHIsHFllERETr9dXryZlISaIUXxceOEECe0Xj0+m1kSgmMHlTx70s428lEQSOjcDkLXSqWb/yt11uJjPfNpK43hy046SCKAOBU8kDlfeVirgwrAl0JG8+r+8XlzqxTBhdw2ZCH5CIKPwLPVDrdEjyZK1qy+uCpbnvFwQveiWSq+3ssNOuw14oiWUS4YEj9sDGXhrneV0nBf7VvKWFWBV1o3ipkfcwn/RMHggckEAnwpxJcvQ+VzF5Sfym79++G72vIe/zcpcOBHokUOuaFMXNqWLwLVlRnE7m4y4X5YXLpe6FTOL75uaagVSO+43eCQI9ENiKPO6O2Pp6d10OpzxQRmubh3G+J73veCzq8wdda96ZKQbk+dF48GYTat4JAj1UIlVTlGWibF0USZztE5UkfpG10/O4JN0bFyrJsx3P3tch39PIO2SqFs8zdf5NpK6/jTZMIjzQlwdqUcdGVLI/1jPJUdu6elZ3VSoioo+PDy16ss7ns0YaR9nF4tXpjThE3VZi8nj9ebav1LoXyAOHygNnTd7AUbpFdDOSuFqtNE9kSSKZQOl1TChvS/L61rqn+i+EPY/J421UIgNE4a5dmL7dDO2TlZWEjTTOB22e56HbUhERxYn5rl6axIQ88EkEDiWNRFfSbPLY70MtPCkCZZTvK9+dZ5tA4Ah/gdX942522auGmokGgSP2wFbTWbaprEdy6FPiP5WmRmCvKX1Dd4hMUdt18hUTqiDQzfsc8rjGTjoIBIE6KfztGrYJBb47VxSdCWkknecOeboL01kTIFCrcZO96DCL+7++uyh8F/Hr/GKu0Ne0PgjsqcFnpHnSgYnjbVteF0SZl6kpSZwkr8d3dYHAUUZh9iRJxp33+V5TZSJczv7AAydAoJGIJ6xhkOuDQAiCIAh6lj4B217KRNTcEWkAAAAASUVORK5CYII=",
+  "iron": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABDElEQVR42p1ToXbEIBAc8iI4B644IivvXE/yK/2u/EYl8uRFVgbHOXCHS02hsCHtex3DY2Fmd2GWoQOt9daLO+cYjY09orpeoKapuejXFQA2KsRqMiWGEKCmV6T4aIT87V5ERkrm5lwuS7s0ZAB1gs05x8b6gJsz3t8MzEnBPj1mAMkuu7dQ0wR/uwMAhpw9w5xUs9btcPHyI3K9QGu9DaQs2Kdv1tKOlPDrZyOy+4VkF8wA5mpPRVJ8IISwFygv3un5NwxUnYL2HkJAirEV+DZJl0DFanIxUv4JLgSklH+SuRBYPywaHwBAihE+RnAhQONH+52Vj8CFKMTayuxomHIVdbbsvu4w/XecvwDr4pvG6VV8TwAAAABJRU5ErkJggg==",
   "ivysaur": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAACAElEQVR42uWYIXSDMBRF33YmIpHISORkJTKysrISWRlZiZxEVk5WIiMrJ5FIJBKXifB7lixQOG1F0md6kqYJvbz8/HwgEL09YU79jLXeX5GoBoBqkwMARJZZX/JTddeaL0VUA0C93QEAsiQBANRN81CywRD9eNRERLLp+9lxeW48rJRaFR2iJmqRIG+S2q7zepNIyyQltACARCTWuLM8ax/ZKIi6/0wDwKbYAABYw7zEptpT6uuePBuvRzUAFPXJkClP2uelDsaLZdPZ3ruhsu8sb6YcI9HJNxn+yWQRvXqutNsuYfKaS5YIkoZs8D7IZ27/rtqdrWeMj+iVbNOOAU8tO7EKQ/5HdV5y1O/qUl3CJzpLsq7nCXLOZ0m7u/wWYeonr4YbR8mDWcatfiFyL1kieR0v935vU9Rw43FLnzZJ17tBedTK0AvOvASpvVRrowPF15SnbjYVuEddcm57ysM3SW7n3wgbx/dNH/4tdDZ+unGUCNMupjzyX25AZF0R6ZFw27b+eDxKHY7hZk+LyFbCjpPDYHbrQX17SU4Sc8i6IpLBnfWLTyYi2e6L+d2+UOTtWsrxpmCyJZmZO5mKqfZk3dvzr+O6GVd6DwvrqVFV87SvdiRHbwkhsOYNeIguUtT1UT0xh/4bV0VVml1dGPKMsXvWfM0aPtbs4miJBqNfrDTnbB9eCDkAAAAASUVORK5CYII=",
   "jigglypuff": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABsklEQVR42uWYIZODMBCFHzcn7iecRCIrTyIjK5GVlZX8BGRlJRKJjESerEQi+xNwrUi216QskN51prc8kyFTOvDlbd6GCOE6M/MRnqA3vLiiUHJtUTiTW60BAE3T4BlkX57g+6M3Ejmdb80EjVbdsQMAJHl+/g1JeR5M09QlN6Ebkg89kyiCDsleV6PE7ubbIwAgTlZmXMWDv/tQmfNsoqrY8aCvpqqdayJFSrP16H1Fd5Jbxa7nUkNCKQUAONjR3x9JXLWr4jBM9CeRIlkEs6oEAJxaU6X6KxkkMXd/9L3nkxPhQeO9vrekCkvIJkJT/8kD0AqIIuh0zERwU1eDHmTJfLcAgM/EJEa5zgbJ+8lzk9n/L0mcjvm6n9k35ghw5Mir5F1aAfqfbr+X11FHXgds3tQmRYzaqTpuvyPPETm6XuSpzuleKHOpj2MTxGY1eY509TCtjOdBv3rldTP+eXhK8W433Fkz1SufoO9F9hRnzx5cZz2XnJwq1hu3+qh/4zppzXxhCCUnz4NTustwKyJN3lRlFXQmF/llIcizfjXP9d4iCY4mTyi5RRPkql/mF9YLU+y+H6uS1ikAAAAASUVORK5CYII=",
+  "jolteon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAB4UlEQVR42u2ZoZKDMBRFLzsrkJUrK5HISiQS2U/gE5DIyJV8QuVKZCQSiVy5EoljBXkteRsoYabdSXbfTIdpmrSdw829DwDsalSvp9cLHKnAgiSGrxQAEL7Vtuv/DtFXG5K/Wc4Q/f+jz9KoUZvpeVjV8g432bzem10PABBVBACoL53y0bv+OjIyq2nWyQQAECXScx8lkkU+kZQfPUza5eOc7JIPz+YBAJJkIiul/KFZ57N+VyLxM3AdF7H2vihazUWqcho/RuES8cCvXW9LkhNcIlmo4zE6LJJ0vh+dtDmoBOozO7LWJHVNznzUs2RK01QlUWhcRL4p1Od83jlrWI+gryeSnOjMh0fPNLrgn6Sxup52ZRiGWlZT5SXTqFqXZIfVMyOlRxrVdrsQhTFhrj53h2RZCgDA6RRrmgd6s+ZXSPqhUSkbRaZY9b3PbtA0RiSlvKhjq63nu55/T5o37ms0MCaSqqZpjYRu/WOskkdo80mbpHWqsnw3ansLWbc1yjtuvos5OZ5ofD65xNI1FCdsynxv7uZp2r35IbSEonHa3TONWf2O4WrUU6KkVSImWLfEfXatr/T+TkmwRTM8gagq1iXtILm5/NIoL+pXiTRp85H39r17KrKJNB74lMQZot+qOu1veNWQXAAAAABJRU5ErkJggg==",
   "kadabra": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAA6CAYAAADhu0ooAAAC80lEQVR42u2aIZOjQBCFH1cnkMj8hEgkEhkZyU+IXIlERp6MPImMjByJjESeRCJxrIBm030zDLlN9jZFt0lNQShqvnn9ujsBNDQ0vnMEd9zbP+AZ/y1+KFFBMs9zAEBRFOzzeDy+BFklKol2XQcAMObCLu52+0cR7Z+p/dUQ/bn0RkmSIk3T8brp7yTBCLZ1AgCItpVq9IuIViPBhK2NMQCAUxEDAA7F1ae1HgBMOdwfxyEAoCw7zbpfSrSqKutaksmyhN0XbSurFimI5HarPvp0oj0nMOz8/sDJEkkcN8Nn3mCOoC8sWfwhtfUqKyO2g5RFZZQmAgCcTx0nKUOQlXG98ixbnIbnFod2nnh2/SfCq9Io8zXa2SzjO74/hPPkHBr960R8MsvSe94QXlSRrUqjvW2niKyMLG2pAlqUVUmL00kZvy+J1jXPAdN7eDRr0W6weo0Gt2edfCzP32S/Oe5wzPyuLNtR06GsiNj6cjkDAP5UhfVFJsJD6Yy3dDOehLHv3Q7PT9Lm3v42WHdllCS8O5F+ReTJZ6XWpD/SZOL3MZnNtqRRb81tuG8TYcox9H5yvV6i1G/6ZkGkSfLFOOZkiLiLpCurkzbl+pdpmFZ9tTLQavfiI8m6GdIi+R5VUrQm/5MTBLpOZC51x9Z1M/rsJmIkfZr1ZeNVEg2W9aV2jX1k29BaCU2aNuIECbKT79aNtUKi57q06qqkdMKwuJsYp4AFUutOSw1TH7s/cKKS7NIad2ntq7+9uLTaNcOvZ+Eml8/ouY/ZY5pMOPpceV12Py5tUtal++ikaa372dNB0ztXfxtGg0937XmWpGuWJMkSSd8sSYm6iIWbvJ+rnKjG9XUjpM2P7BrO+rL0yYngaVm+0ax7bzaWEwTqVqR2ZNamfnW321m1KP3UNxtSog981tLfSnqb/8qJhCQss7D0SSX6BKIPPRnSh321rBL9hkTZ/5nCkPvnzX8kNOu+FFHLu7lIK9FXj37Gq5WohobGa8Q70KRnPAkKxlQAAAAASUVORK5CYII=",
   "koga": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAFL0lEQVR42tVaLbCjPBQ97Kyo/GQkEhkZiUQikU9WIpFIJLLyyUokEhmJRCIjV+LyiZI0pIECj3a7menQprTkcO499yd4+NBRBUyan+OOe1t+//sTAdHIBwn+m86XkFvAeZ8OyBx12a5m7teBa5M/NbslUABAI//BRF9lihIAoq8M9XfhAumt8R+16KUhuj+bFvbrCFDGUQKQam4tqGdsmaDWsvb7KJbq7wJLgJ6Z2BEs7QU2YWjp/VqT3Gt6NPJRWT5ti8omxrYwos61fA9rzHANUybLbd3/zMeWFll/F/plnf9XQsqvlSYol8CZc8r3jLnJ7+fikGJpq1+1de/8zzXA9I+yJMbQcb1odRw6jr4q0VelnrPM1lsyKRuMbZpt3evXGlCrfUyxcE5CDeQUMPRVCRKw2fPnYlzccVQBc6qhDcovr9Mb03E5ho3FLGSL/cssiZHn2YyK8fti4nTuGtIFaE48HkC9Qu6jrwwYOpwChsEAYYLJkliz2lelAijHxT2A0qZVr89ADs886u/Ci6mPYRhwGs1PsaQ+F9fKlWkgS2JpLtr0Fxr5k5cFereibopjVduD1BdkSQzRcZCAIc9HARkGiPqiRUZ0d0dnrUCWxBMw2tQc7B9ReWz6cZbEUvlYW11B4+TBx0TXo2qnoOKOI0tim9GXxrfNSXBbXTV7JijFkJovrhVYK5CTO8ARjPeOoL3nApIXKUjgdnI/TlEZISAnQBgylHn51ixk74VkX5UTszsn4SwoNd4JbtdFaMhkRIiWdhdTnBLUQkyAvRPc7gp6CHwdiLMk1qA4vTmVCxQAREmI+trIjxMPV5xirQCnBJwSsFZMQHVdOzl+vI+leapNa86vuq5FEFD9XdNwEHKCEAPahr/UJPcy5jW3hSHNUy3pF3qaBaVDgxg+ph5zx7OGT8xLgVuslMnp401Rm2Q0KqMQg164EMODcKibUF8b0PG7tuHeJ4qH5EWK+tpMQLnGgnDITwSGc83Bi1QzYftP17VvV8OfxjFJQ4ZLxHCuOS4RA2s42oZrM0v/CICQh9qr/qBmzlNQKq1Ssj9K+WJ77NVyv6k1MKZTD6BUOUJDhlzobtQkvhldKqzpWbwLmORFqsGca65ZoZb6qfnoK0MeDMi7E/JgAMtugVyFhU9hTNoAVAYxF+N4kWpQeXdC/V3M3QTvreJBw3HPapRxlUWYKrcE7hmovyIeNGQyDNkkyM5JNyEnZwwzzXDh5r0slrkYk0v53lxcMtmzzXApvXpVGbMo964kdk0uaIKyGTMZDgKKIKAYKwX5NmCNFY/WZhEmqLw7af8yc8mZmyZfCcxzAdiSGpmgRN/AFqEwZA83Lc3TQwXGqYr1tUGQUxBy0sWhncHb55uDF+wev77vaZbJkut/xrndu6BrTNEbmy6Lo742CtSkX/hMOBRImzUF/Ai1fHZXpO0fNjv2f2VJLGPq6/g1zssoCR/8qmm4s+FT5iVoyH4UwJ8lwZ5KkUx25nyBhkzWQuBcc3tPzHPdEJevvTO798ZKV5uaKk9MgDRkkvghwpCB+OHuRyOOqt92ly1W9vBQqqz1W8VaY/RQjlDHrYXmw1M3yuR4kYLG8b08KardDJkF67uaOTL6yiD6BsS/NXHo0CGm/mRLSY1xQ9BzBWHVl1TAjF7jIc2mXbst5ge1L632yxx70d6GRo73TvFwXfwes0ZQqj2g9sku9/i25n8O3zP7UZdKdajMYW4I/rODF6kcbs9dSNz2zPT7fxpYlsRSPREwHj8G0P8nfiZCyxpQqAAAAABJRU5ErkJggg==",
   "lance": "data:image/png;base64,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",
@@ -4622,6 +4865,7 @@ const SPRITES = {
   "ninetales": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACa0lEQVR42u1ZIVjzMBS88k0gJ5GVk5XIyMlK5OQkEolETiInJysrK5GTyMnKybr+ojv+5UiassLHt5TnkqZJd/fevfcy4Mot+YY92h/Yc7DdXDsDs7GIHw8vAIB5+vQrP+BmSjHQAkDTNACApt4o8snI2Llon6gZcPo67QvIO5HebpYAgDw3l+4brwq154jnq3JUflCki6JyIk/bVw8AgMzsBuWXePMAkSq2S+e8A6lkCPKh83pirnUxERUDLQAYY5w+ejjsO8SzOQDg8bl2+jzf57oP1Sm6/LF5vutFXs/lczK6eiwtJuKLAfV5Ik8j8lyXr7r5VX5rIe17X+eVGc7v90cnM+a0vqqqNk4GfIgRESIfUpWxRmY+qeBpPE+r+FQoOdd1Rj1NVUURYcZmLDBWVHVC5lA3i3H9jngzMaOeMbG43wIA6jzrkHjKepkYirSPIVWlD08wO0SVBxJfFap2XHcMvJ3GC2EgTe2xMkFEFXn1eWWE6kffj5KBXuRDGVkRIxOqGiGk9TnVzId8VD2xVUX6fFBrnKH6rj7sQ9zHSFVVcXdkyYB7GmfPeinyoczrq4ajjYHZwDuiTwxRbYiQjkNqRYZ8+UDPOR4yZ288qdtpq1olIkQyTT2+X9S99f4ms1WIGZxjzfDTuRcKmdb/vk5Ofd7n4/+tHNQhTpqB5PxWADCWr6uqkKFQr6t2+94x1iwir4VmYzfw3Qcp4rTXh259XXY1zt3SWDHF574O7C8GILfPRFh9nVXk+6vt6+tdI1Vmaa1brMu+ei3uavRLDNC0j3DU8aGzR/3TP0kGehn55r3jZ+Dq7R+tt09bWSNgOAAAAABJRU5ErkJggg==",
   "oddish": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABiklEQVR42uWYrZKDMBSFT3ZW8AiVyJVIJBJZiVyJRPIISGTlykokEomsXInsI9SlInN2SCYQSrszDVzDZHJzh3xz7g8IrDdprMVCP5c/AOADb2riATJivE7LBADQVh1s+7RTn1qD5nE7+w5eEpMA8H1SN/7J1Q1Jinbr1bPrOo1Qf9GD8fwmNSZtNx/ONwBAEOuksirQDtM/jpZpyTtin0sdSeZcKnJhNk+KliQJNfhQPfOX2HVQhBAF1v2mUfvHo75PstRkGuvZPKp/26n8Wh0jOWYjSRxCnRSz12Wse1Pv4n9WuswkxSw2O8BfD61Ss3dqPdn/6cLUGrVlrk0z65pluvBLY86sLOt2vs4FtVVjlqzb+HRBUnlbqCxK60UBqyJdNU14SUwCQFYoMmH4NXtwiuQw/KpeWRdPkfOv8vPmJEftUHtTpF5l/miME+chOj4VeBcaE+PZPFtJ7Hpp9qOx2b80rG8uQqMeKXZDTNoIjbJM+158NantaMzi6yIrdkdsqcl/iPm+xO6zTZwhHM7B2gAAAABJRU5ErkJggg==",
   "onix": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSCAYAAADHLIObAAADdUlEQVR42u2bMbKiQBCGh60NPIKhxzA0NDR8oeEewZDQI2xouKEhoaHHMPQIZvOS11XQO033DDCM+HeVZYkO4PDxd/8NODdd+J/XR8QvhxglqolIdLfbzTnn3G63m3JbIBITicBEYiIxkZhIBCYSE4mJRGAiMZEf57UpIjy3z7CPILLU+F3APnQIDJCsEepnPPtA5NsRyQnTCJTG03td10njW+MqEAmNdG6/3zvnnDudTklEU9anz+fzOXU9k5AJIgsi0ofI47HdbjskxZLJg8ZL6wtcM5qUTBBZAJE+pFlEhqRtnCROmJaFE6qEYNR1PWo2B5EzEunbRzSVIK5pVqK55sVq5eXfBc5mKUT6PgLv93twuTVLS2QNJYqP26w3wfq2aZpBXScQWZqz0bJxavbViKJ4Pp69xErjDJ6+ApEZwzLbfoz6Lrb+I81db9a9RNHvyDlZg8ZpVQJVJ9pcgcjSNDI1SFMlojRtiw1OurVehUaWTmTqkePjJRJpuaaBTdN03luaFqxv+Xoez8co9SqIzJ21eYc7Vlt4fXm9XjvL+Xqkbo3hP3jLOCKRNJg+U1z+XqIcDojMqJFVyItyrSEtIrKINNKu1+uV6yyqQmRqMbQ6AJFzZW3uqYlAvpw0cLVaBddzOByCXlzLsrHkkmfu0djOdukMcuj+lJu1O9mQH1npKp1W/0njerL10Kt9nepDqltTtwcic9eRvF9nJUpzPpxg7ljGIlHTSKojj19Hvt+oI9/Ca2sRSyLX0haRg0ik7Wgd9p5egqlTDiJzE2nVxlRNnCBLJwWRS1qJrF2q1yaHEHvtRroWM1b9FquNUteHayf6kW/gbIIOweqFM5DY2b/jn2NvlpZI5N9b+5IgckYiO0eeQvKwkqfNkKV7HY1EZOD3cDbv4mwq5kRMnjZ3vWi9E2Po/oDIAjTSpJ2Zt/2fNvJrSDzG6jKByIKJnCuCJJLD0epGaOQCsnaRId35MdXTDCASRPaHdu+5ppUgEll7nHqVsi6/q2ys7g6IXKBGeuWsiPpeujPX2h+FRn6wRnY61jxIo6SuUeu56l6tI8K0u9lS+40gculE0rOD9LwL1y4ijX4nPY1g8M5Z/jOIfKOsXf1oYTArc1I5idQv5OTS94bsm6VWBpELcjbeuI/eUj/Ode8QiPxgr+1L/E8gcqT4BuwgEnW1Iz7/AAAAAElFTkSuQmCC",
+  "orb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA9klEQVR42q2TIZKEMBBFH9QKcMjFBbsSicwx5gzruAI2bs7AMSKRyLGMw7bLuFmVVGB6ze58Q+VT/3Un6RQoMsY8Nf9+vxdnr9CC/nrT8tjvrxdQkYdjsHKiAh5jk0ARUuThzxpqWxN8QCZhkz2Fu6Y9gCKkzCvUtk7fPAywyf7iAZSxeuWE4AMAwQe6pmWwM4OdD9XjFv31hjHmeehAJmHpV2QS2t6x+AuLv9D2LkHOXZTnNoEUjooQTSX/lArY15HBzmk92Jl9HVXAh2ZussM6MliXgHF75wM9zEHlRL2qXF3T/j4HWoXc1/69Z5Tf8pj++px/AG2ri+OP2R+yAAAAAElFTkSuQmCC",
   "pidgeot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGCAYAAABxLuKEAAADxUlEQVR42u3cL3irMBAA8Nv7JionJyefRCKRSCSyEllZiaxEVlYikZFIJLJyshJZxxPh+JpbIAnlT/e+O7O1hUCX3+4ulA2AQxtvGx67faFz+RF/2IY+3reSUicxAAB459wkiYpq1xDGYjYUowhAKU0gHwdX+U1Zli0AwL05KjtX4ltuF+fy9b3cfncpF5XDYlYUowgp81h5sem++uEXAACI7iuAr5WC252DgKvSb+1j2rEXqRC/FzEeKITud4kqAADYd8PsLuUqfQ+LeSLHaHMGzujQTJtE0LCVNYPsNxazUI5pdX0HleIqxFbGhNyiCMF+59KdhmuOYjEOYiZJsc01JiEYe7L7yEwrHXE/3rd+HM142nFZjGtVqq43+RM/+VZSTEKoCBoWMztr34Kd9EPuUdZeLMZCjJJbUMxQzjBJMeUMUywlZSj30FU7i7HNMX1uKfzR/sQk5QkhtlImVSNeK611PWZuKROELJJbhnIai3lWDJViW3VCsmQqy3WrjasUzjFT10r0ar1rLqFSos9GeXzI62dzTPvYwVK5JkGJQS6LcRUTdDMhun7GJIUKEULI58NwVI7nywGDQ2E6N+V6SxZ7+pxx+wAAgHzgDdvmOBbjIEYv58uu2tzvd3U7IgYjjT5GT4wKGhJS3PTjiOKgfb6upXw/OHGOmbcqFWpnGmapNofsdjt1ldqJifdyxprbdfQETHL67YrGSQYVckwrp1zDYizEaKX8qD6dnDT5NHTKsX7/KLMSU1ff2urVj7/fj58nOc4p9a1yC4uxEGMlZUiO6XccI06EknOoFBRCZRjXcAY5mGP67VnMwqvrLD/PcqC5pZhiqhQWYyHmDQBgFwXKWuQUd3c1eH/1/YO4OR0I10h11cwihOYWKgT7lqnXf1jM1LVS3ymeuv5FlE7ViMY5SbVrHRQ1JIn2NX4SugnjHLO8mFFB96Z4qkrQXECv0wzO/MJSWMyMYpwEDQkZirnkPAh56j2ymAXEaAXhFT9czboGvW5CBVEpcwlhMVuJwfuA07O+M8ZOtCqPU6vLku+BxaxWlbAzrmtZnbxIXWMFcU6P2drImdqHsJgXEiPv1avrToq6yvW8aHTn4ChlBeQzZ1rFtpLCYpYSgzOeZRkAADSi0MroH3fbp2Gg5iJLYZxj/reqNDK28inEOT8AAEASZ8rG9PnqWm4qh8Ws2TWO5SRxSEelYODnVkvds8diJsb7WirxL/FByH4F75uJyEfgW0thMS+QY6yqGd5X83C/zab/T4bF/IJoLXojFsPxovEP2o28uBTtFn0AAAAASUVORK5CYII=",
   "pidgeotto": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAB8UlEQVR42u2YIXSDMBCG/+5NICsrIysrK5HIycpIZCWyElmJRFZOIpFIJDISWYljIlzHZQHabnt9pD1HCAn58t+fA2AmsXjg3O0t7/L2IjpBspY+AGCndGOe56PvNhui7zdoaTGhsV/tUl0dNeHwkwi3zhFlWlqlfIXUbkavn3UHsq1g2jwlH3bC3/O6p1EAgO/rFZ4Eb7dk7U0aVaoEAESxHihqugEh3PFRq88NkTTbSVOWOdr+zsSRGCCpIygUe36WRFlWUsSeYOSGSJaVsk5AZKpkDQAITyt2f4qkOz5KJGnFO8Wvy8re34wq8XR2V5wk+WfvJBp1jflnPWUnESTtZFmmCcYx19qGDyLWNbsmbZonEfnoNkjdI9oCgEpT1kF216Shpmk04SCwDmiSjTUwJDtNeOmHjCSFU0StJM2Qxn3zZDGJqrrpaoQz12SX/ctAuEn0h4+qziAPZWH310iManOKJMU569zkeF3VNSuiCwAQUrIKPt9HrKNJmIiYWT5F8t5w4rueEc72/uhA5Jcm4aG4VptO/ylhNYB5ZlMVNHVC3ftt5RTRtu8C/jG2dioyaT2pLq6x2ZrPPznRK55tbf578dc7STqd9aPEqU4tooOu8Df6q1NI+SdzPR9RM4iw53nPRfQ/ox1xjBfRh8cXR1PdIw/PgIUAAAAASUVORK5CYII=",
   "pidgey": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAABoklEQVR42t2XIYyDMBSGfy4nJieRk0gkshI5WYlEnkROIpFIJPIkEomcRFYiJ3FMlMddm1J2Sy6hvGQJ9DVd+vG/v6/AAWKaf/8SH3vbrbdCwDRnAoC+DAAAQdrb1jgOoc+1xGMoAQBnP1XIbGhriz4s+vPcIkTBGJufBuN427aTRtRKpOSRkkzrTpnnHqEstI9/16VVU0SkHk7z8Ki8U55I7ZqQooUurwEAl0DVjuh9AECUcWW8v8sddk0iCeZCIUJBZLg/OupDtFM9tsgs2lrIQNOOOX5VmWM+RNrRyWwRoerTtZfW/lyVXPcrz83TnpyYdkRkQiarMI5jq1+JQa0iXiRG7UVx5Y6GJgAQVaVMuPKKzizpKmNpXZDIMPYw5teqeNcaMpLRI9nI/5zmg9XHzvHFqB13nFrcZa98W/nWVHV6XHltJbN0oo1w99ahdHbtV6ZMJGJ5JjUQhJGV0FofFRetted2wqmNxKjP6XvpM0FwMr7rZxv514v/6Rahl4jpRG6ztliRv3WzdZqQlVjTNHoX8NbahyL01zu9m4R2F09U5rAUbsXOSAAAAABJRU5ErkJggg==",
@@ -4637,6 +4881,7 @@ const SPRITES = {
   "rhyhorn": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABpUlEQVR42u1Yq3KEQBBsUif4lEjkSSQyMp8QiUSeRCLzCZGRSORJPgdHRGqqYGpmZ5d7VLK7baiiFha6Z3pmB8jISBvFE/daH7H3S1bAk/mv7xEAcJ1nAMBw6e7yDf9egdNfj/GcA0dj/f2tAQC0lx4AcK6qXQ4Qbs2FrIDlNhrzHBslgr4tu5AFzvw8jeK6uq4BAFXdkCJerpZEDlhM7GLfl/mPtvNat1FE3D9qBURmyd85uPtosU7Mc3wOvcg8vUdTIj0FOMOcUWKS39ee05j3rRPp1QEekxaDXBF6nu5rjDvqRqIuZDGm5YSWA9xlLPehnmrjgvHmgOg+VmxqbqQxbbkYZ17rZqNQYHUt4C5jMWf5uaaYb9dKJzzqVqNwIdFtfHsYcoVlWQAAXT8E1ZEA/99hmqbITmQUg1Zscj+/Nq9ezB+t9I6eKL5uVJwq3Bq7Wh1wnLgg5SRFRnSVuNAqMfltKPPj+Hsty1L0byumHWfxOLvRk/aHfC7je1LaMF9ITPpO6pDKZC5kNroefMcqVeq+azXFgpCn009QMG4FMjJSxw9lHQd48eSm3AAAAABJRU5ErkJggg==",
   "rival": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADkAAAA5CAYAAACMGIOFAAAENUlEQVR42t1aIXSzMBg8/jdROVlZGYlERkYikZWRyMpIJBJZiYxERiIjIyuRlXX5RQkLtHR9b8BgeW9vDCjNcZf7LsmAhRpnzAKwb9wzefuHBZs5M6jTbhRsEipsGmRRVQEA7AkdgrUDFu2mmczLr2MH1pwZANiiqpxkJ//eYE5QLVsoNe3Opcn4/Y25y5VmNwAIOGMO/I/6+TEnyFJTpAmQki8Qjbmz+I5RJaFCUa2cSTfG1GnXSfQ7Ft3LcSbkWF0Vk5wx+0qSQ2B7QnsAh0oAqmCtTFpXMt5hzb2UIdgpWJxzTAatm1rfbIbgxq5tqoQkoXoboO/A3j3BqkFyxqwzGgew1BQkyiA464ylaQ4oNYXgDKWmTqJwdXP1jTNm1WlnVcYtZ8yqWloA9mZqq0476/Ls7XazjcwtZ6z7/Sr+raZOujp3l90FgjN8hqxLNNFRgZi69xnB2TBMgGY3+1PZBksxKjjDJ4meXr+2YEVRIaEH0FMxaf8Wy677OO2Oa3l+AGiMuZeNO8BgSgIWAdnOQIJannE1NQghwCEEDmEHrlQXTJFTf02uzybG/vhjuYJWcrY+TfJAlfHOBempePeZ3WdCGiOKwjvrmZgcaDAFwCg+3ot7KpxxBC9dlx5ACIExBmnVdADrWgOAYzVYm1ytKw15LpCmolsJ8JkmhDw4bC3PSKumd25qkB8TjTPkUsIkR6Sp6Mmx4CWi+PC0ZCzVfvy2+ElY3jokABS3a2cqoqiw20Uge4KYNY8LW61c52RxshJCyjMKQnC83r7SS1F1YE1jevXS/aRVA62k76yrXeOxAKDqr46WougA+iGgZb4zGd9RQxpDKwmVcT8QrGJM2kbmMMaARnHXUS8EDDvblY0oCjs3DWn8MMannIVMxuSbz7JDQP5YVBmHV28nY/NjwRc1CnDutkh2DWlsVd03mFetVJdVhoFvy0wS302mlBpJHKKU2o9xs/YpWALgw9pPCxgAaBTP3p+PJZh0oJwDO1f1nfVdKa960lxKjTHj4SRBwUtghh2tRUAWmUApNYpMgH6Gz43pECM8xNtlMqQxikwgjQVyKcBJ0gPrH6exwCbHpFbyofNJdILbLinrDPoi/XxrscaA/m57xlQSne4hf09A9mTbxtNNr7wZyatzmwYJAFG7X/lnYt2YmeiL7ElWX87gRTJLIPgVJtNYOEBdO1L5t+Q6WlNnCgSzg1RX/ZaM9UXOFghmBzmWSXMpeuPSNKb39+bkOlb/npWOOST7sdR4I3vyACqXYrYAsDSTi28q/Ypc9eX8bQLyGW0luy2QL5YXgxfj1G4K5Kt8mkvxN+QKIBiC8eukacysIf23E48dsv3MhTcFcqRk9Fh2QLdm79bf5PGXPVpwrg/Wl/Dg2qpBPmwNDGJe4N8317b63Ikn0Erad1+sz/SfSiPPWJ/6313+AzhuM8o9nqOzAAAAAElFTkSuQmCC",
   "sabrina": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAFYElEQVR42t1aK5SrOhTdnXXFyEgkMhJZiYyMrEQiK5HIyEpkJTIyMrIyMhKJROJ4giaTlrZTegfu9GWtWcMnzGSzz9nnEzZYcfBMDACgpfDXuq7bLPk/N2uBopQCAGIa+XuNbWGthZZiMaCbJYFRSj0gJTUYTyfzGtsCACqRLQLyzxLgCiGHkKmQwesR08iDXGJ8vPJQ35RD35TDnGeuAbuRnC/nxRGEkOGfmug9UJ9xuXnEXmNbxDRCEgGmvQRmWlwwWInsR8XnYy440zJ0OkKnI8hMPQR+jzEH1FxZprUWKS+Q8gKEkCH8WcUHTcsQWwOyTWAOFWJKITMFfmQPn7PWno+mzFprQSn1c7QUUEqhyFOISofTfYiZw+7HXNM8KAVzqM4LtJM5PI08S5dv5+hBKanR1AKVyLz4hLERAKRuUeSpv66leCmcfMxjEKiURnKoILtuvBZFk4U581NSewXNtrH3MdqfwPcFcjYNGykvIHWLcs+QJAmUUh7YK375FEAnIkpqiKNCFICqlJ4IjZLag8tY4oWD4wR7LMeXlCQedDi0FCj3DMaY0WeTZL04WJc9dqVGzlIPrDX7izmi4BsAIIQMOUuBxiBnKWK2G9XRjiA7VaEwESgdWU158WUpxoAxhrZtf1+YcIMQMqS8gEjaC3Dh6JoG2/LoTTNkUSnl2Yui6OWwMcsHP+NyE4K5Pr9YfNdttBQegAOkD7U/P56aCbjw3BiDKIom939Nsu1YpP0J2TYGiWMP9HhqUCl9c/G0H5nm+wKMMaS8WDQh/2uQPsvZcR+463Q7XAdznomBZ2Lom3Iodnxw83kmXg72q72RU54NjbUwUYQkEI+YUh9Pc2MvhMuOQopSfn6FoWOxXBwMk+y5yTYApFkGTog/TrPMg4wpRZWMQd+IZhI6VstFw+NnQdbpdoi32wugX+mavWCzSiji7RZGNOhVA3tQd01+gUyGebMBgEZ234Ks0+3gADWnE0Kg91gG4Oflxv6Vis6uBykrYNoxue62u6dAPnxpUQRWS7BaXrB5ze4qAF3g/WwVGtk99UxuLPTxiOZ0mrYrTifvk13XbZzIuHu32HOl1CKpmlUClBWoawO+LwIW67vPnBc+VDfuNdYiN9bHt67rNnRfDAC84KyWqjkztAboo2n9xxiDPu7PfnTA9SJzY5EXx6A2fFzbuSTh1pgT9J82UZeS0WQ0UXkQkIdRvt1vX2EkdMKAW+y95tOscDNDdF4K9KGolIVBpbRnD8BE2h171+O7VuEtFuembC+1Da8T7NDpHbhQMB4xoaUYlswxf6wv6vzuuiN2z5cSJcApBWUpRC3xqwHeY6DY8SFpW9QBKJex4OyLnBBUhDzF4isVxR8sPGJKUcACjUUcZDRrjY+l/nCdbgcXxO+NOZnKq/Xgx1pvMsxBw2NWy0UL2cUAfqeijbWoY/5tN+Bv2FvcB0X/1dRNe+q3zxrbwp7B3Vv4T4BbRWR8FXIjg7lXyPJMDO7e35rvagDdjpPbj3g05rYlfoXI/JQq/kqAYR5qf6CI/RUAHTtaigvzXJO9f2qib8/gLZV05rlmh3pRFc1Zit0uQXneSit5j7o2IE8m129hojQZt93qsgcA7HbJ/8dEXQ/nFrNLfDKyOkBRyw0wNoivgVYJXQXk4gzWtUEfk4tzt/lya4/+rUQmYNEzFe4sJW27uOCsJteEkOFeMzds/r51oDdRdLNOXNIfVwPoGMpZ+lRL8e0AXjMUfkBkomgxFv9JLhp+Z3MtPG8J0H8UNCmCx63rtw4Tt8A59tz3bsmCSvpnDXGplB7Cc0LIoHb8q0UxJnXvHQcfCc6SJdR/VNZOGAnYLMMAAAAASUVORK5CYII=",
+  "scale": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAA2klEQVR42s1UOw6DMAx1EANX6GaPWX2VnJOjNCujOQEzWzpAIM5HClWHWoqEbd7Ti18SgB+FyQuIGNJ8XVfzmAgRwzx79YNz3E12kbzfW9i2cuUqazHmBcly6hQyqi1VUNI5O6WIREoiIpi9v/tEIALgHIeU0KSKKFd0EkvSSMlSM4aUZNmXax0oaiqN4b0HRAxDLFzgRt7t2jRZ1dgfEg3RY/riWuyvpeFa5RwVrp6DPsZngfkY9tgC2ckq1+hGAxEAM6vzVBCpLUbg+R3BtQNpeu7R05fgP+IDoWh+7BZFR1AAAAAASUVORK5CYII=",
   "scyther": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAE4AAABOCAYAAACOqiAdAAAEPUlEQVR42u2cLZSqUBSFj2+9QCQaXzQSiUSi0TiRaCQaiUTjxInGiUQj0fjiRKKNF2A73uO9eMGLA75z1po1C3/AcT732ftckGi6Vbc/k6xfJDWoFhMljXblloiIdkE+ydcqxMkbJ2/cLOr31F/gsUiJiCiMsvpJWlfb9AEh7tWIK4szERHFgUfPJAzd/LId5FrShbhX1bhn+UVO+mG7F40T4kYgDYShPt5iIiLyvokTHzc34mz9l0JCsS2bW4PQlZ+zIk2Sw4yJq4mI1nmCLmXlyH36+hFNQ3n+mmyIFuKm3lVBHooTmJcb5f4oD4iIKN0eiYgo24WDSIuiSHtnX00T4mZA3OKaLE4cNOdz/9f1NIOuSQO50DYTabbaJsTNLTkEkaeQtkn00w90V651IKkoCm3WRF184EglxD2iQz8xhbD1axUtex0MpPnrFRERfZ2a4xTZmxNtE+LmkhyeRZqpyrLRyKDNviCtLMv29qDu8+kU4iakcZ3d7h55j5LGtS3frLTPC6NM2T5Xh87jcC0U4ubi44aSheJJ41gU1JVJeWX7yoqwe11XiJsAcco0AtkQScFW6ziJIGy5Wiq/+SoUksR6veokLU38h0gT4qamcehq1eHUjikC1U+1JEZRZUVakX80mXa/tdPO9rjgPN3p53kmX2frOIS4uXdVnHkZJmuFNBR8GTSOT0n4/I0XpisX/9d246GeVoibWnJARoXmcBKgdbgfBJzP6irUPW3j+7/XpV2dUyzETYg4ra8zaY9xmsHWPzlhvIS4/zU5XAhwRBonDH4M/sw2A5sIFuJmSJx2/sbnZEgCcfJHuxPTBNe0gu8vm4QSpJ7yfFP3ToMmox6EuBdLDpcs2v7nQULMSOCEXVbcs3bFfa9fcd8kn51d1bj20GZSzdlTCyFu4sRprwsAaUn4RkRE++JdSQRFUCjd9maKAjBazTKRxR9n6pp8/1lZSVedS3LoJAwF0lBxGJqOoV1vBRkghWDTsBu+bUgUvmECbMrMQ5OEEDeCxmnPneVa5qpMmseNl0+rQaTxbt430QhxI2pc3dUteV1pWV/9tNI6OH4Uz6icNE5YZPCPVxNg8XE/RZwVaRrCHp3pNeRt2onx16mTKBOZpq7JfR7WeR+dywlxYyWHEQjTaty3lqnzNqxu3dTK7yTt5gqapCEsjmMnL16Ic03cvSuEXRfO7TD5OnTBmy58qrSkgbCi1E9Lrr5JZ9CURIhz7eNGJE3r33qQ37l6xt1AFASKtklWncF0xClpn8emW+7zd/2jQmuN1fpOrm1Zmlpl077kCXFj+TjXdMdhWBN9nyPieY2T59tDPw0gDdqWjfTHCHEzIE4hyfO8umt7aJm6KFbPsFbBt4W4FybOpGGLIc+H8zddyYNu6VpThbgZEjdq8Qmva00V4maQHJ6STFz5QSFOqhd5o39HuhA3sP4Bhccgxs9izpMAAAAASUVORK5CYII=",
   "seel": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACH0lEQVR42u2ZK7OCUBSFF3cMxBuNRiKRSCQSiUQj0Z9gJBqJRiPRaCQS+QlGGjfAZmDPPvLwcR04qzigc2D2d9Z+HAGt75Lxj8+uuheu6wIArtfrrHf60USeJJFcbgCAwLN7X3qeN4uMJjKXRFmWvZvnNBPJmKY56d0XQ2Tz6QdyAiqPcHJcpmlWXTLaI6+qH0ORJ4IklZc0kXdns7Ee00Q+RaRT4UUvdeqMzlofIcIjzrPdYiu78aqIzljzYbai7BT6zqh1da/FRZHlPdDcim7trHVOiJtnvUGTHomuQ9+ZREAlYT1DE3mUbVTdqZXdAQC2ZfYqNSlNU3HxLC9neWWVdaRHgiJHEZ86ISbxQSTDiZAc+xer90gv65yiYBIJ6pX4+RV9JjFGkVhdHTFUBDr5GwBwz071Hk/q+cB0I3GGVk1w3FukQ+QDAI7xRXzBvMhH9VyL8ohYoSkCFEmqA4G9FSNOHnKcbXPfEb01Vbr7HVIQuiIJuk8iTxV5vcdvyb7OduGpt/dVXuHfrzdrqbxC/yi1HmEEuPzoDAC4xIGY7aiycwJ0n05PxnYfi+61KumHrRd2uzrCRSF6h0hQD0XZLoyOIgku6hgoyw31WKvIWuKszUnQdVvRGw909rbotVszp6gqeF7055oRZwErn0fuzR5vSTSE9vGZr6k676okMrybVvVsmsjYrDZjrVGnLEMkNJE36inSiyGi9W36AxPhEtbyX04OAAAAAElFTkSuQmCC",
   "shellder": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABwklEQVR42tWYL5ODQAzFH50KZGUlsrJyZSXyJBLJR0BW9iMgkciTyJXIykrkyUrcVnCZazIb/tzN3LBRDbtNu7++F0KBjUb09tpNrK0Jt+Iz1dhtmZgDgLLs2MLtZtae1FtHxtK6u2A0pp347aTRlJYulwvLjbmx/PnVAwAOx0SrGw4xL7muK9mitRYAUOQNAOBsUrbe9w+Wy/dLgprmwiNGWjklhZcMxb1rWa7to2iaD5Zn2SfLi+KwbY3tJamqejISc6TmCEmikpBGctPEmAvJVY++Yv1GuozcRfuT5DRJVLpVkqJ61ppwNObtOzLXOjgRoetSe0SU9ml1w7tX/nT4UXPXa7moEPU7Iig1J4PIBdf59x56bk2Bth3dl6ajpsxx2q0TGgt8upBzlUYqjmMAwDAMnJyYIrQ+GPQ85gAgz3OhiX6SmBaSnCRFObm5qrPwXOkl1RbjCYu2YteJiCRH1zVNaUGatta6MF05NN8z/30kZM58ykgr/x0hSRIveY8L4ZuUSWvhuHIpKUlGi7qu534lF9R0sV+6kQjSc6UM2f/eSEW/0HnArqSIMzNHwP3l/7CgiWkEov/8Ypslttl4AV6Q10YQwdp3AAAAAElFTkSuQmCC",
@@ -4648,6 +4893,7 @@ const SPRITES = {
   "surge": "data:image/png;base64,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",
   "tauros": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABWCAYAAABVVmH3AAAEPUlEQVR42u3cL3jyMBAG8ON7Jj6JRCIrkchKZCUSiUQiK5HISiSycnISiURWIpFznSi3NbekSfpvUN5zK21oy4/LXdaNCIFAIBCIJ4vRgK4l7+nanN7nH2xBbKWgbXxQNu7iVdvXqLyPbXyIhdg/k1trXIjtKN6GdkGX85mIiILZrNPxbQGxyLF+OTGKNsrGNN37XnOjcSAWYht3SLXE1j0eYiG2t7WEVtYcIPaFxOYdn5tpfF+plftD7IDFKp/8IV4TEdEqTuQ5tiU5b+meKHWurG8hdkBitUJlfJxPxevp2Sa56yqhVmcGsU8s1kmolBrO5trXs2tGRERx8t5IWov3QptrIfYJxeZERPF6QURE08m00WAsVUZJrm/92Va1oc3VENtRvHUt1SSvqWCOMAyJiOi4KXLyJNr5Cmwqd6STC7FPkGO1UlmmlOoq15Rbf1UTl08plzzXBOqKRY4dlFibXJtQlhgG/5vKtQltKharW32LbfSJmaTWDZa32WyJiGi/3znJlWJlaHJv03VYgtiexeZFj1t0MFG08M2/vYjl6ECu7XprrS1A7BN1XooYa+dkkMfbWSjL9c25dTunphUUxPYltpRrbbNlXu7VpVBTbpOx3J+8JDuvIdyP5/Hl+VzTbd21BYh9iKpgGxc5a254rrRULVBZqsx5LGN9vBERUbIcO50I779aRtrcKuN0f0719PFeKdxWHVTUtxD7qDl2RES0i7eVcjn3Ho6pVpaUyq+v7/ub5HIOZJk8vk1q3bhkFyIiCqZBpzcWYvuuY6WMyyXTSjXFt7z59b5lXOsEmwqVUvuSC7E9iFVyLQfnXFOYciuLdRUhZdqkulYDceT2TWm7roXYHnOs8klJwUEw1Q7Es76tCjCJX+4LgfNwoeR0fj8W6tuZ8TcmeT+3tbYAsX/deflGrstNnGPjbfFsVrxLKuWyoPVipszScXrzWjvIrkXVMZ1MKjstKdaU+9vqwCC27zrWVTnPotGykJpl18qDt4ciVybHouPabSJFEs/iLHc6vt1lkiKTpUq5tnq5644LYh9QrFNVYOq4+AntxHN2/y1TbL+NnXJrXwGxjy6WZ1OuEqRUlvP5Wczap2SpHUfmVqtgg1TbmoHMtXItAWIHVMdW1rc/Yt3k+EplobJzM40fblJ1DWEfVY5f2h917KBzrGs0leqaS03ywk2q1N0/1QuqgtcUy53VbrXQSj18ZOKIcWUOZck2qZqcOqqaV9JjkhdiI4h9VbGje2dV+QyUXIX6WRsg5Wc5m3OYvgk1ZvNROefycxIQ+4JVQaVcliF/F6WROhJrDHlZfAu9v1IdlCpdiH2VzstLiuyAPHKkcvx3rm7vr8Hx7BY6L02YfrflGy0+0Y2qAGKdZmHn2Vj5z8P70+mhbyzEDkCs0qM3zXVBINcOEohFHfuYkT/DtUAsAoFAIBCIIr4AxhIQjtj3ulkAAAAASUVORK5CYII=",
   "thunderstone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABY0lEQVR42p2UoXLDMAyG/+RCxhY4ZtGx0DAXpjSosDSD6VNkcB4s7Bs0NHCwLNRmo2ODHZLPduw0N6HYyn2W9EvKsNGEEPeUzxiT8Xe2FdR8NFH/brdD/9pbaPYINuvZnlvVhn4QEYjIQrOtsBAohPB8RAS1V8i3wlyTUiZ9+X9hRAQA6OoSADBN0xK4BmtV66WptUZXlxi/n+MRrsH6ax+FcWREhOPxCAAo1lRWs4LW2rtzYafLbSFOwdF11w7j74jmqbFRdXUJvJSrfcpt4wFjtTLGAHUadrrcrEBaa6i9gjEmKzg695VpmjAcqkW6ocX8hdsC5/N58cPn14/XyMYYd4YBAPP7bEfPqswwrTWGQ2VhUkqvkUMRwnOeSodhiUmyTT6+jd62ycOaDIdqAYvVSkpphVjU0H2VYTxKsdR4EYQwu75YaVflGIzFS8G8fSiEuKeWqAsKN3QS+GjNPwKx/QHZCb17x262tgAAAABJRU5ErkJggg==",
+  "vaporeon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAACM0lEQVR42u2ZL5OCUBTFjzsbiEajcSPRaCQaiUQ+gpHIRyASjUYi0Wg0EjcaaWx477h77z7/wKiz+/AUZ8BB5nfOO9yHwEvP1eQP3EM35N7efCbePdidDgCywycAoNm3AIAynsNL4u/XSCzyDQBgt46vke/usY7mYQAAWC6X5rPYiPPZx8xf4r3agM5o3eDUxJLsACDZNE7SzL6XGe8AoCpNxjKz2E+Zq+u6cxHOZgUAILTfm82zQRk/NDtDuCj4e06H/Ms4yUFF9wGkhYPRyjq9ji9ex99WCSpDtI1S5/HQrgXtyK29z7XT9rxxr2YVQYLSxG/V7jurTulsO2YVfzNu+ruqDIEows+prdrKPiUhiueZ/WtPVL1WmvlifBkX2Sb5vDmK7HF6OyftDHteKy/tNJiW4vi1bHuRcZHtPM9N9oJAZFyTpgNNkYhpThMOVTvFSe0kfdxV48l4BwBt24o20fMwtS+2ZoTJE+EM52g6kwaG/N5Od8z0NDS9HqarXr3tVcYnlpzIemHJksyv/lWkqTo1RPUUzevG69K5x+wrf3pcZ52ZnC4i5wV0G6SRfB/C5wJJn3OQu3fvM352OiR57vnY71p0hKT1VEnSx/1G9DezrXfv3j85J7e+N6EDp/awTmjCXBsXZhAh3UqjJn7RAZLirKKfiD3aQrzBGsV02Ncd51vZAaQHZXtUxEUWz83PupfvvM7G1SrOduEOaWi2h2pUxC86gCf9d/pvib/0bH0Bd9X1awIOnZwAAAAASUVORK5CYII=",
   "venusaur": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABWCAYAAABVVmH3AAAFM0lEQVR42u2dIZiqQBSFZ9+3gUg0Go1EI9FINBqNRqKRSNy40WgkEo1Go9FIpPECXD/nOnfugKjg3lN2wRlmVv85c2ZEVymRSCQSPUtfA+xTNeK+X/VP2PpcYjVCyzipf1lHeqmfvXboJfGgyRViR0ys1TOz+VIppVQYBsbHF4fMevE8z7m/pXrHcyDEjpDYSvNMEHgn8sw8P2rkAqlZ6tfFf8519fXUeOwFe2MnuPZvvLrX50aIHQGxlRMpWIhcitT9yTdWj2aFRu5iUzTevejUfl+pQ4h9kr5791LCQylPvUeFSA+k1xZEWtCvH7r+NU3/y+anN51VXcgVYsfisdhbKTKp3Ep5LSfSWx/sR1fPFWJHlGMrlxWVq7iVFyguJ53au/Pipr4h34rH/gmPdZ2FcXqgSKU8lCPQtV2ovzjsJMd+GrHtVlo416LHvenM2Ei6DrSV15VY7vptCe4pDQixAyTW7qX9rcmrW2JBd+R2TBdkfaL/NyNKcuyoPbZ1CnAk9TetV/fFqV5R+bOa1N+9WzqgyFus1va00dN7bULsk/T9KO1eEtvTQcdZFpMKx0q57R1cSUMEApnguWXg63sTslfwR/cKwjC0EnJIzSkB6sE7A5S65loqLUC/vGOBcnAuOfbTiNU8dr5BK6qGACCCTQuImFWk3NJBy/xMEUvpZoSJx44tFVgJxcIkYCJxOex1ndNBR1Ip7xePHaHHVjYPxeRRZPqReRer2J+sjVMpgdo7uOZSlEpwP6DdrrO/EDuCVKDlVH+hr72L7KfOo2lgvUj2ezaen0wnTgRzwkTCSILrg4JQv5FhG6TisZ+aYzVyOQ+9nC+6B66m2vExL62NUQRT7VHC/bhLC6hfBpIlx47SY7fHTSsPpUig6mEvxORyI4PzUhgh+DzXb4MHfwmxQ86x1zTAEMMRCmRQ5TC5nMe6ksq1y/XDkiK+hNiBEKuRSuXTtiRw9fLNUTueJ1tj/UNsPo/7yfWP8lxXYXKF2DcQ6zT7txU3G8MeA0XoFBG6QnsBsBKEFSAlIJoj1XUkCrEvErsfi3MdNTu6vtJQD0iB2d5jvBRIXTneAYP3MLDyDSI6dPNkTDiUg5G9DdJKiH0xsZVSSsWH3DjrBkzuhFcYfuLzrrM9FkUq9lZX4fJ3BDu+R0elGCH2XR4LRFF5EV4pynFhlodyroRiLX19pOyKc69PBPTrlF+0VIFJpDwZvwMhxL4gx2reSgmTiwnkHu9L0E5bb8WahRPr40Aw6EpynlvXBELsE4nV9gKeRRhFAEeM63Wo61HluhIL2sdL6+pViH1XKuib1K6EUqRx18XlwCPBm/NkX0/ycdSKdE5C7LOJLf1Am2378lpXUp+dJqB96qO5rl4MhAuxn+6xFKGQB8tSv69g2dz1R5GOPVOFW6eRc7df6wetRt5kPm9igRD7mcRi4oBU+H6BzPFzYpwHUl7O1TvsU6WUUtF8p52/HA4aoXAM5ZV8zmsgewVZVntekvSbDoDULLN/Y8YydZt1cR51HTkwqxvIq+//jTZKKaW2zWcats2d4XC8WIRC7FCI1cgFcbtdfa3xXQVe5xXHVsS2WOv38u2dQuwLU4H2iiTz0LhPS62xu5IJJHKzN1ZEEIs99Zo/u41i2SsYssdS0rwnSna9ErlqPBPuH7iZfa1e2LYf3D5qXxJiB0CsajN7Qh7ERGK1INSYtyFnYg/FKychVoh9jOgH+qJ/o0ezKxYu9e8izHeJdt51jS/E/mFiX6VB/m8aIVYkEolEo9N/YV++l/hHc94AAAAASUVORK5CYII=",
   "vileplume": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEwAAABMCAYAAADHl1ErAAADb0lEQVR42u2aIZTqMBBFh39WICuRSCQSWYlEIpFIJBKJXFmJRFZWIpErkcjKShxflPRspk0zTZN+Puc9w3YpaWgub14GiCAIgiAIatYo4NjPN5xTb/0BM8OvZiNJj0te/jEtysd7VD5mJ+285TXTji+Xy1uTB8IGJOxJRJSvt0REFE2nohdxorJNJHrdeJNK5x7UO0FYgLvauGJxHGvH58msdZB1fiMiosOqPF5EJVm3ayGa6GxRnn8tyvPjXbPX1bxTiXlocb9rT0/OiejegDAPhGlEPfZHJ28ySepZ1uudSoKyxbLXOJy0BuJGIMwTYc1Vb7kR5anqvAqlk0ae8i4u5WU2Ke/iOryKp5g0/n6YxxXJoZU0EOZAmEYWlzRfdfU0E3FSHdJ+r7dVdRDmSV+uVUTlKmM1tHjKMs06kceJyk5Ju6c6fgIUebd7gaQ/iIeZSKoRZKk+UgJMK++ct4TzUp8k9X5/dU2Qw7zmMNse0bVqOif6F3F9E71r8keVDJX0jXlsu+pVnVy9zkiaabwk7TYPQ9LnpIEw31XSSpptRU0EdKyivIrVSOPzsYxrype2xA/CQhNmJS9w1ao6t49J2e2I5047FalU4o+vZxDWi7DLYk1ERLNp5PUCNfI6Jm/Tih/GuUaa73lzspDDfOWwUKT5WvGqe8EIU3KddwNR2Ev6JuwtSTP1pRRh1TEjzaYGktruCQjzSZhGmtJQxJmI4mQ95nvt/+Mf/fvTll8BiUgCYQMQ1kocl3SnYCPI5FFKnCyu6/eyF0EgzLO+fNE4OSeNHduaxrKL2UiazMqqmN/yQW8YCAtIWKuXLXavb3te1SpafxMR0f6n7CMd5/26IYokTtbQpIGw0FWyIslkUYywrrIRKSXrV7X0WjVB2AAeJlrR1Vp/vjjvWslTzx+FZNo8a5X8aMfpdv70kfhBWEAPsyX+UdN5fKUVSVyRJ7IU6fy6pnG67gxA2ACEOVVVVdX65rAOe0jR9dPtHIT9r4T1Ik2a3AUe9PR5D0DYGxKmrbTqZti6EbadhOkXgthLfmrSt3mH8rAHI0XJ1oOvkWnv2YOwT/UwUVejQ5VrHTd0Dx+EvSthpmro0KdqzXGue0IQ9il7SQ/XfEq6D133hCDsA5O+F2JN/bWhkj8I+2DCfHsjCIMgCIIg6F/qL6V+mRJOrSWuAAAAAElFTkSuQmCC",
   "voltorb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAABBElEQVR42t2WLRKDMBCFXzoIZI5QiewRkDkCshJZyRGQlZE9AjKSI1Qie4RIXCqY7ZRtKOlMJ6R9hpmE/Hz7NjsrEC63Mi9CNtkhskQo0fVYvt3ocOmD9k6C0IUQremJWCRD+BWyNdLohC8HDlZisDLegTE8dABgjAEAWK0BAIW03gVEvzTP/yNVXbcx4TiOAIA8z72V5XSbvuc9vOOkWvr934wwe8S8Vh+9q7KcItA0zcx7Lm1tIllKN+YekQptZh6T56SuqrxkFAGlVCK1lEhJS8T8nXGvONlmtTTjA1Rx+n7KxlPbLiz1E/1ET+N8WUgi8jVx79Lv2sjbAKL0u7b/6rzvajFc982WiVMAAAAASUVORK5CYII=",
@@ -4655,6 +4901,7 @@ const SPRITES = {
   "wartortle": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACdUlEQVR42u1ZK5SrMBC97FlRWVkZWVmJjEQiVyJXIisrK5GVSCQyElmJRCIrK9exIpntm7xsCu17+0mZc3o4EEjLvXPvTFJgjp8bg/n86Hj67ShHnyCPtj8DADZi6bt3ZuDeeP5iTV1j/7EZGACgbI4AgOLQwdLCMBE5hrhDU7MG/pcGmItdGOju1YxTO+EyIBN9zLN0rJs4kW8amice6z7OeShsLQbFQAQAmYwHAJBSAgDSrDZH/mDb6Zwu9/x+CnIxYvJW7dhhu2J4dSDb6jqwWa+9D9I4IV+UtRP5cre96weSBml+283Cc6FryE+NbLfXbiTjm3Kfnne4YTjrgUHn2HlibuqeRr4c9IVTxRCjIA3kcqHdbKdG1Q8bcZo3k7yehM8A+T1pg5Cva+M61QkAIMQGANAfueusF3o8iQUAoDNIb0vtdtT92oyR6/xRgcPthSKDrJeJWlXsPEkSc9Tnr7uWjSuleE6nG8aEXbnnXYmxlfit0ZDnB91mJlnJbzhVTiZsBkgLql843evDfaS/iw1CAwz5cq/fmM77vmUug1XBc95CnLpXWytKtYyJS6zmNbFGLtZ+DYsJcoveQppin2t/3hZu9xKxO7fFamm0gJtyP7w6kKapc63bNM0AAOe+cE5AOU9uc6je2PilMit/1/p3txo9lgY8bxwBwFLkAwAca3dfTq5EWiqKwluZ+9PZ7Fp0kxAPuhJ7V0x23//RI5Wp0/8/u57nOYzm7kI+3DXx1Vi9MCaWQiNqa+Oyn1QzRv51PIQGmBY8czh39OyVHVV4zP/QTNdANGacKreIO3c3O2vgdg1MjeErvvPXMzDHd8c7d6ELlMi0gPEAAAAASUVORK5CYII=",
   "waterstone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABgElEQVR42o2UrXfCMBTFbzkIcJWtoxIcdUNWFjf+hFrkHGcO5NyY61zl5qiMHK5zrWxc48AVx0RPsoSkH8+0J8n55b73bp6FgTGbze5d+5RSCwDGQyFJUor1+C3TzhJs7pRSy+qCyRDXbb94uz3h+WmNfeyZFXKYDLHt5nu96jAAyKrm8pEJtli8Yz7vhx1ToonprCEHmcIE0xQ+1k0Orm7/kglYkdZi/8Yu7Qp3uzW+jxC1CSJH7IW7phbn87lbYZs63/VAYqassYoJdfNw2p4yj4IAdlgrUBmWfuQAAGfi4kJsOBMXJNtA+FBWlySlApCDW0OuGQCslj72sQdKqTU2pSi6HNa4plMF1DyzXPxzQw96eo+164MBwEhOt5CsJdcwiBwEkQNKc9EEE0w05XA4KaCsKjV13CZFWrfClJTlzi5CIE//D32+ks40jbb5+c3AKgZWMaWLfTV7DIsPA2eizid2qzSQPEhbgdyHgf+F1dJX/Oa73mCQBuwb7UPjD86Z2EXHI+EEAAAAAElFTkSuQmCC",
   "wigglytuff": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACBUlEQVR42u2ZLXeDMBSGX3YmkJOTlZWVyMjIysnJSSQSiaycnKysjIxEViIn9xNwTKThkFsChI9zeppcFw4QuE/e+5FEmG4NGUd4IHvBk1jkSkRKAQBgjG9NxmkFPA2R1wf6FoNAXdcAgDiOg0YGPXb9PhkXD18pfZdrdGu6BKh1iESBSJ/nRPoJAHjfH3rJ1PJiepQdbXM13ft5rkgLIZxIeB21IgDgpx9DK+n50ktCmyaon6MelhfyXCn8zuyz88hfde29Tj1MtWTTRnbYAQCq6jfUWosyMWMMAHD6OE56SEc3rZ3iqgiIPB2LckEjkzL8fr8z1rqNDI1ubd64kdDj0I/MJWLLGzbPas/b7pdSLtKtv7VWKs8q2iBeNDHVVE8VHYgMGmOs6Vantpoog+orrrJUnmbJIEGdyQORqX/fkrBEnbu1f4s+IivUuMiMMSVJa6u5ZPzJ7G18T5QnOedGJ0f7CK0JTUKPbdpYy7yKWr27HJpMm7lpNEv4YOdnI+K9RmYTGTVLntEdZE/nuIiMf0T0LnySsIck41WHGKkMz53IlKXKPznpBLeycGLlanleGOOxXZcQtcZI0H2oPM+cJnqrqkn3hczuqpH76lisQiR0iEv+fogUJWQj0SGwyrcEImOE9C79Xae50dzhxMpGgp7Dt5pYuLcbNLJWFNt4rucj8g8w6uIO5KDIsAAAAABJRU5ErkJggg==",
+  "wise-glasses": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAA+ElEQVR42uWUobLCMBBFT5h+SJCvso7KyPcbT/IrtZGVSCxyZWQlyLeO/kVQyaQMFCg47kxmMpPk7ObuJvDVMnOL1tqY5qpqnoVWj2BLVM3BUnavBqnmYIs9/TQwZ+paB4AEWQwqk1sB9Lse2gbXupf9s9ZGa21MiWXoHvjZbO4eSGMOJkGydbn666bhBNTrGiCWtiQJksGudUiQCWzi6cF7frdbAI7/xwmo3/UA/HlPCjGex5uwDFVVI10XCcOkA8rrJntOYcjFvAdUVVOlSbra9eb9lT3PtN2qjFBuVlUjQTh4/94zvSXpOggD43n8zC/17m/1pboACuyF32GgGHAAAAAASUVORK5CYII=",
   "xattack": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACH0lEQVR42pWUIWzbQBiFv2QFJpUaMKkHJvnAQCptUiINJKBSDQZclrAFFBh60sDMGjDgoXZsZUtZxhq2QENHKohZAs9g0pmZGlTqQNRLnDRZc+zu3n337t3dX2GPZtv242o/TdPKuqayD6wfBKWx8Pp6A1zdB+aenZkxz/dRcUQ/CErOq3vBRr9xc43n+4tJIQFK0OpLYerHLUoViH5o5nXYx8317gxX7Q+dLvV2i1GRUZ8q2oNro4u9ACktAMY1YTI9WIcNnS5SWliisRCPbtFa4/25M7p8cEe93WIeT1DZnE6nwajIyhnatv3o1WpESYRSBYVOAOj9+onvXyLbDmhF7AU7M6/scqa0xvcvqblN8vGUZhgQez2UKlDZHKe10EaTBOfqivb5+dKhyuYAG86aYUA+nppM24PhhqsnWJqmlVcAR0dH3+TDA5/je0j/8v7NIQ8Z1NwmF+IdzTDg4u1rxMkHTg8OiZKI7sdTokmC/PLVwIDlpUghiDuuOfLNzXd8LkvOYm+ptUQD5+pTCQZQsW37MfZ6AFiiQc1tLm5yJTNLNJjHE6Ikwuu4JsP+bLbxn02Gq7DlW+sxGI1NrlIIM/ccbOtPycfTDYiUFvK4TjRJdj6b6jpoFfa0eDAaG43SeifwAECpAkl551UngzzHUYXp96K7Z49betjhycnWXZXWSCGQx/WdsFJx2Abtz2b8r0pvrTbrJf4lgPX2D6zdEXkMaJhdAAAAAElFTkSuQmCC",
   "xspeed": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACGElEQVR42pWUL2zbQBSHP2cBAQWGO+aAglRapVoaOTbDG1tBQWBYR8NmMOCgBSbMGQt0oaHHzOKgJaDSZlRXGjEIMLuBOa6df2tOMri7d9/97vm9n8EZw7IsXZ+naWrsxhjnwIau21gbe95R8H9hE9/XP5+e9MT39cT3tdZa/9JaT3xf7yp/Nex+sdD3i4Wuj+0FW2jrNc/8oBSjKCJfr5nadrX/OUlY3dw0zrQOQbaf9DzeKsWPMARg3u9Xcf35vHFu6LpYlqXbuzDpeZi9Ho4QAHwPQ1ZJQjSdVnFBlvHJcXiIIvKiwFGK5/LSVqMklCKOY/L1mijLAJgMBoxdF6fb5fcBZQfL5pSysetiC0GSZQylRAUB+XpNXhRYZf7S5ZJvSvFRyheFeVEA7CkbSklSrknPI7y93VO1haVparwBME3z65+LCx5HIx43G9qXl3QAWwje3d0xlJK2UqjrazbdLnEc814p0uWSL7ZdwQCqn3Jl21iDQfXkoecxLjujUhYEVawjBD0hGjAAw7IsrcpARwjsEljPmSMED1FEHMeowaDK4crz9tquymEdth0qCAhnsyqvV7WiPgQ72ilJlu1BzF4Ps9MhXS5Plk1rF1SHbQ+Hs9mLsiQ5CWwD/wp5Z6OhJAzJpaymsesetax2mqYGrquvdryumUxFXhSYnQ6E4Un/M+qtdwi6Kk30lEsfdexDRnmuG/8FSyI1TLjeLF8AAAAASUVORK5CYII=",
   "zapdos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAEzElEQVR42u2cIXirMBDHr++bQFZWVlZWIpGVk5WVk8hKZCXyycrKSSSysnKyElmJ44lwvOWWkAQYhPbO7CsNLMAv//7vEgDg+NVYKLZVFm04LOMPX4KJLnB5j6C8R0h0xZeKCZ7nBU7iPSTxvg/JLz0CmOAJXITkJmodhmCdu7qKCgAgisT+ee68PxPMMeAFbnEV7DKYYD81WKnFp3Ql3EV6AYPGShqM8QJaXDHBI8ab6w7HuBAk3iKr0ZHnuZLkZyWXui4m2AOCF/Udke5QtF3VJBdUi6sn1VhdlbE1X2CCRyTYqQ7caPHB7R96QLprvVuXkVplukzw2Br87Y4oCUMfjARnZ7F9d9AS6pWGKki0ak9HIJ43Xg/O5DzK5EzaIn1PyUZXQTM3nQ8eIbNzreq1+nYkF8NUZWSCJ/DBSt+Ln3V3VucqJszgXDNIK3KvVzFSo/3FauQxwRNosHRH6/m4htDdoV2TMLBd9hmKz+/X1o4MqMW2VbyqbaTR83Illwn2oBaxAABI0kslCI6UvvcXM61BXIWOXPxtMY1IJDe/dvv/TPCEBLe6CvqrGoZFr440GVKt2cHy5EqyyTVI/cd+AxTK86GBMziuI4sJntBFWJFgcg/NdoOLoO2D5cm2j1Z+lxKa/BXkJh/ttQRX18AEe6jBVprcNWZEbtVFBZhgDwlWa+65H7mo0UPNeND+2JKL7ehIyS97Hemt/WSCfSeY1hoomSZyO2R2TvVa6ndN0RD+sddpMmvw3AmWqmwmMk1kU3/8v1399yG+N9WjdeTaam+Li2Af/JSZHP6qYpXpmKyH7VlNrqlqp9fczqT2IpYJnpuLGJpY6q+HJhc1eax1ykywhxqs1OKmHrwMO2mrayaI+7u6A4uaAxP8khrczGzs+mmridgfGVd3l8Aa/OoaLGnxaS9ndvGpUGZUWZYJIne7Vg0ekNhJV9ozwXMhuLy9SxvTUyBIPgs0g0B8LstSIlhHbo/agVfPhjDBvvtgLbnHUvocys2M6yhMJPumtUzw3An+um0AAGCz/ZIa4fYsuw9Csq9aywTPiGCl9lINPl4EaeiPQ3Vz1Syu0l10eOMKE8wEO7gGJFZxbGlFDF1foJszo2QrNHiS2gITPEOCleQG28+u5CiJ7rryhq64VzzBybWIVyVYIlehtUORIa13MBF8rQfOaiP6c87vSteheCpoEqKZ4AkIlsjtobVW5J6Tg7QRiaQkU3Jp6EhuIXrBBD9BvFmQu+hCpi3xxVcpkXmI1rVbuCvbHzZr5f66Gsa3lvBd68d64woTPIIGD0punorjJJ8P6kuV63uzdCmIix/KzE3ng3cr8T3WnXF/09ze2G8eZILHIriHS6gAAG63myAqjiUyaeZHyaUuhT61pJvZ+JHRkZHgSzWOCfagFuGUieG6B5xFbsjU1zI6PQWv01hK8tRve2WCZ0Cwrf+1dSvK2gSdu2uez6uJvebyQcJayqcmmQkeMZMbZTRQ0nTHwUwrPEet5DbrLsJS8t/ZR4Z7ABk5o74zkwmeEcFOPtl2RNCn+hst3Qhis0IQGoIgOnlfKl0MtgcI2EWwi+jnLnpljLqaBpIbxe3uhF0EE+xdSCSnaQoAANvt1otzZIKZ4MEySSaYg8M5/gE9iXtRTh6EEQAAAABJRU5ErkJggg=="
@@ -4662,8 +4909,12 @@ const SPRITES = {
 
 /* Bump on every publish: testers quote this in bug reports, and the
    project's tester-checklist doc is keyed by it. */
-const GAME_VERSION = { v:'v48', date:'Sep 27, 2026' };
-const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v} · ${GAME_VERSION.date}</div>`;
+/* Version numbers (from 1.2.0, Sean's scheme): BIG.MEDIUM.SMALL —
+   BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
+   SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
+   numbered v1…v54; those entries keep their old names in the changelog. */
+const GAME_VERSION = { v:'1.4.0', date:'Sep 27, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -4769,6 +5020,10 @@ const SFX = (() => {
     lose:    () => seq([72, 71, 70, 69], 0.16, { type: 'triangle' }),
     badge:   () => { seq([79, 79, 79], 0.09); seq([0, 0, 0, 84, 88], 0.09); tone(N(91), 0.45, 0.45); },
     start:   () => { tone(N(84), 0, 0.08); tone(N(91), 0.08, 0.16); },
+    // v54: a Rare / Very rare item lands on the shelf
+    sparkle: () => { seq([91, 95, 98, 103], 0.045, { type: 'triangle', v: 0.7 }); tone(N(103), 0.2, 0.28, { type: 'triangle', v: 0.35 }); },
+    sparkle2: () => { seq([84, 88, 91, 96, 100, 103], 0.045, { type: 'triangle', v: 0.75 });
+      [0, 1, 2, 3].forEach(k => tone(N(k % 2 ? 108 : 103), 0.3 + k * 0.06, 0.05, { type: 'triangle', v: 0.3 })); },
     wipeIn:  q => tone(1100, 0, q ? 0.14 : 0.36, { to: 180, v: 0.35 }),
     wipeOut: q => tone(200, 0, q ? 0.14 : 0.26, { to: 900, v: 0.3 }),
   };
@@ -4936,10 +5191,12 @@ function bossArt(b, cls){
 }
 
 /* The second move (v32): what triggers it, then what it does. */
-function move2Html(sp, l, cls){
+function move2Html(sp, l, cls, lockedBy){
   const m = sp.move2;
   if(!m) return '';
-  return `<div class="${cls || 'popmove m2'}"><b>${esc(m.name)}</b> <i class="trig">${esc(m.when())}</i><p>${esc(m.text(l))}</p></div>`;
+  // v52: a Choice Band keeps the second move from ever firing — shown struck through, with why
+  return `<div class="${cls || 'popmove m2'}${lockedBy ? ' locked' : ''}"><b>${esc(m.name)}</b> <i class="trig">${esc(m.when())}</i>${
+    lockedBy ? `<span class="lockby">Never used — locked out by its ${esc(lockedBy)}</span>` : ''}<p>${esc(m.text(l))}</p></div>`;
 }
 /* A battle card's status condition and barrier, from the step snapshot. */
 function statusHtml(u){
@@ -4957,6 +5214,13 @@ function roleBadge(id, cls){
 const roleChip = id => { const r = roleOf(id), R = ROLES[r];
   return `<span class="rchip r-${r}">${R.icon} ${esc(R.name)}</span>`; };
 
+/* v50: an item's rarity as a small coloured tag. Common items get none, so the
+   tag always means "this turns up less often". */
+function rarityTag(def){
+  const r = rarityOf(def); if(r === 'common') return '';
+  const R = TUNING.rarity[r], pct = Math.round(R.weight * 100);
+  return `<i class="rar r-${r}" title="${esc(R.name)} — turns up about ${pct}% as often as a common item">${esc(R.name.toUpperCase())}</i>`;
+}
 /** Inline item artwork for running text (the evolution line, the inspector). */
 function itemGlyph(id, fallback){
   return SPRITES[id] ? `<img class="pix" src="${SPRITES[id]}" alt="">` : fallback;
@@ -4999,7 +5263,7 @@ function unitHtml(u, opts){
     <div class="uname">${esc(SPECIES[u.id].name)}</div>
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
     <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}">◆${eA}</span><span class="h ${hs.hp?'xup':''}">♥${eH}</span></div>
-    <div class="stats spd"><span class="s ${u.tmpSpd||hs.spd?'xup':''}">»${eS}</span></div>
+    <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}">»${eS}</span></div>
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
@@ -5194,11 +5458,12 @@ const BAR_MAX = (() => {
 function statBar(label, value, max, colour, bonus){
   const w = Math.max(3, Math.min(100, Math.round(value / max * 100)));
   // the slice of the bar that comes from an item, drawn lighter on the end
-  const bw = bonus ? Math.max(2, Math.min(w, Math.round(bonus / max * 100))) : 0;
+  const bw = bonus > 0 ? Math.max(2, Math.min(w, Math.round(bonus / max * 100))) : 0;
+  // v51: an item can cost a stat too (Choice Band's Speed) — shown in red, no hatching
   return `<div class="sb"><label>${label}</label>
     <i class="sbar"><u style="width:${w}%;background:${colour}"></u>${
       bw ? `<em style="width:${bw}%;left:${w - bw}%"></em>` : ''}</i><b>${value}${
-      bonus ? `<i class="sbon">+${bonus}</i>` : ''}</b></div>`;
+      bonus > 0 ? `<i class="sbon">+${bonus}</i>` : bonus < 0 ? `<i class="sbon neg">−${-bonus}</i>` : ''}</b></div>`;
 }
 
 /* Speed decides how OFTEN a pokémon acts, and a raw "»61" cannot tell you
@@ -5298,7 +5563,7 @@ function popupHtml(u){
     ${vitLineHtml(u)}
     </div><div class="pcol b">
     <div class="popmove"><b>${esc(sp.move.name)}</b> <i class="trig">Main move</i><p>${esc(sp.move.text(l))}</p></div>
-    ${move2Html(sp, l)}
+    ${move2Html(sp, l, null, heldOf(u) && heldOf(u).lockMain ? heldOf(u).name : null)}
     <div class="poprole r-${roleOf(u.id)}"><b>${ROLES[roleOf(u.id)].icon} ${esc(ROLES[roleOf(u.id)].name)} · ${esc(ROLES[roleOf(u.id)].trait)}</b>
       <p>${esc(ROLES[roleOf(u.id)].text())}</p></div>
     <div class="popmu">
@@ -5333,13 +5598,14 @@ function updateCarry(){
   carryEl.hidden = false;
   carryEl.classList.toggle('pinned', !finePointer());
   const verb = finePointer() ? 'click' : 'tap';
-  carryEl.innerHTML = held
+  const ch = held
     ? `${SPRITES[held.id] ? `<img src="${SPRITES[held.id]}" alt="">` : ''}
        <span>${esc(held.nm)}</span>
        <em>${verb} a slot</em>`
     : `<span class="carryitem">${itemGlyph(item.id, item.def.icon)}</span>
        <span>${esc(item.def.name)}</span>
        <em>${verb} a pokémon</em>`;
+  if(carryEl.dataset.was !== ch){ carryEl.dataset.was = ch; carryEl.innerHTML = ch; }   // v49: no re-decode on every tap
 }
 /** A Bag item on the cursor, so a phone shows what it is carrying. */
 function heldItem(){
@@ -5364,32 +5630,39 @@ function matchupHtml(type){
 }
 
 /** The pokémon's whole evolution line, with the current stage marked. */
+/** How `child` is reached from its parent: { by, stone } (1.3.0: branch-aware). */
+const evoStep = child => { const p = evoParent(child); return p ? evoNext(p).find(n => n.into === child) : null; };
+const stageArrow = step => `<span class="arr">${step.by === 'stone' ? itemGlyph(step.stone, ITEMS[step.stone].icon) : '→'}</span>`;
 function evoLineHtml(id){
-  const line = evoLine(id);
-  if(line.length < 2) return '<span class="mu">does not evolve — levels up into bigger stats</span>';
+  const line = evoLine(id), nx = evoNext(id);
+  if(line.length < 2 && !nx.length) return '<span class="mu">does not evolve — levels up into bigger stats</span>';
   const parts = line.map((k,i) => {
-    const from = i > 0 ? SPECIES[line[i-1]].evo : null;
-    const arrow = from ? `<span class="arr">${from.by === 'stone' ? itemGlyph(from.stone, ITEMS[from.stone].icon) : '→'}</span>` : '';
-    return arrow + `<span class="stage ${k === id ? 'now' : ''}">${esc(SPECIES[k].name)}</span>`;
+    const step = i > 0 ? evoStep(k) : null;
+    return (step ? stageArrow(step) : '') + `<span class="stage ${k === id ? 'now' : ''}">${esc(SPECIES[k].name)}</span>`;
   }).join('');
-  const nxt = SPECIES[id].evo;
-  const how = !nxt ? 'final form'
-    : nxt.by === 'stone' ? `needs a ${ITEMS[nxt.stone].name}`
+  // a branching line (Eevee): every way it can go, each with its stone
+  const branches = nx.length > 1 ? `<span class="arr">→</span>` + nx.map(n =>
+    `<span class="stage branch">${itemGlyph(n.stone, ITEMS[n.stone].icon)} ${esc(SPECIES[n.into].name)}</span>`).join('<span class="arr">/</span>') : '';
+  const how = !nx.length ? 'final form'
+    : nx.length > 1 ? `a ${nx.map(n => ITEMS[n.stone].name.replace(' Stone', '')).join(', ').replace(/, ([^,]*)$/, ' or $1')} Stone decides what it becomes`
+    : nx[0].by === 'stone' ? `needs a ${ITEMS[nx[0].stone].name}`
     : 'evolves on its next level up';
-  return `<div class="line">${parts}</div><span class="mu">${how}</span>`;
+  return `<div class="line">${parts}${branches}</div><span class="mu">${how}</span>`;
 }
 
+/* v49: a message floats at the top of the screen instead of replacing the
+   summary, so the page under it keeps its shape. */
+const toastHtml = () => toast ? `<div class="toastbox" role="status"><b>${esc(toast)}</b></div>` : '';
 function inspectHtml(){
-  if(toast) return `<b style="color:var(--gold)">${esc(toast)}</b>`;
   if(inspect && inspect.kind === 'mart'){
     const d = ITEMS[inspect.id];
-    return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b><span class="tag">${d.cost}₽</span>
+    return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>${rarityTag(d)}<span class="tag">${d.cost}₽</span>
             <span class="tag">permanent</span><br><span class="abil">${esc(d.text)}${
               d.vitamin ? ` Up to ${TUNING.vitaminCap} per pokémon.` : ''}</span>`;
   }
   if(inspect && inspect.kind === 'held'){
     const d = HELD_ITEMS[inspect.id];
-    return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>
+    return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>${rarityTag(d)}
             ${inspect.cost !== false ? `<span class="tag">${d.cost}₽</span>` : ''}
             <span class="tag" style="color:var(--gold)">held — ${esc(d.kind)}</span>
             <br><span class="abil">${esc(d.text)}</span>`;
@@ -5667,7 +5940,7 @@ function renderShop(){
     if(!def) return '';
     return martRow(`
       ${itemSpriteHtml(m.id, def.icon, 'row')}
-      <div class="mtext"><b>${esc(def.name)}${def.rare ? '<i class="rare" title="Rare — turns up about a quarter as often as other items">RARE</i>' : ''}</b><span>${esc(def.text)}</span></div>
+      <div class="mtext"><b>${esc(def.name)}${rarityTag(def)}</b><span>${esc(def.text)}</span></div>
       <div class="mprice">${def.cost}₽</div>
       ${m.reserved ? '<div class="pin">reserved</div>' : ''}`,
       sel && sel.kind==='mart' && sel.idx===i ? 'sel' : '', 'mart', i);
@@ -6406,6 +6679,7 @@ function shopFx(){
     mon: new Map([...G.team, ...G.pc].map(u => [u.uid, rec(u)])),
     dc: G.daycare.map(s => s && s.unit ? s.unit.uid : '-').join(','),
     mart: G.mart.map(m => m.id).join(','),
+    martIds: G.mart.map(m => m && !m.bought ? m.id : null),
   };
   const was = shopMem;
   shopMem = now;
@@ -6418,26 +6692,39 @@ function shopFx(){
     const w = was.mon.get(u.uid), el = cardOf(u);
     if(!el) continue;
     const n = rec(u);
-    if(!w){ el.classList.add('fx-land'); snd.add('land'); continue; }
-    if(n.id !== w.id){ el.classList.add('fx-evo'); shopFloat(el, `${SPECIES[u.id].name}!`, 'evo'); snd.add('evolve'); }
-    else if(n.lvl > w.lvl){ el.classList.add('fx-lvl'); shopFloat(el, `Level ${n.lvl}!`, 'lvl'); snd.add('levelup'); }
-    else if(n.exp > w.exp){ el.classList.add('fx-exp'); shopFloat(el, '+EXP', 'exp'); snd.add('up'); }
+    if(!w){ replay(el, 'fx-land'); snd.add('land'); continue; }
+    if(n.id !== w.id){ replay(el, 'fx-evo'); shopFloat(el, `${SPECIES[u.id].name}!`, 'evo'); snd.add('evolve'); }
+    else if(n.lvl > w.lvl){ replay(el, 'fx-lvl'); shopFloat(el, `Level ${n.lvl}!`, 'lvl'); snd.add('levelup'); }
+    else if(n.exp > w.exp){ replay(el, 'fx-exp'); shopFloat(el, '+EXP', 'exp'); snd.add('up'); }
   }
   const dc = now.credits - was.credits;
   if(dc) snd.add(dc > 0 ? 'gain' : 'coin');
   if(now.dc !== was.dc || now.mart !== was.mart) snd.add('deal');
   // one sound per draw, the most important thing that happened
-  const pick = ['evolve', 'levelup', 'land', 'gain', 'deal', 'coin', 'up'].find(k => snd.has(k));
+  /* v54: a Rare or Very rare item that has just landed on the shelf sparkles
+     (after its row has dealt in) and chimes over the ordinary deal sound. */
+  if(now.mart !== was.mart) now.martIds.forEach((id, i) => {
+    if(!id || (was.martIds || [])[i] === id) return;
+    const slot = G.mart[i], r = rarityOf(defOfSlot(slot));
+    if(r !== 'rare' && r !== 'veryrare') return;
+    const el = document.querySelector(`.martrow[data-act="mart"][data-i="${i}"]`);
+    if(!el) return;
+    const k = [...document.querySelectorAll('.martlist .martrow:not(.fixed)')].indexOf(el);
+    el.style.setProperty('--sparkdelay', (Math.max(0, k) * 55 + 320) + 'ms');
+    replay(el, r === 'veryrare' ? 'fx-vrare' : 'fx-rare');
+    snd.add(r === 'veryrare' ? 'sparkle2' : 'sparkle');
+  });
+  const pick = ['evolve', 'levelup', 'land', 'sparkle2', 'sparkle', 'gain', 'deal', 'coin', 'up'].find(k => snd.has(k));
   if(pick){ SFX.play(pick); shopSfx = true; }
   if(dc){
     const c = document.querySelector('.stat.credits');
-    if(c){ c.classList.add(dc > 0 ? 'fx-gain' : 'fx-spend'); shopFloat(c, `${dc > 0 ? '+' : '−'}${Math.abs(dc)}₽`, dc > 0 ? 'gain' : 'spend'); }
+    if(c){ replay(c, dc > 0 ? 'fx-gain' : 'fx-spend'); shopFloat(c, `${dc > 0 ? '+' : '−'}${Math.abs(dc)}₽`, dc > 0 ? 'gain' : 'spend'); }
   }
   // a new Daycare / Mart stock deals itself in, card by card
   if(now.dc !== was.dc) document.querySelectorAll('.dclist .drow').forEach((e, k) => {
-    e.classList.add('fx-deal'); e.style.animationDelay = (k * 55) + 'ms'; });
+    replay(e, 'fx-deal'); e.style.animationDelay = (k * 55) + 'ms'; });
   if(now.mart !== was.mart) document.querySelectorAll('.martlist .martrow:not(.fixed)').forEach((e, k) => {
-    e.classList.add('fx-deal'); e.style.animationDelay = (k * 55) + 'ms'; });
+    replay(e, 'fx-deal'); e.style.animationDelay = (k * 55) + 'ms'; });
 }
 
 /* ===================================================================
@@ -6463,9 +6750,55 @@ function renderOver(){
 /* ===================================================================
    RENDER + EVENTS
    =================================================================== */
+/* ---- v49: redraw by patching, not replacing -----------------------
+   Every tap used to throw the whole screen away and build it again. On a
+   phone that means every sprite image is decoded again (they blink), every
+   looping bounce restarts, and the browser loses its place on the page — the
+   flicker Sean saw. The shop is now patched in place: the new markup is
+   parsed off-screen and only nodes that differ are touched, so an image
+   whose src hasn't changed is never reloaded. */
+function morphSame(a, b){
+  if(a.nodeType !== b.nodeType) return false;
+  if(a.nodeType !== 1) return true;
+  return a.tagName === b.tagName && (a.id || '') === (b.id || '');
+}
+function morphNode(f, t){
+  if(f.nodeType !== 1){ if(f.nodeValue !== t.nodeValue) f.nodeValue = t.nodeValue; return; }
+  const fa = f.attributes, ta = t.attributes;
+  for(let k = fa.length - 1; k >= 0; k--){ const n = fa[k].name; if(!t.hasAttribute(n)) f.removeAttribute(n); }
+  for(let k = 0; k < ta.length; k++){ const { name, value } = ta[k]; if(f.getAttribute(name) !== value) f.setAttribute(name, value); }
+  morphKids(f, t);
+}
+function morphKids(from, to){
+  let f = from.firstChild, t = to.firstChild;
+  while(t){
+    const tn = t.nextSibling;
+    if(!f){ from.appendChild(t); t = tn; continue; }
+    if(morphSame(f, t)){ morphNode(f, t); f = f.nextSibling; t = tn; continue; }
+    // one step of look-ahead: something was taken out, or put in
+    const fn = f.nextSibling;
+    if(fn && morphSame(fn, t) && !(tn && morphSame(f, tn))){ from.removeChild(f); f = fn; continue; }
+    if(tn && morphSame(f, tn)){ from.insertBefore(t, f); t = tn; continue; }
+    from.replaceChild(t, f); f = t.nextSibling; t = tn;
+  }
+  while(f){ const fn = f.nextSibling; from.removeChild(f); f = fn; }
+}
+function morphInto(el, html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  morphKids(el, tpl.content);
+}
+let drawnPhase = null;
+/** Put an animation class back on so it plays again, even if the patch just took it off. */
+function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cls); void el.offsetWidth; } el.classList.add(cls); }
+
 function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
-  $('#app').innerHTML = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop()) + versionTag();
+  const app = $('#app');
+  const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
+  if(phase === 'shop' && drawnPhase === 'shop' && app.firstChild) morphInto(app, html);   // v49
+  else app.innerHTML = html;
+  drawnPhase = phase;
   const lg = $('#blog'); if(lg) lg.scrollTop = lg.scrollHeight;
   if(phase === 'battle') mountStage();       // v36: the kept arena goes back in
   else shopFx();                             // v36: what changed since the last draw gets a little life
@@ -6476,7 +6809,10 @@ const selRef = () => !sel ? null : sel.kind === 'team' ? `team:${sel.idx}` : sel
   : sel.kind === 'dc' ? `dc:${sel.idx}` : null;
 /* v47: something that didn't work buzzes as well as saying why */
 function fail(msg){ SFX.play('error'); say(msg); }
-function say(msg){ toast = msg; render(); setTimeout(() => { if(toast === msg){ toast = ''; render(); } }, 1900); }
+function say(msg){ toast = msg; render(); setTimeout(() => {
+  if(toast === msg){ toast = ''; render(); }
+  else if(!toast){ const t = document.querySelector('#app .toastbox'); if(t) t.remove(); }   // v49: a tap cleared it without a redraw
+}, 1900); }
 
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
@@ -7002,119 +7338,25 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
-  { v:'v48', title:'Home-screen app', items:[
-    'PokéBattler can go on your home screen like an app, with its own icon: open the game’s own link, then START → Install app (on an iPhone: Share → Add to Home Screen).',
-    'Opened from the home screen it fills the whole screen, works offline once it has loaded, and picks up new versions by itself.',
-    'Room for the notch and the home bar on newer phones; pressing and holding a sprite no longer pops up “Save image”.' ] },
-  { v:'v47', title:'Sound, and a smoother START', items:[
-    'The game has sound: Game Boy-style blips for menus and taps, a coin for buying, a pop when a pokémon arrives, jingles for levelling up and evolving, hits and faints in battle, the “wants to battle!” sting, a victory tune and a badge fanfare. Turn it off or change the volume in START → Options. (On an iPhone the silent switch mutes it.)',
-    'The pokéball wipe is quicker once you’re into a session: your first 3 battles each time you open the game get the full rolling ball, then it’s a quick close-and-open. Options → Transitions can set it to Full, Quick or Off.',
-    'The START menu slides in smoothly instead of in jerky steps.' ] },
-  { v:'v46', title:'Tidy frames', items:[
-    'The battle log and the menus (Pokédex, What’s new, How to play…) scroll inside their frames — text no longer slides over the border.',
-    'Pokémon in the turn-order rows, the summary and other small frames sit inside their boxes with a little room, instead of touching or poking past the edges.',
-    'On a phone the Order row in the shop shows as many pokémon as fit, with none cut in half.' ] },
-  { v:'v45', title:'Easier to read', items:[
-    'Descriptions, names, move text and numbers now use a clean, rounded font, so letters like C and B read properly at small sizes.',
-    'The pixel font stays for headings, buttons, labels, menus, the top bar and the battle banners — the Game Boy look, just easier on the eyes.' ] },
-  { v:'v44', title:'Nothing floating', items:[
-    'On phones the summary no longer floats over the screen while you hold a pokémon — it stays in the message box under your party, so the PC and your party are never covered.',
-    'The ✕ on the little “tap a slot” tag is gone. Cancel (or tapping the pokémon again) puts it back.' ] },
-  { v:'v43', title:'Iron out 2', items:[
-    'One way to see a summary: tap a pokémon or item and everything about it — stats, moves, matchups, evolution — types out in the message box. The pop-up card, hover and double tap are gone.',
-    'On a phone, while you’re holding something, the message box sits just above the buttons at the bottom, so you can read about a Daycare pokémon without scrolling back up.',
-    'The turn order row stays on screen for the whole battle instead of disappearing and coming back.',
-    'Your party’s empty spots are just the grass disc now, and the level-up pips under each pokémon are visible again.',
-    'Bold text in the pixel font is less heavy, so letters no longer run together.',
-    'Role chips (Tank, Support…) no longer stretch onto two lines.',
-    'The Daycare and Mart lists keep the same width when their scroll bar comes and goes.' ] },
-  { v:'v42', title:'Iron out', items:[
-    'Damage numbers and words that land on the same pokémon close together now stack instead of printing on top of each other.',
-    'The battle log fades out its top line instead of cutting it in half.',
-    'The turn order row keeps its place during the battle intro, so the log no longer jumps down when the fight starts.',
-    'The Run Over screen fits your whole team on a phone.',
-    'Tidier type chips in the Pokédex.' ] },
-  { v:'v41', title:'Title wipe', items:[
-    'Leaving the title screen now uses the pokéball wipe too, so CONTINUE, NEW RUN and PRESS START all roll you into the game.' ] },
-  { v:'v40', title:'Pokéball wipe', items:[
-    'Going into a battle, a pokéball rolls to the middle of the screen and the screen closes to a circle around it, like the old games — then opens on the battle.',
-    'The same wipe takes you back to the shop after the battle, and in and out of friend battles.',
-    'It speeds up with the 2× and 4× battle speeds. With Motion set to Reduced it’s a quick fade instead.' ] },
-  { v:'v39', title:'Title tweak', items:[
-    'The title screen now reads “A Pokémon Auto Battler”.' ] },
-  { v:'v38', title:'Title screen', items:[
-    'The game now opens on a title screen: the PokéBattler logo, your partner pokémon (the one that’s fought most for you) and PRESS START.',
-    'With a run going, START offers CONTINUE (with your turn, badges and lives), NEW RUN (asks YES / NO first) and OPTIONS.',
-    'Your best run is shown along the bottom.',
-    'Rather go straight in? Options → Title screen → Skip.' ] },
-  { v:'v37', title:'Game Boy style', items:[
-    'The shop and menus now look like the classic Game Boy games: cream boxes with thick borders and a pixel font.',
-    'Your party stands on a field in its three ranks, each pokémon on its own little patch of grass.',
-    'The top bar shows your lives as pokéballs and your badges as gems in each gym’s colour.',
-    'The message box types its text out, with the blinking ▼.',
-    'The next fight sits at the bottom of the screen — “Brock wants to battle!” with the leader’s portrait — and the Battle button is always under your thumb. The dots show how far it is to the next gym.',
-    'The ☰ button is now START: a Start menu slides in from the right. Restart asks YES / NO first.',
-    'New Trainer Card: your badges with each leader, and records — best run, runs cleared, your partner pokémon and your biggest hit.',
-    'New Options: set your name (it goes on your Trainer Card and team code), the theme, battle speed, how text appears, and reduced motion.',
-    'Theme: Light is the cream Game Boy look, Dark is the same style at night, and System follows your phone or computer.' ] },
-  { v:'v36', title:'A real battlefield', items:[
-    'Battles now happen on a field: all your pokémon on the left, theirs on the right, standing in their front, middle and back ranks, with a small HP bar over each head.',
-    'Attacks fly across the field in their type’s colours — fireballs, bubbles, lightning, leaves, psychic rings, slashes — and damage numbers pop off whoever gets hit (gold when it’s super effective).',
-    'Burns, sleep, paralysis and the rest show on the pokémon with a little effect, barriers glow around whoever they protect, and fainted pokémon fall and fade away.',
-    'Every battle opens with “… wants to battle!” and both teams running in, and ends with a result ribbon and a victory hop. Gyms have their own floor in the leader’s colour, your rival meets you at dusk, and the Elite Four fight in the League hall.',
-    'The shop is livelier: new pokémon pop out of a pokéball, level-ups and evolutions glow and say so, your money ticks when it changes, and fresh Daycare and Mart stock deals itself in.',
-    'Speed 2× and 4× trim the effects to keep up, and Skip still jumps straight to the result.' ] },
-  { v:'v35', title:'Chansey the Tank, calmer phone summaries, PC merges', items:[
-    'Chansey is now a Tank: huge HP and Bodyguard, but still heals with Softboiled and shields the team with Light Screen.',
-    'On a phone, tapping a pokémon no longer opens its summary over the whole screen. Double-tap it, or press ⓘ in the action bar, to see the summary.',
-    'A Daycare pokémon can be dropped straight onto a stored copy in the PC to combine them — any levels, as long as the stored one isn’t level 3 yet.' ] },
-  { v:'v34', title:'Place your pokémon anywhere', items:[
-    'The 1–6 numbers are gone from the party. Tap a pokémon, then any cell, to move it there — gaps are allowed, and dropping it on another pokémon swaps them.',
-    'Where a pokémon stands is what counts: front, middle or back rank, with every role bonus that comes with it.',
-    'The front is now the frontmost rank anyone is still standing in. Nobody slides forward when a teammate faints; the next rank only becomes the front once the whole rank ahead is down.',
-    'The PC is free too: tap a stored pokémon, then any box, to move it or swap. Arrange it your way.',
-    'Team codes remember where your pokémon stood.' ] },
-  { v:'v33', title:'Burn reworked, Cannons stop healing', items:[
-    'Burn now takes 3% HP a round (was 6%) and makes the burned pokémon’s attacks deal 25% less damage.',
-    'Cannons no longer recover HP. Alakazam, Staryu, Starmie and Mewtwo swapped Recover for a stronger attack (Psybeam, Water Gun, Hydro Pump, Psychic).',
-    'New: this What’s new page in the ☰ menu.' ] },
-  { v:'v32', title:'Two moves each, status conditions', items:[
-    'Every pokémon has a second move that fires on a trigger: first before anyone moves, every 3rd action, once below half HP, or when a teammate is hurt.',
-    'Status conditions: Burn, Poison, Paralysis, Sleep, Confusion and Flinch, shown as chips on battle cards. Each can hit a pokémon only once per battle.',
-    'Barriers (Reflect, Light Screen, Harden…) soak damage before HP.' ] },
-  { v:'v31', title:'Exp. Share and Lucky Egg toned down', items:[
-    'Both are now RARE and turn up about a quarter as often.',
-    'Exp. Share trains your party only — not the PC, and not pokémon you buy later.',
-    'Lucky Egg gives each pokémon at most 10 bonus rounds (shown on its summary card).' ] },
-  { v:'v30', title:'Your rival', items:[
-    'Your rival Blue ambushes you three times a run, in place of a trainer battle. His starter beats your party’s type and his team grows each time.',
-    'Beat him for extra credits next turn and a held item. Losing costs a life like a trainer.',
-    'If you met him, the Champion leads with his starter.' ] },
-  { v:'v29', title:'All the sprites, leader portraits', items:[
-    'Real sprites for the 14 new pokémon, every held item and the Moon Stone.',
-    'Gym leaders, the Elite Four and the Champion have portraits wherever they’re named.' ] },
-  { v:'v28', title:'Roles and 14 new pokémon', items:[
-    'Every pokémon is a Tank, Bruiser, Cannon or Support. The role decides how it grows and gives it a trait.',
-    '“Line up by role” button on your party. Trainers and bosses line up the same way.',
-    'New: Jigglypuff, Oddish, Clefairy, Chansey, Shellder, Rhyhorn and Voltorb lines, plus the Moon Stone.',
-    'Fights last longer, spread moves hit the back rows for half, X items are +3%.' ] },
-  { v:'v27', title:'Item targeting fixes', items:[
-    'Held items from the Mart can go straight onto a pokémon.',
-    'Medicine, Rare Candy and stones can be used on PC pokémon.',
-    'The Daycare ● only shows when a copy can actually level.' ] },
-  { v:'v26', title:'Vitamin cap', items:[
-    'Each pokémon can take at most 10 of each vitamin (Protein, HP Up, Carbos).',
-    'Difficulty re-tuned to “middle”.' ] },
-  { v:'v25', title:'Badge rewards', items:[
-    'Each badge offers a choice of three rewards.',
-    'Stronger pokémon appear in the Daycare as you earn badges.' ] },
-  { v:'v24', title:'Seeded shops', items:[ 'Shops roll from the run’s seed, so reloading can’t re-roll them.' ] },
-  { v:'v23', title:'Trainer names, Expert Belt', items:[
-    'Regular trainers never use a boss’s name.', 'Charcoal is now called Expert Belt.' ] },
-  { v:'v22', title:'Version tag', items:[ 'The version shows at the bottom of the screen and in the menu.' ] },
-  { v:'v21', title:'X items and bench rest', items:[
-    'X Attack / X Speed boost the whole party, up to 3 per battle.',
-    'Between Elite Four fights, pokémon resting in the PC recover 25% HP.' ] },
+  { v:'1.4.0', date:'Sep 27, 2026', title:'Blue’s Eevee', items:[
+    'Your rival raises an Eevee, like in the games. It joins his team at your second meeting and has evolved by the third, into whichever Eeveelution covers his starter’s weakness (Vaporeon for a Charmander, Jolteon for a Squirtle, Flareon for a Bulbasaur).',
+    'Blue brings that same Eeveelution to the Champion fight, fully trained, alongside his starter.',
+    'Vaporeon, Jolteon and Flareon are Water, Lightning and Fire, with matching weaknesses; only Eevee is Colorless.' ] },
+  { v:'1.3.0', date:'Sep 27, 2026', title:'Eevee, and transfer codes', items:[
+    'Eevee joins the Daycare (from shop tier 3) as a Support, and it’s the first pokémon with a choice of evolutions: a Water Stone makes Vaporeon (a Tank), a Thunder Stone makes Jolteon (a glass Cannon), a Fire Stone makes Flareon (a Bruiser). The stone you use decides.',
+    'Transfer codes: START → Transfer save turns your run into a code you can paste on another phone or computer, or into the home-screen app. Your records and trainer name come along.',
+    'The title screen shows the version under the logo. The date now only appears here in What’s new, next to each update from 1.2.0 on.' ] },
+  { v:'1.2.0', was:'v54', date:'Sep 27, 2026', title:'Rarity sparkle, and new version numbers', items:[
+    'Updates now have three-part numbers like 1.2.0. The first number goes up for a big change to how the game plays, the middle one for fixes and things added or removed, the last one for small visual and wording touch-ups. Everything before 1.2.0 is gathered under 1.1.0 beta.',
+    'When a Rare or Very rare item turns up in the PokéMart it sparkles and chimes: a blue shine for Rare, a gold one with a longer chime for Very rare.',
+    'X Attack and X Speed: 2 uses of each per battle (was 3), still +5% each.',
+    'Choice Band has its own sprite.' ] },
+  { v:'1.1.0 beta', wasAny:/^v\d+$/, title:'The beta (v1–v53, all in one)', items:[
+    'The auto battler itself: buy pokémon in the Daycare, line them up on a 3×2 field, and they fight on their own on a speed-based action clock. 37 battles a run: trainers, 8 gym leaders, your rival, then the Elite Four and the Champion back to back.',
+    '60+ Gen 1 pokémon in four roles (Tank, Bruiser, Support, Cannon), each with a main move and a second move, status conditions, type matchups, levelling by merging copies, and evolution by level or stone.',
+    'A PC box for a bench, trainer EXP so late buys arrive strong, lives and blackouts, badge rewards to pick from, a scouting report for rematches.',
+    'The PokéMart: medicine and stones, X Attack and X Speed, and held items in a Bag, with rarities from Common to Very rare, including Choice Band, Life Orb, Iron Ball, Heart Scale, Shell Bell and Rocky Helmet.',
+    'A Game Boy look with real sprites and leader portraits, a title screen, pokéball wipes, sound effects, a Pokédex, How to play, team codes to battle friends, dark mode, and a home-screen app.' ] },
 ];
 const SEEN_KEY = 'pkb_seen_version';
 function seenVersion(){ try{ return localStorage.getItem(SEEN_KEY); }catch(e){ return null; } }
@@ -7123,11 +7365,11 @@ function markSeen(){ try{ localStorage.setItem(SEEN_KEY, GAME_VERSION.v); }catch
 const hasUnseen = () => seenVersion() !== GAME_VERSION.v;
 function openChangelog(){
   const seen = seenVersion();
-  const idx = CHANGELOG.findIndex(e => e.v === seen);
+  const idx = CHANGELOG.findIndex(e => e.v === seen || e.was === seen || (e.wasAny && seen && e.wasAny.test(seen)));   // 1.2.0 was v54; 1.1.0 beta is v1–v53
   const d = modal(`<h3>What’s new <span class="vsub">you’re on ${GAME_VERSION.v}</span></h3>
     <div class="clog">${CHANGELOG.map((e, i) => `
       <details ${i === 0 || (idx > 0 && i < idx) ? 'open' : ''} class="${idx > 0 && i < idx ? 'unseen' : ''}">
-        <summary><b>${esc(e.v)}</b> ${esc(e.title)}${e.v === GAME_VERSION.v ? ' <i class="cnow">current</i>' : idx > 0 && i < idx ? ' <i class="cnew">new to you</i>' : ''}</summary>
+        <summary><b>${esc(e.v)}</b> ${esc(e.title)}${e.date ? ` <span class="cdate">${esc(e.date)}</span>` : ''}${e.v === GAME_VERSION.v ? ' <i class="cnow">current</i>' : idx > 0 && i < idx ? ' <i class="cnew">new to you</i>' : ''}</summary>
         <ul>${e.items.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
       </details>`).join('')}</div>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
@@ -7145,6 +7387,7 @@ function openMenu(){
     ['dex',     'Pokédex', 'Every pokémon, leader and item.'],
     ['export',  'Team code', 'Copy your team code to send a friend.'],
     ['versus',  'Vs friend', 'Paste a friend’s team code and battle it.'],
+    ['transfer','Transfer save', 'Move this run to another device or the home-screen app with a code.'],
     ['news',    'What’s new', `What changed in ${GAME_VERSION.v}.`],
     ['help',    'How to play', 'Rules, roles and statuses.'],
     ...(APP.canInstall() ? [['install', 'Install app', 'Put PokéBattler on your home screen and play it full screen, even offline.']] : []),
@@ -7158,7 +7401,7 @@ function openMenu(){
     <div class="sdesc">${esc(items[0][2])}</div>
     <div class="yesno" hidden>Start over? Turn ${G.turn} and ${G.badges} badge${G.badges === 1 ? '' : 's'} will be lost.
       <div class="btnrow"><button class="btn" data-m="restart-no">No</button><button class="btn danger" data-m="restart-yes">Yes</button></div></div>
-    <div class="sver">${GAME_VERSION.v} · ${GAME_VERSION.date}</div>
+    <div class="sver">${GAME_VERSION.v}</div>
   </div>`);
   d.classList.add('startmenu');
   const btns = [...d.querySelectorAll('.smi')], desc = d.querySelector('.sdesc'), yn = d.querySelector('.yesno');
@@ -7182,6 +7425,7 @@ function openMenu(){
     if(m === 'trainer') openTrainerCard();
     if(m === 'export')  openExport();
     if(m === 'versus')  openVersus();
+    if(m === 'transfer') openTransfer();
     if(m === 'help')    openHelp();
     if(m === 'news')    openChangelog();
     if(m === 'dex')     openDex();
@@ -7357,6 +7601,123 @@ function openExport(){
       b.textContent = 'Copied!'; return;
     }
     d.remove();
+  });
+}
+
+/* ===================================================================
+   1.3.0 · TRANSFER CODES
+   Each copy of the game keeps its own save (the claude.ai link, the
+   home-screen app, another phone). A transfer code carries a run from one to
+   another: the run, the records and the trainer name, squeezed (deflate) and
+   written as text with a checksum so a half-pasted code is caught, not loaded.
+   =================================================================== */
+const XFER_PREFIX = 'PKBSAVE-';
+const b64u = bytes => { let s = ''; for(let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = str => { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((str.length + 3) % 4));
+  const out = new Uint8Array(s.length); for(let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; };
+const xsum = str => { let h = 0x811c9dc5; for(let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36).padStart(7, '0').slice(-6); };
+async function squeeze(bytes, how){
+  const cs = new (how === 'z' ? CompressionStream : DecompressionStream)('deflate-raw');
+  const out = new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer();
+  return new Uint8Array(await out);
+}
+async function makeTransferCode(){
+  const g = JSON.parse(JSON.stringify(G));
+  if(Array.isArray(g.log)) g.log = g.log.slice(-10);           // the full battle log isn't worth the length
+  const payload = { k:'pkb', f:1, v:GAME_VERSION.v, at:Date.now(), name:playerName(), rec:records(),
+                    s:{ G:g, phase: phase === 'battle' ? 'shop' : phase } };
+  let bytes = new TextEncoder().encode(JSON.stringify(payload)), flag = 'j';
+  try{ if(typeof CompressionStream === 'function'){ bytes = await squeeze(bytes, 'z'); flag = 'z'; } }catch(e){ flag = 'j'; }
+  const body = flag + b64u(bytes);
+  return XFER_PREFIX + body + '-' + xsum(body);
+}
+async function readTransferCode(raw){
+  const code = String(raw || '').replace(/\s+/g, '');
+  if(!code) return { ok:false, why:'Paste a transfer code first.' };
+  if(/^PKB\d-/.test(code)) return { ok:false, why:'That’s a team code (for Vs friend), not a transfer code.' };
+  if(!code.startsWith(XFER_PREFIX)) return { ok:false, why:'That doesn’t look like a transfer code — they start with PKBSAVE-.' };
+  const rest = code.slice(XFER_PREFIX.length), cut = rest.lastIndexOf('-');
+  if(cut < 2) return { ok:false, why:'This code is cut short. Copy the whole thing and try again.' };
+  const body = rest.slice(0, cut), sum = rest.slice(cut + 1);
+  if(xsum(body) !== sum) return { ok:false, why:'This code is damaged or cut short. Copy the whole thing and try again.' };
+  try{
+    let bytes = unb64u(body.slice(1));
+    if(body[0] === 'z') bytes = await squeeze(bytes, 'u');
+    const data = JSON.parse(new TextDecoder().decode(bytes));
+    if(!data || data.k !== 'pkb' || !data.s || !data.s.G || !Array.isArray(data.s.G.team)) return { ok:false, why:'This code has no run in it.' };
+    return { ok:true, data };
+  }catch(e){ return { ok:false, why:'This code couldn’t be read. Copy the whole thing and try again.' }; }
+}
+function applyTransfer(data){
+  const before = localStorage.getItem(SAVE_KEY);
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data.s));
+    const d = load();
+    if(!d) throw new Error('bad save');
+    // records: keep the best of both devices
+    const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
+    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best) });
+    if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
+    G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
+    sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = '';
+    if(!G.daycare || !G.daycare.length) rollShop(G, false);
+    save(); render();
+    if(phase === 'shop' && pendingOffer(G)) openRewardPicker();
+    return true;
+  }catch(e){
+    try{ if(before === null) localStorage.removeItem(SAVE_KEY); else localStorage.setItem(SAVE_KEY, before); }catch(_){}
+    return false;
+  }
+}
+const runSummary = (g, name) => `${esc(name || 'Trainer')} · turn ${g.turn || 1} · ${g.badges || 0} badge${g.badges === 1 ? '' : 's'}${g.over ? (g.over === 'won' ? ' · cleared' : ' · run over') : ''}`;
+function openTransfer(){
+  const d = modal(`<h3>Transfer save</h3>
+    <p>Each copy of PokéBattler keeps its own save: this link, the home-screen app, another phone or computer. A transfer code moves your run between them, with your records and name.</p>
+    <h4>Send this run</h4>
+    <p class="dim">${runSummary(G, playerName())}</p>
+    <div class="xout" hidden><textarea readonly class="xcode"></textarea><p class="dim xlen"></p></div>
+    <div class="btnrow"><button class="btn primary" data-x="make">Make code</button><button class="btn" data-x="copy" hidden>Copy</button>${
+      navigator.share ? '<button class="btn" data-x="share" hidden>Share</button>' : ''}</div>
+    <h4>Load a run</h4>
+    <textarea class="xin" placeholder="PKBSAVE-…" spellcheck="false" autocomplete="off"></textarea>
+    <p class="xmsg" role="status"></p>
+    <div class="xconfirm" hidden><p class="xwhat"></p>
+      <div class="btnrow"><button class="btn danger" data-x="yes">Replace my run</button><button class="btn" data-x="no">Cancel</button></div></div>
+    <div class="btnrow"><button class="btn" data-x="read">Load</button><button class="btn ghost" data-x="close">Close</button></div>`);
+  d.classList.add('xfer');
+  const $$ = q => d.querySelector(q), msg = t => { $$('.xmsg').textContent = t || ''; };
+  let code = '', pending = null;
+  d.querySelectorAll('[data-x]').forEach(b => b.onclick = async () => {
+    const x = b.dataset.x;
+    if(x === 'close'){ d.remove(); return; }
+    if(x === 'make'){
+      b.disabled = true; code = await makeTransferCode(); b.disabled = false;
+      $$('.xcode').value = code; $$('.xout').hidden = false; $$('.xlen').textContent = `${code.length} characters. Copy all of it.`;
+      d.querySelectorAll('[data-x="copy"],[data-x="share"]').forEach(e => e.hidden = false);
+      b.textContent = 'New code'; SFX.play('select'); return;
+    }
+    if(x === 'copy'){
+      const ta = $$('.xcode'); ta.select();
+      try{ navigator.clipboard ? await navigator.clipboard.writeText(code) : document.execCommand('copy'); }catch(e){ try{ document.execCommand('copy'); }catch(_){} }
+      b.textContent = 'Copied!'; return;
+    }
+    if(x === 'share'){ try{ await navigator.share({ title:'PokéBattler save', text: code }); }catch(e){} return; }
+    if(x === 'read'){
+      $$('.xconfirm').hidden = true; pending = null;
+      const r = await readTransferCode($$('.xin').value);
+      if(!r.ok){ SFX.play('error'); msg(r.why); return; }
+      pending = r.data; msg('');
+      const when = pending.at ? new Date(pending.at).toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '';
+      $$('.xwhat').innerHTML = `Load <b>${runSummary(pending.s.G, pending.name)}</b>${when ? ` <span class="dim">(made ${esc(when)}${pending.v && pending.v !== GAME_VERSION.v ? ` on ${esc(pending.v)}` : ''})</span>` : ''}?
+        It replaces the run on this device: <b>${runSummary(G, playerName())}</b>.`;
+      $$('.xconfirm').hidden = false; return;
+    }
+    if(x === 'no'){ $$('.xconfirm').hidden = true; pending = null; return; }
+    if(x === 'yes' && pending){
+      if(applyTransfer(pending)){ SFX.play('levelup'); d.remove(); say('Run loaded from your transfer code.'); }
+      else { SFX.play('error'); msg('That run couldn’t be loaded here. Nothing on this device was changed.'); $$('.xconfirm').hidden = true; }
+    }
   });
 }
 
@@ -7563,7 +7924,7 @@ function openDex(){
   const seen = new Set();
   const families = [];
   Object.keys(SPECIES).forEach(k => {
-    const line = evoLine(k);
+    const line = evoFamily(k);   // 1.3.0: every branch, so Eevee's family is all four
     if(seen.has(line[0])) return;
     seen.add(line[0]);
     families.push(line);
@@ -7573,7 +7934,7 @@ function openDex(){
 
   const rows = families.map(line => line.map((k,i) => {
     const s = SPECIES[k];
-    const from = i > 0 ? SPECIES[line[i-1]].evo : null;
+    const from = i > 0 ? evoStep(k) : null;
     const via = from ? (from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}` : '↑ level up') : '';
     return `<div class="dexrow ${i ? 'sub' : ''}">
       ${spriteHtml(k, 'sm')}
@@ -7588,7 +7949,7 @@ function openDex(){
 
   const items = Object.keys(ITEMS).map(k => { const it = ITEMS[k];
     return `<div class="dexrow">${itemSpriteHtml(k, it.icon, 'sm')}
-      <div><b>${esc(it.name)}</b> <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent${it.rare ? " · rare" : ""}</span>
+      <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent</span>
       <div class="abil">${esc(it.text)}</div></div></div>`; }).join('');
 
   // held items, grouped so the three flavours read as three groups
@@ -7601,7 +7962,7 @@ function openDex(){
     const rows = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind === kind).map(k => {
       const it = HELD_ITEMS[k];
       return `<div class="dexrow">${itemSpriteHtml(k, it.icon, 'sm')}
-        <div><b>${esc(it.name)}</b> <span class="dim">${it.cost}₽ · tier ${it.tier}${it.rare ? " · rare" : ""}</span>
+        <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier}</span>
         <div class="abil">${esc(it.text)}</div></div></div>`;
     }).join('');
     return rows ? `<div class="dexkind"><b class="hkind ${kind}">${label}</b>
@@ -7677,6 +8038,7 @@ function showTitle(then){
   d.innerHTML = `<div class="tscreen">
     <h1 class="tlogo" aria-label="PokéBattler"><span class="t1">POKé<i class="pball"></i></span><span class="t2">BATTLER</span></h1>
     <div class="tsub">A Pokémon Auto Battler</div>
+    <div class="tver">${GAME_VERSION.v}</div>
     <div class="tfield"><div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
     <div class="twho">${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
@@ -7688,7 +8050,7 @@ function showTitle(then){
         <button class="btn danger" data-t="new-yes">YES</button><button class="btn" data-t="new-no">NO</button></div>
     </div>
     <div class="tfoot">${best > 0 ? `<span>Best: ${esc(bestRunLabel(best))}${R.cleared ? ` · ${R.cleared} cleared` : ''}</span>` : ''}
-      <span>${GAME_VERSION.v} · ${GAME_VERSION.date}</span></div>
+      </div>
   </div>`;
   document.body.appendChild(d);
   titleEl = d;
