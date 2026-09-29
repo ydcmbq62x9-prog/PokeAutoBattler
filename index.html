@@ -1851,6 +1851,14 @@ html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a
 .hcnote{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:#b07a10;white-space:nowrap}
 html.dark .hcnote{color:#f2c14e}
 @media (prefers-reduced-motion:reduce){ .hcaward{animation:none} }
+
+/* 3.0.0 · type chart (help) */
+.tchart{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.tchart .trow{display:grid;grid-template-columns:78px 1fr;gap:2px 8px;align-items:start;font-size:11.5px;padding:5px 0;border-top:1px solid var(--line,rgba(128,128,128,.25))}
+.tchart .trow .chip.big{grid-row:1 / span 2;align-self:center;text-align:center;font-size:11px}
+.tchart .trow i{font-style:normal;font-weight:700;font-size:10.5px;margin-right:2px}
+.tchart .trow i.bad{color:#d0533e}.tchart .trow i.good{color:#3f9a5a}
+.tchart .trow .chip{display:inline-block;margin:1px 3px 1px 0;font-size:10px;padding:1px 6px}
 </style>
 </head>
 <body>
@@ -1939,7 +1947,7 @@ const TUNING = {
      prices on purpose: Sean wants the Elite Four harder, with the reference
      clear rate in the low 70s (was 77–78%). Scale these to move it: against the
      v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
-  gauntletRatio:  [0.4233, 0.4798, 0.4546, 0.4495, 0.5361],   // v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt)
+  gauntletRatio:  [0.4198, 0.476, 0.4509, 0.4459, 0.5318],   // 3.0.0 x0.991 net (real type chart, re-measured; Brock eased); v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt); 2.8.0 x0.997 (Tangela); 2.10.0 x1.004 (Lorelei's Ice pool, Koga's Bug pool); 2.11.0 gyms tougher (see their calib)
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -2048,10 +2056,10 @@ const TUNING = {
   /* 2.0.0 — run modifiers. Rich & Ruthless: income is doubled and every
      opponent's stats are multiplied by `richFoes`. */
   /* Mono-type scales opponents per type, measured so each type clears ~50% for
-     the reference player (as Rich does): a Colorless team has no weakness to
+     the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
-  mods: { richIncome: 2, richFoes: 1.21, nopcFoes: 0.961,     // 2.5.0: re-measured after the starter lines swapped jobs
-          monoFoes: { Grass:0.95, Fire:0.945, Water:0.892, Lightning:0.985, Fighting:0.97, Psychic:0.993, Colorless:1.038 } },
+  mods: { richIncome: 2, richFoes: 1.247, nopcFoes: 0.972, onelifeFoes: 0.99,     // 3.0.0: re-measured for the real type chart
+          monoFoes: { Normal:0.98, Fire:0.934, Water:0.838, Electric:1.051, Grass:0.803, Bug:1.01, Fighting:0.928 } },   // 3.0.0: real types; 3.1.0: re-measured with the five new lines (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
   legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
@@ -2255,31 +2263,43 @@ const tierFor = G => Math.max(
    =================================================================== */
 const GYMS = [
   { id:'brock',    name:'Brock',        title:'Pewter Gym',     theme:['Rock'],
-    badge:'Boulder', blurb:'Rock-hard defence. Bring something that hits fast.'  , calib:1.55 },
+    signature:['onix', 'geodude'],
+    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.38 },
   { id:'misty',    name:'Misty',        title:'Cerulean Gym',   theme:['Water'],
-    badge:'Cascade', blurb:'The deepest bench in the game. Lightning is your friend.'  , calib:1.46 },
+    signature:['starmie', 'staryu', 'poliwag', 'squirtle'],
+    badge:'Cascade', blurb:'The deepest bench in the game, and Starmie leads. Electric and Grass are your friends.'  , calib:1.69 },
   { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  theme:['Electric'],
-    badge:'Thunder', blurb:'Fast and shocking. Something sturdy up front.'  , calib:1.41 },
+    signature:['raichu', 'pikachu'],
+    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.67 },
   { id:'erika',    name:'Erika',        title:'Celadon Gym',    theme:['Grass','Bug'],
-    badge:'Rainbow', blurb:'Leeches and powders. Fire ends it quickly.'  , calib:1.59 },
-  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Poison','Ghost'],
-    badge:'Soul',    blurb:'Awkward to pin down. Psychic pressure works.'  , calib:1.62 },
+    signature:['vileplume', 'gloom', 'oddish'],
+    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:1.86 },
+  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Poison','Bug'], exclude:['Ghost'],
+    signature:['weezing', 'koffing', 'victreebel', 'weepinbell', 'bellsprout'],
+    badge:'Soul',    blurb:'Weezing leads poison and bugs that wear you down with gas. Fire and Psychic help.'  , calib:1.9 },
   { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    theme:['Psychic'],
-    badge:'Marsh',   blurb:'Glass cannons that hit first. Out-speed or out-bulk.'  , calib:1.58 },
+    signature:['alakazam', 'abra'],
+    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.8 },
   { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   theme:['Fire'],
-    badge:'Volcano', blurb:'Everything hurts. Water walls it.'  , calib:1.48 },
+    signature:['arcanine', 'growlithe'],
+    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.73 },
   { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   theme:['Ground','Normal'],
-    badge:'Earth',   blurb:'Muscle, not tricks. The hardest stat check of the eight.'  , calib:1.30 },
+    signature:['rhydon', 'rhyhorn'],
+    badge:'Earth',   blurb:'Muscle, not tricks: big Normal, Rock and Ground bodies, Rhydon in front. A stat check.'  , calib:1.54 },
 ];
 const ELITE_FOUR = [
-  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice','Water'],
-    blurb:'Walls of ice. Chip her down before the clock does.'  , calib:1.86 },
+  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice'], also:['seel','shellder'],
+    signature:['lapras', 'dewgong', 'seel'],
+    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:1.86 },
   { id:'bruno',   name:'Bruno',   title:'Elite Four', theme:['Fighting','Rock'],
-    blurb:'Raw attack. Psychic is the lever.'  , calib:1.65 },
+    signature:['machamp', 'machop'],
+    blurb:'Machamp leads raw Fighting and Rock muscle. Psychic is the lever.'  , calib:1.65 },
   { id:'agatha',  name:'Agatha',  title:'Elite Four', theme:['Ghost','Poison'],
-    blurb:'Fragile and vicious. Whoever moves first wins.'  , calib:1.88 },
+    signature:['gengar', 'haunter', 'gastly'],
+    blurb:'Gengar leads ghosts and poison that hit hard and fall fast. Whoever moves first wins.'  , calib:1.88 },
   { id:'lance',   name:'Lance',   title:'Elite Four', theme:['Dragon','Flying'],
-    blurb:'Dragonite and friends. No easy type answer.'  , calib:1.87 },
+    signature:['dragonite', 'dragonair', 'dratini'],
+    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.87 },
 ];
 const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
   blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.37 };
@@ -2290,12 +2310,18 @@ const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
 const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];
 const bossById = id => ALL_BOSSES.find(b => b.id === id) || null;
 /** The species a themed leader can draw on. No theme = the whole roster. */
-function themePool(theme){
+function themePool(themeOrBoss){
+  /* 2.10.0: takes a leader too. `also` adds named species that the typing alone
+     misses (Seel and Shellder for Lorelei's Ice), `exclude` drops a Gen 1 type
+     so two leaders don't share a bench (Koga leaves the Ghosts to Agatha). */
+  const boss = themeOrBoss && !Array.isArray(themeOrBoss) ? themeOrBoss : null;
+  const theme = boss ? boss.theme : themeOrBoss;
   const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary);   // 2.1.0: no trainer fields a legendary
   if(!theme) return all;
+  const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
-    const g = SPECIES[k].gen1 || '';
-    return theme.some(t => g.split('/').includes(t));
+    if(boss && boss.exclude && boss.exclude.some(t => types(k).includes(t))) return false;
+    return theme.some(t => types(k).includes(t)) || !!(boss && boss.also && boss.also.includes(k));
   });
 }
 /* Slot counts. These run off the same effective tier as the roster, not off
@@ -2319,51 +2345,58 @@ function heldSlotsFor(tier){
 }
 
 /* ===================================================================
-   TYPES — trading-card style: 6 types in a ring plus Colorless.
-   Each type is WEAK to the next one round the ring (x2 damage taken)
-   and RESISTS the one before it (x0.5).
+   TYPES — the real Gen 1 types (3.0.0, Sean), one type per pokémon.
+   A pokémon's type is its MAIN type (its `gen1` string keeps the full Gen 1
+   typing, which leaders still theme on). The one exception is Normal/Flying,
+   which counts as Flying. Fourteen types have members; Poison has no main-type
+   member, so it is left out.
 
-       Grass → Fire → Water → Lightning → Fighting → Psychic → Grass
-       (read "→" as "is weak to")
-
-   Colorless resists nothing and is weak to Fighting.
+   The matchups are the standard chart without Dark, Steel and Fairy. Where the
+   games give ×0 (Ghost vs Normal, Ground vs Flying, Electric vs Ground, and
+   Normal / Fighting vs Ghost) the game uses a resist (×½), so no attack ever
+   does nothing. Each type can be weak to and resist several types; the two
+   lists are derived from this one table so they can never disagree.
    =================================================================== */
-const TYPES = {
-  Grass:     { color:'#57b85f', weak:'Fire',      resist:'Psychic'   },
-  Fire:      { color:'#f2622e', weak:'Water',     resist:'Grass'     },
-  Water:     { color:'#3d8bf0', weak:'Lightning', resist:'Fire'      },
-  Lightning: { color:'#e8c020', weak:'Fighting',  resist:'Water'     },
-  Fighting:  { color:'#c1452f', weak:'Psychic',   resist:'Lightning' },
-  Psychic:   { color:'#b04fc4', weak:'Grass',     resist:'Fighting'  },
-  Colorless: { color:'#a9a79b', weak:'Fighting',  resist:null        },
+const TYPE_CHART = {
+  //          strong against                        not very effective against
+  Normal:   { strong:[],                               notVery:['Rock','Ghost'] },
+  Fire:     { strong:['Grass','Ice','Bug'],            notVery:['Fire','Water','Rock','Dragon'] },
+  Water:    { strong:['Fire','Ground','Rock'],         notVery:['Water','Grass','Dragon'] },
+  Electric: { strong:['Water','Flying'],               notVery:['Electric','Grass','Dragon','Ground'] },
+  Grass:    { strong:['Water','Ground','Rock'],        notVery:['Fire','Grass','Poison','Flying','Bug','Dragon'] },
+  Ice:      { strong:['Grass','Ground','Flying','Dragon'], notVery:['Fire','Water','Ice'] },
+  Fighting: { strong:['Normal','Ice','Rock'],          notVery:['Flying','Poison','Psychic','Bug','Ghost'] },
+  Ground:   { strong:['Fire','Electric','Poison','Rock'], notVery:['Grass','Bug','Flying'] },
+  Flying:   { strong:['Grass','Fighting','Bug'],       notVery:['Electric','Rock'] },
+  Poison:   { strong:['Grass'],                        notVery:['Poison','Ground','Rock','Ghost'] },   // 3.1.0
+  Psychic:  { strong:['Fighting','Poison'],            notVery:['Psychic'] },
+  Bug:      { strong:['Grass','Psychic'],              notVery:['Fire','Fighting','Poison','Flying','Ghost'] },
+  Rock:     { strong:['Fire','Ice','Flying','Bug'],    notVery:['Fighting','Ground'] },
+  Ghost:    { strong:['Psychic','Ghost'],              notVery:['Normal'] },
+  Dragon:   { strong:['Dragon'],                       notVery:[] },
 };
-
-/* The TCG-type mapping this roster follows: each pokémon's GAME type (its
-   real Gen 1 typing, kept on `gen1` for reference) maps to one of the seven
-   trading-card types above via its PRIMARY type. Poison and Dragon sat in
-   different card types in different eras; these are the Gen 1 / Base Set
-   placements. Darkness and Metal have no Gen 1 members, which is why the
-   ring has six types and not eight. */
-const TCG_FROM_GEN1 = {
-  Grass:'Grass',   Poison:'Grass',    Bug:'Grass',
-  Fire:'Fire',
-  Water:'Water',   Ice:'Water',
-  Electric:'Lightning',
-  Fighting:'Fighting', Rock:'Fighting', Ground:'Fighting',
-  Psychic:'Psychic',   Ghost:'Psychic',
-  Normal:'Colorless',  Flying:'Colorless', Dragon:'Colorless',
+const TYPE_COLORS = { Normal:'#a9a79b', Fire:'#f2622e', Water:'#3d8bf0', Electric:'#e8c020', Grass:'#57b85f', Ice:'#7fd0e0',
+  Fighting:'#c1452f', Ground:'#d8b460', Flying:'#8fa3f0', Psychic:'#b04fc4', Poison:'#d05fae', Bug:'#a2c034', Rock:'#b8a038', Ghost:'#6a5a9a', Dragon:'#7050e8' };
+/** { color, weak:[types that deal ×2 to it], resist:[types it takes ×½ from] } for each type. */
+const TYPES = {};
+for(const d of Object.keys(TYPE_CHART)){
+  TYPES[d] = { color: TYPE_COLORS[d],
+    weak:   Object.keys(TYPE_CHART).filter(a => TYPE_CHART[a].strong.includes(d)),
+    resist: Object.keys(TYPE_CHART).filter(a => TYPE_CHART[a].notVery.includes(d)) };
+}
+/** The single type a pokémon gets from its Gen 1 typing: the first type, or Flying for Normal/Flying. */
+const singleTypeOf = gen1 => {
+  const g = String(gen1 || '').split('/');
+  return g.includes('Normal') && g.includes('Flying') ? 'Flying' : g[0];
 };
-/** The card type a pokémon should have, from its Gen 1 typing. */
-const tcgTypeFor = id => {
-  const g = SPECIES[id] && SPECIES[id].gen1;
-  return g ? TCG_FROM_GEN1[g.split('/')[0]] : null;
-};
+/** Kept for the tests: the type a pokémon should have from its Gen 1 typing. */
+const tcgTypeFor = id => { const sp = SPECIES[id]; return sp && sp.gen1 ? singleTypeOf(sp.gen1) : null; };
 
 function typeMult(atkType, defType){
   const d = TYPES[defType];
   if(!d) return 1;
-  if(d.weak === atkType)   return TUNING.weakMult;
-  if(d.resist === atkType) return TUNING.resistMult;
+  if(d.weak.includes(atkType))   return TUNING.weakMult;
+  if(d.resist.includes(atkType)) return TUNING.resistMult;
   return 1;
 }
 
@@ -2620,6 +2653,10 @@ const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:
    Bruiser. [hp, atk, spd] for the base, middle and final form of each. */
 const BULB   = { b:[18, 12, 29], i:[28, 21, 39], v:[46, 39, 52] };
 const PARAS  = { b:[26, 25, 32], e:[54, 64, 46] };    // 2.6.0
+const TANGELA = [58, 36, 38];   // 2.8.0
+const MANKEY = { b:[16, 24, 44], e:[32, 45, 58] };   // 3.1.0
+const ZUBAT  = { b:[18, 18, 48], e:[46, 42, 62] };
+const KOFF   = { b:[26, 16, 26], e:[46, 26, 32] };
 const BELL   = { b:[16, 26, 32], m:[28, 46, 44], e:[42, 64, 52] };   // 2.6.1
 const EGG    = { b:[22, 32, 36], e:[52, 76, 54] };
 const SQUIRT = { b:[16, 12, 30], w:[26, 24, 40], l:[42, 42, 53] };
@@ -2627,11 +2664,11 @@ const JOLT_TB = 0.5; const JOLT_N = 3;   // Jolteon's Thunderbolt: the front ran
 const SPECIES = {
 
   /* ============ TIER 1 — starters and early routes ============ */
-  caterpie:   { name:'Caterpie',   type:'Grass', gen1:'Bug', tier:1, role:'support', hp:14, atk:9,  spd:30,
+  caterpie:   { name:'Caterpie',   type:'Bug', gen1:'Bug', tier:1, role:'support', hp:14, atk:9,  spd:30,
                 evo:{into:'metapod', by:'level'},    move:M.slow('String Shot', 1, 5) },
-  metapod:    { name:'Metapod',    type:'Grass', gen1:'Bug', tier:1, role:'tank', hp:32, atk:12,  spd:20, token:true,
+  metapod:    { name:'Metapod',    type:'Bug', gen1:'Bug', tier:1, role:'tank', hp:32, atk:12,  spd:20, token:true,
                 evo:{into:'butterfree', by:'level'}, move:M.guard('Harden', 5, 1) },
-  butterfree: { name:'Butterfree', type:'Grass', gen1:'Bug/Flying', tier:1, role:'support', hp:30, atk:30, spd:47, token:true,
+  butterfree: { name:'Butterfree', type:'Bug', gen1:'Bug/Flying', tier:1, role:'support', hp:30, atk:30, spd:47, token:true,
                 move:M.hush('Silver Wind', 0.5, 6) },
 
   bulbasaur:  { name:'Bulbasaur',  type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.b[0], atk:BULB.b[1],  spd:BULB.b[2],
@@ -2655,24 +2692,24 @@ const SPECIES = {
   blastoise:  { name:'Blastoise',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.l[0], atk:SQUIRT.l[1], spd:SQUIRT.l[2], token:true,
                 move:M.charge('Hydro Pump', 2.1, 'Water Gun', 1.1) },
 
-  pidgey:     { name:'Pidgey',     type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:12, atk:12,  spd:37,
+  pidgey:     { name:'Pidgey',     type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:12, atk:12,  spd:37,
                 evo:{into:'pidgeotto', by:'level'},  move:M.two('Gust', 0.7) },
-  pidgeotto:  { name:'Pidgeotto',  type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:22, atk:24,  spd:47, token:true,
+  pidgeotto:  { name:'Pidgeotto',  type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:22, atk:24,  spd:47, token:true,
                 evo:{into:'pidgeot', by:'level'},    move:M.two('Wing Attack', 0.9) },
-  pidgeot:    { name:'Pidgeot',    type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:34, atk:39, spd:61, token:true,
+  pidgeot:    { name:'Pidgeot',    type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:34, atk:39, spd:61, token:true,
                 move:M.two('Sky Attack', 1.2) },
 
-  rattata:    { name:'Rattata',    type:'Colorless', gen1:'Normal', tier:1, role:'cannon', hp:12, atk:18,  spd:48,
+  rattata:    { name:'Rattata',    type:'Normal', gen1:'Normal', tier:1, role:'cannon', hp:12, atk:18,  spd:48,
                 evo:{into:'raticate', by:'level'},   move:M.hit('Hyper Fang', 1.2) },
-  raticate:   { name:'Raticate',   type:'Colorless', gen1:'Normal', tier:1, role:'cannon', hp:24, atk:33, spd:65, token:true,
+  raticate:   { name:'Raticate',   type:'Normal', gen1:'Normal', tier:1, role:'cannon', hp:24, atk:33, spd:65, token:true,
                 move:M.recoil('Super Fang', 1.8, 3) },
 
   /* ============ TIER 2 ============ */
-  geodude:    { name:'Geodude',    type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:22, atk:15,  spd:13,
+  geodude:    { name:'Geodude',    type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:22, atk:15,  spd:13,
                 evo:{into:'graveler', by:'level'},   move:M.wall('Rock Throw', 1.0, 1.7) },
-  graveler:   { name:'Graveler',   type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:34, atk:27,  spd:23, token:true,
+  graveler:   { name:'Graveler',   type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:34, atk:27,  spd:23, token:true,
                 evo:{into:'golem', by:'level'},      move:M.wall('Rock Slide', 1.1, 1.8) },
-  golem:      { name:'Golem',      type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:50, atk:42, spd:30, token:true,
+  golem:      { name:'Golem',      type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:50, atk:42, spd:30, token:true,
                 move:M.wall('Earthquake', 1.2, 2.0) },
 
   machop:     { name:'Machop',     type:'Fighting', gen1:'Fighting', tier:2, role:'bruiser', hp:18, atk:21,  spd:23,
@@ -2694,10 +2731,10 @@ const SPECIES = {
   gyarados:   { name:'Gyarados',   type:'Water', gen1:'Water/Flying', tier:2, role:'bruiser', hp:42, atk:51, spd:54, token:true,
                 move:M.charge('Hydro Pump', 2.2, 'Bite', 1.0) },
 
-  pikachu:    { name:'Pikachu',    type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:14, atk:18,  spd:60,
+  pikachu:    { name:'Pikachu',    type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:14, atk:18,  spd:60,
                 evo:{into:'raichu', by:'stone', stone:'thunderstone'},
                 move:M.all('Thunder Shock', 0.42) },
-  raichu:     { name:'Raichu',     type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:28, atk:36, spd:67, token:true,
+  raichu:     { name:'Raichu',     type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:28, atk:36, spd:67, token:true,
                 move:M.all('Thunderbolt', 0.6) },
 
   vulpix:     { name:'Vulpix',     type:'Fire', gen1:'Fire', tier:2, role:'cannon', hp:16, atk:18,  spd:43,
@@ -2714,16 +2751,16 @@ const SPECIES = {
   alakazam:   { name:'Alakazam',   type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:26, atk:48, spd:80, token:true,
                 move:M.fast('Psychic', 1.2) },
 
-  gastly:     { name:'Gastly',     type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:12, atk:27,  spd:53,
+  gastly:     { name:'Gastly',     type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:12, atk:27,  spd:53,
                 evo:{into:'haunter', by:'level'},    move:M.trueHit('Night Shade', 1.0) },
-  haunter:    { name:'Haunter',    type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:20, atk:36, spd:63, token:true,
+  haunter:    { name:'Haunter',    type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:20, atk:36, spd:63, token:true,
                 evo:{into:'gengar', by:'level'},     move:M.trueHit('Lick', 1.2) },
-  gengar:     { name:'Gengar',     type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:30, atk:48, spd:73, token:true,
+  gengar:     { name:'Gengar',     type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:30, atk:48, spd:73, token:true,
                 move:M.pierce('Shadow Ball', 1.35) },
 
-  magnemite:  { name:'Magnemite',  type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:18, atk:21,  spd:30,
+  magnemite:  { name:'Magnemite',  type:'Electric', gen1:'Electric', tier:3, role:'tank', hp:18, atk:21,  spd:30,
                 evo:{into:'magneton', by:'level'},   move:M.guard('Barrier', 4, 1) },
-  magneton:   { name:'Magneton',   type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:30, atk:36, spd:47, token:true,
+  magneton:   { name:'Magneton',   type:'Electric', gen1:'Electric', tier:3, role:'tank', hp:30, atk:36, spd:47, token:true,
                 move:M.wall('Flash Cannon', 1.1, 1.8) },
 
   growlithe:  { name:'Growlithe',  type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:22, atk:24,  spd:40,
@@ -2738,7 +2775,7 @@ const SPECIES = {
   starmie:    { name:'Starmie',    type:'Water', gen1:'Water/Psychic', tier:3, role:'cannon', hp:30, atk:39, spd:77, token:true,
                 move:M.pierce('Swift', 1.5) },
 
-  onix:       { name:'Onix',       type:'Fighting', gen1:'Rock/Ground', tier:3, role:'tank', hp:40, atk:18, spd:47,
+  onix:       { name:'Onix',       type:'Rock', gen1:'Rock/Ground', tier:3, role:'tank', hp:40, atk:18, spd:47,
                 move:M.wall('Rock Throw', 1.0, 1.7) },
 
   /* ============ TIER 4 ============ */
@@ -2752,14 +2789,14 @@ const SPECIES = {
   hypno:      { name:'Hypno',      type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:36, atk:39, spd:45, token:true,
                 move:M.mend('Dream Eater', 1.4, 0.12) },
 
-  dratini:    { name:'Dratini',    type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:20, atk:21,  spd:33,
+  dratini:    { name:'Dratini',    type:'Dragon', gen1:'Dragon', tier:4, role:'bruiser', hp:20, atk:21,  spd:33,
                 evo:{into:'dragonair', by:'level'},  move:M.hit('Wrap', 1.3) },
-  dragonair:  { name:'Dragonair',  type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:32, atk:36, spd:47, token:true,
+  dragonair:  { name:'Dragonair',  type:'Dragon', gen1:'Dragon', tier:4, role:'bruiser', hp:32, atk:36, spd:47, token:true,
                 evo:{into:'dragonite', by:'level'},  move:M.hit('Dragon Breath', 1.6) },
-  dragonite:  { name:'Dragonite',  type:'Colorless', gen1:'Dragon/Flying', tier:4, role:'bruiser', hp:50, atk:57, spd:53, token:true,
+  dragonite:  { name:'Dragonite',  type:'Dragon', gen1:'Dragon/Flying', tier:4, role:'bruiser', hp:50, atk:57, spd:53, token:true,
                 move:M.charge('Hyper Beam', 2.4, 'Slam', 1.0) },
 
-  scyther:    { name:'Scyther',    type:'Grass', gen1:'Bug/Flying', tier:4, role:'cannon', hp:24, atk:30, spd:70,
+  scyther:    { name:'Scyther',    type:'Bug', gen1:'Bug/Flying', tier:4, role:'cannon', hp:24, atk:30, spd:70,
                 move:M.ramp('Fury Cutter', 1.2, 12) },
 
   /* ============ TIER 5 — no evolutions, strong as they are ====== */
@@ -2767,18 +2804,18 @@ const SPECIES = {
                 move:M.recoil('Hi Jump Kick', 1.9, 4) },
   lapras:     { name:'Lapras',     type:'Water', gen1:'Water/Ice', tier:5, role:'support', hp:46, atk:33, spd:40,
                 move:M.rally('Ice Beam', 1.3, 0.1) },
-  electabuzz: { name:'Electabuzz', type:'Lightning', gen1:'Electric', tier:5, role:'cannon', hp:26, atk:33, spd:70,
+  electabuzz: { name:'Electabuzz', type:'Electric', gen1:'Electric', tier:5, role:'cannon', hp:26, atk:33, spd:70,
                 move:M.hit('Thunder Punch', 1.5) },
-  tauros:     { name:'Tauros',     type:'Colorless', gen1:'Normal', tier:5, role:'bruiser', hp:38, atk:42, spd:73,
+  tauros:     { name:'Tauros',     type:'Normal', gen1:'Normal', tier:5, role:'bruiser', hp:38, atk:42, spd:73,
                 move:M.hit('Take Down', 1.5) },
 
 
   /* ============ v28 — fourteen more Gen 1 pokémon, mostly Tanks and Supports ====
      The roster was built as fighters; these give the Tank and Support roles
      real depth, and each gym leader who had them in Gen 1 now fields them. */
-  jigglypuff: { name:'Jigglypuff', type:'Colorless', gen1:'Normal', tier:1, role:'support', hp:22, atk:9, spd:20,
+  jigglypuff: { name:'Jigglypuff', type:'Normal', gen1:'Normal', tier:1, role:'support', hp:22, atk:9, spd:20,
                 evo:{into:'wigglytuff', by:'stone', stone:'moonstone'}, move:M.hit('Pound', 0.9) },
-  wigglytuff: { name:'Wigglytuff', type:'Colorless', gen1:'Normal', tier:1, role:'support', hp:44, atk:24, spd:38, token:true,
+  wigglytuff: { name:'Wigglytuff', type:'Normal', gen1:'Normal', tier:1, role:'support', hp:44, atk:24, spd:38, token:true,
                 move:M.hush('Hyper Voice', 0.55, 7) },
 
   oddish:     { name:'Oddish',     type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:18, atk:15, spd:28,
@@ -2788,14 +2825,14 @@ const SPECIES = {
   vileplume:  { name:'Vileplume',  type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:40, atk:36, spd:46, token:true,
                 move:M.mend('Petal Dance', 1.3, 0.12) },
 
-  voltorb:    { name:'Voltorb',    type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:16, atk:15, spd:63,
+  voltorb:    { name:'Voltorb',    type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:16, atk:15, spd:63,
                 evo:{into:'electrode', by:'level'},  move:M.hit('Sonic Boom', 1.3) },
-  electrode:  { name:'Electrode',  type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:30, spd:84, token:true,
+  electrode:  { name:'Electrode',  type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:30, spd:84, token:true,
                 move:M.charge('Explosion', 1.8, 'Tackle', 0.9) },
 
-  clefairy:   { name:'Clefairy',   type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
+  clefairy:   { name:'Clefairy',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
                 evo:{into:'clefable', by:'stone', stone:'moonstone'}, move:M.rally('Metronome', 0.8, 0.05) },
-  clefable:   { name:'Clefable',   type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:40, atk:33, spd:50, token:true,
+  clefable:   { name:'Clefable',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:40, atk:33, spd:50, token:true,
                 move:M.rally('Metronome', 1.0, 0.07) },
 
   shellder:   { name:'Shellder',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:26, atk:18, spd:33,
@@ -2803,27 +2840,27 @@ const SPECIES = {
   cloyster:   { name:'Cloyster',   type:'Water', gen1:'Water/Ice', tier:3, role:'tank', hp:44, atk:36, spd:52, token:true,
                 move:M.wall('Spike Cannon', 1.0, 1.8) },
 
-  rhyhorn:    { name:'Rhyhorn',    type:'Fighting', gen1:'Ground/Rock', tier:4, role:'tank', hp:32, atk:27, spd:20,
+  rhyhorn:    { name:'Rhyhorn',    type:'Ground', gen1:'Ground/Rock', tier:4, role:'tank', hp:32, atk:27, spd:20,
                 evo:{into:'rhydon', by:'level'},     move:M.wall('Horn Attack', 1.0, 1.7) },
-  rhydon:     { name:'Rhydon',     type:'Fighting', gen1:'Ground/Rock', tier:4, role:'tank', hp:54, atk:48, spd:30, token:true,
+  rhydon:     { name:'Rhydon',     type:'Ground', gen1:'Ground/Rock', tier:4, role:'tank', hp:54, atk:48, spd:30, token:true,
                 move:M.wall('Horn Drill', 1.2, 2.0) },
 
-  chansey:    { name:'Chansey',    type:'Colorless', gen1:'Normal', tier:5, role:'tank', hp:64, atk:12, spd:40,   // v35: a Tank that supports — huge HP, heals and shields
+  chansey:    { name:'Chansey',    type:'Normal', gen1:'Normal', tier:5, role:'tank', hp:64, atk:12, spd:40,   // v35: a Tank that supports — huge HP, heals and shields
                 move:M.mend('Softboiled', 0.6, 0.25) },
 
   /* ============ TIER 6 ============ */
-  snorlax:    { name:'Snorlax',    type:'Colorless', gen1:'Normal', tier:6, role:'tank', hp:62, atk:33, spd:20,
+  snorlax:    { name:'Snorlax',    type:'Normal', gen1:'Normal', tier:6, role:'tank', hp:62, atk:33, spd:20,
                 move:M.wall('Body Slam', 1.2, 1.7) },
   /* ============ LEGENDARIES (2.1.0) ============
      Encounter only. A legendary has NO tier and NEVER levels up — no copies,
      no Rare Candy, no evolution. It pays for that up front with a higher base
      stat total than any regular pokémon, and grows TUNING.legend.growth times
      as fast from every EXP source (battles, Exp. Share, the trainer's bank). */
-  zapdos:     { name:'Zapdos',     type:'Lightning', gen1:'Electric/Flying', role:'cannon', hp:62, atk:75, spd:106, legendary:true,
+  zapdos:     { name:'Zapdos',     type:'Electric', gen1:'Electric/Flying', role:'cannon', hp:62, atk:75, spd:106, legendary:true,
                 move:M.all('Thunder', 0.55) },
   mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', role:'cannon', hp:66, atk:86, spd:112, legendary:true,
                 move:M.big('Psystrike', 1.6) },
-  articuno:   { name:'Articuno',   type:'Water', gen1:'Ice/Flying', role:'tank', hp:102, atk:62, spd:88, legendary:true,
+  articuno:   { name:'Articuno',   type:'Ice', gen1:'Ice/Flying', role:'tank', hp:102, atk:62, spd:88, legendary:true,
                 move:M.wall('Icicle Crash', 1.2, 1.8) },
   moltres:    { name:'Moltres',    type:'Fire', gen1:'Fire/Flying', role:'bruiser', hp:80, atk:86, spd:94, legendary:true,
                 move:M.hit('Air Slash', 1.5) },
@@ -2831,12 +2868,12 @@ const SPECIES = {
   /* ============ 1.3.0 — Eevee and three of its evolutions (Sean) ============
      The first BRANCHING line: the stone you use decides what it becomes, and
      each evolution plays a different role. Eevee itself is a Support. */
-  eevee:      { name:'Eevee',      type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:22, atk:18, spd:40,
+  eevee:      { name:'Eevee',      type:'Normal', gen1:'Normal', tier:3, role:'support', hp:22, atk:18, spd:40,
                 evo:{ by:'stone', branches:{ waterstone:'vaporeon', thunderstone:'jolteon', firestone:'flareon' } },
                 move:M.rally('Helping Hand', 0.8, 0.05) },
   vaporeon:   { name:'Vaporeon',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:56, atk:33, spd:46, token:true,
                 move:M.wall('Waterfall', 1.0, 1.7) },
-  jolteon:    { name:'Jolteon',    type:'Lightning', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:38, spd:72, token:true,
+  jolteon:    { name:'Jolteon',    type:'Electric', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:38, spd:72, token:true,
                 move:M.multi('Pin Missile', 0.6, 3) },
   flareon:    { name:'Flareon',    type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:42, atk:48, spd:60, token:true,
                 move:M.ramp('Rage', 1.5, 12) },
@@ -2845,9 +2882,9 @@ const SPECIES = {
      Grass had four lines, nothing at tier 3, and no Bruiser once Bulbasaur became
      a Tank. Paras is the Grass Bruiser; Exeggcute is a slow Cannon that evolves
      with the new Leaf Stone and sits happily behind Bulbasaur or Parasect. */
-  paras:      { name:'Paras',      type:'Grass', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.b[0], atk:PARAS.b[1], spd:PARAS.b[2],
+  paras:      { name:'Paras',      type:'Bug', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.b[0], atk:PARAS.b[1], spd:PARAS.b[2],
                 evo:{into:'parasect', by:'level'},    move:M.hit('Scratch', 1.3) },
-  parasect:   { name:'Parasect',   type:'Grass', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.e[0], atk:PARAS.e[1], spd:PARAS.e[2], token:true,
+  parasect:   { name:'Parasect',   type:'Bug', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.e[0], atk:PARAS.e[1], spd:PARAS.e[2], token:true,
                 move:M.hit('Slash', 1.9) },
   exeggcute:  { name:'Exeggcute',  type:'Grass', gen1:'Grass/Psychic', tier:3, role:'cannon', hp:EGG.b[0], atk:EGG.b[1], spd:EGG.b[2],
                 evo:{into:'exeggutor', by:'stone', stone:'leafstone'}, move:M.multi('Barrage', 0.6, 3) },
@@ -2862,9 +2899,35 @@ const SPECIES = {
                 evo:{into:'victreebel', by:'stone', stone:'leafstone'}, move:M.hit('Razor Leaf', 1.5) },
   victreebel: { name:'Victreebel', type:'Grass', gen1:'Grass/Poison', tier:3, role:'cannon', hp:BELL.e[0], atk:BELL.e[1], spd:BELL.e[2], token:true,
                 move:M.hit('Razor Leaf', 1.85) },
+
+  /* 2.8.0 — Tangela (Sean): the Grass Tank at Tier 3, a single stage like Onix. */
+  tangela:    { name:'Tangela',    type:'Grass', gen1:'Grass', tier:3, role:'tank', hp:TANGELA[0], atk:TANGELA[1], spd:TANGELA[2],
+                move:M.wall('Bind', 1.1, 1.8) },
+
+  /* 3.1.0 — five new lines (Sean): the Poison type arrives with Zubat and Koffing, Fighting gets Mankey and
+     Hitmonchan, and Jynx is the first (and only) Ice pokémon. */
+  mankey:     { name:'Mankey',     type:'Fighting', gen1:'Fighting', tier:3, role:'bruiser', hp:MANKEY.b[0], atk:MANKEY.b[1], spd:MANKEY.b[2],
+                evo:{into:'primeape', by:'level'},    move:M.multi('Fury Swipes', 0.5, 3) },
+  primeape:   { name:'Primeape',   type:'Fighting', gen1:'Fighting', tier:3, role:'bruiser', hp:MANKEY.e[0], atk:MANKEY.e[1], spd:MANKEY.e[2], token:true,
+                move:M.ramp('Rage', 1.3, 10) },
+  hitmonchan: { name:'Hitmonchan', type:'Fighting', gen1:'Fighting', tier:5, role:'bruiser', hp:32, atk:36, spd:54,
+                move:M.multi('Comet Punch', 0.65, 3) },
+  zubat:      { name:'Zubat',      type:'Poison', gen1:'Poison/Flying', tier:2, role:'support', hp:ZUBAT.b[0], atk:ZUBAT.b[1], spd:ZUBAT.b[2],
+                evo:{into:'golbat', by:'level'},       move:M.drain('Leech Life', 1.0, 0.5) },
+  golbat:     { name:'Golbat',     type:'Poison', gen1:'Poison/Flying', tier:2, role:'support', hp:ZUBAT.e[0], atk:ZUBAT.e[1], spd:ZUBAT.e[2], token:true,
+                move:M.drain('Leech Life', 1.35, 0.5) },
+  koffing:    { name:'Koffing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.b[0], atk:KOFF.b[1], spd:KOFF.b[2],
+                evo:{into:'weezing', by:'level'},      move:M.afflict('Smog', 0.7, 'psn', 0.5, 'front') },
+  weezing:    { name:'Weezing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.e[0], atk:KOFF.e[1], spd:KOFF.e[2], token:true,
+                move:M.afflict('Sludge', 1.0, 'psn', 0.6, 'front') },
+  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:44, atk:40, spd:58,
+                move:M.hit('Ice Punch', 1.9) },
 };
 
 const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary);
+/** 3.0.0: the types a Mono run can pick — only those with enough buyable lines for the Daycare to be worth visiting. */
+const MONO_MIN_LINES = 3;   // 3.0.0: a Mono run needs at least three buyable lines (Fighting, Psychic and Rock have two)
+const MONO_TYPES = Object.keys(TYPES).filter(t => BUYABLE.filter(k => SPECIES[k].type === t).length >= MONO_MIN_LINES);
 /** 2.1.0: a legendary has no tier and never levels. */
 const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECIES[typeof u === 'string' ? u : u.id].legendary);
 /* Second moves (v32), kept apart from the species table so the main moves stay
@@ -2965,6 +3028,17 @@ const MOVE2 = {
   bellsprout: on('every', M.afflict('Poison Powder', 0.3, 'psn', 1, 'front'), { n:3 }),
   weepinbell: on('every', M.afflict('Poison Powder', 0.4, 'psn', 1, 'front'), { n:3 }),
   victreebel: on('every', M.afflict('Poison Powder', 0.5, 'psn', 1, 'front'), { n:3 }),
+  // 2.8.0 — Tangela
+  tangela:    on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
+  // 3.1.0 — Mankey, Hitmonchan, Zubat, Koffing, Jynx
+  mankey:     on('open',  M.focus('Focus Energy', 0.25), { free:true }),
+  primeape:   on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  hitmonchan: on('open',  M.grow('Bulk Up', 5), { free:true }),
+  zubat:      on('every', M.afflict('Supersonic', 0, 'cnf', 0.7, 'front'), { n:3 }),
+  golbat:     on('every', M.afflict('Supersonic', 0, 'cnf', 1, 'front'), { n:3 }),
+  koffing:    on('every', M.afflict('Poison Gas', 0, 'psn', 1, 'random'), { n:3 }),
+  weezing:    on('every', M.afflict('Poison Gas', 0, 'psn', 1, 'random'), { n:3 }),
+  jynx:       on('every', M.afflict('Lovely Kiss', 0, 'slp', 0.9, 'front'), { n:3 }),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
 
@@ -3415,13 +3489,13 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     else B.log(`${t.nm}'s barrier is already as strong.`);
   };
   /* Inflict a status. One at a time; each (but flinch) at most once a battle;
-     Fire can't burn, Lightning can't be paralysed, Poison types can't be poisoned. */
+     Fire can't burn, Electric can't be paralysed, Poison types can't be poisoned. */
   B.inflict = (t, id, chance) => {
     const S = TUNING.status[id];
     if(!t || t.dead || !S || t.st) return false;
     if(!S.repeat && t.stHad[id]) return false;
     const g1 = (SPECIES[t.id].gen1 || '').split('/');
-    if((id === 'brn' && t.type === 'Fire') || (id === 'par' && t.type === 'Lightning') || (id === 'psn' && g1.includes('Poison'))){
+    if((id === 'brn' && t.type === 'Fire') || (id === 'par' && t.type === 'Electric') || (id === 'psn' && g1.includes('Poison'))){
       B.log(`${t.nm} is unaffected.`); return false; }
     if(chance < 1 && rnd() >= chance) return false;
     t.st = { id, left: S.rounds || S.actions }; t.stHad[id] = true;
@@ -3733,17 +3807,18 @@ function generateAiTeam(spec){
     : badges < 2 ? 0 : badges < 5 ? 1 : 2;
   // Legendaries are endgame property — a gym leader never fields one.
   const openTier = kind === 'gym' || kind === 'trainer' ? 5 : 6;
-  const base = boss ? themePool(boss.theme) : BUYABLE;
+  const base = boss ? themePool(boss) : BUYABLE;
   const fits = k => SPECIES[k].tier <= Math.min(maxTier, openTier)
                  && (!boss || evoDepth(k) <= maxDepth);
   let pool = base.filter(fits);
   /* Bodyguards. A pure mono-type leader is a coin flip on whether you happened
      to draft its counter — Lt. Surge beat 21% of the bots that reached him and
      every other gym beat 60–95%, because the roster is Water-heavy and
-     Lightning eats Water. Real gym leaders keep a couple of off-type bodies for
+     Electric eats Water. Real gym leaders keep a couple of off-type bodies for
      exactly this reason, so a share of the team comes from outside the theme. */
   const offPool = boss && boss.theme
-    ? BUYABLE.filter(k => !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier))
+    ? BUYABLE.filter(k => !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
+        && !(boss.exclude && boss.exclude.some(t => (SPECIES[k].gen1 || '').split('/').includes(t))))
     : [];
   const offSlots = boss && boss.theme && offPool.length
     ? Math.max(1, Math.round(size * TUNING.bossOffTheme)) : 0;
@@ -3766,6 +3841,13 @@ function generateAiTeam(spec){
     const table = ((offSlots && i >= size - offSlots) ? offPool : pool)
       .filter(k => !(spec && spec.ace2 && evoFamily(spec.ace2).includes(k)));   // 1.4.0: his one Eeveelution — no spare Eevee or second Eeveelution
     const pick = () => {
+      /* 2.9.0: a leader's first pokémon is their signature — Blaine leads with
+         Arcanine, Lance with Dragonite. The first one that suits this point in
+         the run (tier and evolution depth) wins; otherwise it's a normal pick. */
+      if(i === 0 && boss && boss.signature){
+        const sig = boss.signature.find(k => table.includes(k));
+        if(sig) return sig;
+      }
       const unused = boss ? table.filter(k => !usedSrc.has(k)) : table;
       const from = unused.length ? unused : table;
       const weighted = from.filter(k => SPECIES[k].tier >= Math.max(1, maxTier - 1));
@@ -3887,7 +3969,8 @@ function hashId(id){
 function opponentFor(G){
   const o = opponentFor0(G);
   const k = (G.mods && G.mods.rich ? TUNING.mods.richFoes : 1) * (G.mods && G.mods.mono ? (TUNING.mods.monoFoes[G.mods.mono] || 1) : 1)
-          * (G.mods && G.mods.nopc ? TUNING.mods.nopcFoes : 1);   // 2.2.0
+          * (G.mods && G.mods.nopc ? TUNING.mods.nopcFoes : 1)   // 2.2.0
+          * (G.mods && G.mods.onelife ? TUNING.mods.onelifeFoes : 1);   // 2.11.0: One Life has its own knob
   if(k !== 1 && o && o.team){
     for(const u of o.team){ u.hp = Math.round(u.hp * k); u.atk = Math.round(u.atk * k); u.spd = Math.round(u.spd * k); }
   }
@@ -3925,7 +4008,7 @@ function opponentFor0(G){
     /* `calib` is the per-leader correction. The badge ramp sets how hard this
        point in the run should be; calib absorbs what a theme is worth in a
        fight, which is not something the power score can see — Erika's Grass
-       almost never scores a ×2 while Lt. Surge's Lightning eats the Water half
+       almost never scores a ×2 while Lt. Surge's Electric eats the Water half
        of the roster. Re-derive them with `node calibrate.js --tune`. */
     ratio: !boss ? 0
       : (boss.calib || 1) * (kind === 'gym'
@@ -3944,8 +4027,9 @@ function opponentFor0(G){
    has most of, like picking second in Oak's lab, and the rest of his core team
    is drawn once and kept, evolving each time you meet.
    =================================================================== */
-const RIVAL_STARTERS = { Grass:'bulbasaur', Fire:'charmander', Water:'squirtle',
-  Lightning:'pikachu', Fighting:'machop', Psychic:'abra', Colorless:'pidgey' };
+const RIVAL_STARTERS = { Grass:'bulbasaur', Fire:'charmander', Water:'squirtle', Electric:'pikachu', Fighting:'machop',
+  Psychic:'abra', Flying:'pidgey', Rock:'geodude', Ground:'rhyhorn', Bug:'caterpie', Ghost:'gastly', Dragon:'dratini',
+  Normal:'rattata' };
 /** The stage indexes where the rival ambushes this run. Pure: seed only. */
 function rivalStages(G){
   const plan = runPlan(), rnd = makeRng(mix32((G.seed || 1) ^ 0x2c1b3c6d, 77));
@@ -3968,7 +4052,7 @@ function partyType(G){
    Eeveelution covers his starter's weakness (a Charmander's Blue gets
    Vaporeon, a Squirtle's Jolteon, a Bulbasaur's Flareon), or a seeded pick
    when no Eeveelution covers it. The Champion fields the same one. */
-const EEVOS = { Water:'vaporeon', Lightning:'jolteon', Fire:'flareon' };
+const EEVOS = { Water:'vaporeon', Electric:'jolteon', Fire:'flareon' };
 /** 2.2.0: the Champion's legendary — seeded, never one you recruited or own. */
 function championLegend(G){
   const mine = new Set([...(G.legendsCaught || []), ...[...(G.team || []), ...(G.pc || [])].filter(isLegend).map(u => u.id)]);
@@ -3978,15 +4062,19 @@ function championLegend(G){
 function rivalEevo(G){
   if(G.rival && G.rival.eevo) return G.rival.eevo;
   const starter = G.rival && G.rival.starter;
-  const weak = starter && TYPES[SPECIES[starter].type] ? TYPES[SPECIES[starter].type].weak : null;
-  return EEVOS[weak] || ['vaporeon', 'jolteon', 'flareon'][mix32((G.seed || 1) ^ 0x3b9ac9ff, 5) % 3];
+  const weak = starter && TYPES[SPECIES[starter].type] ? TYPES[SPECIES[starter].type].weak : [];
+  const cover = ['Water', 'Electric', 'Fire'].find(t => weak.includes(t));   // 3.0.0: a type can be weak to several
+  return EEVOS[cover] || ['vaporeon', 'jolteon', 'flareon'][mix32((G.seed || 1) ^ 0x3b9ac9ff, 5) % 3];
 }
 /** Decide the rival's team the first time you meet, and keep it. */
 function rivalCore(G){
   if(G.rival && G.rival.core) return G.rival;
   const rnd = makeRng(mix32((G.seed || 1) ^ 0x51ed270b, 3));
   const yours = partyType(G);
-  const counter = yours && TYPES[yours] ? TYPES[yours].weak : null;
+  /* 3.0.0: a type is weak to several, so he picks the one that suits a starter
+     best — a Grass, Fire or Water starter if any of them beats you. */
+  const weakTo = yours && TYPES[yours] ? TYPES[yours].weak : [];
+  const counter = weakTo.find(t => ['Grass', 'Fire', 'Water'].includes(t)) || weakTo.find(t => RIVAL_STARTERS[t]);
   const starter = RIVAL_STARTERS[counter] || ['bulbasaur','charmander','squirtle'][Math.floor(rnd() * 3)];
   const take = [starter];
   if(starter !== 'pidgey') take.push('pidgey');               // he always has his bird
@@ -4165,7 +4253,7 @@ const modName = (G, k) => MOD_INFO[k].name(G.mods[k]);
 const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
 function cleanMods(m){
   const out = {};
-  if(m && m.mono && TYPES[m.mono]) out.mono = m.mono;
+  if(m && m.mono && MONO_TYPES.includes(m.mono)) out.mono = m.mono;
   for(const k of ['nopc', 'rich', 'onelife']) if(m && m[k]) out[k] = true;
   return out;
 }
@@ -4174,7 +4262,7 @@ function dailySeed(date){ let h = 2166136261; for(const c of 'pkb-daily-' + date
 function dailyMods(date){
   const r = makeRng(dailySeed(date) ^ 0x9e3779b9), x = r();
   if(x < 0.35) return {};
-  if(x < 0.55){ const t = Object.keys(TYPES); return { mono: t[Math.floor(r() * t.length)] }; }
+  if(x < 0.55){ const t = MONO_TYPES; return { mono: t[Math.floor(r() * t.length)] }; }
   if(x < 0.70) return { nopc: true };
   if(x < 0.85) return { rich: true };
   return { onelife: true };
@@ -5095,7 +5183,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TCG_FROM_GEN1, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
@@ -5181,12 +5269,14 @@ const SPRITES = {
   "geodude": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABkUlEQVR42u2YPXKDMBCF1xkfhJJjUKrkGC4pOQIlJcdwqZIjuKTkGHRKYV4mu6M/kngSlH2NByEEfp+0T0CkUqlUKtWJdYmccwf6/preSiLAHG+ahoiI+s4QEZFp+1eTcF+ZLacncJX/3N4H1mEYLWs3be9+mIT7PD7uB/I4nufZe98iCFDMgb+i0Awoh0BKB6pQKD+iuQLymgOo/1Branbc9VPU2XG4sf7ruj4JmiZF1FuNpGQuFUWAkZBOegiw6rAsK3P8w2nhfMbacr48Cl1XbhWCk1VVkW+O3+3C2uu6Yr8hgVSqX+515RKA85IEnLcWid1653rIMRzjvCdh9/HnrOpVJIHLXm0cEVF3i++Jxskyp0LOwXEQRL6gP/IH7bKahdZM+Xuhx7Lta4CwL98dNqwqweFQ9UB+bNtzvNmOzGmZ+FhzIATSxb0P5LxVRXeXocSWyY05juo1jV004eW4nj3Y/yGQRShFIkXI8yxZ36WUQMgx5IfcS8m5/t1nUAIHqtdL7nl6AiqVSqVSnVrvmOa4yfNEbrYAAAAASUVORK5CYII=",
   "giovanni": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD8AAAA/CAYAAABXXxDfAAAE6ElEQVR42t1bLZSzOhC9fOeJyspIJDIyshIZiURWIpGVyMqVSGQkshIZGYmMRK7LE0toykJ/tlBoOYdDS9mWO3Nn5s6E9bD8ZkLOuzelEPalN/cPe0uCjpN08IP8mL3kHhcBH3JuiB/cA3zW+/y3BHi6AXStLs7pWkHXCm4IzL39txTni+yH8tuAIeQch3jXfXaId2A8+UzwPDoDbVQFAFDtcSw/zEH9RWhfS3nzmkocZ7+Pf0vRPjtknbftsZYSojjdZZy3pH0aceNTCp7usdlsOtrXUiI65JBS4bsu7bXg0Q6iOCErBD6G9t+17IADQBjt0agK/qY5V4Vg+1m0zwrhSXUG2Kf+jcS3LvBpxI3dHzFAWXwBAERxujCEjXcbBi3lvdXFfBpxw0mKLTuiqRIggrn3RqVq4KsKNNh2gKVqOqpHhxwAvDli/WnZGCepyY8Zvr+/sdlsUCU/dBU6u9tTacSNW/Pt1hM43ippL6XCZrNByDm+IKDq4u6sHHJuskJclLZaSjCe4JgXoIxZqWvafX0xL6VCdsgeamoAGOIHiJMUZa2h/RBVQ6D9EMe8AAAQQuz1sxnhKUrFSWqSOD6XJhpc/c5+NyerE+L9bw2ffx078P2t7fe9xT2fHzPvmOegNLgJvDeo6LYdpXcD11q7LHivfn6oj3eZAwDxPh4Er7W+OD8FA14pb38Bp5QiCPzu/VchRr3+UY0NAOwj3guL4qW/vyh4d/tqS2TII4Q8AvEDWKb0KW+rwLOx/yfaF4fYWH0+hfRUqkYpChA/wFb8iKUdgIYzlL1x16KeLw6x8SkFDbZ2InPT+pQxE3IOWZ1+gVaqxqkVObSX+VdL+zDao5ZdW3rVALKqLo6/S+BlrDecXbwnhEBrPVQ9nqL+w+CjQ+7VUkKpCpb6acTRdnVDN3KxKNGf2p6cqY2UsgPecDZ7AvxTzEvVwKfnNpQGW/iUgkc7MJ7c9IRrAFfU6FqNxrisKq9vyEXAt0mu68h8J1bTiCMrBOxqjKxOg5SdUDihFOJP090/ixxrANvFFYcY7oTmnOx2PwsSAwYYU3NXZLGntTZu47OYwnPKnGmHD503+rE9xc1SxgwhBMQPIKvT09/5byrqDb3ue48y9vRvWeFD2W5VjY15xEhjym2smxsCrGv1VIMzZWPj3aLsX760FAIh53CbIhtSz3Z2iy1U3uNpWVWgjA0Cf6fGxliVZoG52d+et+cIISCEgDKGNAw6WewCf7d+/ixmesDvivuJgS/W0lqw1sPjeWKHrFRIw2By4K/y/EOSdOhxlaxUblM0WYVaTcIbe0anJ5AmnTkuNslx29RrwCnbDU59P2KMdQ+wsUfW3hr8Kye1i4Ifo3bI+dizd32F+J7giR9A12rUAHMAWw14C1yPT2luT4+q6vM8b0VLf7L7KZ738mN21fOtZ717Yv8tE96jnn0FE1azXHWtZXUeSDafDN4rhbgwwNjw873q/Miqy7Xr56b+op5vjeHdqvnu8zlTUn9R8EO1W1aVZ/X+3PJ3dQnv40rdEJWHKH8lNN4WvHHHVj0wZkmtvwjtb3nTzQWPVonVgS+FeHoaM4cB5p7hGXep2l2va7275D81zj/AdIUKZeyhKazLFsrYrMlvNu/39of+Lk5S067zdcfJtPSajdbP+lOHivcGrJntfv8HSbCaL8ED3TMAAAAASUVORK5CYII=",
   "gloom": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAACIElEQVR42uWZLZDCMBCFHzcIZOXJSiSyshKJPImsRFYiKysrK5HIysrKSmQlEonriWShu5N0+LubabIGJs0fX15eNgWYWMw+2Ff/H2N++UDYSDKOYwDAenFh5VGyBQA0RQkASKv2LdKTIzx/liyRPOQpAKAu1GdxUpWSFW+0yY/6W2BbqZn3GmZkk+VFEw2eGojaUXQdXtK0U4SZG2RrJc7qGjA3CEMYyVE9IhsnGdP8q6QnTZgRrbZKs1nHG9jISoI20pIshbOE50SWiMogokRKEiLSkqwMKqeTr9Mnn1e5hNEV6OTaNNwdZI5gC+kqMrz04R4ALunK2ECStmVlRDbVGs8s2qbn67K2zal3S8PkFtG3zhla3qCOFMlrfRztOA3HB27Pqv/VN3efAWkMVzrIWsfyYfpF632uNLnf6W2/Y+VWgk1pJEgrR/mxJC33Ds2D1OCODw+e9QCQHGrzCXZq2QrIemG5M95EKGiPDPx41MncvXHkO67ZU2RGVvzwnISI20hLjfp7a670Zg+XCtGyaY3EbVqX0ZwDlrOkVfvQLdpJwjPtAj3zX00030RKu2kxqm1JlvyXTk7ydy81zPyZcoh78hUxjePEtR2LE4/I3nz3TtY/l+jHcgYivdg/mFtIsr68vZw9q+GRPlg9ehd3y6Pr+i2y7vvwE/V6AFjEG3FVqT8yYaffwL8U13P30f68+Bfp0ej/YqzJEZ5c/ALRKec5NVgY1QAAAABJRU5ErkJggg==",
+  "golbat": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSCAYAAADHLIObAAADS0lEQVR42u2bIZfiMBSF3+xZUYkciVyJRCIrkfwEJLKyEjkSuRJZiYys7E9YiUTWdUTzWPpImlCalg73noNg2gwk+c59uWkggiAIgiAIgqDXUKVfb6VfmPd+9NEzibRc74iIKM++QnwGiMRAQhjIH+GRrIBeWQ3QJxA5ZSKHqt4VEdH6kBsvZtvlGH0GkX3p98QSk5VElut6tl0G8VYQOQKRVZeZ229qj0yOu6qPmZc6n45e933GG3J461OkgsgBiay9Kd3XM5cmNrKM68hQYhIX7I3LNRERFUVhJs5BLvfvrt3//rYSCiIHILK69bicShLrQyOZ0aUmopwtBqnWTGKWZ433LCZ0Hc3bq3nxz4tUG6EgciiPzP+UuuytdPXTM6WrIFc7JnWm/345JrrdfJCO2MhcLBZGQu/aW4hN0p0XoSAyYNb2ShBy/cbrtO2lJvgwi2T27bp+bHwf/txUeOGVEItX2iQJTY471xjBI4fyyKptPWVLCk7v0iTdJIePLiQ+65U2eRDodR1EBvDIioioLGuP2/wtPCOGIiKiY7Jrb6fvy9LENfNGEl3e+KhXxsmql10fEBnAI81epAni9aONLCbY28Psmb0XEscSiOzRIysiotWqJm+22Xt5YRRFDSI3+69WgqUu6kREREopCkmi9Mq+vRFEhq7aTCbLSqivNJFMoOv/MomcfWVWBpHvmrXZ++I4NjY8nZqE8X1X0qQ3Su+0ZHbbLkxXMpnIQ+DTcSAyQNZuzFgURUbPvEsIgljeh5ytYqNXnouzF4EtSaRVp73COvKneaQ5++pEIquvS5LMT03k3EFih12Zxvft2FcQOQUiByXzhsRJnT0HkQGr9iiaKokgcmyPdK0rH/VKuQsEIuGRj4kzti2DdyZUqUkPJIgci0il8qGI9TqXCCLfuGp7Ve8kSam+vmyQad2ntFRvw6mvlyYTRI5NJD/1u56DlNVYPpNxkHi3fykEIlG12ynm02XO02LiKaIS60Xphb6Egkh4pPd6j0xVvSVLN096CBJf3RtB5At4pIvq+rn43e9sVGt7pVTtuRPzRhD5gh75bFY2Vv8efg0BIt/VI8egHURiICEM5NSrdqgqDyIhCIIgCIIgCGrqG+LabGXMSfhWAAAAAElFTkSuQmCC",
   "golem": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEwAAABMCAYAAADHl1ErAAAEVElEQVR42u2aIZiqQBDHx/e9QDQSjUQikWgkGolG40Wj0Wg0Eo1G4kWj0Ug02vYFGLwdd3YXxDu8N9PWb8HF/fmf/84AICEhISHx38TkjdeufuLZ/ggzv4cwK0GHYmu9OFusXvKsQtgbE6ZsBO0PZwAAiMOr9nl5qrRxGofGm6+3xSC/gRD2hoQpmyZRsihRq2Wmjbe7g5E4vI7O/6J1EyHslxCmfLIdRxYlxBUccXGS9CJNCBsxYQoAIE1TKylDkUWjqk4AAFAcLsZsisS5SBPCRkiYlSwkqt1pQhaScKqmAACQZ1EvssIw9iLN4NsmQtgT8ffVZK1XC40YF1FlZb4ZzsPrXaRxZOEY4NLppCCEjYgwjSyOFHoWnIaRl5b5ksaRdfr8tBJFiRPCRpglrYTRHUSyKCmcH6NEcNnTN/ty98HrD8VO+62EsCcIU0/SZyTLlyguupLGaSVdD+fvqOZR5y+E9ciSCgDgdDrpOxTH6hndozuJ465OnWpKGoM1e7qyHeezON8mWXJoDdssdA0Ko6De4bJxxmXpIk3V//3loFUHV+XVlySXBs6Tm5G05WovhD3r9CcAAB9FoQAA9utcI2u73XIaN/lKFtftQe3BCqgvaVy3yPfsR7Pnaplo971W6NeqhqyMOXuKhj1NmFHD8nRW78xqpY2xvlWWperzxbTWficg65R9XURxWRnJOh6P2ufz+Vxbh/iwV/mw42ajZUkk60FjiNZxPooStVmaz5ofO6ZDHfppla/PQ4KQKHw+XBe3DiFswLOklaQ52XHq13AHkSyOKN/AHXdpl4swX9IxksZPioYNQJhXNYIjrzrfdA2sqkHIarPjodTu27WbhGRhViw2NTlRlBjnbw61pks9bEAf1ovGfL03koc+rW/s7jvbEFU77jyaaVo5Dae9siJHPpJV7OsTSxHdtOcUwl6oYZ207pMQ0pWsXVF3d7Z5rmXhVjsbwlxa5up8u0jL7oSJD3u1hr00WrKmfpqEzpzTMlfne5Hp/o72RZEsmv2FsBEQNmkcspeWIVn7RjN2eWo8QbjisSNu1ix8p4KSCnAzH2HJ9wthI8iSXtnyfK6zYNlUSVrt2ulOvHX6zTz0Y6hds2lN1uVq1z5XjZ9WY7gehhD2LlmSEoPVp3KRMITYycLxbGY+U14uZyOJtP71hSjjv1AIG5uG0R4Bl31aLYv0+UVw7kQWkvRAWDO/a/2LhhA2IsI00rB6gUQ8+DEHWQZtAYD720LPkuVLmhA2dg3DiukxmVNUAAAgCIKua7XW46i/4iqsQtgbEab1ObFjTrtMSFqbJd1vBfVaB/Yc2ipGU31Is9R6AsH6lxA2dg3DoMTh20Bx4+BfuBYraegHcfxRFOLD3uUsqe0QfWf2G8iyBj1p+NbdhLARVyu+myQFAHC71dqE3SdKFK3Z4/wgCJRkyTfc9Z8IxRBkHLt+GyFMwos4ZRlLlpSQkJCQkOgV/wBig3h6I021nAAAAABJRU5ErkJggg==",
   "graveler": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAYAAADFeBvrAAACHUlEQVR42u2Zr3bCMBTGP3YQPAJyEolEVlYikZNIZOUksnKPgERWIpFI5CSPgOsEfOcsd7m5KXSIJp9LSElPfrl/C2RlZT2jkWeujVjzSnV6n7chE2oBoNnXzoJyuXmEcm9EAu8zSpNQURQAgGqzdBYeDkcAwHQ6deY3Vd0Xqaj9j6fLfXzw7jtIQi0A1FvXVvbNyRkv5i6ZHkk5trut9979SEaSkzY1OEJjzwnjN7HL5XYyRbGIsqlA/IgiSAIkJecp+XsSXi7K28g7rtmSjB9aXOM+kgRvAG+GRYz/mwQhrw3wJDUymq1R5/O3M57N3oPxRSOs/S9vRlKEvMTo/RinSMwiQyLavCdHc/aLfT5pQsHIbsUPy0tpXpD7SCLSdoafKXTNhqU0UhZBKWmjmqRNJZUpBAldr1cAwFddBU9K824aIUlwWc6DRLTKNUlCjlcryjUAYDKZBL1QrKSNWUqupzDu+gBtR1a4zOVIiCfP3Iy291l9BCtQK8u2lCSh0f3utjFZME+4aZrbnS9L7zrpxWQFLL1dbM8iXS+nVZZdRW/ITIAEaIMkJMeZUNc6yJLVpbEq365kci4H5euElntpJElO9hikTT3aic2ZAuOFJp605gUjOq5PKfcULFuSXkyKOZoWj2Q3aVvvspd7VK3rvVaC2A4xJDVlQj0QChKD6ID+jUcrpy4iEesbaib0QrX/8W6DI5SVlfWcfgAD+j7mVeTcXAAAAABJRU5ErkJggg==",
   "growlithe": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAAB90lEQVR42u2YLZDCMBSEl5sTkUhkZGUlsrISiUQikUgksvIkEolEVlZWIiORyLqeCG9IQpKGv7sh9DkS+jNfNtt9GeCxao3fA7y4vvBm9f0I0WO1AgCMxqs/e+FoCbcqUapyV7tWYNATDiRhJSsOJwAAT4bauKLlnnCQhrMss47/B9loNNyqZLfrzHsxaZlqPCt6Dbs03AJAvcwBAOl6Tyr2XrzcSB8uy9Ik+7KM8bYa1ghT7VgCAJjn0hWmy1Kfn+o3m2zt48N56d0zt3wf4nAJIs15IzVanf13xLRxF1EaN1dCIQ3bFzTE16PJEi0AnH7sLkEE93vpJs0m18azLNX+vxjV2nyov9t8/e2zRBBZxXetWi2O95GlfM0T3mcJAACrS+9KUK1nqTftkWbFQVgJq1qOyyW6SBOZpKmtvkz+XQg7aVcpRK/eNw4N0xfI1NZFg9wgLedzfvI+jFagi7QvV8el4WqzCLoJ7XpKc13ZwuUeH0HYew7R1T1TuUgLIdPeomqshEN6ws/yYRfZYsz0tHYmepUdrjNJZ+8X59maSdo8WzN7PSIsjjpZ6lguXfnt3XQ0Z2tab2eSovMIV8+WnoGbuXo4v59snC7RNJLsYTXRdrvLXy3afPoJUJwuQUXEqUtmM0mUMfY0gh9H2Ev8mdqMlvAvSf7dW507DhUAAAAASUVORK5CYII=",
   "gyarados": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAFbUlEQVR42u2bIbCjMBCGl5sTlZXIyicrK5FIZCUSiURWIisrkUgkEomsrKxEVtZxIllK9ggECq90Znfm5k1pkgPy8f+7IQVYX9Ty31fEH+B4K6yFCJoydg0A8Hw+AQBgs9kseY5M4Fri79zkHeIzAACUUVh/A0FMIN9AvoGsgSvI+xr3ZQKZwPfcd6480XVdAADI83zVbs4Erk0DyyjUVRC00qgBAKLTqXe8oigAAMBxnFWSyAR+kQtbbfKQxFMcdzaOoohdmAmc13074zRAmuM4YKh9H9FIJvALK5FOLWxcvCwnPQmfcmsmcG0EdlQQMIYIL3lMIm/u2tz0fJnABQms+yoK6r7bIgcAgOp4AQCA/VHtdPV3CpGofZ7nKe12sv/Lhu+d/ZH0CWTRJ0I5vvUzAAB4JJ4RiUzgAgTWAABuKmYiP3qzuNo+ESTZaaCQ93BUkvD7ipCI/ZuQ7cbmi9StqYaiBtOaXaflTOAvunDd1h5Tr7QJKZQ41E4MSp4uSluMG8tauuX+Rv0peeF9h2qt1uRytQgrphaRFhP4GwTizDZkEKLGEvcueY1bO3vRD0i/fDdrJTJUqzOBCxBotd0X3dhOAiMNm0qcrSF7iEyda5vGS/tEZP62s51urw4TuJZaeIg8dE3ULlPSKGGUVDx+9XdDeaDVl//dC+G+h4trRB4T+NsE6ggb0sQskxoadOdnOPPUXU21rjzaghT/MzeQCVyQQMWNh959IHnJ4yE/F6PyOZ0b64gz1aipYTouE/hmjJm13nVArEGfZ1E7QhAp2qfTtsb9qosRcbiK06p5p5JXt1d5Gi0dSTQT+AsuXPe5LOZ31UFo3yMV32+D/hoSyUMys2PW2x7JoyverZXqtzRwqpYygQtqoNC8QqzMPu+VmKmdrXymJJnmdVT76F6Yw+HQS2ISi7/2PhhLjqJ9BhUME/hRAvEt1Y8vKo5bkiufkcR3A/M/rFzoDgVceUYNzPfiPPwoG+vKTODaXbgGAKiumI9VcqaF5jTKFF96V1GmBmockqgL9yqeABtEuxZRRq7c1NbyOu19MMnNmcCl8sBzpmobut7/ITXxbPe6ro4A3fh0xwJ+7167V2dQE+0B7fs5iRr9Lg/6UcyrMask8CpdELVIt5c59MSc38JKkng1yv+AaKcfBUbED70D0e0Ow+N3ej4HmX8avk9mAhckUNl5gDODNSIe956COD+/KGT+bMXcniV4YdFdiWDlkfu5Mm6lIfLo2r1a+GqfKeO4ECjXgeTtylgZN374rIGr0kCcsdvJUTL0RlNwX54r37LJRummUma2Wd8D9W0arRhwXCQGA0lKZT+qiei6mA/S437af+FIHr1OJnAtLqyrm5EYzxEz6HuCQV+y6OWlQmKqIY8GJQw1EEnEz7Td/66suilqXqOF8i8ev715A5nApQgc+r0ukqft74iq2Q+DtzRGF3lRdro3rZExom2iaN8M71SYwLkJtKQrCeJkzYge1/G7D1XDMplpbUafg9VeDUnOfqeG6rTQBdWNURNpnpfmspI6zHsDmcAFNLCTxB/pXmGR9A6IZGBlQCudIc1B7cRIczHO834fdWG0wtDlt0zgivNAlUR0X/ILI6yNM1mJ0DUUXH/DaI1n9Wnha0W8P5B0dN2X9ql54FyuywTOHKP3xlAysrBUVmceN6GRrfe1nUT2aJGyKqSr1emqipbQMFmEPCbwAwRSN4UuIg12Cpj+jljJC9O8GkXg0uQxgR9Yjemc0db7VNMZt8b8P36Y9GpiB3G92vrm08cErkEDPxX1SDdX+o1ozwSuXQM//bTUbReGF1n1xLyTCWQNnFETaSxFHhPIBA5WOFyJfEP8A5V4lqETgggMAAAAAElFTkSuQmCC",
   "haunter": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAACS0lEQVR42u2aIXODQBCFXzoV/QmVyMhIJBIZGRmJRCKRyMrISGQkEhkZGRmZn4C7Crod2Lnj7oAmTLNvpqIMuRS+e7vv7gqIRCKRm9TPz1P19mpvffUgsjhkFwBAUmwe+d1CWB5YPDyTd0m3+w0AUBy3T/HyyxF+n0pwhtmiHjn7xMO+ZLL9iXsSQ951FR/P429VQngmD/dEpM+3r1nG4zMkKTZqzOd4VxAPT/UyEd6FetK+Xg4+A6/7+fi834uHx4rIZknavukL/pSkbcaYkpx4eKqXm6YBAORJNYncWO/bMrp4eGqVrk9V703zvuhLlGpDGKRONcSW9YXwVNUtYERRNIkoyZUs3RfuU5O3lVTpievenpdN/dWUhGhGUB+PtnGv2vvKtNoSD3OiA6uWlY83ueeqiqo5er+PTXi/NaSupQ+b/Oi16umcIPCxtOPYqm0Uo+dd6udU9W3juO6CviRhL7Imac6MFACU+aGtBXXZI2Tqt6YdE9sMkSw9NmnxBMTJD6xiVgCwyxNGuv18Eu16N5uvl74ZGuJhlyrNkwpPUA6eUd0EReTi9Vo7TnW9asly797vV6cHO1aZJC0tYVtf9e17nDTplOTam7eH9nrwETuR28eFF3FZLbnubIw431VdIrdGn505WU5Uk+0HSXc+Lx72Io2ZzoNtZFz3xDTZXvuMQvgJ0p4KcrLlOXXK+Lb/A5MsvYBZplwyvCtxIbzUukL7yJTQ+KqM9q7CoL3ueoYlVXqBsiU8rwQohJdO2lbdIbuWIpHoP+kbYcErW4lwSVcAAAAASUVORK5CYII=",
   "helmet": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABaklEQVR42q1ULZqDMBB92Y9LrJvKVCJ7BHCtxHID5FLVrOQGtcjimiNUIonsuD0GKyBpCPRnf57J5Mvk5b2ZJMA/QzxLIKLenzOz+DUhEfV1Xbu5MQZKqYekb69aMcZASomyLGeqfURL1phZ+OqMMZPxEaIla1mW9b4yANBaAwDatsU9EROF1pLFuWTsq8rND0kDAFgXQGeAVM1FMLOIwjpprXGtGQBwko1b21XbIdDAqWgQxzFCF04hMwulVB/HMU5FA7x/DKtfn46sKArnYlcNivejgSRJ5k3xbfmwZKGatQQOGPJT1c5raJN8ZWE5bHNcPeWdi01E/bnkxYTOAHu9nTdHTnNSRZg1pTND4sa7bseFUvhkG3PnYufjZptwGYlzL775nx4IAGlIeAzGzizHIfKwhkTUX2vGZtyUe8RLcYijV4ZVRjeFF3lTkgdk/hgibKTw36R9IT/FKiP3nsWjz/RVPPt0/4RvgB+34EcTHHgAAAAASUVORK5CYII=",
+  "hitmonchan": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGCAYAAABxLuKEAAADh0lEQVR42u2bIbSqQBRFD3/9YHzRaCQajUai0UgkEo1EI9FIJBqNRKPRaDQabfwA9y3mOuMMCgp/3VvegoUyyOacc2d4HoZRJdv2vj2gP5DSljcEUk77nbJzvoq+Pj4hxlB/v0nKcrkcrBYJMQMhpgSAfboFAJyPp3e1qOyLHCFGfhj5YUalMVptCdZ6V9qu1wCATZ6Xze1PupYQM7Ac41SUc0xkmYikWsWbl11LiBkjMabS9FKluJIQA6Sx1Y1M2iKuNFZiWuUXKn8xd3KreBVI8v10eZ8kZjb76eRLL5ebdn8X2iLEfFhjSp0W9E2KaMwIidHmiXR/6OTLk7xys3Ax611bhJgxJ18iZYGbU64piqKzOWAhpmdivPpZ12qNa8VpDgD4mfoAgDxLK60KQ30vVWtYuKbVg4iT87L2CDFvJt+y5eeVlUZbl+wHFRGTyQQAcL/fVTJqYngPxV2P906UnxrzN87XL8S01BiFkHtYq/55qhwUHHPTs+w1n/WY7jAjh5LsvCbFtJZtIsXUXfOkzVcwqRormQ8ECTGOz1gJAIdFdWeX/lX7oeBS/d3cHwgyff9bbuWapB1m/J5Wcy5ZiLEQ40QKFWnNdnLVkkP7i6JAkxSuDaa3HUyaQufh4+PjsZFDeenhuurxCjGuxJD72EjhZBxm+jvHXaPRBSsuxI8jkg7X61NSbCQTOZyQYKpexybPxZU6JcZGCtUkUzWFE2JyQU7Q7510JMVEDHerNglYiHFJvpwMXjZSNFritSGWuuQsj1pdhGncT9zJ2iMKMa8kX1MueaNLd+riSWt4PjLlFxvhGo0RYrqejyl7JkN7niSuEu46XAAAonilJce1iBjKLbRm7kKOENNyPuYja9qcEKo8OwIAduleIYeXiSRT8j7khfMAhZgvkdHKhaiIFF7HY0XC5VxNCBUn/fyO7b0Zl5wlxLTUmF4JocqSUD8fM/9RtrPdWXscJWUiaOZXkTytk/OT7l5yzNA1RvmfgKk/0ROQZE8TOdciTkySBp1drxAzBI3hpDQIsd1RZZ2K1oniNOI9nLwfM1aNKXWuci2SKrFq5lhf0Sr+vrBmhk7eDB86MeWz3PGrLZH/7vkVl+Kz/tNl8vZ5hJghuFIHpGhdKrQQKhozNlfq4XwlAKzWlQttN1tTryWuNNZeqRciz6ebspPma7rQMiHmPyOmdy0TYgz1D09udtkBbGvqAAAAAElFTkSuQmCC",
   "hitmonlee": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEIAAABCCAYAAADjVADoAAADd0lEQVR42u2aIXijQBCFh/tORFZWRkZGRiKRyMhKJBKJjERGRiIjkcjIyMhIZCVuT+xOjpnbhYVCk7ubUV1C6Yb5efNmKICERDeCF9iDeoU9/xAWnkcEIeBeHXtPbu6fZL1LskW+gxDxBCKUDwG+ZFgICYSIv4SIL5EwRMRcZAgRCxJBqsLleAAAgPf12yIkzEWGEGHi59wkHD9iAAAoWSYxs0NkjCVAnOULaoSVhMM+euoXG6sVQsTSNyIrK8jKSm7E/1A1iE8Iw9B6UlVpGlarFfETS8f1ciH7quta+WiFEDGBCAUAkJpqsGckzK0HQ9fjVQlJiMxx/LQx612S9ZIhRIyosVYSyrrWmWha80xuzDN5G5VJXvfbtiXHoyjyuo6vY3X5CyFirEZwEnB9Zc9ybT7n3afrmd9+pPqHP2eRk7pUToZv7yJE9GiEcpyjbBlGbcjzo+uaqs9H4HXQd4zVhrl6ECHCcldU15FxZ8gdJNcCjwrkRcZUAvD3Xeejz0hOZyFiiAjVrd+xUfHzqbCukZCxs4wwDNWcz7or4zgPQWJxTsKDkyFEDPkIJIFHtE+0hpTHoa6Odam6umSp6QXiYpZqgCRYtCswmdfaxN+r/CZCNKK3amDG41VDTjy372Sdh2tXXVbaVySEgEfmi4ocxzX2KEgGz/R2t/MiwlUVHlr4SUlYvcVChEsjgu6zHzO15YQArEkvgf0+v+OcAFdU55Rox5BmjCCB/V4jvcZcEyprRvDZRW3xJcCVqUd1cThFToLvPMWlDeIjPIgg9RedGa8aXDOwiuT1nfYAhoxOBqgv2W21RlyuZI1VZIgAX204pSeZR8yiEUjCuaCzyDjdmBHUxVrnLQSQjOW5cabGbyAJ2aEEAID9xP+n8O12xVmOmFBZ7yxWBRcZPU7T6/o47/AlYchBchJ4leP7FCImzBQIGbx6+Kq3b29jybzv3glhvHfhWoZkCBETnGXA5hC6/o+nyzofyE/aR7TNzTpXGBuoNZjxTk8ENg0RIr5yt+eo7ziv4NHzfmTS3+FzEtdaiHgiEb1a8VDzKPnWvQoRL0AEIYO/f8AeJ9vrKhLG9aJ7FiIm+IhZCcBwvYn67hAinkCEAgC43fUzn2aFOWzvMbD3WFobhIgnEhEAAGzWGysZxSEla1c3KkT8687yVfYoREhIWOMXlBGc508WZ0IAAAAASUVORK5CYII=",
   "hpup": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABZUlEQVR42rWVLXPCQBCGnzCI4pDEcTLycJxEnsTiKA7Z/INWFhlZHBYZV2RwVCKDu7jGBUdFByYDuXx1uiY32eS593bfuXUoieFweCnLn04nx5brlkHVh0KPdWE+3IfwzMUG79igYimsUAA91oilsJ6qU3bUcB+2ypWWoi7AFh1bU+Igrvw5DmIa19hXLuZgAKxPX7nWGjs2qKdSJlITBFGl8vfIPCgvbd7uK8RTKZ5KH3JF7yrBg+ULABOpmUj9AMqvr9/WcoXrugj5SZTEKLMtBH7LV6R2McY0t5sUEjMQeLJYVZzE7X3c7/UBWB96AMxHGWmWtvPxfVyh9+s/gfNK56MMgO3RrQR36+w+H2X4m/OvZ2f1VBcqznc6DwXwN2emnmkHToLVreN56DXetk83AUmwalaKc7igJzUzNUUMxIPNjusFSdRvXuNj1AdCJsAubH51OmWzzldu5eVjm33Ofw3THzwKoFrlrTKFAAAAAElFTkSuQmCC",
   "hypno": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAADvElEQVR42u2cL5SqQBTGr++8YNy40Wg0GolEI9G4cSORSDQajUSikWjcaDQajTQ2DHefc98MDjCsy/J953j2gAjj+tvv/uGuRBAEQRD0C1TVj1HpDz63fpr9EPKovARERDRfFF3XVj3jPYHAnvr7UxaSpnMSJLoSVXV8HQgEgR68MwgUeeEWURgE9om+aao/afA04/NS4VbtL4rv8UIQOOI8sGoi6X+y1M/jwRy947g0vq5HXgkCf6sHtiLvUd4oyZP7h84PQeCICOxEnvQ+JsyVSOSBP1yj+wXGcdmJsvISMP1e+44gcAR5oJeoK73QVvs+yhN954UgcMS1cCvZyNvtdkREdDun9fNX8bphozIIHIsHFllERETr9dXryZlISaIUXxceOEECe0Xj0+m1kSgmMHlTx70s428lEQSOjcDkLXSqWb/yt11uJjPfNpK43hy046SCKAOBU8kDlfeVirgwrAl0JG8+r+8XlzqxTBhdw2ZCH5CIKPwLPVDrdEjyZK1qy+uCpbnvFwQveiWSq+3ssNOuw14oiWUS4YEj9sDGXhrneV0nBf7VvKWFWBV1o3ipkfcwn/RMHggckEAnwpxJcvQ+VzF5Sfym79++G72vIe/zcpcOBHokUOuaFMXNqWLwLVlRnE7m4y4X5YXLpe6FTOL75uaagVSO+43eCQI9ENiKPO6O2Pp6d10OpzxQRmubh3G+J73veCzq8wdda96ZKQbk+dF48GYTat4JAj1UIlVTlGWibF0USZztE5UkfpG10/O4JN0bFyrJsx3P3tch39PIO2SqFs8zdf5NpK6/jTZMIjzQlwdqUcdGVLI/1jPJUdu6elZ3VSoioo+PDy16ss7ns0YaR9nF4tXpjThE3VZi8nj9ebav1LoXyAOHygNnTd7AUbpFdDOSuFqtNE9kSSKZQOl1TChvS/L61rqn+i+EPY/J421UIgNE4a5dmL7dDO2TlZWEjTTOB22e56HbUhERxYn5rl6axIQ88EkEDiWNRFfSbPLY70MtPCkCZZTvK9+dZ5tA4Ah/gdX942522auGmokGgSP2wFbTWbaprEdy6FPiP5WmRmCvKX1Dd4hMUdt18hUTqiDQzfsc8rjGTjoIBIE6KfztGrYJBb47VxSdCWkknecOeboL01kTIFCrcZO96DCL+7++uyh8F/Hr/GKu0Ne0PgjsqcFnpHnSgYnjbVteF0SZl6kpSZwkr8d3dYHAUUZh9iRJxp33+V5TZSJczv7AAydAoJGIJ6xhkOuDQAiCIAh6lj4B217KRNTcEWkAAAAASUVORK5CYII=",
@@ -5194,7 +5284,9 @@ const SPRITES = {
   "ivysaur": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAACAElEQVR42uWYIXSDMBRF33YmIpHISORkJTKysrISWRlZiZxEVk5WIiMrJ5FIJBKXifB7lixQOG1F0md6kqYJvbz8/HwgEL09YU79jLXeX5GoBoBqkwMARJZZX/JTddeaL0VUA0C93QEAsiQBANRN81CywRD9eNRERLLp+9lxeW48rJRaFR2iJmqRIG+S2q7zepNIyyQltACARCTWuLM8ax/ZKIi6/0wDwKbYAABYw7zEptpT6uuePBuvRzUAFPXJkClP2uelDsaLZdPZ3ruhsu8sb6YcI9HJNxn+yWQRvXqutNsuYfKaS5YIkoZs8D7IZ27/rtqdrWeMj+iVbNOOAU8tO7EKQ/5HdV5y1O/qUl3CJzpLsq7nCXLOZ0m7u/wWYeonr4YbR8mDWcatfiFyL1kieR0v935vU9Rw43FLnzZJ17tBedTK0AvOvASpvVRrowPF15SnbjYVuEddcm57ysM3SW7n3wgbx/dNH/4tdDZ+unGUCNMupjzyX25AZF0R6ZFw27b+eDxKHY7hZk+LyFbCjpPDYHbrQX17SU4Sc8i6IpLBnfWLTyYi2e6L+d2+UOTtWsrxpmCyJZmZO5mKqfZk3dvzr+O6GVd6DwvrqVFV87SvdiRHbwkhsOYNeIguUtT1UT0xh/4bV0VVml1dGPKMsXvWfM0aPtbs4miJBqNfrDTnbB9eCDkAAAAASUVORK5CYII=",
   "jigglypuff": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABsklEQVR42uWYIZODMBCFHzcn7iecRCIrTyIjK5GVlZX8BGRlJRKJjESerEQi+xNwrUi216QskN51prc8kyFTOvDlbd6GCOE6M/MRnqA3vLiiUHJtUTiTW60BAE3T4BlkX57g+6M3Ejmdb80EjVbdsQMAJHl+/g1JeR5M09QlN6Ebkg89kyiCDsleV6PE7ubbIwAgTlZmXMWDv/tQmfNsoqrY8aCvpqqdayJFSrP16H1Fd5Jbxa7nUkNCKQUAONjR3x9JXLWr4jBM9CeRIlkEs6oEAJxaU6X6KxkkMXd/9L3nkxPhQeO9vrekCkvIJkJT/8kD0AqIIuh0zERwU1eDHmTJfLcAgM/EJEa5zgbJ+8lzk9n/L0mcjvm6n9k35ghw5Mir5F1aAfqfbr+X11FHXgds3tQmRYzaqTpuvyPPETm6XuSpzuleKHOpj2MTxGY1eY509TCtjOdBv3rldTP+eXhK8W433Fkz1SufoO9F9hRnzx5cZz2XnJwq1hu3+qh/4zppzXxhCCUnz4NTustwKyJN3lRlFXQmF/llIcizfjXP9d4iCY4mTyi5RRPkql/mF9YLU+y+H6uS1ikAAAAASUVORK5CYII=",
   "jolteon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAB4UlEQVR42u2ZoZKDMBRFLzsrkJUrK5HISiQS2U/gE5DIyJV8QuVKZCQSiVy5EoljBXkteRsoYabdSXbfTIdpmrSdw829DwDsalSvp9cLHKnAgiSGrxQAEL7Vtuv/DtFXG5K/Wc4Q/f+jz9KoUZvpeVjV8g432bzem10PABBVBACoL53y0bv+OjIyq2nWyQQAECXScx8lkkU+kZQfPUza5eOc7JIPz+YBAJJkIiul/KFZ57N+VyLxM3AdF7H2vihazUWqcho/RuES8cCvXW9LkhNcIlmo4zE6LJJ0vh+dtDmoBOozO7LWJHVNznzUs2RK01QlUWhcRL4p1Od83jlrWI+gryeSnOjMh0fPNLrgn6Sxup52ZRiGWlZT5SXTqFqXZIfVMyOlRxrVdrsQhTFhrj53h2RZCgDA6RRrmgd6s+ZXSPqhUSkbRaZY9b3PbtA0RiSlvKhjq63nu55/T5o37ms0MCaSqqZpjYRu/WOskkdo80mbpHWqsnw3ansLWbc1yjtuvos5OZ5ofD65xNI1FCdsynxv7uZp2r35IbSEonHa3TONWf2O4WrUU6KkVSImWLfEfXatr/T+TkmwRTM8gagq1iXtILm5/NIoL+pXiTRp85H39r17KrKJNB74lMQZot+qOu1veNWQXAAAAABJRU5ErkJggg==",
+  "jynx": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAEQ0lEQVR42u2aLZiqQBSGj/e5gWg0bjQSjUYicaORSNxo3GgkGo1EIpFoNG40GmncMHNYz9kZZvjxivucr/Cg/Dov3/nOIIBINEaLGV9bM4dr/iOMvA5BhJj6lhs3Cpax7R6aR9ybEDRjgigxdU2/rYvOnc/VFQAANlFiJK6DNCHo1QlqyIgHkRc5SAxXuFl1n00fPwiCQfcsBDn099eSw4QeFwRB04ckIWgGBDVducZVpYYSYyVJX0ewjL1IEoKeSFA3Oeg56EW4ZF40mBzucZKkX7+Kmb2mPAIAwMfniXz++fE+LTGMTF8vEoImSNJ9u2SvqhXFB7Ies94p1/sXeWrcviiKXsRYwfs+rxA0tQc1AADnwxkAAMqyBACANE97JVEbOQdGBNcWtnr71EhYFEWEsEdJCJqqim23W20O017AOlmT9Ut2IeucNCR5cNXUCd03XwlBPQhqTMTgiOE6jqjBizqrl817cJ7mx4yii+SSHpd7kS8prjwkBHkQRKoVf9YxjwB79DlJ7cj27a49yeFe1ealvJ8pIlG+hAlBvh6U6mcYyeDPuk24fd5zvodXLV6dOJF9vaovKULQCIIWegQbAICwDMkI2nokJMeVS7DKxNHNSCrun+w2ZL/sSKunLzlDk70QNEEOWrAq1gAAxHFsJGesODnn4ggAAB8X5UlF+klIGksGz0k4/4RPyOGgtg/TkOQhIWhEL7ZgiVlP3FhykqfQi/JC76fAgWS3U9XqdiRE4efck3xnC/A6bYnbdTwhaIJunnjT3TNKqgvOz7hyR14s1TJTyThOKEm5Jua7mlVeI+3q3TBxt1WVVecwDUF6sQEa8++OxtQLYTXgbyWwahRviriqViMW7rU3JZfO3GWTbUbR5kU24XnutpMqNpUHddIXx2oeBb0ICXJpE6jZg2ofmj0JRzYzd/FIHBd/p+8iBz0K58BTSEkOFIIeSBAh6e5/N8pz9JJ7URWrrnyT150ktUTs/S4CyanOmT5vQryvJY95HO8NcYk9qRD0wCrmVeWqIjNWs31qmcdZrwk5SNiPKvUVmAnVBG3CxHheV2/Ifxsh6AkENQAA5bsawf310pmLrLkkM5M0lBzbu3zXv1+FoP9QxYzkoParNRlJPvL4/eX6BQAA69UbyTnoVRXokWYxy9dzOEHYO2IngHlOerG5eFDbjW/VSO3ebsRDsCdDHb+WhKCWsCtNzEggJ4cTg2Ty4yBJuESSbF4kBD07B9XsbYVNSBCSht0+r4K26veuPYoTyL2NE8m7d6lic/GgoeTwz09AvYp7l+14LpLabv6UCUFzyUG9ZCOHy0UMFxKCxIyVEPQEgtT80LEyepEvOWPFvYbL5T1C0AxykDFZo2xVbirCMEcNJUcImlEVM46UzaPmJiFoBh40yKN8PctA5qT3LAS9AEGT9Hh35Ex6T0LQLyLI5VkPuRchSCR6qP4Bl5kZNkLPfz4AAAAASUVORK5CYII=",
   "kadabra": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAA6CAYAAADhu0ooAAAC80lEQVR42u2aIZOjQBCFH1cnkMj8hEgkEhkZyU+IXIlERp6MPImMjByJjESeRCJxrIBm030zDLlN9jZFt0lNQShqvnn9ujsBNDQ0vnMEd9zbP+AZ/y1+KFFBMs9zAEBRFOzzeDy+BFklKol2XQcAMObCLu52+0cR7Z+p/dUQ/bn0RkmSIk3T8brp7yTBCLZ1AgCItpVq9IuIViPBhK2NMQCAUxEDAA7F1ae1HgBMOdwfxyEAoCw7zbpfSrSqKutaksmyhN0XbSurFimI5HarPvp0oj0nMOz8/sDJEkkcN8Nn3mCOoC8sWfwhtfUqKyO2g5RFZZQmAgCcTx0nKUOQlXG98ixbnIbnFod2nnh2/SfCq9Io8zXa2SzjO74/hPPkHBr960R8MsvSe94QXlSRrUqjvW2niKyMLG2pAlqUVUmL00kZvy+J1jXPAdN7eDRr0W6weo0Gt2edfCzP32S/Oe5wzPyuLNtR06GsiNj6cjkDAP5UhfVFJsJD6Yy3dDOehLHv3Q7PT9Lm3v42WHdllCS8O5F+ReTJZ6XWpD/SZOL3MZnNtqRRb81tuG8TYcox9H5yvV6i1G/6ZkGkSfLFOOZkiLiLpCurkzbl+pdpmFZ9tTLQavfiI8m6GdIi+R5VUrQm/5MTBLpOZC51x9Z1M/rsJmIkfZr1ZeNVEg2W9aV2jX1k29BaCU2aNuIECbKT79aNtUKi57q06qqkdMKwuJsYp4AFUutOSw1TH7s/cKKS7NIad2ntq7+9uLTaNcOvZ+Eml8/ouY/ZY5pMOPpceV12Py5tUtal++ikaa372dNB0ztXfxtGg0937XmWpGuWJMkSSd8sSYm6iIWbvJ+rnKjG9XUjpM2P7BrO+rL0yYngaVm+0ax7bzaWEwTqVqR2ZNamfnW321m1KP3UNxtSog981tLfSnqb/8qJhCQss7D0SSX6BKIPPRnSh321rBL9hkTZ/5nCkPvnzX8kNOu+FFHLu7lIK9FXj37Gq5WohobGa8Q70KRnPAkKxlQAAAAASUVORK5CYII=",
+  "koffing": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADQAAAA0CAYAAADFeBvrAAACdklEQVR42u2aIZCDMBBFtzcnKk8iK5HISiTyJLISWYmsrDyJrERWVkYikZWVlSfrOBH2hmzZkKTM3A3JumZCyOzjJz+brkAT5zrvxto/83oFLwQdd2o8m3m8wcLiXZeRNNsyGYPOhRQ3Ljce9t/EEQAAbDabyeeWTYhmhAvMsCspW41RMrp5+KEhjNvtps2QbSBJzOhzu9kXootlE6KZYsld76b7ER1nNafmxKWBxa9yK5dVx5RMVT2UxqJYG72X0xKn5SGpZROyINEx40gnkKYAABAnpdLp2h5lRoWwIkX3HUpmON9lEuK+2ZHVrAMAKPYXAAC430WfSZl5qpn2KpTfSZxymjLStonr9sspcIFkoijtyRxG+1EiNJAoksT+RbHuxkiZ7F9hlRtqqW1aAABo2niWySCp6iuz2if9IWQQigPY7WTj6TTPZGydhL81BdMwJYOZfzwk2X0pRldBdBhCiE6ncd2J2VsNKQ4BPVmeX7QPocamCFNHQR0IR8oLDTkRKvKo18Je6TRFDKOus1E3/uQkHPajsA/Jb1dmdk/M8uHWGA3CkZnSTiBkSwo1lX8Lbedt78bz3UFx6XNoxm+nMOK+YaghjI8iVzNd39VVrRRaMnOGX/dDXI0ZM42OoYJS8WZJLM9H2+SqJUerQUj+XB+7sMq5uO22lc4gSTKlHetseILFwJMs9Wp0VaOaDBqaqilM3c9obh+UVZF6v2SbcO/vZtofPav6GFRSp84nTpl3uO3wzMuZ/nODas7iZk/7Pu6WIVROXUN3xjd5jvvHyq92+9t4ky8g1OVMtDVXIJmwD/11cFoau0MNhP4DqVe0uThCPyn7X1kGsLlaAAAAAElFTkSuQmCC",
   "koga": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAFL0lEQVR42tVaLbCjPBQ97Kyo/GQkEhkZiUQikU9WIpFIJLLyyUokEhmJRCIjV+LyiZI0pIECj3a7menQprTkcO499yd4+NBRBUyan+OOe1t+//sTAdHIBwn+m86XkFvAeZ8OyBx12a5m7teBa5M/NbslUABAI//BRF9lihIAoq8M9XfhAumt8R+16KUhuj+bFvbrCFDGUQKQam4tqGdsmaDWsvb7KJbq7wJLgJ6Z2BEs7QU2YWjp/VqT3Gt6NPJRWT5ti8omxrYwos61fA9rzHANUybLbd3/zMeWFll/F/plnf9XQsqvlSYol8CZc8r3jLnJ7+fikGJpq1+1de/8zzXA9I+yJMbQcb1odRw6jr4q0VelnrPM1lsyKRuMbZpt3evXGlCrfUyxcE5CDeQUMPRVCRKw2fPnYlzccVQBc6qhDcovr9Mb03E5ho3FLGSL/cssiZHn2YyK8fti4nTuGtIFaE48HkC9Qu6jrwwYOpwChsEAYYLJkliz2lelAijHxT2A0qZVr89ADs886u/Ci6mPYRhwGs1PsaQ+F9fKlWkgS2JpLtr0Fxr5k5cFereibopjVduD1BdkSQzRcZCAIc9HARkGiPqiRUZ0d0dnrUCWxBMw2tQc7B9ReWz6cZbEUvlYW11B4+TBx0TXo2qnoOKOI0tim9GXxrfNSXBbXTV7JijFkJovrhVYK5CTO8ARjPeOoL3nApIXKUjgdnI/TlEZISAnQBgylHn51ixk74VkX5UTszsn4SwoNd4JbtdFaMhkRIiWdhdTnBLUQkyAvRPc7gp6CHwdiLMk1qA4vTmVCxQAREmI+trIjxMPV5xirQCnBJwSsFZMQHVdOzl+vI+leapNa86vuq5FEFD9XdNwEHKCEAPahr/UJPcy5jW3hSHNUy3pF3qaBaVDgxg+ph5zx7OGT8xLgVuslMnp401Rm2Q0KqMQg164EMODcKibUF8b0PG7tuHeJ4qH5EWK+tpMQLnGgnDITwSGc83Bi1QzYftP17VvV8OfxjFJQ4ZLxHCuOS4RA2s42oZrM0v/CICQh9qr/qBmzlNQKq1Ssj9K+WJ77NVyv6k1MKZTD6BUOUJDhlzobtQkvhldKqzpWbwLmORFqsGca65ZoZb6qfnoK0MeDMi7E/JgAMtugVyFhU9hTNoAVAYxF+N4kWpQeXdC/V3M3QTvreJBw3HPapRxlUWYKrcE7hmovyIeNGQyDNkkyM5JNyEnZwwzzXDh5r0slrkYk0v53lxcMtmzzXApvXpVGbMo964kdk0uaIKyGTMZDgKKIKAYKwX5NmCNFY/WZhEmqLw7af8yc8mZmyZfCcxzAdiSGpmgRN/AFqEwZA83Lc3TQwXGqYr1tUGQUxBy0sWhncHb55uDF+wev77vaZbJkut/xrndu6BrTNEbmy6Lo742CtSkX/hMOBRImzUF/Ai1fHZXpO0fNjv2f2VJLGPq6/g1zssoCR/8qmm4s+FT5iVoyH4UwJ8lwZ5KkUx25nyBhkzWQuBcc3tPzHPdEJevvTO798ZKV5uaKk9MgDRkkvghwpCB+OHuRyOOqt92ly1W9vBQqqz1W8VaY/RQjlDHrYXmw1M3yuR4kYLG8b08KardDJkF67uaOTL6yiD6BsS/NXHo0CGm/mRLSY1xQ9BzBWHVl1TAjF7jIc2mXbst5ge1L632yxx70d6GRo73TvFwXfwes0ZQqj2g9sku9/i25n8O3zP7UZdKdajMYW4I/rODF6kcbs9dSNz2zPT7fxpYlsRSPREwHj8G0P8nfiZCyxpQqAAAAABJRU5ErkJggg==",
   "lance": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAGXUlEQVR42uVaK3DrOBQ9zhYYLBBYYGhQUGhQIGgoGChYaLAg0DDQMNCw0DBQ0GCBwQMGCwIKBB4wFAx4M16QSJV/+Vpp3+yd8Uzs+Hd0zv1JBhxayVmL/5PJhLd7WbUFizvAx/b19qh3e3J58/12a4BxUXoFi1saBihY3AbEBwBENILaSYR5gd8atEx4S15Csx8QvwM0ID5CQmCfczTNtvdbge7LNCA+IhpBiAohIZBKIaKR+V/tJCrZoOQMANCoPbgonTK9cHFTzaDaSQMwIP4oYP2fNteAZ2falnDfJuQMqdTn9cq9tGdlWqenkJAB4/3fNsu25UI8JJAtXPgxAPjL5eT5GrDNclwcAGcJd566PBfS1n6rdhJBuuqkL7WTHbC2tGN0gpj37UEnjLWcwETovh/XVY1G7THl843ao4SPWh3co6oKZ8BnvWnCWJuGBFhSBC8UALBNUgAAXXXlLt/FADQXJSjl5pgr4AsAqPK0rfJ0Fl+SSqHYVmZ/mWdY5pkZBOPzcTRg+VG2SBhrgzBAEAZIGGsTxjoDoI8l7HzzkAvhFQqIoxCrZD16TrYRyDYCQRigUXv4cYQSPnIhxlh2k6dzITwA7dsyQrpinw/N0/Z9W4MTC9RnmXhSdkEYYLPdwvd97OWB9VpsQZMM+/0e9Xt3QN6WkUlXI2DbuSW+0AzRJPOyjUAjG/PitqWSgPO12Y4v09ko5a0ORGhqZMkncxFbHvab2txb+/n7th4Atlm3nuEmkGUJb/mSGilqplNJuhVW+NL1Zbn7BEgU0hUb+HGzqwZSHytIKOWn5H0360+DtLOk3QqJMXByAKIIHYDU4MPwxRyrFUEjGwTHcanFdqCcRjYDwJrdM/58t9z7F7dSbGwGvF7LN2CiJ8NBIKryFGUtQZVCRQj4kg4Yngpg+nhfVUWxvot5byzXHoPbpdZOyTNh7DNA5cd8nWSjg9UfxFPuMzHA3s2g7zFKeRsRZYAmjDlrJM4ozHsYaACtBqrBlpyZZuJEh4ZCwZSgU2DOBLiLqzmnc2R9UDbjyTFAajsF+By4hDHUigziQVUVo0HvyRXLdvfEyXE7gudkeM5U1NYANcvHGmE0TUYdlRWT0d4p0zqQ1ZQjC9XkeTbL/YGzXn7Sj6eebcWTDvCFS5bH2OybLnq0TMdenlKOkjNkoQJRlWF56pox8M4nBqfY1FNJITn8LtTZBga5ECjW1JzLCZCgulpxdmqdA3RbsBgx9heN9NR5oxE7T1HlKYIXik2+hh9HHf8/x7LziUENaAxUVRWm2Li0b86FQMSWphnRTUu6YmcVco5tJ/IeA18Ua1THDq6SDSrZIMYeVVWYqK1TWi7EgMVabNHsKlOz38ry3cVJwlh7Tq7XTt6PVXF7WWGVrPG2jECT7GbAup94wjexfrVlA/NDOqmAu1vLuc2e6LNrchuYnaMp5cjFMEDNAfQhoDcqAOdrUzXpiqw/DVyrx6tq4cqftVT7LeKt3dO9Zs8PLFzJmvM1wjAEAKxIM3nu2H9ztqK6wLGD9pMLwGn6bs2lhShrHxhpNIDjMq0aY1vNyu4s8s6F8MYKjTF5piFBjD0KdV1x4gLw7PLmokQcdyNtVB9Yp2FgipZ+RXVK/t8qkI2xPcYytWZBaRiAi/LQRKiexEcUcyvbp1iehWkNfKOCSZaNf+eHHGxPGH6FzSbvsdSkWZZKGcB2wXFu7uwWts+xDAB/zFLh/PW6jqLXwfFfu3/wC78MuB8fH/jx8YHX52cAwOvzM/7eCuz+fJ2898+f/3auuRfw3Q2HxUgbxwxRRFD3SqyoftdNh/2s9pqCZKomH4n0F+GZBTTn61bKHVYrPgCdZW+XPKe9APjoasstOBZzsGzq6CPgsrw6SHkXrEfbXxP2t68JZHHMUJYCUkoT1C5k+Rrg3yt6SymdveTcgzFrRWanrStZPsv2nD21m6+AT6wwXmJZqDo5vGAxyk+/9r4UtF6lrHsgV6TBHV2xFxeiLVh8CIrwsblincs56KoqUCRdeFIpFOr+z6M2KnAWI+6VSju2oDbTR2+juXuOez9sWec7RO3ZQGt27w1eUyq0gc81CE9zy2/O8tYV47OkLJvlmV/Qs+OGFTPuSl1P+A3MgevcJm2MfCKJGT9lPPO8r5E3pdyUnfqrAIfmfZebtS5fzKX9B7IigbhDGj8yAAAAAElFTkSuQmCC",
   "lapras": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAADuklEQVR42u2boZuqQBTFr+97wbjRaDQSjUYjkeifQDQSjcQXiUYikWgkGo3GjTZegOvn3J07M8CguN7TBARcfnvOGRhm0F01s3wG/VRb1vfdrxf9AZG3q1MDAGw2GwAAmK93ysrisHPdp0JMXN2UlZeLunEezl9KkhDkm6DtPjNuZCCpBgAI84aY5dJ8sKmQJARZ9NfVK9B7ULdTpvUi7vtIDiWEkkTJebWEoB4E1bor/p1uteTgZy6VqnhrPAG6/isuhKB3TzElrebriHjPUSEnSAunFKJCIikxuH96XEmxN+xBRpKGiiOISpr0G/egWduM21RzI4jzECSG9iZue1wuKfbbxmK0H7mSUxSN14TJUdvIy7L0cY5C0BQJUtJsFUXankMJOrYFeT5vUuh2U8mLCr3XdLivJARNPcUUITmckJw7SeFOexcgKszfm5qEoAEE1brRub0HZQo5mF5RYe5NU5UQ5MuDXEfpdGzFkcM1ayHotxJEyblmewAAWOwOnUbvqEMcAgBAcppm/xGCxmrS3H0hSggVEkOVnL64MdnMdD7PGqsJQb5H8yj6hDVZf3c6MJJD+9N22/Sn/T6h51gDAOR5DgAAeVkBAECWJqOSJAR5JMjmBYpOeapdHgRB04+qteJdSM59VF+UiichOVRhGApB70qQE2G3S6ldyRG0WgVOO0/T1OZZQtBHERTHsZEUFN3ufK6Uzw8kefmtQpDv0bxrqtnIocJeE24ChRxKDF2OnoUk4X0o9KbzFbAv1X1IEoKeQJDScKlnuArJQZI4T+LEpd9qISk2+RRT5k8XWWLcmPMgmmZIEiWME00zTapJik3Ng2oAgMMhUcZOQ8WlF005m3w1ayHoiT1okPBpCHoRJYmmHH7mvAc9sSzLeghJQtDYBKH32NLLpmt732dhIelSNdudF+bzwSZtmHckBE2qB3FjL9c+dCVXetF6CDfa5xq77/tDQtC7pJgt3VLy3I3ew6YeJCn2aR70I81+vJ+mnx1Lxc0WeXj23+m3C0EjEqSM4u9XqmMf4kjiyPEl19kkQpCHFNM+QaXP5jlPsOkYnLQkuZKDx6WzR9Zh7OW/Rwga8FfUvpthu7J4RV29qKrU0Tid9cHtn5PD/CLpQWMTpJDTNUXoPCH0Am62B6d9mht7je0NyIc3FQf9NwlBQz0I5UqAJj1mpjRkvaZt5uG/Sydy+op7N1YI8tik6xH22XmMR4myiSNO41HiQa8azY8tp1kjLEHLjTTpTyeorxd6+Y1CkEX/AVuAwrmu5oP4AAAAAElFTkSuQmCC",
@@ -5207,6 +5299,7 @@ const SPRITES = {
   "magikarp": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAADTElEQVR42u2ZTUhUURTHf0/MfBWpiUEfUkYQhiCGkA7V0Ay6cHYTlOkiQlpJUExFC3EhLZ12rmojNGWEsxuJ4g1IMWiCUpAmLQylkMSyFmr58VrceWP3+dT5sA/nzYFZvHfvPe/M+Z/zP+feC6mLHv39E8lii4uSoufRAjUAuBufb4bODAJxSy65OsDcXLlQpI6aZsz8FUS2PALZica8y+UCoLnpozTo9eYDEAgcAkBVezM5sNk5IMV8JLgXAIf3s+VkVX0d7zf0VHLFliwkIbGWxIGA0OO7IOb7Hydlk61YSJKxjmMAXO8Snl7YfSClGNd1MU1RlIRywsa9UG6+DjB8pxaA0okfAPR+WwTgZN4uAILvJwBo7IlIy43Yj6lr75INU5S4bLQxC92SPTi/JE8aGftqubiipAAAz9AUAKGKInsjkHAvZI5dQxbqrwGwVFYlPN1SD8BQFAnD88az4XkDCS2qJxIOZ7rRpKSoskqKXYPXK27ISKwkzTwADXtyBHv1iu7VGe12460LtkBg3dhfq6KuJTEWejUlD7S1iVzQtEw3aolAxFtr6clVBTrK55P+29L7xp4B6dlgoVhKFIgdXV1kHAC/76Y07nC7LG1O6xzQAe67TgFQ3XRZGgxHBoVn5sdlT0ZZh32HJc+bPW6uvC5PnZhfnCf09/Vk6gAAJdXVALj99+QY9l0VlbPznUCieMe6MW/2uLnintgp1o98WRDrz9eZLGm3OQsZ50GG3K0sA2D6w5iEQKzLDE1L8z2eQgBaW1tFxXU6TZ8RlfmIIvQEvDWWxjiCzyTb0xoBqaSaETBE810BoP9BJwDl+/MkJGI5E0XEQEILdQNw7oxb7NwGBs026fHYnJYsZHnu35D1E4CHyzmWit58+i4hYOZ9j0dGwvC846zTjEBCu8W0yoGNblx0AD30SFLw5GUfAAdHRwAYnpkFYFlVASjbLpa3zCxa5kJ4pR7Y82w0O1G0FM9FS3YwutXj+XJFbpkSnmfbn/kDaVkHkr19lJBxOo6KyttcKm+8OkSuPNUKpfeq2p9ULqR/JU76HjhbnJ1qnafF+ksv+P25o/ut4P/gbHTBZOaGZnMRWN3LKBu8tycLxetJ/X81bssj8At+zxaQEv0MbwAAAABJRU5ErkJggg==",
   "magnemite": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAABh0lEQVR42u2XLZCDMBCFHzcnkJUnKyuRyEhkZSWyEnkyEolEIpFIJLISiaw8WYnLCcjcLZeGcoXOEPJMJz/LZr5struAlZWVldWa5SzwTfEKX2+WeE+6bVsAQF1fyKLvs1l9rpb4+z9idUiO7AuC4CUHN4q4AID8eCSTjbcnY84TAQBZ1ZL5jKuJy30hc8UcsW5UVhEAwBjTGoa8fMpxyNynsowRxB8iLVWWauI5Td84+ep5BflJZ141cQEA/jklC8FHQ8ZVVWtJj5H/k2X67BPHXLsvLnZkXMSeIXncbXJKuNEbum4Xm7I2GVN9zbrfLFeSLstCafd1O5j3z+l0MVyJKYZjpCXhR8V5sp2sMqnelnn+Xnb5zPWkZYwz5vXVJK2JDmlExrusVp7VyHqckL5cKvL6Zd3thadJDuV+Hp6V69fbfnhH2+s5RffqI20WiLJUGctD0skPaWdip7W9Ll+M2JL14Zv4dUO2y5/rdkjM3qs9Nt/lOwt+Wyzpa7XEraysrKzWrW8PX31VPRw1wwAAAABJRU5ErkJggg==",
   "magneton": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACLUlEQVR42u1ZLZfCMBCc3ENU8hNOnqxEViKRyEokEhmJRCIrkcjKSmTlSX5GXU6UPZrcbtoCB4+0a3ilzQZmdvYjBUZ7ral/8GmesMevfbw7A5MHImcAYLEpAQDHbfyUPxAEAwYATqcCADCbJS4jSmDIsuv6GC3r1CM1E44GCPkkqT+LorAQyoqKdZDpuXXdWG8A4LBYAACWxyOrGWIuz+v7Wu9MHybengElxSIhmerc64AYSBI+62i982qCYXxYGlBSPqeYX874hYeTXwsMol4tkaVJJP1GMywGqqrq5GBzyKzrMju4DAAA1tkeABB/pqwfl2nyu0tXFy2tAQBf5dnKauFlIcoKeZ73YoCQX02nAIDv+NPRRN0jxenSYkLSGNl87tdWUN0oa1FUZ4U2TRCy+wsTuCB+zfd1nSjofkqxn/baz6304XSjbs9CsSchIWWfe03abzrb2V8UcThZyPgqH8UckwXY2HSRiqOMzUKubZeptw5IGTTcSuyZbdmJymVKYoyek5hgEFfD7EY7IGB8iDI9UafZepwHup7/tMVyBybGc6E2NLyxKk1W5TnzbtjIMmpkQOhGTXMC+pvXS+8kRd2l2ytJ3eSdegxwIpNO0ogRYuDWia3H+dFANdBAnq2cUjfadXJjEIfD/LDORidtXSZ1pVrH1nNRFFnnRy7ybhYi5hgNKAf5sRLf1ZV6tKJa5o2xDtxq0puWTsyNlfiBvp76hj4YBkZ7tf0AChYJCNUyUQEAAAAASUVORK5CYII=",
+  "mankey": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAACSklEQVR42u2ZIXSDMBRFHzsTk5OTyEpkZWUlshI5OYlEIieRyEokMrISiURWVtZlgv0d8peQ0G3nbOM/04Y2WQ+X9/J/BohEIpFItF5Flms64Dt/RndrIqgB4FjsjS8citZHUv9m0qsgaJAbhjMAII6ffCQ1AFyGGgDwGGcu0j5P/+gT8O8J3tMbF7lKXWcX6LsejKRBjK6n2fiqlLJ+PpnnewJCdoIVpyhXmSXGOK87Y0ze3WcH4zoRa+rMIL1JNsbnz7uHWY+7soHGk98TrduDoc/+brczyLT10bpw+bK1Xudkab7Lwy61w6OkKCdo9WdedxoATk0+EnSQ4CKvfR6fFuXDoWj19MnBcKU0lhRdWj1Y9y+ejktF87m2aRma5pF4cCFtPb3z+evp3YsbKxlOlu9/cZJY/xh5nqSa1lppSYreOjHZFwCAukpmidE+R5XK9TqmYFOm1nXpifgg956WnCjQCsFbezBjX+R3nEQeS/MGAHBOR9JPTWcQdHlwkqKRp6+c7TeFoI/k5ViZ6dmPhHLVGyRJLmLcgwGVStAZkhD0erF4HtNzY5JJq+NsV8E1dJ1xgkDzeEXj6npcJGUf9HYbqh9TTPVB/aCr66DXStWzFc02La39IpHnnheCPg/u44tR3dMdJ+/wMT/L4ZUPkbekqaOiMT0sKRpKjvdnM32aDkk/2h9dJHxnRVLJ3EqQn5PesKZrvW/5X4UQDDijib4yn8gtPbEWgt9VyXxVRI5Sk9eU4sE/IM32Nh2w1wlBkUgkEolEwBsiIBYk8SMYvgAAAABJRU5ErkJggg==",
   "metapod": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAABS0lEQVR42mNkoD74j0OckRjNTAyDDLBQO0TmnPNBkUwx2kKSYYMuhBgpDRn0EMESMoxDOoRYqB0y98/9p8hBQzqEaBoyQz+EOFg4GBgYGBg4OTghIXL9O4q8ohHjyA2h/wwMDAyZPcZYJauDNkMKG0ZGlJK6eo43AwMDA0Nrytb/I6Mu4+IRYGBgYGC4duwbSpqZe94XEoz/UXPZMo4wlLT348+P4VeX/UdOC7AQgZU3hHIVLDee2fWMgYGBgaG/4ChRddsQCiEWSAgtvRTKwMDAwPD9x3esJTOukIKFEAzA9BNqBQy9XHZy1xMGBgYGBj07YZIMhqWd6SVn0XMZ47DJZVhreWJz2chrMRIbMstKvg2v2p6U+MVacuNqMbambB25vQ6sITJsW4zkeIuk3gepaWlYpCFGaEmMEhSw3DeahgilLUrtGHQhBAAHMW8+oOHH2QAAAABJRU5ErkJggg==",
   "mewtwo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAYAAAAcaxDBAAAEHElEQVR42u2dL3CjQBTGP25OnIysjKyMrERGViIjIyORlcjKykhkJBJ5ElkZWRkZx4nty7Gvu0BggSW8b6YzTcIsNPnl/fn2JQXGU/n989D6BZFTBSORiez0FwCwfX0Z89xC6Nz1eywy+64z8rtKCF0CoW3JC+oeP58v2p3r9ar0mVQhdK6E5sUJDcRp4sd9Fp9jvWN6VUJC6FwJ3e9itCHx45iMRaZGZJbk2oNFUQAA4vRwV8wWQmdAqDE7N4nIJJI5mQ47rNJEJNdms1G/pJLlH4bQTmQ2xVjnnVsDmZXYKVl+6Z1SrZ43z66yfAkASfRufHAbh3BRfwqhHhPaK3a2VcVP7dXL942RQqjEUGcdkjF2DkWmEDoXQoksnqXptk2HeKfq0WiYenRoMoVQjwkNgP++Zts9pN3uFQCwelqplvmomuY8Kwb5Q8NQ1Zt5ng/q+AuhjjXEq2SsS7NUEZgVGQDglJ4AANfrVTvORmgPt0nL9pLlF0xoCQAfyYciKoqMB63XKmaS6xMeXmrJTN5V1o+2ar19vL/32ketR4VQ3wm19fRtO59KrESV+FssZjH4XlK5H1pxmwIhdElZnurR86eKjevnjTE23rJ7ntuuqTSR2iGWjkKqEDoDQjUSqEP50VsfEiPBA8bQWkJdkSqEzojQu2Iqd6PIfbp8XfrWoaPGUiHUsSZz7G3+KPdFiWiHZNaKiN3GYSdXSgidW5anLJ1mqRYLbzGL9fzcleIOvusZJ+rxaZZJJkeW0inx+pEIPR5PRiJJtnqU7wS48kc5mXS7a7YXQj0ktKwjiXp26oyadj/JL7X19LQ+rVNzvPH6bDNOfckUQj0kVOvViUDuItH9RWreDY2SXVtCtfOS70q7pxW3Cm2ItKmvky+EekBoWRcreRYnguLtm3Exyq41pPJrNe4M0Hm2T6+dnghXe0xC6IS9vNE1stWXTWTy7JrGRwDAavMHJgJpMsXmr3aV691PIXRCQluR2VXZl1rnGJnX41mdi66jKZZWiBykWxRCJyQ0AIB9vHcay5LsTatXm8RJbHqHDE2kEOpbDKVXuDJnWSvu4vD7SU09fuus/U36VN++I4R6QKj2ylN9SFmYZph+9PaFmwvmsZP8VHL+qQqZSkKoR4QaSSWRY097SFS3du21bdN7tBt6tsyjCqEz12i7niQbqbdOidWVNjIpi3NvYaz9eyH0UQiljorvx1dI0klt+JyTob706rvxhFCPCdVIaUGm8dxhqGaKbL091bU1E8+S5YXQmmxum2Hq+vkiW2z1lVQh1FdCu8bMe8/jcMZJCF1UL0/+qGGCI1jSEyqEekjoUCRqWX6Cb7wVQh+9l3dSNdiceVKLaT0hVGLoAGrab/eNTCF0QTG0VZYXQoVQv4mF/C+QZegfbE0AscHjx28AAAAASUVORK5CYII=",
   "misty": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAFQ0lEQVR42uVaLXSzPBi97ExUViIjI5GVyMhIZCUSiaxEIpHIyEgkEolERkYi6/KJEAZt926jhXb7ck5P/yDk5j6/F4AXGG2eGPyfRpsn5tw1poz5ZsDfnw66U/BJAwAoY24CSgAAQZJ7a13TeybgMuaGsXD8vqeH8XNXidWAv7+Sqfddg6qq0fVAJqT3Z837WO5QHs8AgKqqcSzk6ta3+gWaxAaoQ34NhoWxwT4AAER+tQngzZgO4hRnRoyQyrJbSM/6MwVwxrHcoeu3sy5vTXY7a7WIknR+gBIQUqHrgSQKkYt65sNNws0ty3hZ0GXMTZSkgBL2BxJ9frAS2LF8tpYm4SZgBG2lcMjlKmtcjekdIaAs+veBw8acSgXuA7Nzhv+GTfFeGnSbJ+YSbFtkuNqEAVTXAWelEDDycXylZuc/mvH3NQE7sEGcXoF1I1cnFOz08QOJEDCBtlKQ+sV9+tKXT6XC6ZRegWyra1ZPiqGSMc5VcsX0Gn7tPTqIAQDd2e+OqdPRgnQRm/tAwMho2hcA0eaJq79fP5BNU5UDDtgA1XYKrs7ORQ3uf/wvtd0Iqcfy06wZaN8eOdkhl57UFrDUAAnDK8BaKUQH8pW/emtWi2+PnjATFnh0IOjpEUGSI6AEe3qAVgqiUdix0wx4EoVTllcfb2tMmgnp+YSAkB3SiI+pirIImZAgZAefkBHs1mO1nb2Vry/bSGfuPiHwebJZf/+2GuhO3QQ5/VxVNYIk3xTw6hdyysieHtAMBQpN+LR3fop6s8UFTRlzBJSgly0U3T8N7OZa2JB7DQCTRvypkq+3EWAIzZCFHQAgremmSsmmoBkvDAD4JEIWltBKIa2p3YxBF/N58nd8mvHC+J8ICFlYYs9iQLXouwZaqVV17s1S1pdDtQCs1k1ZtOmtnfWEwb6FVta0p0MrAa3UWJQ4gd8Ct43G2qyvZ94Tedf5tR5660rGAOClETd0PxcOneD/ryDnov/SWn01pjO+g0+svOsYHsCOm+0W3fUwdI+xE2MsRNrDtNr2n1VdeFOwSRSONcAS4Ksw7eruaen5nVLTMe/Ap/XRnqvte3QgsxKXsWv5+CmgLxuN75jrrdwuNBtdQmbWTUSewd3VBADRqEUm/tDozXhhHAtTln86joX0KhmjzPfjXCLPZscsBbxKyqp3JeKCQk+0r8FczQLX8yoZw+cJAkpGlu8B/NBAxsJ4VoykNYWvKAA6Ru17Moxo1F0R++E+Xcbc1Ltylotv5WeXqp7dAD3EvANKUMTdvYz+HtDTaC2zALpN/z5on5C5qScU6NtZc1HEHWQWII347wfd5onZ0wNAPsrNqqoRUQ3dpijibvbwjCsufjXoS5aHktLm2brwLnM1ZRGerZo8JpCRYGwTRZ7NUkpV1VeHvwLbd4Gemm7fNVfPjRwL6XWVeDm2F4PWMjdTMaCqbhf+l/r3n4jeU1Y/+/2S7Web+CLQZcyNVmpsKi6bgaviJclnwJ9t4ouZ9gmBAz5t9z4bolEz/0+i8GnAFzUc3wF5paQI6dE9zOV9aoCbrW7RLma6jLlx+dm9D49JfDm6HqMo+Ez/3lQCzoT0pmY+lYl+Fehc1D9qF28Bz4R8baaPhfSm5rlkwZ8x/tJMP7rgGB6hMr/CvAfGvaX+/d0A+KsD2a2R1tS+Nuy1f5yn08hq0qIEgt19Zp5GHEx/VGqZNXHv5UBbNcTeXO9lf9dCme5xSK0A0WQtXnWY8/k8vuowNHcEINN1/fi6c64fDW/BQuf9Md0vDWaPnGtV0LdSyz2LfORc3x7/AahD6KmhznigAAAAAElFTkSuQmCC",
@@ -5225,6 +5318,7 @@ const SPRITES = {
   "poliwag": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABnUlEQVR42u2YIXeDMBSFLzsTyElkf8IkMhJZiZysREYiI5GTlchKJLKSnzBZOYljInkbLw0ZrDVZcw2nh/AgX+/NCwBRUVFeJRvGTnestaZuAgBPIRNkM6ua0VuoqdKtRCcAGEdetygKAEDf9wiWICNXyhYAkGV7Nkgd9DFNU0Z4OHECjns4ydmiuuESXPKcw2uYE3mrTwCAVpWPQfB5iZzatWyg/CgZKZphXVfOwlSnqdLJl2r5zj1tKyiCAIDLRXsIO304D4Oe4SuMx1K4PETes9MuhKBUTwDQdd0q7wXVSab5enes92wdE+OFX1GUXmJX/wT9PmuzSSn1ffpPXUe8ODtJMAS/PUjklJKGoPGedYEwnjzWipFcKyJnyyYXXoptcktp+5mpNB4qvGSWRJ2mVf7dT1C9mPVIm6gQeiHM88KcV85UXqXZpHe2u9m0Aw/Cg2wdnKWJESJiRHCtx259Zwmnk1DPzPKD0zuU6iXvObyW3OMBw0uxZ8zk2qWQiLzDg8nDEPzTFwFKv2fdiwRv+rby71McFRX1i74AcpK3Y4lQLQIAAAAASUVORK5CYII=",
   "poliwhirl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAAB8klEQVR42u2YIZCDMBBFf28qkJUnKysrkUgksrISWYlERlYiK08ikZGVlScrKytxOZHuld0JB2U6N0Pgu0Aa6MvPzwZg1iymxYDfmDeO9bI+fCZsAGB/vDtvng6rfyHtJWEDAOH+CADQRQoASIu6L+m3en50hJd9O+a7DQAgjmMAQFVVAIAoLYZ63gwh7q+HiSgRbiMnVaQBa0vvf19OAIDz6dDrnfzN4SiKDACsk5KR2Wz3f5JVKrNrILcpU9e1k3TfHPcyJRjZpydTPgOPtJDEiexkd7plVzVGaSA9KaULxdq7vGKebUuJV2uQURNmeauUcpINw5hSgw0kyX/lipFefUbTrdYY2Scx9SC5dZKVRLPM9tda253rXLHrXaT9z2EimmUZI0WEJdk24kSUCEtdywTNXJ/UiaOtPjXNPJUkpeR9OSOFtuPcz0cn6S4vjzqHF64djzxKniZSVBeT5393PH159NOiHfeqm4vUzkAQBMb1Xl7UwwYAksx663a72n98LZ1E21JGtsm7JPKwzH+pIAjYu/pTDxNZUr1OmHcbJ5FBZGlNdInSiTzt1Zmu7xcb4yK+Cg9dZJ05L797UH+67vXXy15nP0qXNpUqcRKWa4HUWDOLmXCTFNUI95vu8vBLa2bShLtIveWZoyM8a5bQD7Y78voX1q1OAAAAAElFTkSuQmCC",
   "poliwrath": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSCAYAAADHLIObAAADoElEQVR42u3cIXfqQBAF4OGdCmR/QuWTyMjISGQlshKJjIxEViKfRCIjkZGVlZXIOJ5YBrLDzu4SEkpy7jU9JNAE+JidXdISIQiCIAiCIAiCDD2TJzqX4wDOUc0fWBqPyCMR0WpXWxurfUlERLs8G4RMiByBSKdEGYfM0HM4/sZzhsgBi7TEJPMlERGlH4UlUMssSa3bRTa1bmvC+665EDl0kVm+s4SVnysiInqdZVES26YvmRA5QJHHZk38zBempm1/vDJjJfLjZLTaW5dme1mWnbwWEPmEIr39G9fEQ2V+lv+MiOl0ao3enFiRLJHlhaRqNdjRp04gciAinfLS1MhJVjvnKMnRRFZVRUREH/nGKywkcV/YsnY7c7z0PU6mQ+gEIp9EpFNeXfvnxllmv9PT1D2aSpksRkrRaqQc3eUorJ2ndpx7ZUJkjyKPMfLylXln86KIEqrJvDdaze1KZKxMiOxBZJTEUE3kUfJy29Ss9dqIqV9nXhFc66Rglicfx9vPqz+L7HReaScSY2VC5LOIZHEclrdcrpzbZV8XEqIJDdVMGTm6y65CEy+7h8b6J0T2JdIrURudYyVqImXt0tK2pkl5Wg2XNb5+m5vjvv319rE8gyrLcgKRjxSpvXNaDQzVxrP0Yh3oU5dRYrUaKI/Xtgvh8BqCXDvgURwi+xYpa6BW8xorzEREtN3aEubzzJppSIks71apmiT+RMg+8tYZGd8vSTPr+cruASL77iM1WVKYZ75+VPabKyvywitLFaJI5d8jRV6kptb+W2tnSCZEdpwXTdZ8nrW9XnESU+NCtfDq/kotfQ+M6prUeyPn3BDZQ418VKJqZagmyq5iszl9S3moovpcrp1cAy/H9c/gGmME5tqjEqn1laH+8qv6sbYvFtlNM6zQ3Pt6f+mVCJEjEOmUGaqNyWzmrIkhmTJan9lWIkSOSKQlk6/UkGJC8ni/tl0bxa/7TXN8/hby1tcIIkck0imT83r61vFWiXI71zptdere1wQiRyjSkpkszOg9/d5aO3n9k2VpNdSxXmqtQnX9GkDk2Ebtc7+4cPeR+80yJIuaNZa/DXQ8rpdA5NDn2iGBHolRtfWO3wORv5mXR0vkv27gHL6/Ov107TdL53H6DkQOsEZaM5er6x9PMhu1rO05ev8OXLuaDCIxand+TlH/kaAvmRA54rk2PUJk1zIhEiLvk9m44hYiIfI5ugOM2giCIAiCIAiCIEgf+Q9GzOkamPg4mAAAAABJRU5ErkJggg==",
+  "primeape": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAClElEQVR42u2aK3erQBSFd++qqIysREZWIpFIZCUSWclPQFZGIiuRyJGRkUhkZGUcV8BJMufOgyFpV285WxUYJl3zzT6PSQCRSCT6Qj04ng0BY3+s/qyJoEbso0y1ga9V+1+SXAXBAQCq/AUAED0/O19wkBwCCQ/fsSN+PcFH+sNHzkfis68BAJso52SM1wHjheAsgv3x6CS525+cE3X1HiYy+6YEAMRZpZEj2Z4byApBG8EHACjrgxZNSW2/WTQxz6P8ujt0AIDyXSdv2wmOqO3Mz+vxICeZJIk2UCkFVzSklbcpLV7v9T8PlkrLSHpVtahxpYhkGn1iIozr+02du6Pr5LXty1a7n+W1/j6P0vGT9n6cVUYv+yotIWiLqj5ywSKCEzlOumD3haAhigbJ5q3FYoRo/rmiSoxig1JqWL0HjdHU5j0b0aWkOUGqeLgXiRyvuChviweJMu3p7hCPK9f3Y37M0kUebZtWr3SyNChKXiqtjXQTQX6lvo36OE7i7I2JMBGkfEbeOJ3GvNfs8lnRs3obd058qYmN4jWzEPRp1xzZnSN7PpJr25F0mqazoqZiO4NOGnhtTNGTrtXaPBhy3qF5j/ISrVyRFjqRbuw6VL/XVrrI9DOfKIqcH+rLf+dxU5cj/WBwZePp1IlkqTotGgaXqlM/eI6qrMtZLcHHUHKXlRu9l+0+NJJ0XSVbzYO+iiN019HZkW83igd9HT7v9G2a6z3Kf8lUm155b9EJtxC0kSTx81MbKSJx9V0EXHn1n3xoiZJC8IZ3BwB4S3VPvrcH32cZvw/kO4HXmoaTdSF4K0GjJxfMre2Ew2nj7O8kit67H8SdfyVBxIiounG+X0/wJ2lgfh4c/haCIpFI9C36CyaiO/gxYKmJAAAAAElFTkSuQmCC",
   "protein": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABVklEQVR42rWVrXLDMBCE15mSFBlaRRE0PCooaBhqGmbYvEELG+hHCA00q6CoYaGMKrMapWEtSDPN1PqJ08kR3eikb1arGylBIBaLxVeo3nVd4qslIehWSpCUznqrFEqlvPCZD1px7oUCAEmJinPvqWaho7ZKXVUDgDtEIgbwxcx3KbUx0c21MdM9XgsG/QP3jWvBvB4nPmguBkgqUNc6qvxF25Hy4OWptkEuBuRiGNVcc1FwVj0CACQVkFSMQOf5ae1FXcEYA6dX6N5A2J0T+EFPoILBWju93YgTbMaRk1uV6c31fZzO02OyvT+O5R7D53BdH4/iBP2b/wvsAKW7h+i2qBUo96OpS6xwgq214Bn3KwYwLN+ng/t6A/PMQJyCiq216OvNNCsOzQpzKqDZ8lf9WZsdmhV6nU73+E2nABpIAKppJj+bSeivWwsWfXx8f19yq8/0G+Y+lI3j8CEsAAAAAElFTkSuQmCC",
   "raichu": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACM0lEQVR42u2YIYyDMBSGXy8nkMiTk5OVSCSycnISiZxETiKRJycrkcjJysnJSeQcJ0oT2rSlMHZZWl6yELKukH79//evAAFXP3w+qr58Wd3vmSQ+toIi0gMAFCQBAICKXjcin6KRNdzOpZDhdyh4IpI2XiVQ5al2UFG3VhLPOwEAgGhHrWTC08jIrZALCZVAksUAAIAxiBV2nW9zLalYF025D7KRyE+xdL+UxJRWvCYirTgtusFesHaCmLC3kghaIz0AQEfxrAnSVN8fGAPJpTR7fFWtbFlLLXrjV7Ln12vDtXWq+H3btlqXM2nTRNp7jaC52rgNe3+vDCdVrB2vIWFNBFdKBpKc6LmQE4Fawg39JdI0/IssM6xAxjNXFPGO70oyJmwRGVGCkCA8ci//+ggad+ipFRYkhKtEWNbGk93f8qKq1tR+5JVG9Hu0lMnsTa6Bd05EhNsl5TKtJMSe1fzNWoLEqY3l9GvKPgMB0UdooR93YdGi3ZIQ6nT6Ek7WitJKJtAW2k5uIie0ccDP4YqFVnpHrZiymb9ZC1xSaENL3vFJKaXcY2YnYdLKjFOZqbMC/zWClI5q3Zu/TSyREdo5p92rrjVLK15rxNrpfw45J5BftINVEmrdH4OL1WzJu4yJoOCISKfx4sRxlEL5Ct9q6f5xqa0P1GQt11OVMFwLOexFJxdR07JFE2jh88JIv2uew/bjJGBysRn/R2bVRsTkbqZakK02IquQ+adn+UvEm/oDdgLgBGRIgj0AAAAASUVORK5CYII=",
   "raticate": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACTUlEQVR42u2ZIYzCMBSG/7sgkMiTSOQkchKJRCInJycnJ5GTSOTkZCUSOYk8eRK3E92/rE23tSRcLqV/QpYB68r73v9eV4CgoKBXqe1e/0KfvkT140kSqLIYALAvhD5WO3PudB/buXpDZOEQAYXEWARvZ/l5dBTGc1cy91sGAFhHxeT1XnpERlAkMoJxacz9OJYRTrfyzfXG7kbRUTzrz1YjY7ze66o1RgbDnJ/N7cZMLD3LoxDCdk4tAIhL0o23MpJ5iz7SuhCgB+ihuq4BAM1lp5A4Ha29NEkmPpTvQ6QFgJ/7SeZyWckIJHuZ+6IyRvDxeAAAlsulck4iunc4HrVap3NZolQvil7xnwhzncoTWX6irblxkFwfqQ2sSDgQmewrXq61jGL12e26XC9laKuzGllGen/syFzVccaqlQOJ8DzSDqsPRTK6Z0hCJ0X1pNjht9rnhQgeMa5+daWpzOGikL9cZPJY3ISRgB55aux7DmTeo48s9L7B3M+76kRPZJmMxA4rq4HnSOkkbFVXd/+rlrKqbJofAMCmW/eTDImgvk56ZIyArUcMXsFwfn3f8nX1u+Avig9la4oAn+R4rNPc6Qb0nKtH6NlD/KVkSujshu8qzytj3iAJRvIivp2q1emqEh3zxlsRsdpv4m5Ln/t5M+kVVsG5alXmBwBAkl+s5hx24xkx5v4pn95y1EnZ9g/bOQaPYObfKt0797qZrE6Dncen5hSIuBLTd2Uodu5BdQpEXi1ldc0+wr4y1qkDkb8i86o5eEMkKChoWr/xQg0R1mq6iAAAAABJRU5ErkJggg==",
@@ -5243,6 +5337,7 @@ const SPRITES = {
   "starmie": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAB60lEQVR42t2YL3DCMBTGv+4mkEgkEjlZWYmsRFYiJyORlZPISmTlZGXkJBJZWVlXRPqNvbe0sDvYNTwDyTVp87vv/QswUYvusEf3gD3xEjKxISIdABR7CwCwtgEA7Iv1XchNltjrNVLZ5kNMFof37j+0GKTGvMROdQkAiOMcANDUTlvzxVw8l+exGHvIj35DUBrrACBJEkFouUjFQ6ul+7W1f2Ou1+ueKo6JuHQ8QWjoeMpHN6LmtFlrvPNVVY3qPRxixlihIW3FwRHYGemFu7wR5DQpzg/tm21j8U3heOXlpPKEJEV7i49q5UKszzbjmmRuDTJXdgCwzT6F99EbC+vGZekC1pdd9UvluCwlwTSV5DQhZoofGSIKhpiK6GY0btH7qCmg6YlBEW2ENnWcG4pv4cUx5jjGKXpfmjpC5XYDAJilmYvgmcuFed0KLdJI8EIa3hyqq43peyXrJVYTQ0ZS3xF9Nuv/tTe9cKja4PtZIYfjlTzRLi+V90FoiqRs217RVOP19mt12qSJRb7uh1UG4w299EJCktLVhq4qmEl07zBUlwWhscjX//HEyTqGL879zgj+ipa5cQVzU8ceVJcU9Vnf2zlXVeXmTToap3RfSc3q/vMpb3v+ercxtPfz31085BYn+E58snYGNRPOkirfK4UAAAAASUVORK5CYII=",
   "staryu": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAABdklEQVR42u2YIXODQBCFH52ISmQkPyGy8iQSiURGRkaejEQiTyKRSGRlfwISicRRATvN7tx1gFQcTNcdR27Cl/feLgmwvUaxDl44C2/wpIKtJLrmAQAoTQ0AuJnmJTLeEPn/IrJOa7VR6dS6SdcTXY5btOIlkXGJsz7Uhbklis7H0wjLhc/mCwDQth3lw7jmQItWFmWZV8nK3EAakEWk8qZj12+KayTRJZacR3VWd/80Ejz/ppXm7kh1zTVg3jmBjBMirbmK3LafZCW35DMJIlA3RGJg68pAEJo+V+rYSoByh7TkpWusPUUpxYgk2WDPDUGsMP10fwRr8koSu5jQRgDo25iRuIbzE90n31ePyR1F73LTwHLGRWK/8wiRwGXSThwWM5H+uBMa6zkyMUkTRKIWJFyuoVw6zsx6zUL2pFITtC+L8mN3RAKpkTxTfN74eYObe0fC1mlWWSc0Vw9zvRH6n6y/3LNqXxLaZa/561r0P4o3RL4BNSCbGcwol/UAAAAASUVORK5CYII=",
   "surge": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAA9CAYAAAAeYmHpAAAGH0lEQVR42t1aL5S6TBS9fOcXiESjkUgkEidOJBInEo1GI5FIJE6cSCQSiUajcdr7Asw4sujqiq7unMORdVicO/f9ue8B8EZDMEb460MwRgaoYIx0t6GmSsndgGdsxL/fYjNNA8TR2nxNaRoAAOJojaZKaZyjYhcBAJVKeR8LGgBGIGi7PeJobf82w2yG2Yilx3+/ad4O0xfn227/N0DfA+S7jfnJ8F4J1vHVWfBnc+p4mlgdUddHLOXXL/Xpuj4C2J+Bi+Pcnh/71p6H4QoA0Pe9499skYD2UtDDghlNgZsRhPGXDQjDEP2xfS+mOec2j0opvbv8+hCglRXCMDwDbEbf9wjDcFHADwcyzjnVdQ1zuBtwje3BzAcWwzCEUD5aWX0BHOfFe6kpzjmZQ2ttDwD0nTjRfUuCMTrIgnTfEgDSWlOzE3SQBR1kQVyUpLWmgyy+vefLzHulNdJk8Evf9wEAWuub/vfYt0iTtTVp3bfAvkPMMztfMo2jKk0gWzTLLJantdZI03SRe7n+XTfLi5OHdlAwRoZtAEg25U33NPp7K9hZwDJgTXADgBXPF9cUD9/IrYLuibABA6VgFnjAxAC4yFE3e2wFw7ZU6KMGANB1Gke1zJq9VwfAgGGsssYio14hTdaWWcN8sikRMCCKfPv9CPwzxIkBGkU+sixDnpeI49GU0SLJFARjKJUy1oNk41ugBngU+WiUJgCesbCf5O9/j5jzLT8aMFCaRuj7HlmWzd+zipAe1kgTgbrZo4ZCBP/smrBLhs/BG6gotsNEvmytfTXHms+r11cRVb2wR7LxqeoFBQwkqohEFZkcTACo2QlqdoIAUMCGA4DN6QdZkGDMXmeufTrTJseaz0FL32Zmrt+WWTdG/IHRZqdtBgiY4/MpUGaD2afJGqVS2IrilON5Bj+M6Z749LBPF8V2lJDnFZCoIjJ+e6qoYrRti6IQ5zq8bRFWQJKVEFVkK6uJG+Hg81PlNV7jbuTi4sTk5BXPUbQHiKpB0R5sNbQV7MdNvDiO0fc9RBXNFh3GGkb5i7rZIwxDxDybLVR+JXoHDFREDHk+mHBcrG8Gb4D2DpNl1iFggJQSnHOUSg2uNWMRi+dpwRgdfH92TkoJAF6y8Uml+dlcvuks8LZtZ80XgI3uVVUhyzK0bWv9v6kGiZtkNTjnkFLiIAtsS3W3MLqL6fHGxDm/dAld6n7meYcaCkUhMPV1A/TG6g4rrcE5h6gaSDXk+GebtyelJLMAh2VwzpEHK+SbzoJ1e2FpGt0MzmUZgJdkNTVVahk2mrzZibuLkkeTOrkMmJLTpJe62dveNa9rm4amTBuTN5HYPTegx3yNaaHiVmO3mvijgezM3PN4NVsSJlltc67L4txwAU9/q1SKmp3AtlTYCjb0z34QzJaop72V1meADdMOYM8VJDfHkBPLt8Sb1zYRSqW870RCwE5A6no4XHa/totnN8hLNuUXgLfW8YuXloIx2gp2BsAsxhQddd2ZmvjLZpxJXXWau1JD009xLFqduJ0Ud/cNaJdFF7zuNvbcj3ZzmnzRdT6jJKPpvQMGKgqBtm2t/p4zbbd2NuMZoJ8hQ71LeXcKeFowdF03GwuOatkFvuyppQE8p8ZsxE8jdN15G3lknt6d6Vkwc0xPI7Tr967Jv1UL+K7O5ySQzamzLCy/RHPj40v69su6oW4X1DYFZ8zdAH9mQHuZT19q3U4DW9WL2cA1pjD6KNAGuPFjw/JcRK96YXtmzxi/887JxKwvAf8zoF22vxvTyB2wD2b6qODleXmR+Ut5eymR8isvz5lInuelfdRzZYOAyLLufSTTBrBrwnNNhWlbaUkp+u8XTHvWN691U5YuOl7JNGGmkzonPd2W0bhB7/n6xS3l5pXW8XWf/tSUZRr0twD5yfOpt09Zz2Lw7QoO48+GbVdwTP3a+PQ93dC3Bm2GC948rbzQIvb+jHk7G+DVdWcBc87dlOZ9uk97U9N2/fsnkf1TxIl9+Pcdk6P/0zPY/g3t/S2IowIkpJvj377v/VCQk1Jiu92Ourxzg57310ADw2tUSPyvvr006P/eCPSsYFka8LsxfabTn7nG/wGXro6fc1lMIwAAAABJRU5ErkJggg==",
+  "tangela": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABoElEQVR42t2YIXrDMAyFX/YNFBb2CIODg4GGhTlC4WBgoI/QIwQGBgYG9giDg4VhHmi1r3qLazcbiCYWV3LrP9KTXGClVmT4hEzfsGDvqD1ZJBYAoGonAEBbbWKxyk/sxr9YQtQ+sc+jAwBs32oAQOcvz2VZqqDdoVfPHLd5LWNEbRB7znWUE59Hr0jFCLHlkjJJTFXPdBrUiXElJqSYEOcSfy6kh2EI5nNMkdrXvcopISVEmESqGtlk/867WXKrJqb0SnLqTIS+yZEJKY5LVWtsP1PKP6v0fX85uXMuS99ihHmdSUsnkd9kh5hUy0FkaxxFd1SgkKyax3IrRo6nklUTm63Ktilnc6uua7Uu5I4DfkXu5o0Uq9exWX1x7r7OTJOeWL13dzsDkxJjUnZ6peRWbGoQkyqVKcF7n6XoqZyyq/xCgnMh1dtSPZX9WOlNzWMBAIa9vu00kV7HBGPz1qPE7eYYz+apk3MVp/xT1Wj/Js6zP08ZP+4GZM32+ga6PFKmieX+7xUA4Pz+ohZPH7tFpP4FsVwLf/kdqyW2WvsCkdrv6toKy8wAAAAASUVORK5CYII=",
   "tauros": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFYAAABWCAYAAABVVmH3AAAEPUlEQVR42u3cL3jyMBAG8ON7Jj6JRCIrkchKZCUSiUQiK5HISiSycnISiURWIpFznSi3NbekSfpvUN5zK21oy4/LXdaNCIFAIBCIJ4vRgK4l7+nanN7nH2xBbKWgbXxQNu7iVdvXqLyPbXyIhdg/k1trXIjtKN6GdkGX85mIiILZrNPxbQGxyLF+OTGKNsrGNN37XnOjcSAWYht3SLXE1j0eYiG2t7WEVtYcIPaFxOYdn5tpfF+plftD7IDFKp/8IV4TEdEqTuQ5tiU5b+meKHWurG8hdkBitUJlfJxPxevp2Sa56yqhVmcGsU8s1kmolBrO5trXs2tGRERx8t5IWov3QptrIfYJxeZERPF6QURE08m00WAsVUZJrm/92Va1oc3VENtRvHUt1SSvqWCOMAyJiOi4KXLyJNr5Cmwqd6STC7FPkGO1UlmmlOoq15Rbf1UTl08plzzXBOqKRY4dlFibXJtQlhgG/5vKtQltKharW32LbfSJmaTWDZa32WyJiGi/3znJlWJlaHJv03VYgtiexeZFj1t0MFG08M2/vYjl6ECu7XprrS1A7BN1XooYa+dkkMfbWSjL9c25dTunphUUxPYltpRrbbNlXu7VpVBTbpOx3J+8JDuvIdyP5/Hl+VzTbd21BYh9iKpgGxc5a254rrRULVBZqsx5LGN9vBERUbIcO50I779aRtrcKuN0f0719PFeKdxWHVTUtxD7qDl2RES0i7eVcjn3Ho6pVpaUyq+v7/ub5HIOZJk8vk1q3bhkFyIiCqZBpzcWYvuuY6WMyyXTSjXFt7z59b5lXOsEmwqVUvuSC7E9iFVyLQfnXFOYciuLdRUhZdqkulYDceT2TWm7roXYHnOs8klJwUEw1Q7Es76tCjCJX+4LgfNwoeR0fj8W6tuZ8TcmeT+3tbYAsX/deflGrstNnGPjbfFsVrxLKuWyoPVipszScXrzWjvIrkXVMZ1MKjstKdaU+9vqwCC27zrWVTnPotGykJpl18qDt4ciVybHouPabSJFEs/iLHc6vt1lkiKTpUq5tnq5644LYh9QrFNVYOq4+AntxHN2/y1TbL+NnXJrXwGxjy6WZ1OuEqRUlvP5Wczap2SpHUfmVqtgg1TbmoHMtXItAWIHVMdW1rc/Yt3k+EplobJzM40fblJ1DWEfVY5f2h917KBzrGs0leqaS03ywk2q1N0/1QuqgtcUy53VbrXQSj18ZOKIcWUOZck2qZqcOqqaV9JjkhdiI4h9VbGje2dV+QyUXIX6WRsg5Wc5m3OYvgk1ZvNROefycxIQ+4JVQaVcliF/F6WROhJrDHlZfAu9v1IdlCpdiH2VzstLiuyAPHKkcvx3rm7vr8Hx7BY6L02YfrflGy0+0Y2qAGKdZmHn2Vj5z8P70+mhbyzEDkCs0qM3zXVBINcOEohFHfuYkT/DtUAsAoFAIBCIIr4AxhIQjtj3ulkAAAAASUVORK5CYII=",
   "thunderstone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABY0lEQVR42p2UoXLDMAyG/+RCxhY4ZtGx0DAXpjSosDSD6VNkcB4s7Bs0NHCwLNRmo2ODHZLPduw0N6HYyn2W9EvKsNGEEPeUzxiT8Xe2FdR8NFH/brdD/9pbaPYINuvZnlvVhn4QEYjIQrOtsBAohPB8RAS1V8i3wlyTUiZ9+X9hRAQA6OoSADBN0xK4BmtV66WptUZXlxi/n+MRrsH6ax+FcWREhOPxCAAo1lRWs4LW2rtzYafLbSFOwdF11w7j74jmqbFRdXUJvJSrfcpt4wFjtTLGAHUadrrcrEBaa6i9gjEmKzg695VpmjAcqkW6ocX8hdsC5/N58cPn14/XyMYYd4YBAPP7bEfPqswwrTWGQ2VhUkqvkUMRwnOeSodhiUmyTT6+jd62ycOaDIdqAYvVSkpphVjU0H2VYTxKsdR4EYQwu75YaVflGIzFS8G8fSiEuKeWqAsKN3QS+GjNPwKx/QHZCb17x262tgAAAABJRU5ErkJggg==",
   "vaporeon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAuCAYAAABXuSs3AAACM0lEQVR42u2ZL5OCUBTFjzsbiEajcSPRaCQaiUQ+gpHIRyASjUYi0Wg0EjcaaWx477h77z7/wKiz+/AUZ8BB5nfOO9yHwEvP1eQP3EM35N7efCbePdidDgCywycAoNm3AIAynsNL4u/XSCzyDQBgt46vke/usY7mYQAAWC6X5rPYiPPZx8xf4r3agM5o3eDUxJLsACDZNE7SzL6XGe8AoCpNxjKz2E+Zq+u6cxHOZgUAILTfm82zQRk/NDtDuCj4e06H/Ms4yUFF9wGkhYPRyjq9ji9ex99WCSpDtI1S5/HQrgXtyK29z7XT9rxxr2YVQYLSxG/V7jurTulsO2YVfzNu+ruqDIEows+prdrKPiUhiueZ/WtPVL1WmvlifBkX2Sb5vDmK7HF6OyftDHteKy/tNJiW4vi1bHuRcZHtPM9N9oJAZFyTpgNNkYhpThMOVTvFSe0kfdxV48l4BwBt24o20fMwtS+2ZoTJE+EM52g6kwaG/N5Od8z0NDS9HqarXr3tVcYnlpzIemHJksyv/lWkqTo1RPUUzevG69K5x+wrf3pcZ52ZnC4i5wV0G6SRfB/C5wJJn3OQu3fvM352OiR57vnY71p0hKT1VEnSx/1G9DezrXfv3j85J7e+N6EDp/awTmjCXBsXZhAh3UqjJn7RAZLirKKfiD3aQrzBGsV02Ncd51vZAaQHZXtUxEUWz83PupfvvM7G1SrOduEOaWi2h2pUxC86gCf9d/pvib/0bH0Bd9X1awIOnZwAAAAASUVORK5CYII=",
@@ -5254,11 +5349,13 @@ const SPRITES = {
   "wartortle": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACdUlEQVR42u1ZK5SrMBC97FlRWVkZWVmJjEQiVyJXIisrK5GVSCQyElmJRCIrK9exIpntm7xsCu17+0mZc3o4EEjLvXPvTFJgjp8bg/n86Hj67ShHnyCPtj8DADZi6bt3ZuDeeP5iTV1j/7EZGACgbI4AgOLQwdLCMBE5hrhDU7MG/pcGmItdGOju1YxTO+EyIBN9zLN0rJs4kW8amice6z7OeShsLQbFQAQAmYwHAJBSAgDSrDZH/mDb6Zwu9/x+CnIxYvJW7dhhu2J4dSDb6jqwWa+9D9I4IV+UtRP5cre96weSBml+283Cc6FryE+NbLfXbiTjm3Kfnne4YTjrgUHn2HlibuqeRr4c9IVTxRCjIA3kcqHdbKdG1Q8bcZo3k7yehM8A+T1pg5Cva+M61QkAIMQGANAfueusF3o8iQUAoDNIb0vtdtT92oyR6/xRgcPthSKDrJeJWlXsPEkSc9Tnr7uWjSuleE6nG8aEXbnnXYmxlfit0ZDnB91mJlnJbzhVTiZsBkgLql843evDfaS/iw1CAwz5cq/fmM77vmUug1XBc95CnLpXWytKtYyJS6zmNbFGLtZ+DYsJcoveQppin2t/3hZu9xKxO7fFamm0gJtyP7w6kKapc63bNM0AAOe+cE5AOU9uc6je2PilMit/1/p3txo9lgY8bxwBwFLkAwAca3dfTq5EWiqKwluZ+9PZ7Fp0kxAPuhJ7V0x23//RI5Wp0/8/u57nOYzm7kI+3DXx1Vi9MCaWQiNqa+Oyn1QzRv51PIQGmBY8czh39OyVHVV4zP/QTNdANGacKreIO3c3O2vgdg1MjeErvvPXMzDHd8c7d6ELlMi0gPEAAAAASUVORK5CYII=",
   "waterstone": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABgElEQVR42o2UrXfCMBTFbzkIcJWtoxIcdUNWFjf+hFrkHGcO5NyY61zl5qiMHK5zrWxc48AVx0RPsoSkH8+0J8n55b73bp6FgTGbze5d+5RSCwDGQyFJUor1+C3TzhJs7pRSy+qCyRDXbb94uz3h+WmNfeyZFXKYDLHt5nu96jAAyKrm8pEJtli8Yz7vhx1ToonprCEHmcIE0xQ+1k0Orm7/kglYkdZi/8Yu7Qp3uzW+jxC1CSJH7IW7phbn87lbYZs63/VAYqassYoJdfNw2p4yj4IAdlgrUBmWfuQAAGfi4kJsOBMXJNtA+FBWlySlApCDW0OuGQCslj72sQdKqTU2pSi6HNa4plMF1DyzXPxzQw96eo+164MBwEhOt5CsJdcwiBwEkQNKc9EEE0w05XA4KaCsKjV13CZFWrfClJTlzi5CIE//D32+ks40jbb5+c3AKgZWMaWLfTV7DIsPA2eizid2qzSQPEhbgdyHgf+F1dJX/Oa73mCQBuwb7UPjD86Z2EXHI+EEAAAAAElFTkSuQmCC",
   "weepinbell": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAABy0lEQVR42u2YIXCDMBiFH7uJSiQSiaysRCIrJysnK5FIJLKyEolERk5OIpGVSBwTJD3+LAEy6O6a8gxHyEH47uUlf4BNj5XzD9/o1vz220ZYIpueQgBA4O/Iw2NS/mkMT0f43cCDjgnZIol0RBfJKsIdAJzLDwBAFuVTpIlnl3rVasKE7FzPhiElW9Uthu2MsW4N0k9NuAOA6EJndxblOg+SFay4er1nTzfSKY1dAMCBYUsJviK53IPNrBc0de/1omgJ6Tt53i76uX6+yMtPuZcg3tURLj9LJVlZgug9h490D+H6uWkud3YRnlKbq71qqhHShGhanQEAcZDZu1tbVXJO64halcMOTwEjL8uqKpoOQbBTkt3HHr/2KeP5ZnPBippOSXoqHXbeldx/s55gnDaErE460iIdxFitSAniaSF5vyt798Cr4rbt7/chz9k0WnXAVuWwQ6rgiZVNkJU9PFe3+ka8LHvXypMfUquJykHOV10O/5rtE2kxqGxGx2Yf4ebS//kxvyhJzyUrizFmMpYXIHzfE3DScxUfaH5HabLoJMjK82ElaZ2+6krZvpSs1YSVlUEZJ6OdB0RXIfsShEeJr/xuewhverR+AD3YrMlMxumVAAAAAElFTkSuQmCC",
+  "weezing": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAC6UlEQVR42u2aLZCjQBCFO1snIk8iIyMjI5GRkchI5MmVK5ErIyORkUgkMjJyZeTJOE5M+sJ09TDdHGyuim6TgmEYwjfv9fwAMLNYvKrhc5m13eN9Vn7Ls7zNjfCPV5FNd1tyHr6F+JtpeCLNhciGoq4aVTvS5zMNazWHb/JVrit9PiM8VHPSN/zsCb4b03pa7ZpLj52HKQGq3VhQcoL82/ZlmFDPMZeW5mGp+/Zc1yrb9K4/Hu9e4eVau/Ofu0H/yQgrIkSul1CeL0FTD4libNYpSxzPd+5vGh46W2oBAPJfFQAA3G71Q8NF20fmL+FHvQ4R7340KNFQeag90/BQwvvsHQAAkiQVkQhFWTq3XW/eRfehmqVxOLjf5ZLXshHWkqYurCVCSWdZ5ZHCQGL3u2vvdOp/uJBbm0sLRla9ZGN5M6ZhDCSIpENksT4G9hBzaUpYu3IQi88i9bRH8ywlT/MpHkuJYj0baVHCitXEFgCgqd2bPJ15rVIyqD0aWI6EKDnaA7C8qiqvvjQLzDcPSwnjSkeS5AAA8PVx9Ms3h97610vBunFo9oPXh9yX9oi6rj3thrKN5eFYbFNHJH385pC444sTVbJa8fUe2tvtHJmPletR5dW/DmdfPxNX/vvWsESxp3RWPhaSbDM/wnTVT7BO3HbfcE00Cl83tqGiaTyXRdLrDe+uOAtDwtge1bY2bLak2CPy8vLTZbfsmJqSoW5NNYyEQ+5OI6Tl2bv0P8+HcYx82C/5EdX5HhiRNWx5LG+HesS5LET/yfKwdk0rpl1KFKDxrn/6vE8sFlTrADL3Ng0L3Dq0Lg2ca8d6ALorXQWle0d0Ps3sLS2MsCYPS0dczL3Y/VyqecZVY7uM7RCi5tLSC5G4YI1LuoOvHdmN8s2HEY7Nnob6BO4udshC37xVQNwIjzKWHvsLu6m/uTTCWpce681qv+eaKkzDY0ds5Ebz/FTaNQ2/KrTfShrh/03DU+VzI2zBxx9JkM5cvOw0QAAAAABJRU5ErkJggg==",
   "wigglytuff": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACBUlEQVR42u2ZLXeDMBSGX3YmkJOTlZWVyMjIysnJSSQSiaycnKysjIxEViIn9xNwTKThkFsChI9zeppcFw4QuE/e+5FEmG4NGUd4IHvBk1jkSkRKAQBgjG9NxmkFPA2R1wf6FoNAXdcAgDiOg0YGPXb9PhkXD18pfZdrdGu6BKh1iESBSJ/nRPoJAHjfH3rJ1PJiepQdbXM13ft5rkgLIZxIeB21IgDgpx9DK+n50ktCmyaon6MelhfyXCn8zuyz88hfde29Tj1MtWTTRnbYAQCq6jfUWosyMWMMAHD6OE56SEc3rZ3iqgiIPB2LckEjkzL8fr8z1rqNDI1ubd64kdDj0I/MJWLLGzbPas/b7pdSLtKtv7VWKs8q2iBeNDHVVE8VHYgMGmOs6Vantpoog+orrrJUnmbJIEGdyQORqX/fkrBEnbu1f4s+IivUuMiMMSVJa6u5ZPzJ7G18T5QnOedGJ0f7CK0JTUKPbdpYy7yKWr27HJpMm7lpNEv4YOdnI+K9RmYTGTVLntEdZE/nuIiMf0T0LnySsIck41WHGKkMz53IlKXKPznpBLeycGLlanleGOOxXZcQtcZI0H2oPM+cJnqrqkn3hczuqpH76lisQiR0iEv+fogUJWQj0SGwyrcEImOE9C79Xae50dzhxMpGgp7Dt5pYuLcbNLJWFNt4rucj8g8w6uIO5KDIsAAAAABJRU5ErkJggg==",
   "wise-glasses": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAA+ElEQVR42uWUobLCMBBFT5h+SJCvso7KyPcbT/IrtZGVSCxyZWQlyLeO/kVQyaQMFCg47kxmMpPk7ObuJvDVMnOL1tqY5qpqnoVWj2BLVM3BUnavBqnmYIs9/TQwZ+paB4AEWQwqk1sB9Lse2gbXupf9s9ZGa21MiWXoHvjZbO4eSGMOJkGydbn666bhBNTrGiCWtiQJksGudUiQCWzi6cF7frdbAI7/xwmo3/UA/HlPCjGex5uwDFVVI10XCcOkA8rrJntOYcjFvAdUVVOlSbra9eb9lT3PtN2qjFBuVlUjQTh4/94zvSXpOggD43n8zC/17m/1pboACuyF32GgGHAAAAAASUVORK5CYII=",
   "xattack": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACH0lEQVR42pWUIWzbQBiFv2QFJpUaMKkHJvnAQCptUiINJKBSDQZclrAFFBh60sDMGjDgoXZsZUtZxhq2QENHKohZAs9g0pmZGlTqQNRLnDRZc+zu3n337t3dX2GPZtv242o/TdPKuqayD6wfBKWx8Pp6A1zdB+aenZkxz/dRcUQ/CErOq3vBRr9xc43n+4tJIQFK0OpLYerHLUoViH5o5nXYx8317gxX7Q+dLvV2i1GRUZ8q2oNro4u9ACktAMY1YTI9WIcNnS5SWliisRCPbtFa4/25M7p8cEe93WIeT1DZnE6nwajIyhnatv3o1WpESYRSBYVOAOj9+onvXyLbDmhF7AU7M6/scqa0xvcvqblN8vGUZhgQez2UKlDZHKe10EaTBOfqivb5+dKhyuYAG86aYUA+nppM24PhhqsnWJqmlVcAR0dH3+TDA5/je0j/8v7NIQ8Z1NwmF+IdzTDg4u1rxMkHTg8OiZKI7sdTokmC/PLVwIDlpUghiDuuOfLNzXd8LkvOYm+ptUQD5+pTCQZQsW37MfZ6AFiiQc1tLm5yJTNLNJjHE6Ikwuu4JsP+bLbxn02Gq7DlW+sxGI1NrlIIM/ccbOtPycfTDYiUFvK4TjRJdj6b6jpoFfa0eDAaG43SeifwAECpAkl551UngzzHUYXp96K7Z49betjhycnWXZXWSCGQx/WdsFJx2Abtz2b8r0pvrTbrJf4lgPX2D6zdEXkMaJhdAAAAAElFTkSuQmCC",
   "xspeed": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACGElEQVR42pWUL2zbQBSHP2cBAQWGO+aAglRapVoaOTbDG1tBQWBYR8NmMOCgBSbMGQt0oaHHzOKgJaDSZlRXGjEIMLuBOa6df2tOMri7d9/97vm9n8EZw7IsXZ+naWrsxhjnwIau21gbe95R8H9hE9/XP5+e9MT39cT3tdZa/9JaT3xf7yp/Nex+sdD3i4Wuj+0FW2jrNc/8oBSjKCJfr5nadrX/OUlY3dw0zrQOQbaf9DzeKsWPMARg3u9Xcf35vHFu6LpYlqXbuzDpeZi9Ho4QAHwPQ1ZJQjSdVnFBlvHJcXiIIvKiwFGK5/LSVqMklCKOY/L1mijLAJgMBoxdF6fb5fcBZQfL5pSysetiC0GSZQylRAUB+XpNXhRYZf7S5ZJvSvFRyheFeVEA7CkbSklSrknPI7y93VO1haVparwBME3z65+LCx5HIx43G9qXl3QAWwje3d0xlJK2UqjrazbdLnEc814p0uWSL7ZdwQCqn3Jl21iDQfXkoecxLjujUhYEVawjBD0hGjAAw7IsrcpARwjsEljPmSMED1FEHMeowaDK4crz9tquymEdth0qCAhnsyqvV7WiPgQ72ilJlu1BzF4Ps9MhXS5Plk1rF1SHbQ+Hs9mLsiQ5CWwD/wp5Z6OhJAzJpaymsesetax2mqYGrquvdryumUxFXhSYnQ6E4Un/M+qtdwi6Kk30lEsfdexDRnmuG/8FSyI1TLjeLF8AAAAASUVORK5CYII=",
-  "zapdos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAEzElEQVR42u2cIXirMBDHr++bQFZWVlZWIpGVk5WVk8hKZCXyycrKSSSysnKyElmJ44lwvOWWkAQYhPbO7CsNLMAv//7vEgDg+NVYKLZVFm04LOMPX4KJLnB5j6C8R0h0xZeKCZ7nBU7iPSTxvg/JLz0CmOAJXITkJmodhmCdu7qKCgAgisT+ee68PxPMMeAFbnEV7DKYYD81WKnFp3Ql3EV6AYPGShqM8QJaXDHBI8ab6w7HuBAk3iKr0ZHnuZLkZyWXui4m2AOCF/Udke5QtF3VJBdUi6sn1VhdlbE1X2CCRyTYqQ7caPHB7R96QLprvVuXkVplukzw2Br87Y4oCUMfjARnZ7F9d9AS6pWGKki0ak9HIJ43Xg/O5DzK5EzaIn1PyUZXQTM3nQ8eIbNzreq1+nYkF8NUZWSCJ/DBSt+Ln3V3VucqJszgXDNIK3KvVzFSo/3FauQxwRNosHRH6/m4htDdoV2TMLBd9hmKz+/X1o4MqMW2VbyqbaTR83Illwn2oBaxAABI0kslCI6UvvcXM61BXIWOXPxtMY1IJDe/dvv/TPCEBLe6CvqrGoZFr440GVKt2cHy5EqyyTVI/cd+AxTK86GBMziuI4sJntBFWJFgcg/NdoOLoO2D5cm2j1Z+lxKa/BXkJh/ttQRX18AEe6jBVprcNWZEbtVFBZhgDwlWa+65H7mo0UPNeND+2JKL7ehIyS97Hemt/WSCfSeY1hoomSZyO2R2TvVa6ndN0RD+sddpMmvw3AmWqmwmMk1kU3/8v1399yG+N9WjdeTaam+Li2Af/JSZHP6qYpXpmKyH7VlNrqlqp9fczqT2IpYJnpuLGJpY6q+HJhc1eax1ykywhxqs1OKmHrwMO2mrayaI+7u6A4uaAxP8khrczGzs+mmridgfGVd3l8Aa/OoaLGnxaS9ndvGpUGZUWZYJIne7Vg0ekNhJV9ozwXMhuLy9SxvTUyBIPgs0g0B8LstSIlhHbo/agVfPhjDBvvtgLbnHUvocys2M6yhMJPumtUzw3An+um0AAGCz/ZIa4fYsuw9Csq9aywTPiGCl9lINPl4EaeiPQ3Vz1Syu0l10eOMKE8wEO7gGJFZxbGlFDF1foJszo2QrNHiS2gITPEOCleQG28+u5CiJ7rryhq64VzzBybWIVyVYIlehtUORIa13MBF8rQfOaiP6c87vSteheCpoEqKZ4AkIlsjtobVW5J6Tg7QRiaQkU3Jp6EhuIXrBBD9BvFmQu+hCpi3xxVcpkXmI1rVbuCvbHzZr5f66Gsa3lvBd68d64woTPIIGD0punorjJJ8P6kuV63uzdCmIix/KzE3ng3cr8T3WnXF/09ze2G8eZILHIriHS6gAAG63myAqjiUyaeZHyaUuhT61pJvZ+JHRkZHgSzWOCfagFuGUieG6B5xFbsjU1zI6PQWv01hK8tRve2WCZ0Cwrf+1dSvK2gSdu2uez6uJvebyQcJayqcmmQkeMZMbZTRQ0nTHwUwrPEet5DbrLsJS8t/ZR4Z7ABk5o74zkwmeEcFOPtl2RNCn+hst3Qhis0IQGoIgOnlfKl0MtgcI2EWwi+jnLnpljLqaBpIbxe3uhF0EE+xdSCSnaQoAANvt1otzZIKZ4MEySSaYg8M5/gE9iXtRTh6EEQAAAABJRU5ErkJggg=="
+  "zapdos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAEzElEQVR42u2cIXirMBDHr++bQFZWVlZWIpGVk5WVk8hKZCXyycrKSSSysnKyElmJ44lwvOWWkAQYhPbO7CsNLMAv//7vEgDg+NVYKLZVFm04LOMPX4KJLnB5j6C8R0h0xZeKCZ7nBU7iPSTxvg/JLz0CmOAJXITkJmodhmCdu7qKCgAgisT+ee68PxPMMeAFbnEV7DKYYD81WKnFp3Ql3EV6AYPGShqM8QJaXDHBI8ab6w7HuBAk3iKr0ZHnuZLkZyWXui4m2AOCF/Udke5QtF3VJBdUi6sn1VhdlbE1X2CCRyTYqQ7caPHB7R96QLprvVuXkVplukzw2Br87Y4oCUMfjARnZ7F9d9AS6pWGKki0ak9HIJ43Xg/O5DzK5EzaIn1PyUZXQTM3nQ8eIbNzreq1+nYkF8NUZWSCJ/DBSt+Ln3V3VucqJszgXDNIK3KvVzFSo/3FauQxwRNosHRH6/m4htDdoV2TMLBd9hmKz+/X1o4MqMW2VbyqbaTR83Illwn2oBaxAABI0kslCI6UvvcXM61BXIWOXPxtMY1IJDe/dvv/TPCEBLe6CvqrGoZFr440GVKt2cHy5EqyyTVI/cd+AxTK86GBMziuI4sJntBFWJFgcg/NdoOLoO2D5cm2j1Z+lxKa/BXkJh/ttQRX18AEe6jBVprcNWZEbtVFBZhgDwlWa+65H7mo0UPNeND+2JKL7ehIyS97Hemt/WSCfSeY1hoomSZyO2R2TvVa6ndN0RD+sddpMmvw3AmWqmwmMk1kU3/8v1399yG+N9WjdeTaam+Li2Af/JSZHP6qYpXpmKyH7VlNrqlqp9fczqT2IpYJnpuLGJpY6q+HJhc1eax1ykywhxqs1OKmHrwMO2mrayaI+7u6A4uaAxP8khrczGzs+mmridgfGVd3l8Aa/OoaLGnxaS9ndvGpUGZUWZYJIne7Vg0ekNhJV9ozwXMhuLy9SxvTUyBIPgs0g0B8LstSIlhHbo/agVfPhjDBvvtgLbnHUvocys2M6yhMJPumtUzw3An+um0AAGCz/ZIa4fYsuw9Csq9aywTPiGCl9lINPl4EaeiPQ3Vz1Syu0l10eOMKE8wEO7gGJFZxbGlFDF1foJszo2QrNHiS2gITPEOCleQG28+u5CiJ7rryhq64VzzBybWIVyVYIlehtUORIa13MBF8rQfOaiP6c87vSteheCpoEqKZ4AkIlsjtobVW5J6Tg7QRiaQkU3Jp6EhuIXrBBD9BvFmQu+hCpi3xxVcpkXmI1rVbuCvbHzZr5f66Gsa3lvBd68d64woTPIIGD0punorjJJ8P6kuV63uzdCmIix/KzE3ng3cr8T3WnXF/09ze2G8eZILHIriHS6gAAG63myAqjiUyaeZHyaUuhT61pJvZ+JHRkZHgSzWOCfagFuGUieG6B5xFbsjU1zI6PQWv01hK8tRve2WCZ0Cwrf+1dSvK2gSdu2uez6uJvebyQcJayqcmmQkeMZMbZTRQ0nTHwUwrPEet5DbrLsJS8t/ZR4Z7ABk5o74zkwmeEcFOPtl2RNCn+hst3Qhis0IQGoIgOnlfKl0MtgcI2EWwi+jnLnpljLqaBpIbxe3uhF0EE+xdSCSnaQoAANvt1otzZIKZ4MEySSaYg8M5/gE9iXtRTh6EEQAAAABJRU5ErkJggg==",
+  "zubat": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAABmklEQVR42u2YLXuDMBSFb/ZMIPcTKpGVlcjIysnKSiQyEomsrJysjIxEIiv7EypxqQiXZ6Q3ga7sIxlXQQJteDnnJAEgkGKfjrWn79frJRSidwPlogIuKiSsF6IP1qvdsG8Tc2CoghS5nkmzeoJPIiT6DaUBAPYnRXYettmktAmGKHMRyLJs0KiUct3jTQb8nTQXAABwaRrvgKTIyf8JUqNeLaU5rakuc2G1XpP3nStBtmO6HJI2rhxlYyRdZFBzWO/XZHAujgWpzT6nu3pLzZsoL7VXq+FpFJ/YpTWbYK/R+gwAANfuvKo/JrkcSWIVqw1JNlyNtq1xH+d8cEGSbUnSSKpVJ/L6MXcjwT5vdxug0gS1GuTMRM5IUsoBaZuYq5CkrcUxd7tmvPjmertcWgTL/X2u7kqXJv/JerQsTQ4WBZ2fmALofnQ1poBNHAmim6PdM7GpK3MkJ7ghKWTjJehx9Ze+H0RB1LuCx1SYQHKWLy9REX10nz6LJoMlOvf+XT/RHwfRZaB/yfXPpgRbXP9D6bCYaRlokHUDxkmZIDNZN6MAAAAASUVORK5CYII="
 };
 
 /* Bump on every publish: testers quote this in bug reports, and the
@@ -5267,7 +5364,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'2.7.1', date:'Sep 28, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'3.1.2', date:'Sep 29, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -5952,8 +6049,8 @@ function popupHtml(u){
     <div class="poprole r-${roleOf(u.id)}"><b>${ROLES[roleOf(u.id)].icon} ${esc(ROLES[roleOf(u.id)].name)} · ${esc(ROLES[roleOf(u.id)].trait)}</b>
       <p>${esc(ROLES[roleOf(u.id)].text())}</p></div>
     <div class="popmu">
-      ${t.weak ? `<span class="bad">weak to ${t.weak} ×2</span>` : ''}
-      ${t.resist ? `<span class="good">resists ${t.resist} ×½</span>` : ''}
+      ${t.weak.length ? `<span class="bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}
+      ${t.resist.length ? `<span class="good">resists ${t.resist.join(', ')} ×½</span>` : ''}
     </div>
     ${evoLineHtml(u.id)}</div>`;
 }
@@ -6013,8 +6110,8 @@ function heldUnit(){
 /* ---------------- inspector ---------------------------------------- *//* ---------------- inspector ---------------------------------------- */
 function matchupHtml(type){
   const t = TYPES[type]; if(!t) return '';
-  return (t.weak ? `<span class="mu bad">weak to ${t.weak} ×2</span>` : '')
-       + (t.resist ? `<span class="mu good">resists ${t.resist} ×½</span>` : '');
+  return (t.weak.length ? `<span class="mu bad">weak to ${t.weak.join(', ')} ×2</span>` : '')
+       + (t.resist.length ? `<span class="mu good">resists ${t.resist.join(', ')} ×½</span>` : '');
 }
 
 /** The pokémon's whole evolution line, with the current stage marked. */
@@ -6649,7 +6746,8 @@ try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change'
 const ARENA_X = { p:[38, 24, 10], e:[62, 76, 90] };   // by rank: front, middle, back (% across)
 const ARENA_Y = [60, 87];                              // the two files, where the feet are (% down)
 // how each card type's attacks look in flight
-const FX_OF = { Fire:'fire', Water:'water', Lightning:'elec', Grass:'grass', Psychic:'psy', Fighting:'fight', Colorless:'slash' };
+const FX_OF = { Fire:'fire', Water:'water', Electric:'elec', Grass:'grass', Psychic:'psy', Fighting:'fight', Normal:'slash',
+  Ice:'water', Poison:'grass', Ghost:'psy', Dragon:'fire', Bug:'grass', Rock:'fight', Ground:'fight', Flying:'slash' };   // 3.0.0: the new types borrow the nearest effect
 // a gym's floor takes the colour of its speciality (Gen 1 type names)
 const GEN1_COL = { Rock:'#b8a038', Ground:'#d8b460', Water:'#5a8ff0', Electric:'#f0c830', Grass:'#62b85a',
   Poison:'#a45ab8', Psychic:'#f06090', Fire:'#f07830', Ice:'#88d0e0', Fighting:'#c04830', Ghost:'#6a5a9a', Dragon:'#7050e8' };
@@ -7366,7 +7464,7 @@ function openNewRun(onStart){
   const cur = mainRun();
   const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
   const pick = { mono: null, nopc: false, rich: false, onelife: false };
-  const types = Object.keys(TYPES);
+  const types = MONO_TYPES;
   const d = modal(`<h3>New run</h3>
     ${live ? `<p class="warn">This ends your current run (turn ${cur.turn} · ${cur.badges} badge${cur.badges === 1 ? '' : 's'}).</p>` : ''}
     <h4>Rules <span class="dim">optional</span></h4>
@@ -8010,6 +8108,46 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'3.1.2', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Art for Koffing and Golbat, so every new pokémon has its sprite', items:[
+    'Koffing and Golbat now have their pixel art instead of a two-letter placeholder. All the 3.1.0 pokémon are drawn.' ] },
+  { v:'3.1.1', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Art for Zubat, Weezing, Mankey, Primeape and Hitmonchan', items:[
+    'Zubat, Weezing, Mankey, Primeape and Hitmonchan now have their pixel art instead of a two-letter placeholder.',
+    'Golbat and Koffing are still waiting for art.' ] },
+  { v:'3.1.0', date:'Sep 29, 2026', title:'Minor gameplay changes', sub:'Jynx, Mankey, Hitmonchan, Zubat and Koffing lines join, and Poison is now a type', items:[
+    'Poison is the 15th type: strong against Grass, weak to Ground and Psychic, and it resists Grass, Fighting, Poison and Bug. Grass, Bug and Fighting now also fall short against it (×½).',
+    'Zubat → Golbat (Poison Support): a fast drainer that heals itself and confuses with Supersonic. Koffing → Weezing (Poison Tank): a wall that poisons with Smog, Sludge and Poison Gas.',
+    'Mankey → Primeape (Fighting Bruiser): a fast triple-striker that turns into a Rage machine. Hitmonchan (Fighting Bruiser, Tier 5): Comet Punch, and it bulks up before the first hit.',
+    'Jynx (Ice Support, Tier 4): Ice Punch and Lovely Kiss. It is the first pokémon of the Ice type.',
+    'With four lines Fighting is a Mono type again. Koga now leads with Weezing, and the new pokémon join the Elite Four and gym pools they fit (Bruno, Lorelei, Sabrina, Agatha, Lance). The Mono factors were re-measured.',
+    'Art for Zubat, Golbat, Koffing, Weezing, Mankey, Primeape and Hitmonchan is still to come, so they show a two-letter placeholder for now.' ] },
+  { v:'3.0.0', date:'Sep 29, 2026', title:'Major gameplay update', sub:'The real Gen 1 type chart: 14 types, one main type per pokémon, and weaknesses that finally make sense', items:[
+    'The old six-type ring is gone. Every pokémon now has its real main Gen 1 type (Bulbasaur is Grass, Onix is Rock, Dragonite is Dragon, Gengar is Ghost) and the matchups follow the real games.',
+    'One type each: pokémon with two types use their first one, and Normal/Flying pokémon (the Pidgey line and friends) count as Flying. Types can now be weak to, or resist, several types at once.',
+    'The chart is the modern one without Dark, Steel and Fairy. Where the games make a type immune (Ghost vs Normal, Ground vs Electric, and so on) this game makes it resist instead, so an attack never does nothing.',
+    'Electric replaces Lightning, and Electric types are the ones immune to paralysis. The Help page now has the full chart.',
+    'Mono runs are now Normal, Fire, Water, Electric, Grass and Bug: the types with at least three pokémon lines to build a team from. Mono-Fighting, Mono-Psychic and the old Mono-Lightning are gone, and a Mono-Water run no longer meets Articuno (it is Ice now).',
+    'Everything was re-measured for the new chart: the Elite Four and Champion, Rich & Ruthless, No PC, One Life and every Mono type. Brock was made easier, since Rock takes so much from Water, Grass, Fighting and Ground.',
+    'Boss descriptions were updated to the new types. Lorelei’s team is icy Water pokémon (Water types in this game), and your rival picks his starter to counter your party’s main type.' ] },
+  { v:'2.11.0', date:'Sep 29, 2026', title:'Balance patch', sub:'Gym leaders are about 15% tougher, and every run rule was re-tuned to match', items:[
+    'All eight gym leaders are tougher: Brock about 3% and the rest about 15% more powerful. They were much easier than the Elite Four, so the badges now ask a bit more of your team.',
+    'The Elite Four and Champion are unchanged.',
+    'Rich & Ruthless, No PC, One Life and every Mono type were re-measured against the new gyms, so each run rule is still about as hard as the others.' ] },
+  { v:'2.10.1', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Gym leader and Elite Four descriptions now match the pokémon they actually field', items:[
+    'Every gym leader and Elite Four description was rewritten to match their real team. Erika’s no longer mentions Leech Seed (it’s gone), and each one now says who leads.',
+    'Koga’s hint now points you at Fire, since his team is Poison and Bug pokémon, and Agatha’s and Lorelei’s describe their signature leads.' ] },
+  { v:'2.10.0', date:'Sep 29, 2026', title:'Minor gameplay changes', sub:'Lorelei fields only Ice pokémon and Koga trades his Ghosts for Bug pokémon, so no two leaders share a bench', items:[
+    'Lorelei used to draw on exactly the same pokémon as Misty. She now fields only her Ice team: Seel and Dewgong, Shellder and Cloyster, and Lapras, with Water bodyguards from outside it.',
+    'Koga now draws on Poison and Bug pokémon (the Bulbasaur, Oddish, Bellsprout, Caterpie and Paras lines, plus Scyther) and no longer fields Ghosts, so the Gastly line belongs to Agatha.',
+    'The Balance Sheet has a new section listing every gym leader, Elite Four member and the Champion with the pokémon they can field, their signature lead and which benches overlap.',
+    'The Elite Four and Champion are a hair harder (about 0.4%), Rich & Ruthless a touch easier, and Mono-Fighting and Mono-Lightning were re-tuned, so each run rule stays about as hard as the others.' ] },
+  { v:'2.9.0', date:'Sep 29, 2026', title:'Minor gameplay changes', sub:'Every gym leader and Elite Four member now leads with their signature pokémon', items:[
+    'Each gym leader and Elite Four member has a signature pokémon that leads their team: Brock’s Onix, Misty’s Starmie (Poliwag early on), Lt. Surge’s Raichu, Erika’s Vileplume, Koga’s Victreebel, Sabrina’s Alakazam, Blaine’s Arcanine, Giovanni’s Rhydon, Lorelei’s Lapras, Bruno’s Machamp, Agatha’s Gengar and Lance’s Dragonite.',
+    'If their signature pokémon is too advanced for that point in the run, they lead with the earlier form of it or the next name on their list, so Brock doesn’t open with a Golem.',
+    'Rich & Ruthless, Mono-Lightning and Mono-Psychic were re-tuned so each run rule is still about as hard as the others.' ] },
+  { v:'2.8.0', date:'Sep 29, 2026', title:'Minor gameplay changes', sub:'Tangela joins as a Tier 3 Grass Tank', items:[
+    'New: Tangela, a Tier 3 Grass Tank. Bind hits hard from the front rank, and every 3rd action Stun Spore paralyses a random enemy. It doesn’t evolve.',
+    'Grass now has a tank at Tier 3 to go with its Cannons (Exeggcute, Bellsprout) and Bruisers (Paras).',
+    'The Elite Four and Champion are a hair easier (about 0.3%) and Rich & Ruthless a hair harder, so every run rule stays about as tough as the others.' ] },
   { v:'2.7.1', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Real artwork for Paras, Parasect, Exeggcute, Exeggutor, Bellsprout, Weepinbell, Victreebel and the Leaf Stone', items:[
     'The two-letter placeholders are gone: Paras, Parasect, Exeggcute, Exeggutor, Bellsprout, Weepinbell and Victreebel now have their own pictures.',
     'The Leaf Stone has real artwork too, instead of the recoloured Water Stone.' ] },
@@ -8536,11 +8674,10 @@ function openVersus(){
 }
 
 function typeRingHtml(){
-  const ring = ['Grass','Fire','Water','Lightning','Fighting','Psychic'];
-  return `<div class="ring">` + ring.map((t,i) =>
-    `<span class="chip" style="background:${TYPES[t].color}">${t}</span>` +
-    (i < ring.length-1 ? '<span class="arr">→</span>' : '<span class="arr">↺</span>')
-  ).join('') + `</div>`;
+  /* 3.0.0: the real Gen 1 types — each row is a type with what it is weak to and resists. */
+  const chips = l => l.length ? l.map(t => `<span class="chip" style="background:${TYPES[t].color}">${t}</span>`).join('') : '<span class="dim">nothing</span>';
+  return `<div class="tchart">` + Object.keys(TYPES).map(t => `<div class="trow"><span class="chip big" style="background:${TYPES[t].color}">${t}</span>
+    <div><i class="bad">weak to</i> ${chips(TYPES[t].weak)}</div><div><i class="good">resists</i> ${chips(TYPES[t].resist)}</div></div>`).join('') + `</div>`;
 }
 
 function openHelp(){
@@ -8569,7 +8706,7 @@ function openHelp(){
       ${Object.keys(TUNING.status).map(k => { const S = TUNING.status[k]; return `<span><b>${S.icon} ${esc(S.name)}</b> — ${esc({
         brn:`loses ${Math.round(S.dotPct*100)}% of its HP every round and its attacks deal ${Math.round(S.atkCut*100)}% less, for ${S.rounds} rounds. Fire types can't be burned.`,
         psn:`loses ${Math.round(S.dotPct*100)}% of its HP every round for ${S.rounds} rounds. Poison types can't be poisoned.`,
-        par:`acts ${Math.round((1 - 1/S.slow)*100)}% less often for ${S.rounds} rounds. Lightning types can't be paralysed.`,
+        par:`acts ${Math.round((1 - 1/S.slow)*100)}% less often for ${S.rounds} rounds. Electric types can't be paralysed.`,
         slp:`skips its next ${S.actions} actions.`,
         cnf:`for ${S.actions} actions, ${Math.round(S.selfHit*100)}% chance to hit itself instead.`,
         fln:`skips its next action.` }[k])}</span>`; }).join('')}
@@ -8615,10 +8752,11 @@ function openHelp(){
     stacking one stat — a pokémon that acts constantly and hits for nothing loses to a balanced one.</p>
 
     <h4>Types</h4>
-    <p>Each type is <b>weak</b> to the next one round the ring (×2 damage taken) and <b>resists</b> the one
-    before it (×½). Read the arrows as "is weak to":</p>
+    <p>Every pokémon has one type, its main Gen 1 type (a Normal/Flying pokémon counts as Flying). A type
+    is <b>weak</b> to some types (×2 damage taken) and <b>resists</b> others (×½), like in the games without
+    Dark, Steel and Fairy. Where the games make a type immune, this game just resists (×½), so an attack never does
+    nothing.</p>
     ${typeRingHtml()}
-    <p style="margin-top:8px">Colorless resists nothing and is weak to Fighting.</p>
 
     <h4>Levelling and evolution</h4>
     <p>Three copies of the same pokémon make it <b>level 2</b>, six make it <b>level 3</b> — and levelling up

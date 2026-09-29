@@ -1,9 +1,9 @@
-/* PokéBattler 2.7.1 — service worker for the home-screen app.
+/* PokéBattler 3.1.2 — service worker for the home-screen app.
    The game page is fetched fresh whenever there's a connection (so a new
    version shows up the next time the app is opened) and served from the cache
    when there isn't. Icons and the manifest come from the cache; the fonts are
    cached the first time they load, so the app looks the same offline. */
-const VERSION = '2.7.1';
+const VERSION = '3.1.2';
 const CACHE = 'pokebattler-' + VERSION;
 const FONTS = 'pokebattler-fonts';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
