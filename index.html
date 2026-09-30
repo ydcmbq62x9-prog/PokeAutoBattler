@@ -1947,7 +1947,7 @@ const TUNING = {
      prices on purpose: Sean wants the Elite Four harder, with the reference
      clear rate in the low 70s (was 77–78%). Scale these to move it: against the
      v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
-  gauntletRatio:  [0.4198, 0.476, 0.4509, 0.4459, 0.5318],   // 3.0.0 x0.991 net (real type chart, re-measured; Brock eased); v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt); 2.8.0 x0.997 (Tangela); 2.10.0 x1.004 (Lorelei's Ice pool, Koga's Bug pool); 2.11.0 gyms tougher (see their calib)
+  gauntletRatio: [0.3896, 0.4419, 0.4186, 0.414, 0.4936],   // 3.2.0 x1.012 (stat pass, new pools); 3.0.0 x0.991 net (real type chart, re-measured; Brock eased); v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt); 2.8.0 x0.997 (Tangela); 2.10.0 x1.004 (Lorelei's Ice pool, Koga's Bug pool); 2.11.0 gyms tougher (see their calib)
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -2058,8 +2058,8 @@ const TUNING = {
   /* Mono-type scales opponents per type, measured so each type clears ~50% for
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
-  mods: { richIncome: 2, richFoes: 1.247, nopcFoes: 0.972, onelifeFoes: 0.99,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:0.98, Fire:0.934, Water:0.838, Electric:1.051, Grass:0.803, Bug:1.01, Fighting:0.928 } },   // 3.0.0: real types; 3.1.0: re-measured with the five new lines (only types with 3+ lines get a Mono run)
+  mods: { richIncome: 2, richFoes: 1.309, nopcFoes: 1.024, onelifeFoes: 1.014,     // 3.0.0: re-measured for the real type chart
+          monoFoes: { Normal:1.028, Fire:0.93, Water:0.886, Electric:0.946, Grass:0.748, Bug:0.949, Fighting:0.979 } },   // 3.5.0: re-measured after the counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
   legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
@@ -2264,45 +2264,45 @@ const tierFor = G => Math.max(
 const GYMS = [
   { id:'brock',    name:'Brock',        title:'Pewter Gym',     theme:['Rock'],
     signature:['onix', 'geodude'],
-    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.38 },
-  { id:'misty',    name:'Misty',        title:'Cerulean Gym',   theme:['Water'],
+    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.199 },
+  { id:'misty',    name:'Misty',        title:'Cerulean Gym',   theme:['Water'], exclude:['seel', 'dewgong', 'shellder', 'cloyster', 'lapras'],   // 3.2.0: the icy Waters are Lorelei's
     signature:['starmie', 'staryu', 'poliwag', 'squirtle'],
-    badge:'Cascade', blurb:'The deepest bench in the game, and Starmie leads. Electric and Grass are your friends.'  , calib:1.69 },
+    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.862 },
   { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  theme:['Electric'],
     signature:['raichu', 'pikachu'],
-    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.67 },
-  { id:'erika',    name:'Erika',        title:'Celadon Gym',    theme:['Grass','Bug'],
+    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.923 },
+  { id:'erika',    name:'Erika',        title:'Celadon Gym',    theme:['Grass'], exclude:['Bug'],   // 3.2.0: the Bugs are Koga's
     signature:['vileplume', 'gloom', 'oddish'],
-    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:1.86 },
-  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Poison','Bug'], exclude:['Ghost'],
-    signature:['weezing', 'koffing', 'victreebel', 'weepinbell', 'bellsprout'],
-    badge:'Soul',    blurb:'Weezing leads poison and bugs that wear you down with gas. Fire and Psychic help.'  , calib:1.9 },
+    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.22 },
+  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Bug'], also:['koffing', 'weezing'], exclude:['Ghost'],   // 3.2.0: Bugs plus the gas clouds (Erika keeps the Grasses)
+    signature:['weezing', 'koffing', 'scyther'],
+    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.105 },
   { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    theme:['Psychic'],
     signature:['alakazam', 'abra'],
-    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.8 },
+    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:2.014 },
   { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   theme:['Fire'],
     signature:['arcanine', 'growlithe'],
-    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.73 },
-  { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   theme:['Ground','Normal'],
+    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.968 },
+  { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   theme:['Ground','Normal'], exclude:['geodude', 'graveler', 'golem', 'onix'],   // 3.2.0: the walls are Brock's
     signature:['rhydon', 'rhyhorn'],
-    badge:'Earth',   blurb:'Muscle, not tricks: big Normal, Rock and Ground bodies, Rhydon in front. A stat check.'  , calib:1.54 },
+    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:1.957 },
 ];
 const ELITE_FOUR = [
-  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice'], also:['seel','shellder'],
-    signature:['lapras', 'dewgong', 'seel'],
-    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:1.86 },
-  { id:'bruno',   name:'Bruno',   title:'Elite Four', theme:['Fighting','Rock'],
-    signature:['machamp', 'machop'],
-    blurb:'Machamp leads raw Fighting and Rock muscle. Psychic is the lever.'  , calib:1.65 },
-  { id:'agatha',  name:'Agatha',  title:'Elite Four', theme:['Ghost','Poison'],
-    signature:['gengar', 'haunter', 'gastly'],
-    blurb:'Gengar leads ghosts and poison that hit hard and fall fast. Whoever moves first wins.'  , calib:1.88 },
-  { id:'lance',   name:'Lance',   title:'Elite Four', theme:['Dragon','Flying'],
-    signature:['dragonite', 'dragonair', 'dratini'],
-    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.87 },
+  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice'], also:['seel','shellder','vaporeon'],   // 3.3.0: + Vaporeon, so the finals are five deep
+    signature:['lapras', 'dewgong', 'cloyster'],
+    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.289 },
+  { id:'bruno',   name:'Bruno',   title:'Elite Four', theme:['Fighting'], also:['onix'],   // 3.2.0: Mankey and Hitmonchan join; only Onix keeps his Rock
+    signature:['machamp', 'primeape', 'hitmonlee'],
+    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.798 },
+  { id:'agatha',  name:'Agatha',  title:'Elite Four', theme:['Ghost'], also:['zubat', 'golbat', 'drowzee', 'hypno', 'weezing', 'victreebel'],   // 3.2.0: ghosts, bats and Dream Eaters; 3.3.0: + the poison cloud and the pitcher
+    signature:['gengar', 'hypno', 'golbat'],
+    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.593 },
+  { id:'lance',   name:'Lance',   title:'Elite Four', theme:['Dragon','Flying'], exclude:['Poison', 'Bug'],   // 3.2.0: bats and bugs belong to Agatha and Koga
+    signature:['dragonite', 'gyarados', 'charizard'],
+    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.674 },
 ];
 const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
-  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.37 };
+  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.346 };
 
 /* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
@@ -2320,7 +2320,7 @@ function themePool(themeOrBoss){
   if(!theme) return all;
   const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
-    if(boss && boss.exclude && boss.exclude.some(t => types(k).includes(t))) return false;
+    if(boss && boss.exclude && boss.exclude.some(t => t === k || types(k).includes(t))) return false;   // 3.2.0: an entry can also be a species id
     return theme.some(t => types(k).includes(t)) || !!(boss && boss.also && boss.also.includes(k));
   });
 }
@@ -2592,6 +2592,23 @@ const M = {
     text:l=>`No damage. ${who === 'team' ? 'Your whole team gets' : who === 'hurt' ? 'Your most-hurt pokémon gets' : 'Gets'} a barrier worth ${sfp(f,l)} of ${who === 'team' ? 'each one’s' : 'its'} HP that soaks up hits.`,
     fn:(u,B,l)=>{ const ts = who === 'team' ? B.teams[u.side].filter(x=>!x.dead) : [who === 'hurt' ? (B.mostHurt(u) || u) : u];
       for(const t of ts) B.barrier(t, Math.max(1, Math.round(t.maxHp * sf(f,l)))); } }),
+  /* 3.3.0: shatters the target's barrier, then hits — the answer to Iron Defense and Reflect */
+  breaker: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage and shatters the target's barrier first, so nothing is soaked.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return;
+      if(t.shield > 0){ B.log(`${u.nm} broke ${t.nm}'s barrier!`); t.shield = 0; }
+      B.hit(u,t,pw(p,l)); } }),
+  /* 3.4.0: more answers, like Brick Break. Each one hits, then takes away something the target was counting on. */
+  haze: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage and wipes the target's Attack gains, Focus and stacked blocking.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l));
+      if(t.dead) return;
+      if(t.atk > t.atk0 || t.focus || t.reduce){ t.atk = Math.min(t.atk, t.atk0); t.focus = 0; t.reduce = 0; B.log(`${u.nm} cleared ${t.nm}'s boosts!`); B.fx(t,'hit'); } } }),
+  disable: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage and seals the target's second move for the rest of the battle.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l));
+      if(t.dead || t.sealed) return; const m2 = move2Of(t);
+      if(m2){ t.sealed = true; B.log(`${u.nm} sealed ${t.nm}'s ${m2.name}!`); B.fx(t,'hit'); } } }),
+  knock: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage and knocks the target's held item away for the rest of the battle.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l));
+      if(!t.dead && t.held){ B.log(`${u.nm} knocked off ${t.nm}'s ${(heldOf(t) || {}).name || 'item'}!`); t.held = null; t.itemReduce = 0; t.itemCut = 0; B.fx(t,'hit'); } } }),
   /* its next hit lands harder */
   focus: (name, f) => ({ name, text:l=>`No damage. Its next hit deals +${sfp(f,l)}.`,
     fn:(u,B,l)=>{ u.focus = Math.max(u.focus || 0, sf(f,l)); B.fx(u,'buff'); B.log(`${u.nm} is getting pumped!`); } }),
@@ -2651,15 +2668,15 @@ const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:
    =================================================================== */
 /* 2.5.0: the starter lines swapped jobs — Bulbasaur's is a Tank now, Squirtle's a
    Bruiser. [hp, atk, spd] for the base, middle and final form of each. */
-const BULB   = { b:[18, 12, 29], i:[28, 21, 39], v:[46, 39, 52] };
+const BULB   = { b:[18, 12, 29], i:[28, 21, 39], v:[56, 41, 52] };   // 3.2.0: Venusaur +4 HP, +2 Attack; 3.4.0: +6 HP
 const PARAS  = { b:[26, 25, 32], e:[54, 64, 46] };    // 2.6.0
-const TANGELA = [58, 36, 38];   // 2.8.0
+const TANGELA = [70, 44, 38];   // 2.8.0; 3.4.0: sturdier and it hits harder from the front
 const MANKEY = { b:[16, 24, 44], e:[32, 45, 58] };   // 3.1.0
-const ZUBAT  = { b:[18, 18, 48], e:[46, 42, 62] };
-const KOFF   = { b:[26, 16, 26], e:[46, 26, 32] };
+const ZUBAT  = { b:[18, 18, 48], e:[50, 42, 62] };
+const KOFF   = { b:[26, 16, 26], e:[50, 30, 32] };
 const BELL   = { b:[16, 26, 32], m:[28, 46, 44], e:[42, 64, 52] };   // 2.6.1
 const EGG    = { b:[22, 32, 36], e:[52, 76, 54] };
-const SQUIRT = { b:[16, 12, 30], w:[26, 24, 40], l:[42, 42, 53] };
+const SQUIRT = { b:[16, 12, 30], w:[26, 24, 40], l:[42, 46, 53] };   // 3.2.0: Blastoise +4 Attack
 const JOLT_TB = 0.5; const JOLT_N = 3;   // Jolteon's Thunderbolt: the front rank's share; the ranks behind take half (M.all)
 const SPECIES = {
 
@@ -2668,7 +2685,7 @@ const SPECIES = {
                 evo:{into:'metapod', by:'level'},    move:M.slow('String Shot', 1, 5) },
   metapod:    { name:'Metapod',    type:'Bug', gen1:'Bug', tier:1, role:'tank', hp:32, atk:12,  spd:20, token:true,
                 evo:{into:'butterfree', by:'level'}, move:M.guard('Harden', 5, 1) },
-  butterfree: { name:'Butterfree', type:'Bug', gen1:'Bug/Flying', tier:1, role:'support', hp:30, atk:30, spd:47, token:true,
+  butterfree: { name:'Butterfree', type:'Bug', gen1:'Bug/Flying', tier:1, role:'support', hp:34, atk:34, spd:47, token:true,
                 move:M.hush('Silver Wind', 0.5, 6) },
 
   bulbasaur:  { name:'Bulbasaur',  type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.b[0], atk:BULB.b[1],  spd:BULB.b[2],
@@ -2676,13 +2693,13 @@ const SPECIES = {
   ivysaur:    { name:'Ivysaur',    type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.i[0], atk:BULB.i[1],  spd:BULB.i[2], token:true,
                 evo:{into:'venusaur', by:'level'},   move:M.drain('Mega Drain', 1.2, 0.5) },
   venusaur:   { name:'Venusaur',   type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.v[0], atk:BULB.v[1], spd:BULB.v[2], token:true,
-                move:M.drain('Giga Drain', 1.35, 0.6) },
+                move:M.drain('Giga Drain', 1.8, 1.0) },   // 3.4.0: a full-lifesteal Giga Drain
 
   charmander: { name:'Charmander', type:'Fire', gen1:'Fire',  tier:1, role:'cannon', hp:14, atk:15,  spd:43,
                 evo:{into:'charmeleon', by:'level'}, move:M.hit('Ember', 1.3) },
   charmeleon: { name:'Charmeleon', type:'Fire', gen1:'Fire',  tier:1, role:'cannon', hp:24, atk:27,  spd:53, token:true,
                 evo:{into:'charizard', by:'level'},  move:M.hit('Flamethrower', 1.5) },
-  charizard:  { name:'Charizard',  type:'Fire', gen1:'Fire/Flying',  tier:1, role:'cannon', hp:40, atk:48, spd:67, token:true,
+  charizard:  { name:'Charizard',  type:'Fire', gen1:'Fire/Flying',  tier:1, role:'cannon', hp:44, atk:51, spd:67, token:true,
                 move:M.charge('Fire Blast', 2.1, 'Slash', 1.0) },
 
   squirtle:   { name:'Squirtle',   type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.b[0], atk:SQUIRT.b[1],  spd:SQUIRT.b[2],
@@ -2690,13 +2707,13 @@ const SPECIES = {
   wartortle:  { name:'Wartortle',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.w[0], atk:SQUIRT.w[1],  spd:SQUIRT.w[2], token:true,
                 evo:{into:'blastoise', by:'level'},  move:M.hit('Water Gun', 1.2) },
   blastoise:  { name:'Blastoise',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.l[0], atk:SQUIRT.l[1], spd:SQUIRT.l[2], token:true,
-                move:M.charge('Hydro Pump', 2.1, 'Water Gun', 1.1) },
+                move:M.all('Surf', 0.9) },   // 3.3.0: Blastoise floods the whole field instead of charging one Hydro Pump
 
   pidgey:     { name:'Pidgey',     type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:12, atk:12,  spd:37,
                 evo:{into:'pidgeotto', by:'level'},  move:M.two('Gust', 0.7) },
   pidgeotto:  { name:'Pidgeotto',  type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:22, atk:24,  spd:47, token:true,
                 evo:{into:'pidgeot', by:'level'},    move:M.two('Wing Attack', 0.9) },
-  pidgeot:    { name:'Pidgeot',    type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:34, atk:39, spd:61, token:true,
+  pidgeot:    { name:'Pidgeot',    type:'Flying', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:34, atk:34, spd:56, token:true,
                 move:M.two('Sky Attack', 1.2) },
 
   rattata:    { name:'Rattata',    type:'Normal', gen1:'Normal', tier:1, role:'cannon', hp:12, atk:18,  spd:48,
@@ -2709,8 +2726,8 @@ const SPECIES = {
                 evo:{into:'graveler', by:'level'},   move:M.wall('Rock Throw', 1.0, 1.7) },
   graveler:   { name:'Graveler',   type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:34, atk:27,  spd:23, token:true,
                 evo:{into:'golem', by:'level'},      move:M.wall('Rock Slide', 1.1, 1.8) },
-  golem:      { name:'Golem',      type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:50, atk:42, spd:30, token:true,
-                move:M.wall('Earthquake', 1.2, 2.0) },
+  golem:      { name:'Golem',      type:'Rock', gen1:'Rock/Ground', tier:2, role:'tank', hp:56, atk:48, spd:30, token:true,
+                move:M.wall('Earthquake', 1.3, 2.2) },
 
   machop:     { name:'Machop',     type:'Fighting', gen1:'Fighting', tier:2, role:'bruiser', hp:18, atk:21,  spd:23,
                 evo:{into:'machoke', by:'level'},    move:M.hit('Karate Chop', 1.4) },
@@ -2723,12 +2740,12 @@ const SPECIES = {
                 evo:{into:'poliwhirl', by:'level'},  move:M.slow('Bubble', 1.0, 9) },
   poliwhirl:  { name:'Poliwhirl',  type:'Water', gen1:'Water', tier:2, role:'bruiser', hp:28, atk:24,  spd:60, token:true,
                 evo:{into:'poliwrath', by:'level'},  move:M.multi('Doubleslap', 0.75, 2) },
-  poliwrath:  { name:'Poliwrath',  type:'Water', gen1:'Water/Fighting', tier:2, role:'bruiser', hp:46, atk:45, spd:47, token:true,
+  poliwrath:  { name:'Poliwrath',  type:'Water', gen1:'Water/Fighting', tier:2, role:'bruiser', hp:50, atk:50, spd:48, token:true,
                 move:M.multi('Double Kick', 1.0, 2) },
 
   magikarp:   { name:'Magikarp',   type:'Water', gen1:'Water', tier:2, role:'bruiser', hp:12, atk:6,  spd:53,
                 evo:{into:'gyarados', by:'level'},   move:M.grow('Splash', 3) },
-  gyarados:   { name:'Gyarados',   type:'Water', gen1:'Water/Flying', tier:2, role:'bruiser', hp:42, atk:51, spd:54, token:true,
+  gyarados:   { name:'Gyarados',   type:'Water', gen1:'Water/Flying', tier:2, role:'bruiser', hp:52, atk:58, spd:58, token:true,
                 move:M.charge('Hydro Pump', 2.2, 'Bite', 1.0) },
 
   pikachu:    { name:'Pikachu',    type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:14, atk:18,  spd:60,
@@ -2748,35 +2765,35 @@ const SPECIES = {
                 evo:{into:'kadabra', by:'level'},    move:M.fast('Confusion', 1.0) },
   kadabra:    { name:'Kadabra',    type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:20, atk:33, spd:70, token:true,
                 evo:{into:'alakazam', by:'level'},   move:M.fast('Confusion', 1.1) },
-  alakazam:   { name:'Alakazam',   type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:26, atk:48, spd:80, token:true,
+  alakazam:   { name:'Alakazam',   type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:28, atk:37, spd:70, token:true,
                 move:M.fast('Psychic', 1.2) },
 
   gastly:     { name:'Gastly',     type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:12, atk:27,  spd:53,
                 evo:{into:'haunter', by:'level'},    move:M.trueHit('Night Shade', 1.0) },
   haunter:    { name:'Haunter',    type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:20, atk:36, spd:63, token:true,
                 evo:{into:'gengar', by:'level'},     move:M.trueHit('Lick', 1.2) },
-  gengar:     { name:'Gengar',     type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:30, atk:48, spd:73, token:true,
+  gengar:     { name:'Gengar',     type:'Ghost', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:30, atk:44, spd:70, token:true,
                 move:M.pierce('Shadow Ball', 1.35) },
 
   magnemite:  { name:'Magnemite',  type:'Electric', gen1:'Electric', tier:3, role:'tank', hp:18, atk:21,  spd:30,
                 evo:{into:'magneton', by:'level'},   move:M.guard('Barrier', 4, 1) },
-  magneton:   { name:'Magneton',   type:'Electric', gen1:'Electric', tier:3, role:'tank', hp:30, atk:36, spd:47, token:true,
+  magneton:   { name:'Magneton',   type:'Electric', gen1:'Electric', tier:3, role:'tank', hp:34, atk:38, spd:47, token:true,
                 move:M.wall('Flash Cannon', 1.1, 1.8) },
 
   growlithe:  { name:'Growlithe',  type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:22, atk:24,  spd:40,
                 evo:{into:'arcanine', by:'stone', stone:'firestone'},
                 move:M.recoil('Flame Wheel', 1.6, 3) },
-  arcanine:   { name:'Arcanine',   type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:38, atk:42, spd:63, token:true,
+  arcanine:   { name:'Arcanine',   type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:38, atk:40, spd:60, token:true,
                 move:M.hit('Flamethrower', 1.7) },
 
   staryu:     { name:'Staryu',     type:'Water', gen1:'Water', tier:3, role:'cannon', hp:20, atk:21,  spd:57,
                 evo:{into:'starmie', by:'stone', stone:'waterstone'},
                 move:M.pierce('Swift', 1.15) },
-  starmie:    { name:'Starmie',    type:'Water', gen1:'Water/Psychic', tier:3, role:'cannon', hp:30, atk:39, spd:77, token:true,
+  starmie:    { name:'Starmie',    type:'Water', gen1:'Water/Psychic', tier:3, role:'cannon', hp:32, atk:31, spd:68, token:true,
                 move:M.pierce('Swift', 1.5) },
 
-  onix:       { name:'Onix',       type:'Rock', gen1:'Rock/Ground', tier:3, role:'tank', hp:40, atk:18, spd:47,
-                move:M.wall('Rock Throw', 1.0, 1.7) },
+  onix:       { name:'Onix',       type:'Rock', gen1:'Rock/Ground', tier:3, role:'tank', hp:48, atk:22, spd:47,
+                move:M.wall('Rock Throw', 1.1, 1.9) },
 
   /* ============ TIER 4 ============ */
   seel:       { name:'Seel',       type:'Water', gen1:'Water', tier:4, role:'support', hp:30, atk:21,  spd:30,
@@ -2786,7 +2803,7 @@ const SPECIES = {
 
   drowzee:    { name:'Drowzee',    type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:24, atk:24,  spd:28,
                 evo:{into:'hypno', by:'level'},      move:M.mend('Dream Eater', 1.1, 0.08) },
-  hypno:      { name:'Hypno',      type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:36, atk:39, spd:45, token:true,
+  hypno:      { name:'Hypno',      type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:46, atk:50, spd:46, token:true,
                 move:M.mend('Dream Eater', 1.4, 0.12) },
 
   dratini:    { name:'Dratini',    type:'Dragon', gen1:'Dragon', tier:4, role:'bruiser', hp:20, atk:21,  spd:33,
@@ -2800,11 +2817,11 @@ const SPECIES = {
                 move:M.ramp('Fury Cutter', 1.2, 12) },
 
   /* ============ TIER 5 — no evolutions, strong as they are ====== */
-  hitmonlee:  { name:'Hitmonlee',  type:'Fighting', gen1:'Fighting', tier:5, role:'cannon', hp:24, atk:36, spd:58,
+  hitmonlee:  { name:'Hitmonlee',  type:'Fighting', gen1:'Fighting', tier:5, role:'cannon', hp:26, atk:35, spd:54,
                 move:M.recoil('Hi Jump Kick', 1.9, 4) },
-  lapras:     { name:'Lapras',     type:'Water', gen1:'Water/Ice', tier:5, role:'support', hp:46, atk:33, spd:40,
+  lapras:     { name:'Lapras',     type:'Water', gen1:'Water/Ice', tier:5, role:'support', hp:50, atk:35, spd:45,
                 move:M.rally('Ice Beam', 1.3, 0.1) },
-  electabuzz: { name:'Electabuzz', type:'Electric', gen1:'Electric', tier:5, role:'cannon', hp:26, atk:33, spd:70,
+  electabuzz: { name:'Electabuzz', type:'Electric', gen1:'Electric', tier:5, role:'cannon', hp:28, atk:31, spd:66,
                 move:M.hit('Thunder Punch', 1.5) },
   tauros:     { name:'Tauros',     type:'Normal', gen1:'Normal', tier:5, role:'bruiser', hp:38, atk:42, spd:73,
                 move:M.hit('Take Down', 1.5) },
@@ -2815,19 +2832,19 @@ const SPECIES = {
      real depth, and each gym leader who had them in Gen 1 now fields them. */
   jigglypuff: { name:'Jigglypuff', type:'Normal', gen1:'Normal', tier:1, role:'support', hp:22, atk:9, spd:20,
                 evo:{into:'wigglytuff', by:'stone', stone:'moonstone'}, move:M.hit('Pound', 0.9) },
-  wigglytuff: { name:'Wigglytuff', type:'Normal', gen1:'Normal', tier:1, role:'support', hp:44, atk:24, spd:38, token:true,
+  wigglytuff: { name:'Wigglytuff', type:'Normal', gen1:'Normal', tier:1, role:'support', hp:56, atk:38, spd:42, token:true,
                 move:M.hush('Hyper Voice', 0.55, 7) },
 
   oddish:     { name:'Oddish',     type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:18, atk:15, spd:28,
                 evo:{into:'gloom', by:'level'},      move:M.mend('Heal Pulse', 1.0, 0.07) },
   gloom:      { name:'Gloom',      type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:28, atk:24, spd:36, token:true,
                 evo:{into:'vileplume', by:'level'},  move:M.mend('Floral Healing', 1.1, 0.09) },
-  vileplume:  { name:'Vileplume',  type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:40, atk:36, spd:46, token:true,
+  vileplume:  { name:'Vileplume',  type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:48, atk:44, spd:46, token:true,
                 move:M.mend('Petal Dance', 1.3, 0.12) },
 
   voltorb:    { name:'Voltorb',    type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:16, atk:15, spd:63,
                 evo:{into:'electrode', by:'level'},  move:M.hit('Sonic Boom', 1.3) },
-  electrode:  { name:'Electrode',  type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:30, spd:84, token:true,
+  electrode:  { name:'Electrode',  type:'Electric', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:22, spd:72, token:true,
                 move:M.charge('Explosion', 1.8, 'Tackle', 0.9) },
 
   clefairy:   { name:'Clefairy',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
@@ -2837,20 +2854,20 @@ const SPECIES = {
 
   shellder:   { name:'Shellder',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:26, atk:18, spd:33,
                 evo:{into:'cloyster', by:'stone', stone:'waterstone'}, move:M.guard('Withdraw', 5, 1) },
-  cloyster:   { name:'Cloyster',   type:'Water', gen1:'Water/Ice', tier:3, role:'tank', hp:44, atk:36, spd:52, token:true,
-                move:M.wall('Spike Cannon', 1.0, 1.8) },
+  cloyster:   { name:'Cloyster',   type:'Water', gen1:'Water/Ice', tier:3, role:'tank', hp:50, atk:44, spd:52, token:true,
+                move:M.wall('Spike Cannon', 1.2, 2.2) },
 
   rhyhorn:    { name:'Rhyhorn',    type:'Ground', gen1:'Ground/Rock', tier:4, role:'tank', hp:32, atk:27, spd:20,
                 evo:{into:'rhydon', by:'level'},     move:M.wall('Horn Attack', 1.0, 1.7) },
   rhydon:     { name:'Rhydon',     type:'Ground', gen1:'Ground/Rock', tier:4, role:'tank', hp:54, atk:48, spd:30, token:true,
-                move:M.wall('Horn Drill', 1.2, 2.0) },
+                move:M.wall('Horn Drill', 1.3, 2.2) },
 
   chansey:    { name:'Chansey',    type:'Normal', gen1:'Normal', tier:5, role:'tank', hp:64, atk:12, spd:40,   // v35: a Tank that supports — huge HP, heals and shields
                 move:M.mend('Softboiled', 0.6, 0.25) },
 
   /* ============ TIER 6 ============ */
-  snorlax:    { name:'Snorlax',    type:'Normal', gen1:'Normal', tier:6, role:'tank', hp:62, atk:33, spd:20,
-                move:M.wall('Body Slam', 1.2, 1.7) },
+  snorlax:    { name:'Snorlax',    type:'Normal', gen1:'Normal', tier:6, role:'tank', hp:72, atk:42, spd:26,
+                move:M.wall('Body Slam', 1.4, 2.1) },
   /* ============ LEGENDARIES (2.1.0) ============
      Encounter only. A legendary has NO tier and NEVER levels up — no copies,
      no Rare Candy, no evolution. It pays for that up front with a higher base
@@ -2873,7 +2890,7 @@ const SPECIES = {
                 move:M.rally('Helping Hand', 0.8, 0.05) },
   vaporeon:   { name:'Vaporeon',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:56, atk:33, spd:46, token:true,
                 move:M.wall('Waterfall', 1.0, 1.7) },
-  jolteon:    { name:'Jolteon',    type:'Electric', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:38, spd:72, token:true,
+  jolteon:    { name:'Jolteon',    type:'Electric', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:28, spd:64, token:true,
                 move:M.multi('Pin Missile', 0.6, 3) },
   flareon:    { name:'Flareon',    type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:42, atk:48, spd:60, token:true,
                 move:M.ramp('Rage', 1.5, 12) },
@@ -2902,7 +2919,7 @@ const SPECIES = {
 
   /* 2.8.0 — Tangela (Sean): the Grass Tank at Tier 3, a single stage like Onix. */
   tangela:    { name:'Tangela',    type:'Grass', gen1:'Grass', tier:3, role:'tank', hp:TANGELA[0], atk:TANGELA[1], spd:TANGELA[2],
-                move:M.wall('Bind', 1.1, 1.8) },
+                move:M.wall('Bind', 1.4, 2.3) },
 
   /* 3.1.0 — five new lines (Sean): the Poison type arrives with Zubat and Koffing, Fighting gets Mankey and
      Hitmonchan, and Jynx is the first (and only) Ice pokémon. */
@@ -2915,12 +2932,12 @@ const SPECIES = {
   zubat:      { name:'Zubat',      type:'Poison', gen1:'Poison/Flying', tier:2, role:'support', hp:ZUBAT.b[0], atk:ZUBAT.b[1], spd:ZUBAT.b[2],
                 evo:{into:'golbat', by:'level'},       move:M.drain('Leech Life', 1.0, 0.5) },
   golbat:     { name:'Golbat',     type:'Poison', gen1:'Poison/Flying', tier:2, role:'support', hp:ZUBAT.e[0], atk:ZUBAT.e[1], spd:ZUBAT.e[2], token:true,
-                move:M.drain('Leech Life', 1.35, 0.5) },
+                move:M.drain('Leech Life', 1.5, 0.6) },
   koffing:    { name:'Koffing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.b[0], atk:KOFF.b[1], spd:KOFF.b[2],
                 evo:{into:'weezing', by:'level'},      move:M.afflict('Smog', 0.7, 'psn', 0.5, 'front') },
   weezing:    { name:'Weezing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.e[0], atk:KOFF.e[1], spd:KOFF.e[2], token:true,
                 move:M.afflict('Sludge', 1.0, 'psn', 0.6, 'front') },
-  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:44, atk:40, spd:58,
+  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:50, atk:47, spd:58,
                 move:M.hit('Ice Punch', 1.9) },
 };
 
@@ -2956,13 +2973,13 @@ const MOVE2 = {
   // ---- tier 2
   geodude:    on('low',   M.shield('Defense Curl', 0.25, 'self')),
   graveler:   on('low',   M.shield('Defense Curl', 0.3, 'self')),
-  golem:      on('low',   M.shield('Defense Curl', 0.35, 'self')),
+  golem:      on('open',  M.shield('Defense Curl', 0.5, 'self'), { free:true }),   // 3.3.0: curls up before the first hit, not after
   machop:     on('open',  M.focus('Focus Energy', 0.3), { free:true }),
   machoke:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
   machamp:    on('open',  M.focus('Focus Energy', 0.5), { free:true }),
   poliwag:    on('every', M.afflict('Hypnosis', 0, 'slp', 0.6, 'front'), { n:3 }),
   poliwhirl:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.7, 'front'), { n:3 }),
-  poliwrath:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
+  poliwrath:  on('every', M.breaker('Brick Break', 1.5), { n:3 }),   // 3.3.0
   magikarp:   on('every', M.hit('Tackle', 0.7), { n:3 }),
   gyarados:   on('open',  M.trueHit('Dragon Rage', 1.1)),
   pikachu:    on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
@@ -2977,7 +2994,7 @@ const MOVE2 = {
   // ---- tier 3
   abra:       on('low',   M.teleport('Teleport')),
   kadabra:    on('low',   M.teleport('Teleport')),
-  alakazam:   on('every', M.afflict('Psybeam', 1.3, 'cnf', 0.3, 'random'), { n:3 }),   // v33: Cannons don't heal
+  alakazam:   on('every', M.disable('Disable', 1.2), { n:3 }),   // 3.4.0: seals a second move   // v33: Cannons don't heal
   gastly:     on('every', M.afflict('Dark Void', 0, 'slp', 0.6, 'random'), { n:3 }),
   haunter:    on('every', M.afflict('Dark Void', 0, 'slp', 0.7, 'random'), { n:3 }),
   gengar:     on('every', M.afflict('Dark Void', 0, 'slp', 0.8, 'random'), { n:3 }),
@@ -2986,12 +3003,12 @@ const MOVE2 = {
   growlithe:  on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.5, 'front'), { n:3 }),
   arcanine:   on('open',  M.hit('Extreme Speed', 1.2), { priority:true }),
   staryu:     on('every', M.hit('Water Gun', 1.3), { n:3 }),
-  starmie:    on('every', M.back('Water Pulse', 1.4), { n:3 }),
-  onix:       on('low',   M.shield('Iron Defense', 0.35, 'self')),
+  starmie:    on('every', M.haze('Haze', 1.0), { n:3 }),   // 3.4.0: wipes buffs
+  onix:       on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),   // 3.3.0: a rock wall from the first turn
   clefairy:   on('allyLow', M.shield('Light Screen', 0.1, 'team')),
   clefable:   on('allyLow', M.shield('Light Screen', 0.14, 'team')),
   shellder:   on('every', M.afflict('Supersonic', 0, 'cnf', 0.8, 'front'), { n:3 }),
-  cloyster:   on('every', M.afflict('Supersonic', 0, 'cnf', 1, 'front'), { n:3 }),
+  cloyster:   on('open',  M.shield('Iron Defense', 0.28, 'self'), { free:true }),   // 3.3.0: shuts its shell first
   // ---- tier 4
   seel:       on('low',   M.recover('Rest', 0.6, true)),
   dewgong:    on('low',   M.recover('Rest', 0.7, true)),
@@ -3000,23 +3017,23 @@ const MOVE2 = {
   dratini:    on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
   dragonair:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
   dragonite:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
-  scyther:    on('open',  M.hit('Quick Attack', 1.0), { priority:true }),
+  scyther:    on('every', M.knock('Knock Off', 1.6), { n:3 }),   // 3.4.0: strips held items
   rhyhorn:    on('every', M.afflict('Stomp', 0.8, 'fln', 0.3, 'front'), { n:3 }),
-  rhydon:     on('every', M.afflict('Stomp', 1.0, 'fln', 0.3, 'front'), { n:3 }),
+  rhydon:     on('open',  M.shield('Iron Defense', 0.6, 'self'), { free:true }),   // 3.3.0: thick hide from the first turn
   // ---- tier 5-6
-  hitmonlee:  on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  hitmonlee:  on('every', M.breaker('Brick Break', 1.6), { n:3 }),   // 3.3.0: the answer to an opening barrier
   lapras:     on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
-  electabuzz: on('open',  M.hit('Quick Attack', 0.7), { priority:true }),
+  electabuzz: on('every', M.disable('Disable', 1.4), { n:3 }),   // 3.4.0
   tauros:     on('every', M.afflict('Stomp', 1.0, 'fln', 0.3, 'front'), { n:3 }),
   chansey:    on('allyLow', M.shield('Light Screen', 0.12, 'team')),
-  snorlax:    on('low',   M.recover('Rest', 0.6, true)),
+  snorlax:    on('open',  M.shield('Reflect', 0.27, 'team'), { free:true }),   // 3.3.0: the whole team shelters behind it
   zapdos:     on('every', M.afflict('Zap Cannon', 2.0, 'par', 0.7, 'biggest'), { n:4 }),   // 2.2.0 (Sean)
   articuno:   on('every', M.all('Blizzard', 0.45), { n:4 }),
   moltres:    on('every', M.afflict('Sacred Fire', 1.6, 'brn', 1, 'front'), { n:3 }),
   mewtwo:     on('every', M.trueHit('Psyshock', 1.5), { n:3 }),
   // 1.3.0 — the Eevee line
   eevee:      on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
-  vaporeon:   on('low',   M.shield('Acid Armor', 0.35, 'self')),
+  vaporeon:   on('open',  M.shield('Acid Armor', 0.3, 'self'), { free:true }),   // 3.4.0: armour up before the first hit
   jolteon:    on('every', M.all('Thunderbolt', JOLT_TB), { n:JOLT_N }),
   flareon:    on('every', M.afflict('Fire Spin', 1.4, 'brn', 1, 'front'), { n:3 }),
   // 2.6.0 — Paras and Exeggcute
@@ -3650,7 +3667,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     }
     u.turns++;
     // Choice Band (v52): locked into the main move, so the second never fires
-    const m2 = heldOf(u) && heldOf(u).lockMain ? null : move2Of(u);
+    const m2 = (heldOf(u) && heldOf(u).lockMain) || u.sealed ? null : move2Of(u);
     if(secondFires(u, m2)){
       B.log(`${u.nm} used ${m2.name}!`);
       m2.fn(u, B, u.lvl);
@@ -3816,10 +3833,17 @@ function generateAiTeam(spec){
      every other gym beat 60–95%, because the roster is Water-heavy and
      Electric eats Water. Real gym leaders keep a couple of off-type bodies for
      exactly this reason, so a share of the team comes from outside the theme. */
-  const offPool = boss && boss.theme
+  /* 3.3.0 (Sean): the Elite Four field FULLY EVOLVED pokémon. A Seel or a Dratini
+     in the last five fights read as a shop roll, not a champion-tier trainer.
+     Only where the bench has at least three finals — otherwise it keeps its
+     earlier forms rather than repeating the same body. */
+  const finalsOnly = kind === 'elite' && boss && boss.theme;
+  const isFinal = k => !evoNext(k).length;
+  let offPool = boss && boss.theme
     ? BUYABLE.filter(k => !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
-        && !(boss.exclude && boss.exclude.some(t => (SPECIES[k].gen1 || '').split('/').includes(t))))
+        && !(boss.exclude && boss.exclude.some(t => t === k || (SPECIES[k].gen1 || '').split('/').includes(t))))
     : [];
+  if(finalsOnly){ const f = offPool.filter(isFinal); if(f.length >= 2) offPool = f; }
   const offSlots = boss && boss.theme && offPool.length
     ? Math.max(1, Math.round(size * TUNING.bossOffTheme)) : 0;
   // A themed pool is small, so give a boss room before it starts repeating.
@@ -3829,6 +3853,7 @@ function generateAiTeam(spec){
   if(!pool.length) pool = base.filter(k => evoDepth(k) <= maxDepth);
   if(!pool.length) pool = base.slice();
   if(!pool.length) pool = BUYABLE.slice();
+  if(finalsOnly){ const f = pool.filter(isFinal); if(f.length >= 3) pool = f; }
 
   const team = [];
   const usedSrc = new Set();    // species drawn out of the pool
@@ -5364,7 +5389,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'3.1.2', date:'Sep 29, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'3.5.0', date:'Sep 29, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -8108,6 +8133,27 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'3.5.0', date:'Sep 29, 2026', title:'Balance patch', sub:'Tangela, Venusaur and Vaporeon get identities, and three new moves answer buffs, second moves and held items', items:[
+    'Tangela is much sturdier (HP 58 → 70) and hits harder from the front. Venusaur’s Giga Drain now heals it for all of the damage it deals, and Venusaur has more HP. Vaporeon puts up Acid Armor before the first hit instead of waiting until it is hurt.',
+    'Three new moves join Brick Break as answers to what your opponent is counting on. Disable seals the target’s second move for the battle (Alakazam, Electabuzz). Haze wipes Attack gains, Focus and stacked blocking (Starmie). Knock Off strips the held item (Scyther).',
+    'Those moves replace Psybeam, Water Pulse and both Quick Attacks, so the strongest cannons are a little less overpowering. Small stat lifts for Jynx, Charizard, Gyarados, Butterfree and Weezing, and a small trim for Alakazam and Jolteon.',
+    'Every gym leader, the Elite Four and the Champion were re-calibrated again, and Rich & Ruthless, No PC, One Life and every Mono type were re-measured, so a normal run is still about as winnable as before.' ] },
+  { v:'3.4.0', date:'Sep 29, 2026', title:'Balance patch', sub:'Brick Break answers the new barriers, and every gym now gets harder in steps instead of being trivial until the Elite Four', items:[
+    'New move: Brick Break shatters the target’s barrier before it hits, so nothing is soaked. Hitmonlee and Poliwrath have it (Hitmonlee gave up Focus Energy, Poliwrath gave up Hypnosis). It is the answer to Iron Defense, Defense Curl and Reflect.',
+    'Gym difficulty pass: gyms 2 to 8 were close to a walkover for a well-built team, while the Champion was a wall. Every gym leader, Elite Four member and the Champion was re-calibrated so difficulty climbs in steps, from Brock to Lt. Surge to Blaine to Giovanni, then the Elite Four and Blue.',
+    'To balance that, the Elite Four and Champion ratios were eased a little, and Rich & Ruthless, No PC, One Life and every Mono type were re-measured. A normal run is about as winnable as before; the losses just come earlier and more evenly.' ] },
+  { v:'3.3.0', date:'Sep 29, 2026', title:'Balance patch', sub:'Snorlax, Onix, Blastoise and other weak finals get real identities, and the Elite Four only field evolved pokémon', items:[
+    'Blastoise now uses Surf: it hits every enemy instead of charging a single Hydro Pump. Bubble is unchanged.',
+    'Onix, Golem, Cloyster and Rhydon open the battle behind a barrier (Iron Defense, Defense Curl), for free, instead of curling up once they are already hurt. Cloyster trades Supersonic for it and Rhydon trades Stomp.',
+    'Snorlax is a little faster (Speed 20 → 26) and now opens with Reflect, a barrier for your whole team, instead of Rest.',
+    'Smaller lifts for Gyarados, Golbat (its Leech Life heals more), Wigglytuff, Vileplume, Poliwrath, Lapras, Hypno and Magneton.',
+    'The Elite Four now field fully evolved pokémon (no more Seel, Dratini or Machop). Lorelei gains Vaporeon, Agatha gains Weezing and Victreebel, and their leads are now final forms.',
+    'The Elite Four and Champion, Rich & Ruthless, No PC, One Life and every Mono type were re-measured again. The Balance Sheet lists every change in this update, including for the bosses.' ] },
+  { v:'3.2.0', date:'Sep 29, 2026', title:'Balance patch', sub:'A stat pass on the whole roster, and every gym leader and Elite Four member has a bench of their own', items:[
+    'Roster pass: the strongest finals were trimmed (Alakazam, Starmie, Jolteon, Gengar, Arcanine, Electrode, Electabuzz, Hitmonlee, Pidgeot) and the weakest were lifted (Snorlax, Onix, Golem, Cloyster, Hypno, Wigglytuff, Vileplume, Jynx, Blastoise, Venusaur). The best and worst finals are now about 19 points apart instead of 33.',
+    'Bosses now have benches of their own. Erika keeps the Grasses (no Bugs), Koga is Bugs plus Koffing and Weezing, Agatha is ghosts, Zubat, Golbat, Drowzee and Hypno, and Bruno is the Fighting lines (Machop, Mankey, Hitmonlee, Hitmonchan) plus Onix.',
+    'Misty leaves the icy Waters (Seel, Dewgong, Shellder, Cloyster, Lapras) to Lorelei, Giovanni leaves the Rock walls to Brock, and Lance drops the bats and bugs. Blurbs were updated to match.',
+    'The Elite Four and Champion, Rich & Ruthless, No PC, One Life and every Mono type were re-measured, so each run rule is still about as hard as the others.' ] },
   { v:'3.1.2', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Art for Koffing and Golbat, so every new pokémon has its sprite', items:[
     'Koffing and Golbat now have their pixel art instead of a two-letter placeholder. All the 3.1.0 pokémon are drawn.' ] },
   { v:'3.1.1', date:'Sep 29, 2026', title:'Visual bug fixes', sub:'Art for Zubat, Weezing, Mankey, Primeape and Hitmonchan', items:[
