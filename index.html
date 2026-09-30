@@ -1175,7 +1175,7 @@ h2 .btn.arrange{font-size:11.5px;padding:2px 8px;border-width:2px;box-shadow:non
 .speech.elite .who{background:linear-gradient(180deg,#e9e3f7 0 52%,#b9addc 52%)}
 .speech.champion .who{background:linear-gradient(180deg,#f7e9df 0 52%,#e2b89c 52%)}
 .speech .who .pball{width:34px;height:34px;margin-bottom:15px}
-.bossart.dock{width:62px;height:62px;filter:none}
+.bossart.dockart{width:62px;height:62px;filter:none}
 .speech .say{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;padding-right:34px}
 .speech .say b{font-size:17px;line-height:1.2;font-weight:600}
 .speech .ssub{font-size:12.5px;color:var(--muted)}
@@ -1350,7 +1350,7 @@ kbd{background:var(--panel2);border-color:var(--line2)}
   .tcol.tright .stat .lbl{font-size:9.5px}
   .speech{padding:6px 8px 6px 6px;gap:8px}
   .speech .who{width:52px;height:54px}
-  .bossart.dock{width:50px;height:50px}
+  .bossart.dockart{width:50px;height:50px}
   .speech .who .pball{width:28px;height:28px;margin-bottom:12px}
   .speech .say b{font-size:15.5px}
   .btn.fight{font-size:17px;padding:7px 8px}
@@ -1859,6 +1859,42 @@ html.dark .hcnote{color:#f2c14e}
 .tchart .trow i{font-style:normal;font-weight:700;font-size:10.5px;margin-right:2px}
 .tchart .trow i.bad{color:#d0533e}.tchart .trow i.good{color:#3f9a5a}
 .tchart .trow .chip{display:inline-block;margin:1px 3px 1px 0;font-size:10px;padding:1px 6px}
+
+/* ---- 3.7.0: first-run tips, unit cards everywhere, run summary ---- */
+.tipcard{display:flex;align-items:flex-start;gap:10px;background:var(--panel);border:3px solid var(--gold2);border-radius:10px;
+  box-shadow:var(--gbbox);padding:10px 12px;margin:0 0 10px;animation:tipin .35s ease-out}
+.tipcard .tipicon{font-size:20px;line-height:1.2}
+.tipcard div{flex:1;min-width:0}
+.tipcard b{display:block;font-size:15px;margin-bottom:2px}
+.tipcard p{margin:0;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.tipcard .tipok{align-self:center;flex:0 0 auto;min-height:36px}
+@keyframes tipin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+body.calm .tipcard{animation:none}
+.smon[data-act],.ftr,.overteam .slot[data-act]{cursor:pointer}
+.smon[data-act]:active{transform:translateY(1px)}
+.modal.unitcard .box{max-width:560px}
+.ucnote{margin:0 0 8px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.runsum{margin:14px auto 4px;max-width:560px;text-align:left}
+.rsfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px}
+.rsfacts span{display:flex;flex-direction:column;align-items:center;background:var(--panel2);border:2px solid var(--line);border-radius:8px;padding:7px 4px}
+.rsfacts b{font-size:17px}
+.rsfacts i{font-style:normal;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
+.rsmvp{display:flex;align-items:center;gap:12px;margin-top:10px;background:var(--panel);border:3px solid var(--gold2);border-radius:10px;padding:8px 12px;box-shadow:var(--gbbox)}
+.rsmvp .rsart{width:64px;height:64px;flex:0 0 auto;display:grid;place-items:center}
+.rsmvp .rsart img{max-width:100%;max-height:100%;image-rendering:pixelated}
+.rsmvp div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rsmvp b{font-size:17px}
+.rsmvp .rtag{align-self:flex-start}
+.rsrest{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13.5px}
+.rsrest span{display:inline-flex;align-items:center;gap:4px}
+.rsrest img{width:24px;height:24px;image-rendering:pixelated}
+.ftr .fbody{pointer-events:auto}
+.panel .shopbar:has([data-act="runimage"]){flex-wrap:wrap;justify-content:center}
+.panel .shopbar:has([data-act="runimage"]) .btn{flex:1 1 150px}
+/* 3.7.0 clean-up: comfortable tap targets for the small buttons phonepass flagged */
+.optseg .sp{min-height:34px}
+h2 .btn.arrange{min-height:30px;padding:4px 10px}
+.optseg{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -1947,7 +1983,7 @@ const TUNING = {
      prices on purpose: Sean wants the Elite Four harder, with the reference
      clear rate in the low 70s (was 77–78%). Scale these to move it: against the
      v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
-  gauntletRatio: [0.3896, 0.4419, 0.4186, 0.414, 0.4936],   // 3.2.0 x1.012 (stat pass, new pools); 3.0.0 x0.991 net (real type chart, re-measured; Brock eased); v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt); 2.8.0 x0.997 (Tangela); 2.10.0 x1.004 (Lorelei's Ice pool, Koga's Bug pool); 2.11.0 gyms tougher (see their calib)
+  gauntletRatio: [0.3818, 0.4331, 0.4102, 0.4057, 0.4837],   // 3.2.0 x1.012 (stat pass, new pools); 3.0.0 x0.991 net (real type chart, re-measured; Brock eased); v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt); 2.8.0 x0.997 (Tangela); 2.10.0 x1.004 (Lorelei's Ice pool, Koga's Bug pool); 2.11.0 gyms tougher (see their calib)
   /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
      its max HP for each fight it sits out. Fainted pokémon don't recover. */
   benchRest:      0.25,
@@ -2058,8 +2094,8 @@ const TUNING = {
   /* Mono-type scales opponents per type, measured so each type clears ~50% for
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
-  mods: { richIncome: 2, richFoes: 1.309, nopcFoes: 1.024, onelifeFoes: 1.014,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.028, Fire:0.93, Water:0.886, Electric:0.946, Grass:0.748, Bug:0.949, Fighting:0.979 } },   // 3.5.0: re-measured after the counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
+  mods: { richIncome: 2, richFoes: 1.309, nopcFoes: 1.014, onelifeFoes: 1.01,     // 3.0.0: re-measured for the real type chart
+          monoFoes: { Normal:1.032, Fire:0.906, Water:0.879, Electric:0.917, Grass:0.73, Bug:0.926, Fighting:0.955 } },   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
   legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
@@ -2262,47 +2298,47 @@ const tierFor = G => Math.max(
    deeper bench and is harder to hard-counter with one pokémon.
    =================================================================== */
 const GYMS = [
-  { id:'brock',    name:'Brock',        title:'Pewter Gym',     theme:['Rock'],
+  { id:'brock',    name:'Brock',        title:'Pewter Gym',     guards:['machop','machoke','machamp','mankey','primeape','tauros'], theme:['Rock'],
     signature:['onix', 'geodude'],
-    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.199 },
-  { id:'misty',    name:'Misty',        title:'Cerulean Gym',   theme:['Water'], exclude:['seel', 'dewgong', 'shellder', 'cloyster', 'lapras'],   // 3.2.0: the icy Waters are Lorelei's
+    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.224 },
+  { id:'misty',    name:'Misty',        title:'Cerulean Gym',   guards:['jigglypuff','wigglytuff','clefairy','clefable','eevee','drowzee','hypno'], theme:['Water'], exclude:['seel', 'dewgong', 'shellder', 'cloyster', 'lapras'],   // 3.2.0: the icy Waters are Lorelei's
     signature:['starmie', 'staryu', 'poliwag', 'squirtle'],
-    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.862 },
-  { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  theme:['Electric'],
+    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.909 },
+  { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  guards:['pidgey','pidgeotto','pidgeot','rattata','raticate','tauros','zubat','golbat'], theme:['Electric'],
     signature:['raichu', 'pikachu'],
-    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.923 },
-  { id:'erika',    name:'Erika',        title:'Celadon Gym',    theme:['Grass'], exclude:['Bug'],   // 3.2.0: the Bugs are Koga's
+    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.912 },
+  { id:'erika',    name:'Erika',        title:'Celadon Gym',    guards:['chansey','clefairy','clefable','eevee','pidgey','pidgeotto','pidgeot'], theme:['Grass'], exclude:['Bug'],   // 3.2.0: the Bugs are Koga's
     signature:['vileplume', 'gloom', 'oddish'],
-    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.22 },
-  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Bug'], also:['koffing', 'weezing'], exclude:['Ghost'],   // 3.2.0: Bugs plus the gas clouds (Erika keeps the Grasses)
+    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.284 },
+  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    guards:['zubat','golbat','oddish','vileplume','bellsprout','victreebel','rattata','raticate'], theme:['Bug'], also:['koffing', 'weezing'], exclude:['Ghost'],   // 3.2.0: Bugs plus the gas clouds (Erika keeps the Grasses)
     signature:['weezing', 'koffing', 'scyther'],
-    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.105 },
-  { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    theme:['Psychic'],
+    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.143 },
+  { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    guards:['clefairy','clefable','jigglypuff','wigglytuff','chansey','eevee','snorlax'], theme:['Psychic'],
     signature:['alakazam', 'abra'],
-    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:2.014 },
-  { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   theme:['Fire'],
+    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.942 },
+  { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   guards:['machop','machoke','machamp','mankey','primeape','tauros','snorlax'], theme:['Fire'],
     signature:['arcanine', 'growlithe'],
-    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.968 },
-  { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   theme:['Ground','Normal'], exclude:['geodude', 'graveler', 'golem', 'onix'],   // 3.2.0: the walls are Brock's
+    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:2.075 },
+  { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   guards:['rattata','raticate','zubat','golbat','koffing','weezing','machop','machamp','tauros'], theme:['Ground','Normal'], exclude:['geodude', 'graveler', 'golem', 'onix'],   // 3.2.0: the walls are Brock's
     signature:['rhydon', 'rhyhorn'],
-    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:1.957 },
+    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:1.966 },
 ];
 const ELITE_FOUR = [
-  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice'], also:['seel','shellder','vaporeon'],   // 3.3.0: + Vaporeon, so the finals are five deep
+  { id:'lorelei', name:'Lorelei', title:'Elite Four', guards:['starmie','hypno','alakazam','clefable','wigglytuff','chansey'], theme:['Ice'], also:['seel','shellder','vaporeon'],   // 3.3.0: + Vaporeon, so the finals are five deep
     signature:['lapras', 'dewgong', 'cloyster'],
-    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.289 },
-  { id:'bruno',   name:'Bruno',   title:'Elite Four', theme:['Fighting'], also:['onix'],   // 3.2.0: Mankey and Hitmonchan join; only Onix keeps his Rock
+    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.304 },
+  { id:'bruno',   name:'Bruno',   title:'Elite Four', guards:['golem','rhydon','snorlax','tauros'], theme:['Fighting'], also:['onix'],   // 3.2.0: Mankey and Hitmonchan join; only Onix keeps his Rock
     signature:['machamp', 'primeape', 'hitmonlee'],
-    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.798 },
-  { id:'agatha',  name:'Agatha',  title:'Elite Four', theme:['Ghost'], also:['zubat', 'golbat', 'drowzee', 'hypno', 'weezing', 'victreebel'],   // 3.2.0: ghosts, bats and Dream Eaters; 3.3.0: + the poison cloud and the pitcher
+    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.901 },
+  { id:'agatha',  name:'Agatha',  title:'Elite Four', guards:['vileplume','parasect','tangela','jynx','alakazam'], theme:['Ghost'], also:['zubat', 'golbat', 'drowzee', 'hypno', 'weezing', 'victreebel'],   // 3.2.0: ghosts, bats and Dream Eaters; 3.3.0: + the poison cloud and the pitcher
     signature:['gengar', 'hypno', 'golbat'],
-    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.593 },
-  { id:'lance',   name:'Lance',   title:'Elite Four', theme:['Dragon','Flying'], exclude:['Poison', 'Bug'],   // 3.2.0: bats and bugs belong to Agatha and Koga
+    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.724 },
+  { id:'lance',   name:'Lance',   title:'Elite Four', guards:['arcanine','ninetales','tauros','rhydon'], theme:['Dragon','Flying'], exclude:['Poison', 'Bug'],   // 3.2.0: bats and bugs belong to Agatha and Koga
     signature:['dragonite', 'gyarados', 'charizard'],
-    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.674 },
+    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.848 },
 ];
 const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
-  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.346 };
+  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.318 };
 
 /* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
@@ -3839,9 +3875,14 @@ function generateAiTeam(spec){
      earlier forms rather than repeating the same body. */
   const finalsOnly = kind === 'elite' && boss && boss.theme;
   const isFinal = k => !evoNext(k).length;
+  /* 3.5.1 (Sean): bodyguards are a curated list per leader (`guards`), not anything
+     that happens to be off-theme — Onix has no business in Lt. Surge's gym. Flying
+     types cover Surge's Ground weakness, Team Rocket's Rattata and Koffing back
+     Giovanni, and so on. A species that evolves is allowed once the run is far
+     enough along for this leader to field evolved forms. */
   let offPool = boss && boss.theme
-    ? BUYABLE.filter(k => !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
-        && !(boss.exclude && boss.exclude.some(t => t === k || (SPECIES[k].gen1 || '').split('/').includes(t))))
+    ? (boss.guards || []).filter(k => SPECIES[k] && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
+        && evoDepth(k) <= maxDepth)
     : [];
   if(finalsOnly){ const f = offPool.filter(isFinal); if(f.length >= 2) offPool = f; }
   const offSlots = boss && boss.theme && offPool.length
@@ -5389,7 +5430,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'3.5.0', date:'Sep 29, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'3.7.0', date:'Sep 30, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -5411,6 +5452,24 @@ const playerName = () => String(PREF.get('name', '') || '').replace(/[<>]/g, '')
    (navigator.webdriver) unless window.PKB_SOUND is set, but every sound
    the game asks for is still written to SFX.log so tests can see it.
    =================================================================== */
+/* 3.7.0 · HAPTICS — a light buzz on the moments that matter (buys, level-ups,
+   evolutions, knockouts, wins and losses), on phones that support vibration
+   (Android; iPhones don't let web pages vibrate). START → Options → Haptics. */
+const HAPTIC = (() => {
+  const PAT = { select:8, coin:12, levelup:[18, 40, 22], evolve:[25, 50, 25, 50, 60], faint:30, crit:14,
+    win:[30, 60, 30, 60, 90], lose:[90, 70, 90], badge:[30, 50, 30, 50, 140], sparkle2:[12, 30, 12, 30, 12], error:[15, 30, 15], encounter:[20, 40, 60] };
+  let last = 0; const log = [];
+  const on = () => PREF.get('haptics', 'on') !== 'off';
+  function buzz(name){
+    const p = PAT[name]; if(!p || !on()) return;
+    const now = performance.now(); if(now - last < 60) return; last = now;
+    log.push(name); if(log.length > 100) log.shift();
+    if(navigator.webdriver && !window.PKB_HAPTIC) return;
+    try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){}
+  }
+  return { buzz, log, supported: () => typeof navigator.vibrate === 'function' };
+})();
+
 const SFX = (() => {
   let ctx = null, master = null, noiseBuf = null;
   const last = {};
@@ -5505,6 +5564,7 @@ const SFX = (() => {
   };
 
   function play(name, arg){
+    HAPTIC.buzz(name);                                      // 3.7.0: felt even with the sound off
     if(!SOUNDS[name] || !on()) return;
     const now = performance.now();
     if(last[name] && now - last[name] < 45) return;          // at 4× the same blip would pile up
@@ -6082,6 +6142,60 @@ function popupHtml(u){
 
 function hidePopup(){ if(popupEl) popupEl.hidden = true; }
 
+/* 3.7.0 · FIRST-RUN TIPS — one short card at a time, each shown once, in the
+   order you meet the thing it explains. START → Options → Tips hides them or
+   shows them again. Browser test runs don't see them unless window.PKB_TIPS. */
+const TIPS = (() => {
+  const KEY = 'pkb_tipsSeen';
+  const LIST = [
+    { id:'shop',   when: () => true,
+      title:'Welcome, Trainer!', text:'Tap a pokémon in the Daycare, then tap an empty spot in your party to buy it. You earn more ₽ after every battle.' },
+    { id:'inspect', when: g => g.team.length >= 1,
+      title:'Tap to inspect', text:'Tap any pokémon — yours, the Daycare’s, a scouting report’s, or either side in a battle — to see its moves, role and matchups.' },
+    { id:'merge',  when: g => g.turn >= 2,
+      title:'Three of a kind', text:'Three copies of the same pokémon make it level 2, six make it level 3 — and levelling up evolves it. Drop a copy onto the one you have.' },
+    { id:'roles',  when: g => g.team.length >= 3,
+      title:'Front rank takes the hits', text:'The badge on each picture is its role. Tanks go in front and Cannons at the back — “Line up by role” does it for you.' },
+    { id:'boss',   when: g => { const n = nextUp(g); return !!(n && n.boss); },
+      title:'A gym leader is next', text:'Their card shows their type and team style. Lose and you keep a scouting report of exactly what they fielded for the rematch.' },
+  ];
+  const seen = () => { try{ return JSON.parse(localStorage.getItem(KEY) || '[]') || []; }catch(e){ return []; } };
+  const allowed = () => (!navigator.webdriver || window.PKB_TIPS) && PREF.get('tips', 'on') !== 'off';
+  function current(g){
+    if(!g || !allowed() || g.over) return null;
+    const s = seen();
+    return LIST.find(t => !s.includes(t.id) && t.when(g)) || null;
+  }
+  function dismiss(id){ const s = seen(); if(!s.includes(id)) s.push(id); try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+  function reset(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+  function html(g){
+    const t = current(g); if(!t) return '';
+    return `<div class="tipcard" role="note"><span class="tipicon">💡</span><div><b>${esc(t.title)}</b><p>${esc(t.text)}</p></div>
+      <button class="btn tipok" data-act="tipok" data-tip="${t.id}">Got it</button></div>`;
+  }
+  return { html, dismiss, reset, current, LIST };
+})();
+
+/* 3.7.0 · TAP TO INSPECT, EVERYWHERE — the same summary card for pokémon
+   that aren't yours: the scouting report, both sides of a battle, and the
+   team on the run-over screen. */
+function openUnitCard(u, note){
+  if(!u || !SPECIES[u.id]) return;
+  SFX.play('open');
+  const d = modal(`${note ? `<p class="ucnote">${note}</p>` : ''}<div class="isum ucard">${popupHtml(u)}</div>
+    <div class="btnrow"><button class="btn primary" data-m="close">Close</button></div>`);
+  d.classList.add('unitcard');
+  d.querySelector('[data-m="close"]').onclick = () => { SFX.play('back'); d.remove(); };
+}
+function openFighterCard(F){
+  if(!battle || !F) return;
+  const mine = F.side === 'p';
+  const src = mine ? (G.team || []).concat(G.pc || []).find(x => x && x.uid === F.uid)
+                   : ((battle.opp && battle.opp.team) || []).find(x => x && x.uid === F.uid);
+  const u = src || { id:F.id, exp:0, hp:F.maxHp, atk:F.atk, spd:F.spd };
+  openUnitCard(u, mine ? 'Your pokémon' : esc(battle.oppName || 'Opponent'));
+}
+
 /* ===================================================================
    THE PICK-UP CURSOR
    Lifting a pokémon shows it riding the pointer on a mouse, or as a bar
@@ -6260,7 +6374,7 @@ function nextUpHtml(){
     <div class="scout">
       <b>Scouting report <span class="ndim">— what ${esc(b.name)} fielded last time</span></b>
       <div class="scoutrow">${n.scouted.map(u => `
-        <span class="smon" title="${esc(u.nm)} · ◆${u.atk} ♥${u.hp} »${u.spd}${
+        <span class="smon" data-act="scoutcard" data-i="${n.scouted.indexOf(u)}" role="button" tabindex="0" title="${esc(u.nm)} · ◆${u.atk} ♥${u.hp} »${u.spd}${
           u.held && HELD_ITEMS[u.held] ? ' · ' + esc(HELD_ITEMS[u.held].name) : ''}">
           ${SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}">`
                           : esc(u.nm.slice(0,2))}
@@ -6367,7 +6481,7 @@ function dockHtml(closed){
   return `<div class="dock">
     ${undoHtml(closed)}
     <div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
-      <span class="who">${b ? bossArt(b, 'dock') : '<i class="pball"></i>'}</span>
+      <span class="who">${b ? bossArt(b, 'dockart') : '<i class="pball"></i>'}</span>
       <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
       <span class="nstage">${n.stage}/${n.total}</span>
     </div>
@@ -6577,6 +6691,7 @@ function renderShop(){
 
   ${modeBarHtml()}
   ${closed ? '' : encounterHtml()}
+  ${TIPS.html(G)}
   <div class="panel party">
     <h2>Your Party <span class="sub">the front rank takes the hits · speed decides how often you act</span>
       ${G.team.length > 1 ? '<button class="btn arrange" data-act="arrange" title="Tanks to the front, Cannons to the back">Line up by role</button>' : ''}
@@ -6819,6 +6934,7 @@ function addFighter(S, u, side, i){
   const F = { el: d, side, uid: u.uid, nm: u.nm, id: u.id, hp: u.hp, maxHp: u.maxHp,
               st: null, shield: 0, atk: u.atk, spd: u.spd, down: false };
   S.f.set(side + ':' + u.uid, F);
+  d.addEventListener('click', ev => { ev.stopPropagation(); openFighterCard(F); });   // 3.7.0
   paintFighter(F, u, false);
   return F;
 }
@@ -7275,6 +7391,88 @@ function shopFx(){
 /* ===================================================================
    GAME OVER
    =================================================================== */
+/* ===================================================================
+   3.7.0 · RUN SUMMARY — what each pokémon did across the whole run, an MVP,
+   and a picture of it you can save or send to your friends.
+   =================================================================== */
+function noteRunStats(b){
+  if(!G || !b || !b.sim || !b.sim.stats) return;
+  const R = G.runStats || (G.runStats = { battles:0, wins:0, losses:0, mons:{} });
+  R.battles++; if(b.result === 'win') R.wins++; else if(b.result === 'lose') R.losses++;
+  for(const x of b.sim.stats){
+    if(x.side !== 'p') continue;
+    const m = R.mons[x.uid] || (R.mons[x.uid] = { id:x.id, dealt:0, taken:0, healed:0, kos:0, fights:0 });
+    m.id = x.id; m.dealt += x.dealt || 0; m.taken += x.taken || 0; m.healed += x.healed || 0; m.kos += x.kos || 0; m.fights++;
+  }
+}
+function runTop(n){
+  const R = G && G.runStats; if(!R) return [];
+  const idNow = uid => { const u = (G.team || []).concat(G.pc || []).find(x => x && x.uid === +uid); return u ? u.id : null; };
+  return Object.entries(R.mons).map(([uid, m]) => ({ uid:+uid, ...m, id: idNow(uid) || m.id, score: m.dealt + m.healed + m.kos * 25 }))
+    .filter(m => SPECIES[m.id]).sort((a, b) => b.score - a.score).slice(0, n);
+}
+function runSummaryHtml(){
+  const R = G.runStats; const top = runTop(3);
+  const plan = runPlan(), reached = reachedStage();
+  const facts = [
+    ['Turns', G.turn], ['Badges', `${G.badges}/8`], ['Stage', `${Math.min(reached, plan.length)}/${plan.length}`],
+    ...(R ? [['Battles', `${R.wins}W · ${R.losses}L`]] : []), ['Lives left', Math.max(0, G.lives)] ];
+  const mvp = top[0];
+  return `<div class="runsum">
+    <div class="rsfacts">${facts.map(([k, v]) => `<span><b>${esc(String(v))}</b><i>${esc(k)}</i></span>`).join('')}</div>
+    ${mvp ? `<div class="rsmvp"><span class="rsart">${SPRITES[mvp.id] ? `<img src="${SPRITES[mvp.id]}" alt="">` : ""}</span><div><i class="rtag rt-mvp">RUN MVP</i>
+      <b>${esc(SPECIES[mvp.id].name)}</b><span class="dim">${mvp.dealt} damage · ${mvp.kos} KO${mvp.kos === 1 ? '' : 's'}${mvp.healed ? ` · ${mvp.healed} healed` : ''} over ${mvp.fights} battle${mvp.fights === 1 ? '' : 's'}</span></div></div>` : ''}
+    ${top.length > 1 ? `<div class="rsrest">${top.slice(1).map((m, k) => `<span>${k === 0 ? '🥈' : '🥉'} ${miniSprite(m.id)}${esc(SPECIES[m.id].name)} <i class="dim">${m.dealt} dmg · ${m.kos} KO</i></span>`).join('')}</div>` : ''}
+  </div>`;
+}
+/* A 3:4 card drawn on a canvas: the team, the result, the MVP. */
+async function runImage(){
+  try{ if(document.fonts) await Promise.race([document.fonts.load('500 24px "Pixelify Sans"'), new Promise(r => setTimeout(r, 800))]); }catch(e){}
+  const W = 720, H = 960, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  const won = G.over === 'won', dark = '#2b303b', cream = '#f7f1de';
+  x.fillStyle = cream; x.fillRect(0, 0, W, H);
+  x.fillStyle = dark; x.fillRect(0, 0, W, 150); x.fillRect(0, H - 70, W, 70);
+  x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
+  const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
+  x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
+  x.fillStyle = cream; x.font = font(22, 400); x.fillText(won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
+  x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
+  x.font = font(16, 400); x.fillStyle = '#6b6f7a';
+  x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
+  const load = src => new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = src; });
+  const team = (G.team || []).filter(Boolean).slice(0, 6);
+  for(let k = 0; k < team.length; k++){
+    const u = team[k], col = k % 3, row = Math.floor(k / 3), cx = 130 + col * 230, cy = 290 + row * 230;
+    x.fillStyle = '#ece4c8'; x.fillRect(cx - 90, cy, 180, 190); x.strokeStyle = dark; x.lineWidth = 4; x.strokeRect(cx - 90, cy, 180, 190);
+    const im = SPRITES[u.id] ? await load(SPRITES[u.id]) : null;
+    if(im){ const sc = Math.floor(128 / Math.max(im.width, im.height)) || 1; const w = im.width * sc, h = im.height * sc; x.drawImage(im, cx - w / 2, cy + 12 + (128 - h) / 2, w, h); }
+    x.fillStyle = dark; x.font = font(14); x.fillText(SPECIES[u.id].name, cx, cy + 160);
+    x.font = font(12, 400); x.fillStyle = '#6b6f7a'; x.fillText(SPECIES[u.id].legendary ? 'Legendary' : `Lv ${unitLevel(u)}`, cx, cy + 180);
+  }
+  const mvp = runTop(1)[0];
+  if(mvp){ x.fillStyle = dark; x.font = font(16); x.fillText(`MVP: ${SPECIES[mvp.id].name} — ${mvp.dealt} damage, ${mvp.kos} KOs`, W / 2, 790); }
+  x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
+  return new Promise(r => c.toBlob(r, 'image/png'));
+}
+async function shareRunImage(){
+  SFX.play('select');
+  try{
+    const blob = await runImage(); if(!blob) throw new Error('no image');
+    const file = new File([blob], 'pokebattler-run.png', { type:'image/png' });
+    if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'My PokéBattler run' }); return; }
+    // inside the claude.ai viewer a page can only hand over a file through its downloads capability
+    if(window.claude && typeof window.claude.use === 'function'){
+      const dl = await window.claude.use('downloads').catch(() => null);
+      if(dl){ try{ await dl.save({ filename:'pokebattler-run.png', data:blob }); say('Summary image saved.'); }
+              catch(e){ if(!e || e.code !== 'declined') say('Couldn’t save the image here.'); } return; }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pokebattler-run.png';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    say('Summary image saved.');
+  }catch(e){ if(e && e.name === 'AbortError') return; say('Couldn’t make the image on this device.'); }
+}
+
 function renderOver(){
   const won = G.over === 'won';
   return `<div class="panel" style="text-align:center;padding:26px 18px">
@@ -7286,11 +7484,14 @@ function renderOver(){
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
     ${won && G.mods && G.mods.onelife ? (() => { const h = hardcoreRec(); return `<div class="hcaward">${hcBadge('big')}<div><b>HARDCORE BADGE${G.hcNew ? ' <i class="newdot">NEW</i>' : ''}</b><span>${G.hcNew ? 'You cleared a run on One Life.' : `Another One Life clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; })() : ''}
     ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
-    <div class="row overteam" style="margin:14px 0">${G.team.map(u => `<div class="slot" style="border-style:solid">${unitHtml(u)}</div>`).join('')}</div>
+    ${runSummaryHtml()}
+    <div class="row overteam" style="margin:14px 0">${G.team.map((u, i) => u ? `<div class="slot" style="border-style:solid" data-act="overcard" data-i="${i}" role="button">${unitHtml(u)}</div>` : '').join('')}</div>
     <div class="shopbar">
-      ${G.daily ? `<button class="btn" data-act="dailyshare">Copy result</button>
+      ${G.daily ? `<button class="btn" data-act="runimage">Save summary image</button>
+      <button class="btn" data-act="dailyshare">Copy result</button>
       <button class="btn primary" data-act="totitle">Title screen</button>`
-      : `<button class="btn" data-act="export">Share Team Code</button>
+      : `<button class="btn" data-act="runimage">Save summary image</button>
+      <button class="btn" data-act="export">Share Team Code</button>
       <button class="btn primary" data-act="restart">New Run</button>`}
     </div>
   </div>`;
@@ -7819,6 +8020,11 @@ function handle(act, i, data){
       return;
     }
     case 'skip':    SFX.play('tap'); finishPlayback(); return;
+    case 'scoutcard': { const n = nextUp(G), u = n.scouted && n.scouted[i];
+      if(u) openUnitCard(u, `Scouting report · ${esc(n.boss ? n.boss.name : '')}`); return; }
+    case 'overcard': openUnitCard(G.team[i]); return;
+    case 'runimage': shareRunImage(); return;
+    case 'tipok':   SFX.play('select'); TIPS.dismiss(data.tip); break;
     case 'afterbattle': if(!wiping) wipe(afterBattle); return;   // v40: the wipe carries you back
     case 'menu':    openMenu(); return;
     case 'badges':  openBadgeInfo(); return;
@@ -7970,6 +8176,11 @@ async function startBattle(){
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
 function beginPlayback(){
+  /* 3.7.0: Options → Trainer battles → Skip to result. Only plain trainers —
+     a leader, the Elite Four, the Champion or an ambush is always shown. */
+  if(battle && battle.kind === 'trainer' && !battle.exhibition && PREF.get('autoskip', 'off') === 'on'){
+    clearTimeout(battle.timer); battle.timer = setTimeout(finishPlayback, 120); return;
+  }
   const S = battle && battle.stage;
   const ms = S ? playIntro(S) : 0;
   clearTimeout(battle.timer);
@@ -8030,6 +8241,7 @@ async function afterBattle(){
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
   noteBattle(battle);                             // v37: Trainer Card records
+  noteRunStats(battle);                           // 3.7.0: for the run summary
   applyBattleResult(G, result, opp, battle.sim);  // badges, blackout, lives, streak, EXP, wounds
   noteProgress();
   const rivalWon = opp && opp.kind === 'rival' && result === 'win' ? G.lastRival : null;
@@ -8133,6 +8345,18 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'3.7.0', date:'Sep 30, 2026', title:'Minor gameplay changes', sub:'A polish update: run summaries, tap-to-inspect everywhere, first-run tips, haptics and a new app icon', items:[
+    'Run summary: when a run ends you see your turns, badges, stage, wins and losses, a Run MVP (most damage, KOs and healing across the whole run) and the runners-up. “Save summary image” makes a picture of your team and result to send to friends.',
+    'Tap to inspect, everywhere: tap a pokémon in a scouting report, either side of a battle, or your team on the run-over screen to see its full summary card.',
+    'Options → Trainer battles → Skip to result plays ordinary trainer battles instantly. Gym leaders, the Elite Four, the Champion and your rival are always shown.',
+    'Haptics: a light buzz on buys, level-ups, evolutions, knockouts, badges, wins and losses (Android phones; iPhones don’t let web pages vibrate). Turn it off in Options.',
+    'First-run tips: five short cards explain buying, inspecting, levelling, roles and gym leaders the first time you meet each one. Options → Tips hides them or shows them again.',
+    'Clean-up: bigger tap targets for the Options buttons, Line up by role and Formations, and a tidier run-over screen.',
+    'New home-screen app icon: a pixel globe-orb.' ] },
+  { v:'3.6.0', date:'Sep 30, 2026', title:'Balance patch', sub:'Gym leaders and the Elite Four only bring bodyguards that fit them, and the boss sprite is back on the battle card', items:[
+    'Every leader now has a hand-picked list of bodyguards instead of drawing any off-theme pokémon. Lt. Surge backs his Electrics with Flying types (Pidgeot, Golbat) and Rattata, Giovanni brings Team Rocket’s Rattata, Zubat, Koffing and Machamp, Erika leans on Chansey and Clefairy, Bruno on Golem, Rhydon and Snorlax, and so on. No more Onix in Lt. Surge’s gym.',
+    'Fixed: the gym leader’s sprite was missing on the “wants to battle!” card at the bottom of the screen.',
+    'Gyms, the Elite Four and the Champion were re-calibrated for the new benches, and Rich & Ruthless, No PC, One Life and every Mono type were re-measured.' ] },
   { v:'3.5.0', date:'Sep 29, 2026', title:'Balance patch', sub:'Tangela, Venusaur and Vaporeon get identities, and three new moves answer buffs, second moves and held items', items:[
     'Tangela is much sturdier (HP 58 → 70) and hits harder from the front. Venusaur’s Giga Drain now heals it for all of the damage it deals, and Venusaur has more HP. Vaporeon puts up Acid Armor before the first hit instead of waiting until it is hurt.',
     'Three new moves join Brick Break as answers to what your opponent is counting on. Disable seals the target’s second move for the battle (Alakazam, Electabuzz). Haze wipes Attack gains, Focus and stacked blocking (Starmie). Knock Off strips the held item (Scyther).',
@@ -8507,11 +8731,15 @@ function openOptions(){
     <div class="optrow"><span>Motion</span>${seg('motion', PREF.get('motion', 'device'), [['device', 'Normal'], ['reduced', 'Reduced']])}</div>
     <div class="optrow"><span>Title screen</span>${seg('title', PREF.get('title', 'on'), [['on', 'Show'], ['off', 'Skip']])}</div>
     <div class="optrow"><span>Sound</span>${seg('sound', PREF.get('sound', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
+    <div class="optrow"><span>Haptics</span>${seg('haptics', PREF.get('haptics', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
+    <div class="optrow"><span>Trainer battles</span>${seg('autoskip', PREF.get('autoskip', 'off'), [['off', 'Watch'], ['on', 'Skip to result']])}</div>
+    <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('volume', 'mid'), [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Auto'], ['full', 'Full'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
-      On an iPhone the silent switch mutes the sound.</p>
+      On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
+      Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
   d.classList.add('options');
   const inp = d.querySelector('#optname');
@@ -8519,7 +8747,10 @@ function openOptions(){
   inp.addEventListener('keydown', e => { if(e.key === 'Enter') inp.blur(); e.stopPropagation(); });
   d.querySelectorAll('[data-o]').forEach(b => b.onclick = () => {
     const k = b.dataset.o, v = b.dataset.v;
-    if(k === 'speed') setSpeed(+v); else PREF.set(k, v);
+    if(k === 'speed') setSpeed(+v);
+    else if(k === 'tips' && v === 'reset'){ TIPS.reset(); PREF.set('tips', 'on'); }
+    else PREF.set(k, v);
+    if(k === 'haptics' && v === 'on') HAPTIC.buzz('select');
     if(k === 'motion') applyMotion();
     if(k === 'theme') applyTheme();
     if(k === 'sound' || k === 'volume') setTimeout(() => SFX.play('select'), 30);   // hear the new level
