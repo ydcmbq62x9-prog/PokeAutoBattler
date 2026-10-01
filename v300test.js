@@ -1,7 +1,7 @@
 /* v300: the real Gen 1 type chart — one main type per pokémon, 14 types, Mono runs only for types with 3+ lines. */
 const E = require('./engine.js'); const T = E.TUNING, S = E.SPECIES;
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-check(Object.keys(E.TYPES).length === 15 && Object.keys(E.TYPES).includes('Electric') && Object.keys(E.TYPES).includes('Poison'), 'fifteen types (Poison added in 3.1.0), Electric not Lightning');
+check(Object.keys(E.TYPES).length === 17 && Object.keys(E.TYPES).includes('Electric') && Object.keys(E.TYPES).includes('Poison') && Object.keys(E.TYPES).includes('Steel') && Object.keys(E.TYPES).includes('Dark'), 'seventeen types (Poison added in 3.1.0, Steel and Dark in 4.0.0), Electric not Lightning');
 check(!Object.values(S).some(s => s.type === 'Lightning' || s.type === 'Colorless'), 'no pokémon is Lightning or Colorless');
 const want = { bulbasaur:'Grass', butterfree:'Bug', scyther:'Bug', gyarados:'Water', pidgeot:'Flying', onix:'Rock', rhydon:'Ground', dragonite:'Dragon', gengar:'Ghost', articuno:'Ice', zapdos:'Electric', moltres:'Fire', exeggutor:'Grass', rattata:'Normal', jolteon:'Electric', machamp:'Fighting', alakazam:'Psychic' };
 for(const [k, t] of Object.entries(want)) check(S[k] && S[k].type === t, `${k} is ${t}`);

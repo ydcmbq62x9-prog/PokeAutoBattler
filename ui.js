@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'3.8.1', date:'Sep 30, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.0.0', date:'Oct 1, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1035,7 +1035,7 @@ function badgeCase(count, fresh){
   let pips = '';
   for(let i = 0; i < n; i++){
     const g = gymAt(G, i);
-    pips += `<i class="bdg g${i} ${i < have ? 'on' : ''} ${i === fresh ? 'fresh' : ''}"
+    pips += `<i class="bdg ${badgeCls(G, i)} ${i < have ? 'on' : ''} ${i === fresh ? 'fresh' : ''}"
       title="${esc(g.badge)} Badge — ${esc(g.name)}"></i>`;
   }
   return `<div class="stat badges" data-act="badges" role="button" tabindex="0" title="${have} of ${n} badges — tap for your badge rewards">
@@ -1065,7 +1065,7 @@ function dockHtml(closed){
     let nx = at; while(nx < plan.length && plan[nx].kind === 'trainer') nx++;
     for(let k = prev + 1; k < nx; k++) road += `<i class="${k < at ? 'done' : k === at ? 'now' : ''}"></i>`;
     const bi = plan[nx] ? plan[nx].badge : 0;
-    if(plan[nx]) road += `<i class="bdg g${bi % 8} ${at === nx ? 'on now' : ''}" title="${esc(gymAt(G, bi).badge)} Badge"></i>`;
+    if(plan[nx]) road += `<i class="bdg ${badgeCls(G, bi % 8)} ${at === nx ? 'on now' : ''}" title="${esc(gymAt(G, bi).badge)} Badge"></i>`;
   }
   const line = !b ? `${trainerName(G.turn)} wants to battle!`
     : n.kind === 'gym' ? `${b.name} wants to battle!`
@@ -1369,7 +1369,7 @@ function renderBattle(){
         <div><b>Your rival won.</b><span>“${esc(rvl.won)}”</span>
           <span class="dim">It costs a life like any trainer battle. He'll be back.</span></div></div>`;
   const award = winningBadge ? `<div class="award">
-      ${bossArt(battle.boss, 'hero')}<i class="bdg g${G.badges % 8} on fresh big"></i>
+      ${bossArt(battle.boss, 'hero')}<i class="bdg ${badgeCls(G, G.badges % 8)} on fresh big"></i>
       <div><b>${esc(battle.boss.badge)} Badge</b>
         <span>${esc(battle.boss.name)} of the ${esc(battle.boss.title)} hands it over.</span>
         <span class="dim">${shownBadges} of ${TUNING.badgesToWin}${
@@ -2900,6 +2900,8 @@ function modal(html, sticky){
    offering the same three (they come from the run's seed).
    =================================================================== */
 const rewardBadgeName = b => gymAt(G, b).badge;
+/** 4.0.0: a badge's look follows its leader, not its slot — the Zephyr Badge is the Zephyr Badge wherever Falkner lands. */
+const badgeCls = (G, i) => { const g = gymAt(G, i), h = homeOf(g); return ((g.gen || 1) >= 2 ? 'j' : 'g') + (h ? h.slot : i % 8); };
 function openRewardPicker(){
   if(document.querySelector('.modal.reward')) return;
   const off = pendingOffer(G);
@@ -2915,7 +2917,7 @@ function openRewardPicker(){
       ${taken ? `<span class="rtaken">taken ${taken} of ${max}</span>` : ''}
     </button>`;
   }).join('');
-  const d = modal(`<div class="rhead">${bossArt(gymAt(G, off.badge), 'hero')}<i class="bdg g${off.badge % 8} on big"></i>
+  const d = modal(`<div class="rhead">${bossArt(gymAt(G, off.badge), 'hero')}<i class="bdg ${badgeCls(G, off.badge % 8)} on big"></i>
       <div><h3>${esc(rewardBadgeName(off.badge))} Badge</h3>
       <p class="rsub">Choose one reward to keep for the rest of the run.${
         left > 1 ? ` <b>${left - 1} more</b> after this.` : ''}</p></div></div>
@@ -2937,7 +2939,7 @@ function openBadgeInfo(){
   const log = G.rewardLog || [];
   const rows = bossPlanOf(G).gyms.slice(0, TUNING.badgesToWin).map((g, i) => {
     const got = i < G.badges, e = log.find(x => x.badge === i), r = e && rewardById(e.id);
-    return `<div class="brow ${got ? '' : 'locked'}"><i class="bdg g${i} ${got ? 'on' : ''}"></i>
+    return `<div class="brow ${got ? '' : 'locked'}"><i class="bdg ${badgeCls(G, i)} ${got ? 'on' : ''}"></i>
       <b>${esc(g.badge)} Badge</b><span class="dim">${bossArt(g, 'tiny')}${esc(g.name)}</span>
       <span class="bpick">${!got ? '—' : r ? `${r.icon} ${esc(r.name)}` : 'reward not chosen yet'}</span></div>`;
   }).join('');
@@ -2965,6 +2967,15 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.0.0', date:'Oct 1, 2026', title:'Major gameplay update', sub:'The Gen 2 pack: Johto, 68 new pokémon, and runs that mix both generations', items:[
+    'New Run now has a toggle for each generation. Gen 1 plays exactly as before. Gen 2 is Johto: Falkner to Clair, then Will, Koga, Bruno and Karen, Lance as Champion, and Silver as your rival.',
+    'Pick both and 8 of the 16 gym leaders and 4 of the Elite Four are drawn and shuffled, and the Champion is Blue or Lance. Every boss is scaled to the slot they land in — Brock as the eighth gym brings Golem, Rhydon and Onix — and nobody shows up twice.',
+    '67 Gen 2 pokémon: the Johto starters, Hoothoot, Ledyba, Spinarak, Marill, Mareep, Natu, Wooper, Snubbull, Murkrow, Teddiursa, Swinub, Phanpy, Pineco, Houndour, Girafarig, Misdreavus, Miltank, Sneasel, Skarmory, Hitmontop, Heracross, Larvitar to Tyranitar, the seven babies, and Raikou, Entei, Suicune, Lugia and Ho-Oh as encounters.',
+    'With Gen 2 on, Gen 1 pokémon can evolve further: Golbat into Crobat and Chansey into Blissey by level, Onix and Scyther into Steelix and Scizor with a Metal Coat, Poliwhirl into Politoed with a King\u2019s Rock, Gloom into Bellossom and Eevee into Espeon with a Sun Stone, and Eevee into Umbreon with a Moon Stone.',
+    'Tyrogue becomes Hitmonlee, Hitmonchan or Hitmontop depending on its highest stat — Attack, HP or Speed — so your vitamins choose.',
+    'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it).',
+    'Two new types, Steel and Dark, with the Gen 2 matchups. No Gen 1 pokémon changes type.',
+    'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.' ] },
   { v:'3.8.1', date:'Sep 30, 2026', title:'Visual bug fixes', sub:'Art for all nineteen new pokémon', items:[
     'Weedle, Kakuna, Beedrill, Spearow, Fearow, Doduo, Dodrio, Diglett, Dugtrio, Sandshrew, Sandslash, both Nidorans and their evolutions, Farfetch\u2019d and Porygon now have their sprites instead of letter placeholders.' ] },
   { v:'3.8.0', date:'Sep 30, 2026', title:'Major gameplay update', sub:'Nineteen new pokémon: Weedle, Spearow, Doduo, Diglett, Sandshrew, both Nidorans, Farfetch\u2019d and Porygon', items:[
@@ -3318,8 +3329,8 @@ function openTrainerCard(fromTitle){
   const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
   const cells = bossPlanOf(G).gyms.slice(0, TUNING.badgesToWin).map((g, i) => i < G.badges
-    ? `<div class="bcell2 on" title="${esc(g.badge)} Badge — ${esc(g.name)}"><i class="bdg g${i} on"></i>${bossArt(g, 'case')}<span>${esc(g.badge)}</span></div>`
-    : `<div class="bcell2" title="${esc(g.badge)} Badge — not won yet"><i class="bdg g${i}"></i></div>`).join('');
+    ? `<div class="bcell2 on" title="${esc(g.badge)} Badge — ${esc(g.name)}"><i class="bdg ${badgeCls(G, i)} on"></i>${bossArt(g, 'case')}<span>${esc(g.badge)}</span></div>`
+    : `<div class="bcell2" title="${esc(g.badge)} Badge — not won yet"><i class="bdg ${badgeCls(G, i)}"></i></div>`).join('');
   const d = modal(`<div class="tcard">
     <div class="trow">
       <div class="facts">

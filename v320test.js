@@ -15,7 +15,10 @@ names('lorelei', ['seel','dewgong','shellder','cloyster','lapras','jynx']); name
 check(!pool('giovanni').includes('geodude') && !pool('giovanni').includes('onix') && pool('giovanni').includes('rhydon'), 'Giovanni leaves the Rock walls to Brock but keeps Rhydon');
 check(!pool('lance').includes('zubat') && !pool('lance').includes('scyther') && pool('lance').includes('dragonite'), 'Lance drops the bats and bugs');
 const ids = E.ALL_BOSSES.filter(b => b.id !== 'blue');
-check(Object.keys(S).filter(k => !S[k].legendary).every(k => ids.some(b => pool(b.id).includes(k))), 'every pokémon is in at least one gym or Elite Four pool');
+check(Object.keys(S).filter(k => !S[k].legendary && E.inGens(k, [1])).every(k => ids.some(b => pool(b.id).includes(k))), 'every Gen 1 pokémon is in at least one Gen 1 gym or Elite Four pool');
+{ E.setActiveGens([1, 2]); const all = [...E.EVERY_BOSS].filter(b => b.theme);   // 4.0.0
+  const miss = Object.keys(S).filter(k => !S[k].legendary && S[k].gen === 2 && !all.some(b => E.themePool(b).includes(k) || (b.guards || []).includes(k)));
+  check(!miss.length, `every Gen 2 pokémon can turn up on some leader's bench or as a bodyguard (${miss.join(', ') || 'all'})`); E.setActiveGens([1]); }
 { let worst = 0; for(const a of ids) for(const b of ids) if(a !== b){ const A = pool(a.id), B = pool(b.id); worst = Math.max(worst, A.filter(k => B.includes(k)).length / Math.min(A.length, B.length)); }
   check(worst <= 0.4, `no two leaders share more than 40% of a bench (worst ${Math.round(worst * 100)}%)`); }
 /* excluded species never turn up as bodyguards */

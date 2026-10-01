@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 let fails = 0;
 const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const ROOT = '/mnt/user-data/outputs';
+const ROOT = '/mnt/user-data/outputs/gen2';   // gen2 branch
 (async () => {
   const srv = spawn('python3', ['-m', 'http.server', '8765', '--bind', '127.0.0.1'], { cwd: ROOT, stdio: 'ignore' });
   await new Promise(r => setTimeout(r, 900));

@@ -192,7 +192,10 @@ const TUNING = {
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
           monoFoes: { Normal:1.041, Fire:0.914, Water:0.888, Electric:0.944, Grass:0.754, Bug:0.902, Fighting:0.955, Flying:1.045, Poison:0.92, Ground:1.024 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
-          monoFoesByGens: { '2': {}, '1+2': {} } },   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
+          monoFoesByGens: {
+            '2':   { Normal:1.104, Fire:0.986, Water:0.985, Electric:0.937, Grass:0.916, Ice:1.072, Fighting:0.958, Ground:1.101, Flying:1.015, Poison:0.938, Psychic:1.027, Bug:1.099, Rock:0.84, Dark:0.902 },
+            '1+2': { Normal:1.12, Fire:0.946, Water:1, Electric:0.933, Grass:0.889, Ice:1.102, Fighting:0.998, Ground:1.092, Flying:1.09, Poison:1, Psychic:1.096, Bug:1.078, Rock:0.865, Dark:0.898 } },
+          byGens: { '2': { richFoes:1.279 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
@@ -1716,7 +1719,7 @@ function evoNext(id){
   const sp = SPECIES[id];
   if(!sp) return [];
   const out = evoOpts(sp.evo);
-  if(sp.evo2 && ACTIVE_GENS.includes(2)) out.push(...evoOpts(sp.evo2));
+  if(sp.evo2 && ACTIVE_GENS.includes(2)) out.push(...evoOpts(sp.evo2).map(n => ({ ...n, gen2:true })));
   return out.filter(n => SPECIES[n.into]);
 }
 /** What a species evolved from, or null. */
@@ -2665,6 +2668,11 @@ function hashId(id){
 /** 2.0.0: Rich & Ruthless makes every opponent tougher. */
 /** 4.0.0: a Mono run's opponent scale depends on the gens too — a Gen 2 Ice team is not a Gen 1 one.
     Gen 1 reads TUNING.mods.monoFoes as before; other mixes read monoFoesByGens['2'] / ['1+2']. */
+/** 4.0.0: a run rule's opponent scale, overridden per gens where measured (TUNING.mods.byGens). */
+function modFoes(G, key){
+  const o = (TUNING.mods.byGens || {})[cleanGens(G && G.gens).join('+')] || {};
+  return o[key] !== undefined ? o[key] : TUNING.mods[key];
+}
 function monoFoesFor(G, type){
   const key = cleanGens(G && G.gens).join('+');
   const table = key === '1' ? TUNING.mods.monoFoes : ((TUNING.mods.monoFoesByGens || {})[key] || {});
@@ -2672,9 +2680,9 @@ function monoFoesFor(G, type){
 }
 function opponentFor(G){
   const o = opponentFor0(G);
-  const k = (G.mods && G.mods.rich ? TUNING.mods.richFoes : 1) * (G.mods && G.mods.mono ? monoFoesFor(G, G.mods.mono) : 1)
-          * (G.mods && G.mods.nopc ? TUNING.mods.nopcFoes : 1)   // 2.2.0
-          * (G.mods && G.mods.onelife ? TUNING.mods.onelifeFoes : 1)   // 2.11.0: One Life has its own knob
+  const k = (G.mods && G.mods.rich ? modFoes(G, 'richFoes') : 1) * (G.mods && G.mods.mono ? monoFoesFor(G, G.mods.mono) : 1)
+          * (G.mods && G.mods.nopc ? modFoes(G, 'nopcFoes') : 1)   // 2.2.0
+          * (G.mods && G.mods.onelife ? modFoes(G, 'onelifeFoes') : 1)   // 2.11.0: One Life has its own knob
           * (TUNING.gensFoes[cleanGens(G && G.gens).join('+')] || 1);   // 4.0.0: a mixed roster is thinner, so its opponents are scaled to match
   if(k !== 1 && o && o.team){
     for(const u of o.team){ u.hp = Math.round(u.hp * k); u.atk = Math.round(u.atk * k); u.spd = Math.round(u.spd * k); }
@@ -3914,7 +3922,7 @@ if(typeof module !== 'undefined' && module.exports){
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, KANTO_ONLY, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,

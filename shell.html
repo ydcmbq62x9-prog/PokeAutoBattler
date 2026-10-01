@@ -1045,7 +1045,19 @@ h2 .btn.arrange{font-size:11.5px;padding:2px 8px;border-width:2px;box-shadow:non
 .bdg.g5{--c:#d9b21c;border-radius:50%;-webkit-mask:radial-gradient(circle,transparent 30%,#000 33%);mask:radial-gradient(circle,transparent 30%,#000 33%)}
 .bdg.g6{--c:#e8462a;clip-path:polygon(50% 0,80% 34%,96% 68%,76% 100%,24% 100%,4% 68%,20% 34%)}
 .bdg.g7{--c:#3fa05c;border-radius:0 100% 0 100%}
-.bdg.on.g0,.bdg.on.g1,.bdg.on.g2,.bdg.on.g4,.bdg.on.g5,.bdg.on.g6,.bdg.on.g7{
+/* 4.0.0 — the Johto badges: Zephyr, Hive, Plain, Fog, Storm, Mineral, Glacier, Rising */
+.bdg.j0,.bdg.j1,.bdg.j2,.bdg.j3,.bdg.j4,.bdg.j5,.bdg.j6,.bdg.j7{transform:none;border:0;border-radius:0;
+  width:13px;height:13px;background:rgba(63,74,92,.2);box-shadow:none}
+.bdg.j0{--c:#8ea6c8;clip-path:polygon(0 30%,50% 55%,100% 30%,85% 75%,50% 100%,15% 75%)}
+.bdg.j1{--c:#e04a3a;border-radius:50% 50% 45% 45%;-webkit-mask:linear-gradient(90deg,#000 46%,transparent 46%,transparent 54%,#000 54%);mask:linear-gradient(90deg,#000 46%,transparent 46%,transparent 54%,#000 54%)}
+.bdg.j2{--c:#e2b23a;border-radius:30%}
+.bdg.j3{--c:#8a5ac2;clip-path:polygon(50% 0,85% 30%,90% 70%,70% 100%,50% 85%,30% 100%,10% 70%,15% 30%)}
+.bdg.j4{--c:#a8703a;clip-path:polygon(20% 10%,80% 10%,100% 45%,80% 90%,20% 90%,0 45%)}
+.bdg.j5{--c:#9aa3b5;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.bdg.j6{--c:#6ec6e6;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)}
+.bdg.j7{--c:#2f5fb8;clip-path:polygon(50% 0,100% 100%,50% 75%,0 100%)}
+.bdg.on.g0,.bdg.on.g1,.bdg.on.g2,.bdg.on.g4,.bdg.on.g5,.bdg.on.g6,.bdg.on.g7,
+.bdg.on.j0,.bdg.on.j1,.bdg.on.j2,.bdg.on.j3,.bdg.on.j4,.bdg.on.j5,.bdg.on.j6,.bdg.on.j7{
   background:linear-gradient(145deg,color-mix(in srgb,var(--c) 45%,#fff),var(--c) 55%,color-mix(in srgb,var(--c) 70%,#000));box-shadow:none}
 .bdg.on.g3{background:conic-gradient(#e8462a,#f59e1b,#f5d31b,#58b85a,#3f93f0,#9a5ae0,#e8462a);box-shadow:none}
 .bdg.big{width:34px!important;height:34px!important}
@@ -1389,7 +1401,8 @@ html.dark .bcell2{background:repeating-linear-gradient(45deg,#232733 0 4px,#1d21
 html.dark .bcell2.on{background:var(--panel2)}
 html.dark .bcell2 span{background:rgba(37,42,55,.92)}
 html.dark .bdg.g0:not(.on),html.dark .bdg.g1:not(.on),html.dark .bdg.g2:not(.on),html.dark .bdg.g3:not(.on),
-html.dark .bdg.g4:not(.on),html.dark .bdg.g5:not(.on),html.dark .bdg.g6:not(.on),html.dark .bdg.g7:not(.on){background:rgba(255,255,255,.16)}
+html.dark .bdg.g4:not(.on),html.dark .bdg.g5:not(.on),html.dark .bdg.g6:not(.on),html.dark .bdg.g7:not(.on),
+html.dark .bdg[class*=" j"]:not(.on){background:rgba(255,255,255,.16)}
 html.dark .gmem.now{background:#2e2850} html.dark .gmem.now.champ{background:#3e2a22}
 html.dark .dock{background:linear-gradient(180deg,rgba(25,28,37,0),var(--bg) 18%)}
 @media (hover:none){ html.dark body.picking .ctxbar{background:linear-gradient(180deg,rgba(25,28,37,.94),var(--bg) 40%)} }

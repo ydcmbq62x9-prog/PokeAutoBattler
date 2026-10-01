@@ -31,13 +31,19 @@ for(const id of Object.keys(E.SPECIES)){
 }
 
 /* ---- 2. evolution data is coherent ---- */
-{
-  // every evo target exists, is a token, and is reachable from exactly one base
+/* 4.0.0: checked once per mix of gens, over the species that mix can meet. Two exceptions
+   the Gen 2 pack brings: a baby evolves into a Gen 1 pokémon that is still sold on its own
+   (Pichu → Pikachu), and Hitmontop is sold like its brothers though Tyrogue can become it.
+   A Gen 2 evolution of a Gen 1 pokémon may change type (Onix → Steelix), as in the games. */
+for(const gens of [[1], [2], [1, 2]]){
+  E.setActiveGens(gens);
+  const ids = Object.keys(E.SPECIES).filter(k => E.inGens(k));
   const targets = {};
-  for(const id of Object.keys(E.SPECIES)) for(const evo of E.evoNext(id)){   // 1.3.0: every branch (Eevee)
+  for(const id of ids) for(const evo of E.evoNext(id)){   // 1.3.0: every branch (Eevee)
     const branching = E.evoNext(id).length > 1;
     check(!!E.SPECIES[evo.into], `${id}: evolves into unknown ${evo.into}`);
-    check(E.SPECIES[evo.into].token === true, `${evo.into} is an evolution but is still buyable`);
+    const babyOrTop = (E.genOf(id) > E.genOf(evo.into)) || evo.into === 'hitmontop';
+    check(E.SPECIES[evo.into].token === true || babyOrTop, `${evo.into} is an evolution but is still buyable`);
     check(['level','stone'].includes(evo.by), `${id}: bad evolution method ${evo.by}`);
     if(evo.by === 'stone') check(!!E.ITEMS[evo.stone], `${id}: unknown stone ${evo.stone}`);
     check(!targets[evo.into], `${evo.into} is the target of two evolutions`);
@@ -45,20 +51,21 @@ for(const id of Object.keys(E.SPECIES)){
     // an evolution should be a stat upgrade
     const a = E.SPECIES[id], b = E.SPECIES[evo.into];
     check(b.hp + b.atk + b.spd > a.hp + a.atk + a.spd, `${evo.into} is not stronger than ${id}`);
-    check(a.type === b.type || branching, `${id} changes type when it evolves into ${evo.into}`);
+    check(a.type === b.type || branching || evo.gen2, `${id} changes type when it evolves into ${evo.into}`);
   }
   // every token is somebody's evolution — no orphans nobody can ever get
-  for(const id of Object.keys(E.SPECIES)){
-    if(E.SPECIES[id].token) check(!!targets[id], `${id} is a token but nothing evolves into it`);
+  for(const id of ids){
+    if(E.SPECIES[id].token) check(!!targets[id], `${id} is a token but nothing evolves into it (gens ${gens})`);
   }
   // no cycles: evoLine terminates and starts at a buyable
-  for(const id of Object.keys(E.SPECIES)){
+  for(const id of ids){
     const line = E.evoLine(id);
     check(line.length <= 3, `${id}: evolution line longer than 3 (${line.join('→')})`);
     check(line.includes(id), `${id}: not in its own line`);
     check(!E.SPECIES[line[0]].token, `${id}: line starts at a token (${line[0]})`);
   }
 }
+E.setActiveGens([1]);
 
 /* ---- 3. levelling evolves, or gives the bigger bonus ---- */
 {
@@ -149,7 +156,7 @@ for(const id of Object.keys(E.SPECIES)){
 /* ---- 4. the type chart (3.0.0: modern chart without Dark/Steel/Fairy, immunities become resists) ---- */
 {
   const ts = Object.keys(E.TYPES);
-  check(ts.length === 15, 'fifteen types (Poison added in 3.1.0)');
+  check(ts.length === 17, 'seventeen types (Poison added in 3.1.0, Steel and Dark in 4.0.0)');
   check(!ts.includes('Lightning') && !ts.includes('Colorless') && ts.includes('Electric'), 'Electric replaces Lightning, no Colorless');
   for(const t of ts) for(const u of ts){
     const m = E.typeMult(t, u);
