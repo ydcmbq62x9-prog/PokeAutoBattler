@@ -6,6 +6,6 @@ let v = +(process.argv[5] || 0.88), p = rate(v); const pts = [[v, p]]; console.l
 for(let i = 0; i < 4 && Math.abs(p - T) > 2; i++){
   if(pts.length >= 2){ const [a, b] = pts.slice(-2); const sl = (b[1] - a[1]) / (b[0] - a[0]); v = sl < -1 ? b[0] + (T - b[1]) / sl : v * (1 + (p - T) / 400); }
   else v = v * (1 + (p - T) / 400);
-  v = +Math.max(0.6, Math.min(1.1, v)).toFixed(3); p = rate(v); pts.push([v, p]); console.log(key, v, p.toFixed(1));
+  v = +Math.max(0.6, Math.min(1.5, v)).toFixed(3); p = rate(v); pts.push([v, p]); console.log(key, v, p.toFixed(1));
 }
 console.log('RESULT', key, v, p.toFixed(1));

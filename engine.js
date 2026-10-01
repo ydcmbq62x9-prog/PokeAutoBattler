@@ -193,13 +193,13 @@ const TUNING = {
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
           monoFoes: { Normal:1.041, Fire:0.914, Water:0.888, Electric:0.944, Grass:0.754, Bug:0.902, Fighting:0.955, Flying:1.045, Poison:0.92, Ground:1.024 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.104, Fire:0.986, Water:0.985, Electric:0.937, Grass:0.916, Ice:1.072, Fighting:0.958, Ground:1.101, Flying:1.015, Poison:0.938, Psychic:1.027, Bug:1.099, Rock:0.84, Dark:0.902 },
+            '2':   { Normal:1.074, Fire:0.79, Water:0.943, Electric:0.906, Ice:0.945, Fighting:1.021, Bug:0.984, Dark:0.844 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
             '1+2': { Normal:1.12, Fire:0.946, Water:1, Electric:0.933, Grass:0.889, Ice:1.102, Fighting:0.998, Ground:1.092, Flying:1.09, Poison:1, Psychic:1.096, Bug:1.078, Rock:0.865, Dark:0.898 } },
-          byGens: { '2': { richFoes:1.279 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
+          byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
-  gensFoes: { '1': 1, '2': 1, '1+2': 0.936 },
+  gensFoes: { '1': 1, '2': 1.03, '1+2': 0.909 },
   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
@@ -409,45 +409,45 @@ const tierFor = G => Math.max(
 const GYMS = [
   { id:'brock',    name:'Brock',        title:'Pewter Gym',     guards:['machop','machoke','machamp','mankey','primeape','tauros','sandshrew','sandslash','diglett','dugtrio'], theme:['Rock'],
     signature:['onix', 'geodude'],
-    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.226, mix:0.963 },
+    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.231, mix:0.963 },
   { id:'misty',    name:'Misty',        title:'Cerulean Gym',   guards:['jigglypuff','wigglytuff','clefairy','clefable','eevee','drowzee','hypno'], theme:['Water'], exclude:['seel', 'dewgong', 'shellder', 'cloyster', 'lapras'],   // 3.2.0: the icy Waters are Lorelei's
     signature:['starmie', 'staryu', 'poliwag', 'squirtle'],
-    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.868, mix:1.046 },
+    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.874, mix:1.046 },
   { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  guards:['pidgey','pidgeotto','pidgeot','spearow','fearow','rattata','raticate','tauros','zubat','golbat'], theme:['Electric'],
     signature:['raichu', 'pikachu'],
     badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.735, mix:0.987 },
   { id:'erika',    name:'Erika',        title:'Celadon Gym',    guards:['chansey','clefairy','clefable','eevee','pidgey','pidgeotto','pidgeot'], theme:['Grass'], exclude:['Bug'],   // 3.2.0: the Bugs are Koga's
     signature:['vileplume', 'gloom', 'oddish'],
-    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.172, mix:1.001 },
+    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.193, mix:1.001 },
   { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    guards:['zubat','golbat','oddish','vileplume','bellsprout','victreebel','rattata','raticate'], theme:['Bug'], also:['koffing', 'weezing', 'nidoranf', 'nidorina', 'nidoqueen', 'nidoranm', 'nidorino', 'nidoking'], exclude:['Ghost'],   // 3.2.0: Bugs plus the gas clouds (Erika keeps the Grasses)
     signature:['weezing', 'koffing', 'scyther'],
-    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.08, mix:0.988 },
+    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.096, mix:0.988 },
   { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    guards:['clefairy','clefable','jigglypuff','wigglytuff','chansey','eevee','snorlax','porygon'], theme:['Psychic'],
     signature:['alakazam', 'abra'],
-    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.894, mix:0.921 },
+    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.893, mix:0.921 },
   { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   guards:['machop','machoke','machamp','mankey','primeape','tauros','snorlax'], theme:['Fire'],
     signature:['arcanine', 'growlithe'],
-    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.993, mix:0.999 },
+    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.968, mix:0.999 },
   { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   guards:['rattata','raticate','zubat','golbat','koffing','weezing','machop','machamp','tauros','nidoqueen','nidoking','nidorina','nidorino'], theme:['Ground','Normal'], exclude:['geodude', 'graveler', 'golem', 'onix', 'pidgey', 'pidgeotto', 'pidgeot', 'spearow', 'fearow', 'doduo', 'dodrio', 'farfetchd'],   // 3.2.0: the walls are Brock's
     signature:['rhydon', 'rhyhorn'],
-    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:2.019, mix:0.987 },
+    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:2.034, mix:0.987 },
 ];
 const ELITE_FOUR = [
   { id:'lorelei', name:'Lorelei', title:'Elite Four', guards:['starmie','hypno','alakazam','clefable','wigglytuff','chansey','porygon'], theme:['Ice'], also:['seel','shellder','vaporeon'],   // 3.3.0: + Vaporeon, so the finals are five deep
     signature:['lapras', 'dewgong', 'cloyster'],
-    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.392, mix:1.017 },
+    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.402, mix:1.017 },
   { id:'bruno',   name:'Bruno',   title:'Elite Four', guards:['golem','rhydon','snorlax','tauros'], theme:['Fighting'], also:['onix'],   // 3.2.0: Mankey and Hitmonchan join; only Onix keeps his Rock
     signature:['machamp', 'primeape', 'hitmonlee'],
-    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.973, mix:1.081 },
+    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.951, mix:1.081 },
   { id:'agatha',  name:'Agatha',  title:'Elite Four', guards:['vileplume','parasect','tangela','jynx','alakazam','nidoqueen','nidoking'], theme:['Ghost'], also:['zubat', 'golbat', 'drowzee', 'hypno', 'weezing', 'victreebel'],   // 3.2.0: ghosts, bats and Dream Eaters; 3.3.0: + the poison cloud and the pitcher
     signature:['gengar', 'hypno', 'golbat'],
-    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.83, mix:1.049 },
+    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.82, mix:1.049 },
   { id:'lance',   name:'Lance',   title:'Elite Four', guards:['arcanine','ninetales','tauros','rhydon'], theme:['Dragon','Flying'], exclude:['Poison', 'Bug', 'Psychic', 'Dark', 'Steel'],   // 3.2.0: bats and bugs belong to Agatha and Koga
     signature:['dragonite', 'gyarados', 'charizard'],
-    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.661, mix:1.093 },
+    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.686, mix:1.093 },
 ];
 const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
-  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.231 };
+  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.257 };
 
 /* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
@@ -462,49 +462,50 @@ const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (ba
    same person twice (Koga the gym leader and Koga of the Elite Four).
    =================================================================== */
 const GYMS2 = [
-  { id:'falkner', name:'Falkner', title:'Violet Gym',    gen:2, theme:['Flying'], exclude:['Fire','Dragon','Bug','Poison','Water','Psychic','Dark','Steel'], guards:['rattata','raticate','sandshrew','sandslash','mareep','flaaffy'],
-    signature:['pidgeotto', 'noctowl', 'pidgeot'],
-    badge:'Zephyr',  blurb:'Fast birds that strike first, Pidgeotto in front. Electric and Rock ground them.', calib:1.145, mix:0.946 },
-  { id:'bugsy',   name:'Bugsy',   title:'Azalea Gym',    gen:2, theme:['Bug'], guards:['pidgey','pidgeotto','oddish','gloom','bellsprout','weepinbell'],
+  { id:'falkner', name:'Falkner', title:'Violet Gym',    gen:2, theme:['Flying'], exclude:['Fire','Dragon','Bug','Water','Steel'], guards:['snubbull','granbull','teddiursa','mareep','flaaffy','phanpy'],
+    signature:['pidgeotto', 'noctowl', 'pidgeot', 'crobat'],
+    badge:'Zephyr',  blurb:'Fast birds that strike first. Electric and Rock ground them.', calib:1.136, mix:0.946 },
+  { id:'bugsy',   name:'Bugsy',   title:'Azalea Gym',    gen:2, theme:['Bug'], guards:['hoothoot','noctowl','oddish','gloom','mareep','flaaffy'],
     signature:['scyther', 'scizor', 'heracross'],
-    badge:'Hive',    blurb:'Bugs that slow, sting and slice, Scyther in front. Fire, Flying and Rock clear them out.', calib:1.32, mix:1.013 },
-  { id:'whitney', name:'Whitney', title:'Goldenrod Gym', gen:2, theme:['Normal'], exclude:['Flying'], guards:['marill','azumarill','oddish','gloom','machop','machoke'],
+    badge:'Hive',    blurb:'Bugs that slow, sting and slice, Scyther in front. Fire, Flying and Rock clear them out.', calib:1.344, mix:1.013 },
+  { id:'whitney', name:'Whitney', title:'Goldenrod Gym', gen:2, theme:['Normal'], exclude:['Flying'], guards:['marill','azumarill','oddish','gloom','tyrogue','hitmontop'],
     signature:['miltank', 'clefairy', 'clefable'],
-    badge:'Plain',   blurb:'Miltank rolls over everything, with a cute Normal bench behind it. Fighting cracks them.', calib:1.439, mix:0.975 },
-  { id:'morty',   name:'Morty',   title:'Ecruteak Gym',  gen:2, theme:['Ghost'], also:['drowzee', 'hypno'], guards:['zubat','golbat','natu','xatu','murkrow'],
+    badge:'Plain',   blurb:'Miltank rolls over everything, with a cute Normal bench behind it. Fighting cracks them.', calib:1.459, mix:0.975 },
+  { id:'morty',   name:'Morty',   title:'Ecruteak Gym',  gen:2, theme:['Ghost'], also:['drowzee', 'hypno', 'murkrow', 'natu', 'xatu', 'houndour', 'houndoom', 'smoochum', 'jynx'], guards:['zubat','golbat','umbreon','hypno'],
     signature:['gengar', 'haunter', 'misdreavus'],
-    badge:'Fog',     blurb:'Ghosts that put you to sleep and pick you apart. Dark, Psychic and Ghost hit back.', calib:1.964, mix:1.06 },
-  { id:'chuck',   name:'Chuck',   title:'Cianwood Gym',  gen:2, theme:['Fighting'], also:['poliwag', 'poliwhirl', 'poliwrath'], guards:['geodude','graveler','onix','tauros','ursaring'],
+    badge:'Fog',     blurb:'Ghosts and things that go bump in the night, putting you to sleep. Dark, Psychic and Ghost hit back.', calib:2.004, mix:1.06 },
+  { id:'chuck',   name:'Chuck',   title:'Cianwood Gym',  gen:2, theme:['Fighting'], also:['poliwag', 'poliwhirl', 'poliwrath'], guards:['onix','steelix','geodude','graveler','ursaring'],
     signature:['poliwrath', 'primeape', 'hitmontop'],
-    badge:'Storm',   blurb:'Raw Fighting power with Poliwrath in front. Psychic and Flying win it.', calib:1.883, mix:0.992 },
-  { id:'jasmine', name:'Jasmine', title:'Olivine Gym',   gen:2, theme:['Steel'], also:['magnemite', 'magneton'], guards:['geodude','graveler','golem','sandshrew','sandslash','ampharos'],
+    badge:'Storm',   blurb:'Raw Fighting power with Poliwrath in front. Psychic and Flying win it.', calib:1.934, mix:0.992 },
+  { id:'jasmine', name:'Jasmine', title:'Olivine Gym',   gen:2, theme:['Steel'], also:['magnemite', 'magneton'], guards:['phanpy','donphan','larvitar','pupitar','ampharos','quagsire'],
     signature:['steelix', 'skarmory', 'magneton'],
-    badge:'Mineral', blurb:'Steel walls that refuse to fall, Steelix in front. Fire, Fighting and Ground melt them.', calib:1.955, mix:1.022 },
-  { id:'pryce',   name:'Pryce',   title:'Mahogany Gym',  gen:2, theme:['Ice'], guards:['phanpy','donphan','seel','shellder','sandslash'],
+    badge:'Mineral', blurb:'Steel walls that refuse to fall, Steelix in front. Fire, Fighting and Ground melt them.', calib:2.097, mix:1.022 },
+  { id:'pryce',   name:'Pryce',   title:'Mahogany Gym',  gen:2, theme:['Ice'], guards:['phanpy','donphan','seel','shellder','quagsire'],
     signature:['piloswine', 'dewgong', 'swinub'],
-    badge:'Glacier', blurb:'Icy walls that chill and sleep you, Piloswine in front. Fire, Fighting and Steel break the ice.', calib:1.999, mix:0.999 },
-  { id:'clair',   name:'Clair',   title:'Blackthorn Gym', gen:2, theme:['Dragon'], also:['gyarados', 'magikarp'], guards:['flaaffy','ampharos','dodrio','piloswine'],
-    signature:['dragonair', 'dragonite', 'gyarados'],
-    badge:'Rising',  blurb:'Dragons with a temper and Thunder Wave, Dragonair in front. Ice and Dragon bring them down.', calib:2.015, mix:1.055 },
+    badge:'Glacier', blurb:'Icy walls that chill and sleep you, Piloswine in front. Fire, Fighting and Steel break the ice.', calib:2.141, mix:0.999 },
+  { id:'clair',   name:'Clair',   title:'Blackthorn Gym', gen:2, theme:['Dragon'], also:['horsea', 'seadra', 'gyarados', 'magikarp'], bossOnly:['dratini', 'dragonair', 'dragonite'], guards:['flaaffy','ampharos','piloswine','skarmory'],
+    signature:['kingdra', 'dragonair', 'dragonite'],
+    badge:'Rising',  blurb:'Kingdra and a den of Dragonair, with a temper and Thunder Wave. Ice and Dragon bring them down.', calib:2.217, mix:1.055 },
 ];
 const ELITE_FOUR2 = [
-  { id:'will',  name:'Will',  title:'Elite Four', gen:2, theme:['Psychic'], guards:['jynx','wigglytuff','clefable','ampharos'],
+  { id:'will',  name:'Will',  title:'Elite Four', gen:2, theme:['Psychic'], guards:['jynx','wigglytuff','clefable','ampharos','blissey'],
     signature:['xatu', 'exeggutor', 'jynx'],
-    blurb:'Psychics that hit first and hard, Xatu in front. Bug, Dark and Ghost outlast them.', calib:2.716, mix:1.045 },
-  { id:'koga2', person:'koga', name:'Koga', title:'Elite Four', gen:2, theme:['Poison'], also:['forretress'], exclude:['Ghost','Grass'], guards:['forretress','skarmory','electrode','sandslash'],
+    blurb:'Psychics that hit first and hard, Xatu in front. Bug, Dark and Ghost outlast them.', calib:2.59, mix:1.045 },
+  { id:'koga2', person:'koga', name:'Koga', title:'Elite Four', gen:2, theme:['Poison'], also:['forretress'], exclude:['Ghost','Grass'], guards:['forretress','skarmory','sneasel','ursaring'],
     signature:['crobat', 'ariados', 'weezing'],
-    blurb:'Koga, now of the Elite Four: poison, confusion and Crobat. Psychic and Ground cut through.', calib:1.797, mix:1.049 },
-  { id:'bruno2', person:'bruno', name:'Bruno', title:'Elite Four', gen:2, theme:['Fighting'], also:['onix', 'steelix'], guards:['steelix','golem','tauros','ursaring'],
+    blurb:'Koga, now of the Elite Four: poison, confusion and Crobat. Psychic and Ground cut through.', calib:1.817, mix:1.049 },
+  { id:'bruno2', person:'bruno', name:'Bruno', title:'Elite Four', gen:2, theme:['Fighting'], also:['onix', 'steelix'], guards:['steelix','donphan','ursaring','miltank'],
     signature:['hitmontop', 'hitmonlee', 'hitmonchan', 'machamp'],
-    blurb:'Bruno again: the three Hitmons and Machamp, Steelix holding the line. Psychic is still the lever.', calib:1.696, mix:1.065 },
-  { id:'karen', name:'Karen', title:'Elite Four', gen:2, theme:['Dark'], also:['gengar', 'vileplume'], guards:['vileplume','gengar','bellossom','golbat'],
+    blurb:'Bruno again: the three Hitmons, Steelix holding the line. Psychic is still the lever.', calib:1.772, mix:1.065 },
+  { id:'karen', name:'Karen', title:'Elite Four', gen:2, theme:['Dark'], also:['gengar', 'vileplume', 'bellossom'], guards:['vileplume','bellossom','crobat'],
     signature:['umbreon', 'houndoom', 'murkrow'],
-    blurb:'Dark tricks and nasty surprises, Umbreon in front. Fighting and Bug punish them.', calib:1.602, mix:0.975 },
+    blurb:'Dark tricks and nasty surprises, Umbreon in front. Fighting and Bug punish them.', calib:1.657, mix:0.975 },
 ];
-const CHAMPION2 = { id:'lance2', person:'lance', name:'Lance', title:'Champion', gen:2, theme:['Dragon', 'Flying'], exclude:['Poison', 'Bug', 'Normal', 'Psychic', 'murkrow'], also:['charizard', 'tyranitar'],
+const CHAMPION2 = { id:'lance2', person:'lance', name:'Lance', title:'Champion', gen:2, theme:['Dragon', 'Flying'], exclude:['Poison', 'Bug', 'Normal', 'Psychic', 'murkrow'],
+  also:['charizard', 'tyranitar', 'kingdra', 'seadra'], bossOnly:['dratini', 'dragonair', 'dragonite'],
   guards:['ampharos','arcanine','piloswine'],
-  signature:['dragonite', 'gyarados', 'dragonair'],
-  blurb:'The Dragon master, now Champion: Dragonite after Dragonite. Ice and Dragon, and nerve.', calib:1.453 };
+  signature:['dragonite', 'kingdra', 'gyarados'],
+  blurb:'The Dragon master, now Champion: Dragonite after Dragonite. Ice and Dragon, and nerve.', calib:1.647 };
 const RIVAL2 = { id:'silver', name:'Silver', title:'Rival', gen:2, theme:null, bird:'zubat', support:null,
   starters:{ Grass:'chikorita', Fire:'cyndaquil', Water:'totodile' },
   blurb:'He stole his starter, and it beats yours. Three times a run, getting meaner each time.' };
@@ -578,7 +579,7 @@ function themePool(themeOrBoss){
      so two leaders don't share a bench (Koga leaves the Ghosts to Agatha). */
   const boss = themeOrBoss && !Array.isArray(themeOrBoss) ? themeOrBoss : null;
   const theme = boss ? boss.theme : themeOrBoss;
-  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && inGens(k));   // 2.1.0: no trainer fields a legendary; 4.0.0: only this run's gens
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && (boss ? inBossPool(k) || !!(boss.bossOnly && boss.bossOnly.includes(k)) : inGens(k)));   // 2.1.0: no trainer fields a legendary; 4.0.0: a leader draws on the run's whole region, the Daycare only on what's sold
   if(!theme) return all;
   const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
@@ -979,6 +980,7 @@ const HTOP = [34, 36, 54];
 const HERA = [38, 52, 52];
 const LARV = { b:[20, 22, 30], m:[36, 28, 24], e:[60, 62, 46] };
 const MAGM = [30, 34, 62];
+const HORS = { b:[14, 20, 46], m:[36, 42, 60], e:[42, 44, 58] };
 const CROB = [56, 46, 78];
 const BLIS = [76, 14, 44];
 const STLX = [54, 36, 30];
@@ -1418,6 +1420,13 @@ const SPECIES = {
                 evo:{into:'electabuzz', by:'level'},  move:M.hit('Thunder Punch', 1.2) },
   magby:      { name:'Magby',      type:'Fire', gen1:'Fire', gen:2, tier:3, role:'cannon', hp:16, atk:22, spd:46,
                 evo:{into:'magmar', by:'level'},      move:M.hit('Ember', 1.3) },
+  /* …and the Gen 1 line that Kingdra finishes (Clair's ace): a Water Cannon that takes a Dragon Scale */
+  horsea:     { name:'Horsea',     type:'Water', gen1:'Water', tier:2, role:'cannon', hp:HORS.b[0], atk:HORS.b[1], spd:HORS.b[2],
+                evo:{into:'seadra', by:'level'},      move:M.hit('Water Gun', 1.3) },
+  seadra:     { name:'Seadra',     type:'Water', gen1:'Water', tier:2, role:'cannon', hp:HORS.m[0], atk:HORS.m[1], spd:HORS.m[2], token:true,
+                move:M.hit('Water Gun', 2.0) },
+  kingdra:    { name:'Kingdra',    type:'Water', gen1:'Water/Dragon', gen:2, tier:2, role:'cannon', hp:HORS.e[0], atk:HORS.e[1], spd:HORS.e[2], token:true,
+                move:M.charge('Hydro Pump', 2.1, 'Dragon Breath', 1.0) },
   /* …and the Gen 1 pokémon Magby grows into, in Blaine's line of work */
   magmar:     { name:'Magmar',     type:'Fire', gen1:'Fire', tier:5, role:'cannon', hp:MAGM[0], atk:MAGM[1], spd:MAGM[2],
                 move:M.hit('Fire Punch', 1.6) },
@@ -1466,8 +1475,31 @@ const SPECIES = {
 const GENS = { 1: { name:'Gen 1', region:'Kanto' }, 2: { name:'Gen 2', region:'Johto' } };
 /** The gens a player can switch on today. Gen 2 joins when its pack is complete. */
 const GENS_READY = [1, 2];   // gen2 branch: Gen 2 is playable here (placeholder benches until the pack lands)
+/* Sean: bosses of a Gen 2 run may also field the Gen 1 pokémon of the Johto Pokédex (Morty's
+   Gengar, Pryce's Dewgong, Clair's Dragonair) — everything but these Kanto-only ones — though
+   none of them is ever sold in a Gen 2-only run. */
 const KANTO_ONLY = ['bulbasaur', 'ivysaur', 'venusaur', 'charmander', 'charmeleon', 'charizard', 'squirtle', 'wartortle', 'blastoise',
   'farfetchd', 'porygon', 'tangela', 'zapdos', 'articuno', 'moltres', 'mewtwo'];
+/** Can a boss of this run field it? The run's gens, or the Johto Pokédex when Gen 2 is on. */
+const inBossPool = (id, gens) => { gens = gens || ACTIVE_GENS;
+  return inGens(id, gens) || (gens.includes(2) && genOf(id) === 1 && !KANTO_ONLY.includes(id)); };
+/* Sean: a Gen 2 run plays ONLY Gen 2 pokémon — plus any Gen 1 line that a Gen 2 pokémon
+   belongs to (Onix → Steelix, Magby → Magmar, Pichu → Pikachu…), the whole line. */
+let GEN2_LINKED = null;
+function gen2Linked(id){
+  if(!GEN2_LINKED){
+    const nb = {};   // the evolution graph with every gen's edges, both directions
+    const link = (a, b) => { (nb[a] = nb[a] || []).push(b); (nb[b] = nb[b] || []).push(a); };
+    for(const k of Object.keys(SPECIES)) for(const e of [...evoOpts(SPECIES[k].evo), ...evoOpts(SPECIES[k].evo2)]) link(k, e.into);
+    GEN2_LINKED = new Set();
+    for(const k of Object.keys(SPECIES)){
+      const seen = new Set([k]), todo = [k];
+      while(todo.length){ const x = todo.pop(); for(const y of nb[x] || []) if(!seen.has(y)){ seen.add(y); todo.push(y); } }
+      if([...seen].some(x => (SPECIES[x].gen || 1) >= 2)) GEN2_LINKED.add(k);
+    }
+  }
+  return GEN2_LINKED.has(id);
+}
 let ACTIVE_GENS = [1];
 const cleanGens = g => { const out = Object.keys(GENS).map(Number).filter(n => Array.isArray(g) && g.includes(n)); return out.length ? out : [1]; };
 const genOf = id => (SPECIES[id] && SPECIES[id].gen) || 1;
@@ -1476,7 +1508,7 @@ function inGens(id, gens){
   const sp = SPECIES[id]; if(!sp) return false;
   gens = gens || ACTIVE_GENS;
   if((sp.gen || 1) >= 2) return gens.includes(sp.gen);
-  return gens.includes(1) || (gens.includes(2) && !KANTO_ONLY.includes(id));
+  return gens.includes(1) || (gens.includes(2) && gen2Linked(id));
 }
 const buyableFor = gens => Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary && inGens(k, gens));
 const BUYABLE = buyableFor([1]);
@@ -1679,6 +1711,9 @@ const MOVE2 = {
   elekid:     on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
   magby:      on('every', M.afflict('Smokescreen', 0, 'cnf', 0.5, 'random'), { n:3 }),
   magmar:     on('every', M.afflict('Fire Spin', 0.8, 'brn', 1, 'front'), { n:3 }),
+  horsea:     on('every', M.afflict('Smokescreen', 0, 'cnf', 0.5, 'random'), { n:3 }),
+  seadra:     on('every', M.afflict('Smokescreen', 0, 'cnf', 0.6, 'random'), { n:3 }),
+  kingdra:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
   crobat:     on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
   blissey:    on('allyLow', M.shield('Light Screen', 0.15, 'team')),
   steelix:    on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),
@@ -1697,6 +1732,7 @@ Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; })
 /* 4.0.0: Gen 2 evolutions of Gen 1 pokémon. They only exist in runs with Gen 2 on
    (evoNext reads `evo2` only then), so a Gen 1 run plays exactly as before. */
 Object.assign(SPECIES.golbat,    { evo2:{ into:'crobat', by:'level' } });
+Object.assign(SPECIES.seadra,    { evo2:{ into:'kingdra', by:'stone', stone:'dragonscale' } });
 Object.assign(SPECIES.chansey,   { evo2:{ into:'blissey', by:'level' } });
 Object.assign(SPECIES.onix,      { evo2:{ into:'steelix', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.scyther,   { evo2:{ into:'scizor', by:'stone', stone:'metalcoat' } });
@@ -1803,6 +1839,8 @@ const ITEMS = {
                   eligible:u => stonesFor(u.id).includes('sunstone'), apply:(u,G)=>G.evolve(u, 'sunstone') },
   kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed.',
                   eligible:u => stonesFor(u.id).includes('kingsrock'), apply:(u,G)=>G.evolve(u, 'kingsrock') },
+  dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'common', text:'Evolves Seadra into Kingdra.',
+                  eligible:u => stonesFor(u.id).includes('dragonscale'), apply:(u,G)=>G.evolve(u, 'dragonscale') },
   metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'common', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
                   eligible:u => stonesFor(u.id).includes('metalcoat'), apply:(u,G)=>G.evolve(u, 'metalcoat') },
 };
@@ -2515,7 +2553,7 @@ function generateAiTeam(spec){
      Giovanni, and so on. A species that evolves is allowed once the run is far
      enough along for this leader to field evolved forms. */
   let offPool = boss && boss.theme
-    ? (boss.guards || []).filter(k => SPECIES[k] && inGens(k) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
+    ? (boss.guards || []).filter(k => SPECIES[k] && inBossPool(k) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
         && evoDepth(k) <= maxDepth)
     : [];
   if(finalsOnly){ const f = offPool.filter(isFinal); if(f.length >= 2) offPool = f; }
@@ -3920,7 +3958,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, KANTO_ONLY, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,

@@ -5,7 +5,7 @@ const SPRITES = new Function(fs.readFileSync('sprites.js', 'utf8') + '; return S
 const want = { pokémon: Object.keys(E.SPECIES), items: Object.keys(E.ITEMS), held: Object.keys(E.HELD_ITEMS),
   'battle items': E.BATTLE_ITEMS.map(b => b.id), leaders: [...(E.EVERY_BOSS || E.ALL_BOSSES), ...(E.RIVAL2 ? [E.RIVAL2] : [])].map(b => b.id) };   // 4.0.0: every gen's leaders
 /* Sean supplies the artwork from his Sprites folder; until then these show a two-letter placeholder. */
-const AWAITING_ART = [];   // 3.8.1: all art delivered.   // 3.1.2: all art delivered.   // 2.7.1: all art delivered. Add ids here while a new pokémon waits for its sprite.
+const AWAITING_ART = ['dragonscale'];   // 4.0.0: waiting on Sean's Dragon Scale art
 let bad = 0;
 for(const [k, ids] of Object.entries(want)){
   const miss = ids.filter(id => !SPRITES[id] && !AWAITING_ART.includes(id));

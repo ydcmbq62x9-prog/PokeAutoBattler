@@ -5,7 +5,7 @@ const pool = id => E.themePool(E.bossById(id));
 const same = (a, b) => a.length === b.length && a.every(k => b.includes(k));
 check(!same(pool('lorelei'), pool('misty')), 'Lorelei no longer shares Misty’s pool');
 check(same(pool('lorelei'), ['seel', 'dewgong', 'shellder', 'cloyster', 'lapras', 'jynx', 'vaporeon']), 'Lorelei’s pool is the Ice pokémon (the Seel line, Shellder line, Lapras, Jynx) plus Vaporeon (3.3.0)');
-check(pool('misty').length === 11 && !['seel','dewgong','shellder','cloyster','lapras'].some(k => pool('misty').includes(k)), 'Misty keeps a wide Water pool (11, 3.2.0: the icy Waters are Lorelei’s)');
+check(pool('misty').length === 13 && !['seel','dewgong','shellder','cloyster','lapras'].some(k => pool('misty').includes(k)), 'Misty keeps a wide Water pool (13 with Horsea and Seadra in 4.0.0; 3.2.0: the icy Waters are Lorelei’s)');
 check(!same(pool('koga'), pool('agatha')), 'Koga no longer shares Agatha’s pool');
 check(!['gastly', 'haunter', 'gengar'].some(k => pool('koga').includes(k)), 'Koga fields no Ghosts');
 check(['gastly', 'haunter', 'gengar'].every(k => pool('agatha').includes(k)), 'Agatha keeps the Gastly line');

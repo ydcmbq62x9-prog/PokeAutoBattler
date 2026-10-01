@@ -2,7 +2,8 @@
 const E = require('./engine.js'); const S = E.SPECIES; const MAIN = require('../engine.js');
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
 const G2 = Object.keys(S).filter(k => S[k].gen === 2);
-check(G2.length === 67 && S.magmar && (S.magmar.gen || 1) === 1, `67 Gen 2 pokémon plus Magmar for Gen 1 (${G2.length})`);
+check(G2.length === 68 && S.magmar && (S.magmar.gen || 1) === 1 && S.horsea && !S.horsea.gen && S.kingdra.gen === 2, `68 Gen 2 pokémon (Kingdra included), plus Magmar, Horsea and Seadra for Gen 1 (${G2.length})`);
+check(E.evoOpts(S.seadra.evo2)[0].stone === 'dragonscale' && E.ITEMS.dragonscale, 'Seadra takes a Dragon Scale to become Kingdra');
 check(['raikou','entei','suicune','lugia','ho-oh'].every(k => S[k].legendary && S[k].gen === 2), 'the beasts, Lugia and Ho-Oh are Gen 2 legendaries');
 
 /* Gen 1 runs see none of it */

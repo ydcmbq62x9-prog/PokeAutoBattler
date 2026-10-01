@@ -13,7 +13,10 @@ const ids = a => a.map(b => b.id).join();
 /* Gen 2 alone */
 { const G = E.newGame(7, { gens:[2] });
   check(G.bossPlan.gyms.join() === ids(E.GYMS2) && G.bossPlan.elite.join() === ids(E.ELITE_FOUR2) && G.bossPlan.champion === 'lance2' && G.bossPlan.rival === 'silver', 'Gen 2 alone: Falkner … Clair, Will … Karen, Lance, and Silver as the rival');
-  check(E.BUYABLE.every(k => E.inGens(k, [2])) && !E.BUYABLE.some(k => E.KANTO_ONLY.includes(k)), 'its Daycare sells the Johto Pokédex (no Kanto starters, Farfetch\'d, Porygon, Tangela)');
+  check(E.BUYABLE.every(k => E.SPECIES[k].gen === 2 || E.gen2Linked(k)) && !E.BUYABLE.includes('gastly') && !E.BUYABLE.includes('dratini') && E.BUYABLE.includes('onix') && E.BUYABLE.includes('pikachu'),
+    'its Daycare sells only Gen 2 pokémon and the Gen 1 lines a Gen 2 pokémon belongs to (Onix, Pikachu — not Gastly or Dratini)');
+  check(E.themePool(E.bossById('morty')).includes('gengar') && E.themePool(E.bossById('clair')).includes('dragonite') && !E.themePool(['Ghost']).includes('gastly'),
+    '…while its leaders can still field Johto\'s Gen 1 pokémon (Morty\'s Gengar, Clair\'s Dragonite); ordinary trainers cannot');
   check(E.rivalOf(G).name === 'Silver' && E.gymAt(G, 0).badge === 'Zephyr', 'the rival and the badge names follow the run');
   check(E.genLabel(G) === 'Gen 2' && E.modList(G)[0] === 'gens', 'a Gen 2 run is labelled and keeps its own records'); }
 E.setActiveGens([1]);
