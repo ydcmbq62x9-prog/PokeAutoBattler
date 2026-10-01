@@ -1,6 +1,6 @@
 // secant-tune one run-rule factor so the reference bot clears TARGET%  (node modtune.js key target N [iters])
 const E = require('./engine.js'), B = require('./botlib.js');
-const [key, tgtArg, nArg, itArg] = process.argv.slice(2); const TARGET = +tgtArg || 52, N = +nArg || 400, IT = +itArg || 4;
+const [key, tgtArg, nArg, itArg] = process.argv.slice(2); const TARGET = +tgtArg || 52, N = +nArg || 400, IT = itArg !== undefined ? +itArg : 4;
 const isMono = key.startsWith('mono:'), t = isMono ? key.split(':')[1] : null;
 const GENS = JSON.parse(process.env.GENS || '[1]'), GK = GENS.join('+');   // 4.0.0
 const monoTable = () => GK === '1' ? E.TUNING.mods.monoFoes : E.TUNING.mods.monoFoesByGens[GK];

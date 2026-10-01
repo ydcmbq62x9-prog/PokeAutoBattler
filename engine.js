@@ -191,13 +191,12 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.041, Fire:0.914, Water:0.888, Electric:0.944, Grass:0.754, Bug:0.902, Fighting:0.955, Flying:1.045, Poison:0.92, Ground:1.024 },
-          monoFoesByGens: { '2': {}, '1+2': {} } },
+          monoFoes: { Normal:1.041, Fire:0.914, Water:0.888, Electric:0.944, Grass:0.754, Bug:0.902, Fighting:0.955, Flying:1.045, Poison:0.92, Ground:1.024 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoesByGens: { '2': {}, '1+2': {} } },   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
-  gensFoes: { '1': 1, '2': 1, '1+2': 1 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
-  // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
+  gensFoes: { '1': 1, '2': 1, '1+2': 0.936 },
   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
@@ -407,42 +406,42 @@ const tierFor = G => Math.max(
 const GYMS = [
   { id:'brock',    name:'Brock',        title:'Pewter Gym',     guards:['machop','machoke','machamp','mankey','primeape','tauros','sandshrew','sandslash','diglett','dugtrio'], theme:['Rock'],
     signature:['onix', 'geodude'],
-    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.226 },
+    badge:'Boulder', blurb:'Rock and Ground walls: Onix, Golem, Rhydon. Water, Grass and Fighting break them.'  , calib:1.226, mix:0.963 },
   { id:'misty',    name:'Misty',        title:'Cerulean Gym',   guards:['jigglypuff','wigglytuff','clefairy','clefable','eevee','drowzee','hypno'], theme:['Water'], exclude:['seel', 'dewgong', 'shellder', 'cloyster', 'lapras'],   // 3.2.0: the icy Waters are Lorelei's
     signature:['starmie', 'staryu', 'poliwag', 'squirtle'],
-    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.868 },
+    badge:'Cascade', blurb:'A wide Water bench with Starmie in front. Electric and Grass are your friends.'  , calib:1.868, mix:1.046 },
   { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  guards:['pidgey','pidgeotto','pidgeot','spearow','fearow','rattata','raticate','tauros','zubat','golbat'], theme:['Electric'],
     signature:['raichu', 'pikachu'],
-    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.735 },
+    badge:'Thunder', blurb:'Fast, shocking cannons behind a Magneton wall. Something sturdy up front.'  , calib:1.735, mix:0.987 },
   { id:'erika',    name:'Erika',        title:'Celadon Gym',    guards:['chansey','clefairy','clefable','eevee','pidgey','pidgeotto','pidgeot'], theme:['Grass'], exclude:['Bug'],   // 3.2.0: the Bugs are Koga's
     signature:['vileplume', 'gloom', 'oddish'],
-    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.172 },
+    badge:'Rainbow', blurb:'Sleep, poison and healing on a wide Grass bench. Fire ends it quickly.'  , calib:2.172, mix:1.001 },
   { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    guards:['zubat','golbat','oddish','vileplume','bellsprout','victreebel','rattata','raticate'], theme:['Bug'], also:['koffing', 'weezing', 'nidoranf', 'nidorina', 'nidoqueen', 'nidoranm', 'nidorino', 'nidoking'], exclude:['Ghost'],   // 3.2.0: Bugs plus the gas clouds (Erika keeps the Grasses)
     signature:['weezing', 'koffing', 'scyther'],
-    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.08 },
+    badge:'Soul',    blurb:'Weezing leads bugs and gas clouds that wear you down. Fire and Psychic help.'  , calib:2.08, mix:0.988 },
   { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    guards:['clefairy','clefable','jigglypuff','wigglytuff','chansey','eevee','snorlax','porygon'], theme:['Psychic'],
     signature:['alakazam', 'abra'],
-    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.894 },
+    badge:'Marsh',   blurb:'Alakazam leads a team of glass cannons that hit first. Out-speed or out-bulk them.'  , calib:1.894, mix:0.921 },
   { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   guards:['machop','machoke','machamp','mankey','primeape','tauros','snorlax'], theme:['Fire'],
     signature:['arcanine', 'growlithe'],
-    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.993 },
+    badge:'Volcano', blurb:'Everything hurts, and Arcanine leads. Water walls it.'  , calib:1.993, mix:0.999 },
   { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   guards:['rattata','raticate','zubat','golbat','koffing','weezing','machop','machamp','tauros','nidoqueen','nidoking','nidorina','nidorino'], theme:['Ground','Normal'], exclude:['geodude', 'graveler', 'golem', 'onix', 'pidgey', 'pidgeotto', 'pidgeot', 'spearow', 'fearow', 'doduo', 'dodrio', 'farfetchd'],   // 3.2.0: the walls are Brock's
     signature:['rhydon', 'rhyhorn'],
-    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:2.019 },
+    badge:'Earth',   blurb:'Muscle, not tricks: big Normal and Ground bodies, Rhydon in front. A stat check.'  , calib:2.019, mix:0.987 },
 ];
 const ELITE_FOUR = [
   { id:'lorelei', name:'Lorelei', title:'Elite Four', guards:['starmie','hypno','alakazam','clefable','wigglytuff','chansey','porygon'], theme:['Ice'], also:['seel','shellder','vaporeon'],   // 3.3.0: + Vaporeon, so the finals are five deep
     signature:['lapras', 'dewgong', 'cloyster'],
-    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.392 },
+    blurb:'Icy Water pokémon, Lapras in front. Chip her walls down before the clock does. Electric helps.'  , calib:2.392, mix:1.017 },
   { id:'bruno',   name:'Bruno',   title:'Elite Four', guards:['golem','rhydon','snorlax','tauros'], theme:['Fighting'], also:['onix'],   // 3.2.0: Mankey and Hitmonchan join; only Onix keeps his Rock
     signature:['machamp', 'primeape', 'hitmonlee'],
-    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.973 },
+    blurb:'Machamp leads a Fighting crowd, with Onix holding the line. Psychic is the lever.'  , calib:1.973, mix:1.081 },
   { id:'agatha',  name:'Agatha',  title:'Elite Four', guards:['vileplume','parasect','tangela','jynx','alakazam','nidoqueen','nidoking'], theme:['Ghost'], also:['zubat', 'golbat', 'drowzee', 'hypno', 'weezing', 'victreebel'],   // 3.2.0: ghosts, bats and Dream Eaters; 3.3.0: + the poison cloud and the pitcher
     signature:['gengar', 'hypno', 'golbat'],
-    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.83 },
+    blurb:'Gengar leads ghosts, bats and dream-eaters that hit hard and fall fast. Whoever moves first wins.'  , calib:1.83, mix:1.049 },
   { id:'lance',   name:'Lance',   title:'Elite Four', guards:['arcanine','ninetales','tauros','rhydon'], theme:['Dragon','Flying'], exclude:['Poison', 'Bug', 'Psychic', 'Dark', 'Steel'],   // 3.2.0: bats and bugs belong to Agatha and Koga
     signature:['dragonite', 'gyarados', 'charizard'],
-    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.661 },
+    blurb:'Dragonite leads Dragon and Flying pokémon. No easy type answer.'  , calib:1.661, mix:1.093 },
 ];
 const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
   blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.231 };
@@ -462,42 +461,42 @@ const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (ba
 const GYMS2 = [
   { id:'falkner', name:'Falkner', title:'Violet Gym',    gen:2, theme:['Flying'], exclude:['Fire','Dragon','Bug','Poison','Water','Psychic','Dark','Steel'], guards:['rattata','raticate','sandshrew','sandslash','mareep','flaaffy'],
     signature:['pidgeotto', 'noctowl', 'pidgeot'],
-    badge:'Zephyr',  blurb:'Fast birds that strike first, Pidgeotto in front. Electric and Rock ground them.', calib:1.145 },
+    badge:'Zephyr',  blurb:'Fast birds that strike first, Pidgeotto in front. Electric and Rock ground them.', calib:1.145, mix:0.946 },
   { id:'bugsy',   name:'Bugsy',   title:'Azalea Gym',    gen:2, theme:['Bug'], guards:['pidgey','pidgeotto','oddish','gloom','bellsprout','weepinbell'],
     signature:['scyther', 'scizor', 'heracross'],
-    badge:'Hive',    blurb:'Bugs that slow, sting and slice, Scyther in front. Fire, Flying and Rock clear them out.', calib:1.32 },
+    badge:'Hive',    blurb:'Bugs that slow, sting and slice, Scyther in front. Fire, Flying and Rock clear them out.', calib:1.32, mix:1.013 },
   { id:'whitney', name:'Whitney', title:'Goldenrod Gym', gen:2, theme:['Normal'], exclude:['Flying'], guards:['marill','azumarill','oddish','gloom','machop','machoke'],
     signature:['miltank', 'clefairy', 'clefable'],
-    badge:'Plain',   blurb:'Miltank rolls over everything, with a cute Normal bench behind it. Fighting cracks them.', calib:1.439 },
+    badge:'Plain',   blurb:'Miltank rolls over everything, with a cute Normal bench behind it. Fighting cracks them.', calib:1.439, mix:0.975 },
   { id:'morty',   name:'Morty',   title:'Ecruteak Gym',  gen:2, theme:['Ghost'], also:['drowzee', 'hypno'], guards:['zubat','golbat','natu','xatu','murkrow'],
     signature:['gengar', 'haunter', 'misdreavus'],
-    badge:'Fog',     blurb:'Ghosts that put you to sleep and pick you apart. Dark, Psychic and Ghost hit back.', calib:1.964 },
+    badge:'Fog',     blurb:'Ghosts that put you to sleep and pick you apart. Dark, Psychic and Ghost hit back.', calib:1.964, mix:1.06 },
   { id:'chuck',   name:'Chuck',   title:'Cianwood Gym',  gen:2, theme:['Fighting'], also:['poliwag', 'poliwhirl', 'poliwrath'], guards:['geodude','graveler','onix','tauros','ursaring'],
     signature:['poliwrath', 'primeape', 'hitmontop'],
-    badge:'Storm',   blurb:'Raw Fighting power with Poliwrath in front. Psychic and Flying win it.', calib:1.883 },
+    badge:'Storm',   blurb:'Raw Fighting power with Poliwrath in front. Psychic and Flying win it.', calib:1.883, mix:0.992 },
   { id:'jasmine', name:'Jasmine', title:'Olivine Gym',   gen:2, theme:['Steel'], also:['magnemite', 'magneton'], guards:['geodude','graveler','golem','sandshrew','sandslash','ampharos'],
     signature:['steelix', 'skarmory', 'magneton'],
-    badge:'Mineral', blurb:'Steel walls that refuse to fall, Steelix in front. Fire, Fighting and Ground melt them.', calib:1.955 },
+    badge:'Mineral', blurb:'Steel walls that refuse to fall, Steelix in front. Fire, Fighting and Ground melt them.', calib:1.955, mix:1.022 },
   { id:'pryce',   name:'Pryce',   title:'Mahogany Gym',  gen:2, theme:['Ice'], guards:['phanpy','donphan','seel','shellder','sandslash'],
     signature:['piloswine', 'dewgong', 'swinub'],
-    badge:'Glacier', blurb:'Icy walls that chill and sleep you, Piloswine in front. Fire, Fighting and Steel break the ice.', calib:1.999 },
+    badge:'Glacier', blurb:'Icy walls that chill and sleep you, Piloswine in front. Fire, Fighting and Steel break the ice.', calib:1.999, mix:0.999 },
   { id:'clair',   name:'Clair',   title:'Blackthorn Gym', gen:2, theme:['Dragon'], also:['gyarados', 'magikarp'], guards:['flaaffy','ampharos','dodrio','piloswine'],
     signature:['dragonair', 'dragonite', 'gyarados'],
-    badge:'Rising',  blurb:'Dragons with a temper and Thunder Wave, Dragonair in front. Ice and Dragon bring them down.', calib:2.015 },
+    badge:'Rising',  blurb:'Dragons with a temper and Thunder Wave, Dragonair in front. Ice and Dragon bring them down.', calib:2.015, mix:1.055 },
 ];
 const ELITE_FOUR2 = [
   { id:'will',  name:'Will',  title:'Elite Four', gen:2, theme:['Psychic'], guards:['jynx','wigglytuff','clefable','ampharos'],
     signature:['xatu', 'exeggutor', 'jynx'],
-    blurb:'Psychics that hit first and hard, Xatu in front. Bug, Dark and Ghost outlast them.', calib:2.716 },
+    blurb:'Psychics that hit first and hard, Xatu in front. Bug, Dark and Ghost outlast them.', calib:2.716, mix:1.045 },
   { id:'koga2', person:'koga', name:'Koga', title:'Elite Four', gen:2, theme:['Poison'], also:['forretress'], exclude:['Ghost','Grass'], guards:['forretress','skarmory','electrode','sandslash'],
     signature:['crobat', 'ariados', 'weezing'],
-    blurb:'Koga, now of the Elite Four: poison, confusion and Crobat. Psychic and Ground cut through.', calib:1.797 },
+    blurb:'Koga, now of the Elite Four: poison, confusion and Crobat. Psychic and Ground cut through.', calib:1.797, mix:1.049 },
   { id:'bruno2', person:'bruno', name:'Bruno', title:'Elite Four', gen:2, theme:['Fighting'], also:['onix', 'steelix'], guards:['steelix','golem','tauros','ursaring'],
     signature:['hitmontop', 'hitmonlee', 'hitmonchan', 'machamp'],
-    blurb:'Bruno again: the three Hitmons and Machamp, Steelix holding the line. Psychic is still the lever.', calib:1.696 },
+    blurb:'Bruno again: the three Hitmons and Machamp, Steelix holding the line. Psychic is still the lever.', calib:1.696, mix:1.065 },
   { id:'karen', name:'Karen', title:'Elite Four', gen:2, theme:['Dark'], also:['gengar', 'vileplume'], guards:['vileplume','gengar','bellossom','golbat'],
     signature:['umbreon', 'houndoom', 'murkrow'],
-    blurb:'Dark tricks and nasty surprises, Umbreon in front. Fighting and Bug punish them.', calib:1.602 },
+    blurb:'Dark tricks and nasty surprises, Umbreon in front. Fighting and Bug punish them.', calib:1.602, mix:0.975 },
 ];
 const CHAMPION2 = { id:'lance2', person:'lance', name:'Lance', title:'Champion', gen:2, theme:['Dragon', 'Flying'], exclude:['Poison', 'Bug', 'Normal', 'Psychic', 'murkrow'], also:['charizard', 'tyranitar'],
   guards:['ampharos','arcanine','piloswine'],
