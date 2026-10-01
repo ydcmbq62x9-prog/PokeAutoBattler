@@ -326,6 +326,20 @@ const RIVAL_LINES = [
     won:"That's the difference between us. See you at the Pokémon League… if you make it." },
 ];
 
+/* 4.0.0: Silver, the Johto rival, has his own (colder) lines. */
+const SILVER_LINES = [
+  { hi:"…You again. Out of my way. I'm going to be the strongest, and I'll start with you.",
+    lost:"Tch. Weak pokémon win by luck. It won't happen twice.",
+    won:"Pathetic. Don't waste my time." },
+  { hi:"I don't care about friends or badges. Only power. Show me yours.",
+    lost:"…Why? What do you have that I don't?",
+    won:"Power is all that matters. Remember that." },
+  { hi:"This time I'll crush you. My team is nothing like before.",
+    lost:"…I lost. Maybe I've been doing this all wrong.",
+    won:"I'm going to the top. Try and keep up." },
+];
+const rivalLines = (G, m) => { const L = rivalOf(G).id === 'silver' ? SILVER_LINES : RIVAL_LINES; return L[m] || L[0]; };
+
 /* A gym leader / Elite Four / Champion portrait, when the Sprites folder has one.
    Returns '' otherwise so every caller keeps its old look. */
 function bossArt(b, cls){
@@ -1343,7 +1357,7 @@ function renderBattle(){
     : r === 'lose' ? `<p class="gnote">Back to <b>${esc(gn.members[0].name)}</b>. Everyone is healed, and the shops reopen.</p>`
     : '';
   const won = r === 'win';
-  const rvl = battle.kind === 'rival' ? RIVAL_LINES[battle.opp.meeting] || RIVAL_LINES[0] : null;
+  const rvl = battle.kind === 'rival' ? rivalLines(G, battle.opp.meeting) : null;
   const pz = battle.prize;
   const rivalNote = !done || !rvl ? ''
     : won ? `<div class="award rivalwin">${bossArt(battle.boss, 'hero')}
@@ -2769,7 +2783,7 @@ async function startBattle(){
   // the one way to fight a stage: wounded pokémon start hurt, fainted ones sit out
   const sim = stageBattle(G, opp);
   // an ambush: the first thing that happens is your rival walking in
-  const rv = opp.kind === 'rival' ? RIVAL_LINES[opp.meeting] || RIVAL_LINES[0] : null;
+  const rv = opp.kind === 'rival' ? rivalLines(G, opp.meeting) : null;
   if(rv && sim.steps[0]) sim.steps[0].lines = [`${rivalOf(G).name}: “${rv.hi}”`, ...sim.steps[0].lines];
   battle = { steps: sim.steps, i: 0, result: sim.result, oppName: rv ? `Rival ${opp.name}` : opp.name,
              boss: opp.boss || null, kind: opp.kind || 'trainer', opp, sim,
@@ -3685,7 +3699,7 @@ function openHelp(){
 
     <h4>Daily Challenge, rules and legendaries</h4>
     <p>The <b>Daily Challenge</b> (title screen) is one run a day that’s the same for everyone, sometimes with a rule of the day, in its own save. A <b>New Run</b> can have rules: Mono-type, No PC, Rich &amp; Ruthless or One Life. Beat the Champion on <b>One Life</b> and you earn the <b>Hardcore Badge</b>, kept on your Trainer Card.
-    <b>Legendaries</b> (Zapdos, Articuno, Moltres, Mewtwo) aren’t sold in the Daycare: after the 5th gym one may appear for one turn, and by the 7th gym one always has. Recruit one and it stays on your team for the rest of the run; only the offer expires. The Champion brings one you didn’t recruit. They never level up but start far stronger and grow faster. Made a wrong buy? <b>Undo</b> (above Battle) takes back your last buy, once a turn.
+    <b>Legendaries</b> (Zapdos, Articuno, Moltres and Mewtwo in Kanto; Raikou, Entei, Suicune, Lugia and Ho-Oh in Johto) aren’t sold in the Daycare: after the 5th gym one may appear for one turn, and by the 7th gym one always has. Recruit one and it stays on your team for the rest of the run; only the offer expires. The Champion brings one you didn’t recruit. They never level up but start far stronger and grow faster. Made a wrong buy? <b>Undo</b> (above Battle) takes back your last buy, once a turn.
     <b>Formations</b> (Your Party) saves a line-up to snap back to, and every fight ends with a <b>recap</b> of who did what.</p>
     <h4>The Bag and held items</h4>
     <p>The Bag sits under the PC and holds ${bagCap(G)} items. Tap one, then tap any pokémon — in your
@@ -3711,7 +3725,7 @@ function openHelp(){
     <p>Lose a trainer battle and you lose a life, and the run moves on regardless.</p>
 
     <h4>Your rival</h4>
-    <p>Three times a run your rival <b>Blue</b> turns up instead of a trainer — once early, once in the
+    <p>Three times a run your rival — <b>Blue</b> in Kanto, <b>Silver</b> in Johto — turns up instead of a trainer — once early, once in the
     middle, once near the end. The next-up box won't warn you. His starter is the type that beats the type
     most of your party is, and he keeps the same team all run, evolving it each time you meet. He's tougher
     than a trainer and easier than a gym. Losing costs a life like any trainer battle; beating him pays
@@ -3751,6 +3765,8 @@ function openHelp(){
 }
 
 function openDex(){
+  // 4.0.0: the dex shows every gen you can play, so read the families with all of them on
+  const gensBefore = ACTIVE_GENS.slice(); setActiveGens(GENS_READY);
   // group by evolution line so the dex reads as families
   const seen = new Set();
   const families = [];
@@ -3766,17 +3782,18 @@ function openDex(){
   const rows = families.map(line => line.map((k,i) => {
     const s = SPECIES[k];
     const from = i > 0 ? evoStep(k) : null;
-    const via = from ? (from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}` : '↑ level up') : '';
+    const via = from ? (from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}` : from.stat ? `↑ level up with ${({ atk:'Attack', hp:'HP', spd:'Speed' })[from.stat]} as its highest stat` : '↑ level up') : '';
     return `<div class="dexrow ${i ? 'sub' : ''}">
       ${spriteHtml(k, 'sm')}
       <div><b>${esc(s.name)}</b>
         <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>
-        ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}
+        ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${GENS_READY.length > 1 && genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
         <span class="dim">${s.legendary ? 'encounter only' : 'T' + s.tier} · ◆${s.atk} ♥${s.hp} »${s.spd}${via ? ' · ' + via : ''}</span>
         <div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}
       </div></div>`;
   }).join('')).join('');
+  setActiveGens(gensBefore);
 
   const items = Object.keys(ITEMS).map(k => { const it = ITEMS[k];
     return `<div class="dexrow">${itemSpriteHtml(k, it.icon, 'sm')}

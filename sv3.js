@@ -1,10 +1,10 @@
 // species value vs realistic late-run parties: regular pokémon at L3 (level-ups + L3 move power); legendaries stay L1 but grow ×legend.growth
-const E = require('./engine.js');
+const E = require('./engine.js'); if(process.env.GENS) E.setActiveGens(JSON.parse(process.env.GENS));
 const ids = process.argv[2].split(','); const P = JSON.parse(process.argv[3] || '{}');
 for(const k in P) Object.assign(E.SPECIES[k], P[k]);
 if(process.env.LG) E.TUNING.legend.growth = +process.env.LG;
 const N = +process.env.N || 800, TURN = 22;
-const finals = Object.keys(E.SPECIES).filter(k => !E.evoNext(k).length && !E.SPECIES[k].legendary);
+const finals = Object.keys(E.SPECIES).filter(k => !E.evoNext(k).length && !E.SPECIES[k].legendary && E.inGens(k));
 function mk(id){ const u = E.makeUnit(id, 0);
   if(!E.isLegend(u)){ u.exp = E.TUNING.expForLevel3; E.applyLevelUp(null, u); E.applyLevelUp(null, u); }
   E.growUnit(u, {hp:TURN*2,atk:TURN*2,spd:TURN}); return u; }
