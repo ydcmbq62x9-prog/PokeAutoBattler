@@ -1,5 +1,5 @@
 import re, pathlib
-shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text()
+shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text().replace('<title>PokéBattler Gen 2 Preview</title>', '<title>PokéBattler</title>')
 if '<!--BUILT-->' in shell:
     shell = pathlib.Path('shell.html').read_text()
 else:
@@ -15,7 +15,7 @@ js = engine + "\n\n" + ui
 assert '</script>' not in js, 'JS contains a literal closing script tag'
 out = shell.replace('<script>\n"use strict";\n</script>', '<!--BUILT-->\n<script>\n"use strict";\n' + js + '\n</script>')
 assert '<!--BUILT-->' in out, 'injection point not found'
-pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out)
+pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out.replace('<title>PokéBattler</title>', '<title>PokéBattler Gen 2 Preview</title>', 1))   # gen2 branch: its own page title
 print('built', len(out), 'bytes')
 
 # ---- v48: the home-screen app (GitHub Pages) ----
