@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch();
   for(const w of [1100, 900, 430]){
     const p = await (await b.newContext({viewport:{width:w,height:1200}})).newPage();
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
     await p.waitForTimeout(200);
     const bad = await p.evaluate(() => {
       const ids = Object.keys(SPECIES);

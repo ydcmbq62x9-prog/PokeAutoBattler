@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch();
   const p = await (await b.newContext({viewport:{width:1100,height:900}})).newPage();
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(250);
   // build a state, save it, then reload — exactly what a returning player does
   await p.evaluate(() => {

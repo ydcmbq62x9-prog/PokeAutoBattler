@@ -63,7 +63,7 @@ E.TUNING.expModel = 'trainer';
   const browser = await chromium.launch();
   const page = await (await browser.newContext({ viewport:{width:1200,height:1000} })).newPage();
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await page.waitForTimeout(250);
 
   await page.evaluate(() => {

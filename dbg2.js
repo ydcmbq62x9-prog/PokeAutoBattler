@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   ctx.setDefaultTimeout(4000);
   const p = await ctx.newPage();
   p.on('pageerror',e=>console.log('PAGEERROR:', e.message));
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(250);
   const steps = [
     ['select daycare 0', async()=>p.click('[data-act="dc"][data-i="0"]')],

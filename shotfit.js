@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 (async()=>{ const b = await chromium.launch();
   const p = await b.newPage({viewport:{width:390,height:844}, deviceScaleFactor:3});
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
   await p.evaluate(()=>{ G.pendingRewards=[]; document.querySelectorAll('.modal').forEach(x=>x.remove());
     G.team=['jigglypuff','rattata','charizard','onix','gyarados','pidgeot'].map((id,k)=>{const u=makeUnit(id,0); u.pos=k; return u;}); G.pc=[makeUnit('snorlax',0),makeUnit('dragonite',0)]; G.pc.forEach((u,k)=>u.pos=k); G.team[0].held='lefto'; save(); render(); });
   await p.waitForTimeout(900);
@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
   await b.close(); })();
 (async()=>{ const b = await chromium.launch();
   const p = await b.newPage({viewport:{width:390,height:844}});
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
   await p.evaluate(()=>{ G.pendingRewards=[]; document.querySelectorAll('.modal').forEach(x=>x.remove()); G.badges=2; save(); render(); openDex(); });
   await p.waitForTimeout(300); await p.evaluate(()=>{ document.querySelector('.modal .boxscroll').scrollTop = 900; }); await p.waitForTimeout(200);
   await p.screenshot({path:'fit-dex.png'});

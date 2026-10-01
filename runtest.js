@@ -1,6 +1,6 @@
 /* The new win condition, in the browser. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 const errors = [];
 const mark = m => console.log('… ' + m);
 

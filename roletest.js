@@ -87,7 +87,7 @@ check(Math.max(...roles.map(ra)) - Math.min(...roles.map(ra)) <= 12, `the four r
   for(const [w, h] of [[1200, 1000], [390, 844]]){
     const page = await (await browser.newContext({ viewport:{ width:w, height:h } })).newPage();
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/pokebattler.html');
+    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
     await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; G.turn = 8; G.credits = 20;
       G.team = ['abra','clefairy','onix','machop'].map(i => makeUnit(i, 0)); rollShop(G, false); save(); render(); });

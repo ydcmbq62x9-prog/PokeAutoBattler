@@ -2,7 +2,7 @@ const { chromium, devices } = require('playwright');
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
 (async () => { const b = await chromium.launch(); const ctx = await b.newContext(devices['iPhone 13']); const p = await ctx.newPage();
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
   await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; }
     G.pendingRewards = []; G.team = [makeUnit('machop', 0)]; G.pc = [makeUnit('abra', 1), makeUnit('gastly', TUNING.expForLevel3), makeUnit('mewtwo', 0)]; fixSlots(G); render(); });
   const read = async box => { await p.evaluate(b => { sel = null; inspect = null; render(); }, box); await p.tap(`.cell[data-act="pc"][data-i="${box}"]`); await p.waitForTimeout(200);

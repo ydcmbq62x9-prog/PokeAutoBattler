@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 let fails = 0;
 const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 (async () => {
   const browser = await chromium.launch();
   for(const [w, h] of [[1250, 950], [390, 844]]){

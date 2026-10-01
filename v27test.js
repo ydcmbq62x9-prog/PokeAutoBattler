@@ -8,7 +8,7 @@ const errors = []; const mark = m => console.log('… ' + m);
     ctx.setDefaultTimeout(5000);
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(label + ' pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
     await page.evaluate(() => {
       G.credits = 99; G.badges = 3; G.team = [makeUnit('squirtle',0)]; G.pc = [makeUnit('pidgey',0)]; G.bag = [];
       G.mart = [{ id:'protein', held:false, reserved:false, bought:false },

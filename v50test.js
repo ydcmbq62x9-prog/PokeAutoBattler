@@ -45,7 +45,7 @@ check(/max HP/.test(E.HELD_ITEMS.sitrus.text) && !/round of battle EXP/.test(E.H
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport: { width: 1250, height: 950 } }]]){
     const p = await (await b.newContext(dev)).newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(250);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(250);
     const r = await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50; G.team = [makeUnit('abra', 0)];
       G.mart = [{ id:'protein', held:false }, { id:'candy', held:false }, { id:'expshare', held:false }, { id:'band', held:true }, { id:'lefto', held:true }, { id:'egg', held:true }]; render();
       const rows = [...document.querySelectorAll('.martrow')].map(r => ({ name: r.querySelector('.mtext b').firstChild.textContent.trim(),

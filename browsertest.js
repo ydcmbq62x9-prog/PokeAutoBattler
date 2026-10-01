@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
   page.on('console', m => { if(m.type()==='error') errors.push('console: '+m.text()); });
   page.on('pageerror', e => errors.push('pageerror: '+e.message));
 
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await page.waitForTimeout(300);
 
   const shot = async n => page.screenshot({ path:`shot-${n}.png` });

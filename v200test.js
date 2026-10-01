@@ -68,7 +68,7 @@ const S = E.SPECIES, T = E.TUNING;
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport:{ width:1250, height:950 } }]]){
     const ctx = await br.newContext({ ...dev, permissions: ['clipboard-read', 'clipboard-write'] });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
     const click = sel => p.evaluate(sel => document.querySelector(sel).click(), sel);
 
     /* undo */

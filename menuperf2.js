@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport:{width:1250,height:950} });

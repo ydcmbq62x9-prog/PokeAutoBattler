@@ -1,6 +1,6 @@
 const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch(); const p = await (await b.newContext(devices['iPhone 13'])).newPage();
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
   const r = await p.evaluate(() => {
     const out = {};
     for(const [stone, want] of [['waterstone','vaporeon'],['thunderstone','jolteon'],['firestone','flareon']]){

@@ -1,6 +1,6 @@
 /* Levelling a pokémon without taking it out of the box. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 const errors = [];
 const mark = m => console.log('… ' + m);
 

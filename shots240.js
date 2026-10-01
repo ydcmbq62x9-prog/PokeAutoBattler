@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
     const ctx = await b.newContext({ viewport:{width:w,height:h} });
     await ctx.addInitScript(() => { window.PKB_TITLE = true; window.PKB_WIPE = true; });
     const p = await ctx.newPage();
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.evaluate(() => { localStorage.clear(); localStorage.setItem('pkb_records', JSON.stringify({runs:6,cleared:2,best:37,hardcore:{count:2,first:'2026-09-20',last:'2026-09-28'}})); PREF.set('name','Sean'); });
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.evaluate(() => { localStorage.clear(); localStorage.setItem('pkb_records', JSON.stringify({runs:6,cleared:2,best:37,hardcore:{count:2,first:'2026-09-20',last:'2026-09-28'}})); PREF.set('name','Sean'); });
     await p.reload(); await p.waitForTimeout(400);
     await p.mouse.click(w/2, h-20); await p.waitForTimeout(400);
     await p.screenshot({ path:`hc-title-${n}.png` });

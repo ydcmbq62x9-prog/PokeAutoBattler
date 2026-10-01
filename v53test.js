@@ -60,7 +60,7 @@ check(H.bell.boss === 'none' && H.helmet.boss === 'none', '…and bosses don’t
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport: { width: 1250, height: 950 } }]]){
     const p = await (await br.newContext(dev)).newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(250);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(250);
     const r = await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50;
       G.mart = [{ id:'protein', held:false }, { id:'bell', held:true }, { id:'helmet', held:true }]; render();
       return { tags: [...document.querySelectorAll('.martrow .rar')].map(t => t.textContent), sprites: !!SPRITES.bell && !!SPRITES.helmet }; });

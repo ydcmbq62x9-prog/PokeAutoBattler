@@ -1,7 +1,7 @@
 /* On a phone the bottom strip is contested: the summary sheet, the carry bar
    and the action bar all want it. The buttons must stay visible and tappable. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 const errors = [];
 const mark = m => console.log('… ' + m);
 

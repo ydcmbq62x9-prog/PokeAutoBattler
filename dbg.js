@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch();
   const p = await (await b.newContext({viewport:{width:430,height:1000},hasTouch:true,isMobile:true})).newPage();
   p.on('pageerror',e=>console.log('PAGEERROR:', e.message));
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(250);
   await p.evaluate(`G = newGame(7); G.pc = [makeUnit('pikachu',0)]; rollShop(G,false); sel=null; phase='shop'; render();`);
   await p.waitForTimeout(100);

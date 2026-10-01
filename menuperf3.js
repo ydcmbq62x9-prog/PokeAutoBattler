@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport:{width:1250,height:950} });
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(800);
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(800);
   const out = await page.evaluate(() => {
     const r={}; const f = HTMLElement.prototype.focus; let ft=0;
     HTMLElement.prototype.focus = function(){ const t=performance.now(); f.apply(this, arguments); ft += performance.now()-t; };

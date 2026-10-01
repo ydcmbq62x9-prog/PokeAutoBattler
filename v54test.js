@@ -10,7 +10,7 @@ check(E.TUNING.xItems.perBattle === 2 && E.TUNING.xItems.pct === 0.05, 'X items:
     const ctx = await br.newContext(dev); await ctx.addInitScript(() => { window.PKB_SOUND = true; });
     const p = await ctx.newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(250);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(250);
     // a restock with one rare and one very rare
     const r = await p.evaluate(async () => {
       G.turn = 20; G.badges = 6; G.credits = 50; G.team = [makeUnit('machamp', 0)]; fixSlots(G);

@@ -12,7 +12,7 @@ for(const [k, ids] of Object.entries(want)){
   console.log(`${miss.length ? '✗' : '…'} ${k}: ${ids.length - miss.length}/${ids.length}${miss.length ? ' — missing ' + miss.join(', ') : ''}`);
   bad += miss.length;
 }
-const html = fs.readFileSync('/mnt/user-data/outputs/pokebattler.html', 'utf8');
+const html = fs.readFileSync('/mnt/user-data/outputs/gen2/pokebattler.html', 'utf8');
 const inBuild = Object.keys(SPRITES).every(k => html.includes(`"${k}": "data:image`));
 console.log((inBuild ? '…' : '✗') + ' every sprite made it into the built game');
 if(bad || !inBuild){ console.log('\nFAILED'); process.exit(1); }

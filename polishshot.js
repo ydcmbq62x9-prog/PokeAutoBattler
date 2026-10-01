@@ -6,7 +6,7 @@ const fs = require('fs');
   const ctx = await b.newContext({ viewport:{width:400,height:860}, deviceScaleFactor:2 });
   await ctx.addInitScript(t => { window.PKB_TIPS = true; localStorage.setItem('pkb_theme', t); localStorage.setItem('pkb_title', 'off'); }, theme);
   const page = await ctx.newPage(); page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if(m.type()==='error') errs.push(m.text()); });
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(400);
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(400);
   await page.screenshot({ path:`ps-${theme}-1tip.png` });
   // scouting report at Brock
   await page.evaluate(() => { G.stage = TUNING.battlesPerBadge; G.turn = 4; G.team = [makeUnit('squirtle',0), makeUnit('pikachu',0), makeUnit('onix',0)];

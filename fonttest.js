@@ -6,7 +6,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1250, height: 950 } });
   const errs = []; page.on('pageerror', e => errs.push(e.message));
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(200);
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(200);
   await page.evaluate(() => { G.pendingRewards = []; document.querySelectorAll('.modal').forEach(x => x.remove());
     G.team = [makeUnit('rattata', 0)]; G.team[0].pos = 0; rollShop(G, false); save(); render(); });
   await page.click('.pfield .slot[data-i="0"] .sprite'); await page.waitForTimeout(200);

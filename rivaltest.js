@@ -89,7 +89,7 @@ const meet = (seed, team, m, turn) => { const G = E.newGame(seed); E.rollShop(G,
   for(const [w, h] of [[1200, 1000], [390, 844]]){
     const page = await (await browser.newContext({ viewport:{ width:w, height:h } })).newPage();
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; G.team = ['charizard','blastoise','venusaur','pidgeot','alakazam','snorlax'].map(i => makeUnit(i, 0));
       G.team.forEach(u => { u.hp += 200; u.atk += 200; u.spd += 80; });
       G.stage = rivalStages(G)[0]; G.turn = 3; G.bag = []; rollShop(G, false); save(); render(); });

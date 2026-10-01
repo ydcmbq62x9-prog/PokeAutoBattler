@@ -9,7 +9,7 @@ const check = (c, m) => c ? ok(m) : bad(m);
   ctx.setDefaultTimeout(6000);
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-  await page.goto('file:///mnt/user-data/outputs/pokebattler.html'); await page.waitForTimeout(300);
+  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(300);
   check(!(await page.$('.tipcard')), 'tips stay hidden in test runs unless asked for');
   await page.evaluate(() => { window.PKB_TIPS = true; render(); }); await page.waitForTimeout(100);
   check(/Welcome/.test(await page.$eval('.tipcard', e => e.textContent)), 'the first tip is the welcome card');

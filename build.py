@@ -1,5 +1,5 @@
 import re, pathlib
-shell = pathlib.Path('/mnt/user-data/outputs/pokebattler.html').read_text()
+shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text()
 if '<!--BUILT-->' in shell:
     shell = pathlib.Path('shell.html').read_text()
 else:
@@ -15,15 +15,15 @@ js = engine + "\n\n" + ui
 assert '</script>' not in js, 'JS contains a literal closing script tag'
 out = shell.replace('<script>\n"use strict";\n</script>', '<!--BUILT-->\n<script>\n"use strict";\n' + js + '\n</script>')
 assert '<!--BUILT-->' in out, 'injection point not found'
-pathlib.Path('/mnt/user-data/outputs/pokebattler.html').write_text(out)
+pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out)
 print('built', len(out), 'bytes')
 
 # ---- v48: the home-screen app (GitHub Pages) ----
 # Same game, plus a manifest, icons and a service worker beside it. Written to
-# /mnt/user-data/outputs/pokebattler-app/ and zipped; the artifact is unchanged.
+# /mnt/user-data/outputs/gen2/pokebattler-app/ and zipped; the artifact is unchanged.
 import json, shutil, zipfile
 ver = re.search(r"GAME_VERSION = \{ v:'([\w.]+)'", ui).group(1)
-appdir = pathlib.Path('/mnt/user-data/outputs/pokebattler-app')
+appdir = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler-app')
 if appdir.exists(): shutil.rmtree(appdir)
 (appdir / 'icons').mkdir(parents=True)
 for f in ['icon-192.png', 'icon-512.png', 'maskable-192.png', 'maskable-512.png', 'apple-touch-icon.png', 'favicon-32.png']:
@@ -57,7 +57,7 @@ manifest = {
 (appdir / 'manifest.webmanifest').write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
 (appdir / 'sw.js').write_text(pathlib.Path('app/sw.template.js').read_text().replace('__VERSION__', ver))
 (appdir / 'README.md').write_text(pathlib.Path('app/README.template.md').read_text().replace('__VERSION__', ver))
-zpath = pathlib.Path('/mnt/user-data/outputs/pokebattler-app.zip')
+zpath = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler-app.zip')
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(appdir.rglob('*')):
         if f.is_file(): z.write(f, f.relative_to(appdir))

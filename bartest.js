@@ -3,7 +3,7 @@
    every attack bar at 100% while speed never passed ~62%. They are now derived
    from the roster; this suite is what stops them drifting apart again. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 const errors = [];
 const mark = m => console.log('… ' + m);
 

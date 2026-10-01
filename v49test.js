@@ -2,7 +2,7 @@
 const { chromium, devices } = require('playwright');
 let fails = 0;
 const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const URL = 'file:///mnt/user-data/outputs/pokebattler.html';
+const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').forEach(x => x.remove());
   G.turn = 14; G.credits = 60; G.stage = 3;
   G.team = [makeUnit('wartortle', 2), makeUnit('onix', 0), makeUnit('pikachu', 0), makeUnit('machoke', 0)];

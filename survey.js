@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
     await ctx.addInitScript(t=>{ localStorage.setItem('pkb_theme',t); }, theme);
     const p = await ctx.newPage(); const T = `${tag}-${theme}`;
     p.on('pageerror',e=>errs.push(T+' '+e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
     await p.evaluate(()=>{ G.pendingRewards=[]; document.querySelectorAll('.modal').forEach(x=>x.remove());
       G.team=['wartortle','geodude','pidgeotto','clefairy','charmeleon','pikachu'].map(i=>makeUnit(i,0));
       G.team.forEach((u,k)=>u.pos=[2,5,1,4,0,3][k]); G.team[0].held='lefto'; G.bag=['claw','band'];

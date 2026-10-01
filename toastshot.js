@@ -3,7 +3,7 @@ const { chromium, devices } = require('playwright');
   const b = await chromium.launch();
   for(const [nm,dark] of [['light',false],['dark',true]]){
   const p = await (await b.newContext({...devices['iPhone 13'], colorScheme: dark?'dark':'light'})).newPage();
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(300);
   await p.evaluate(() => { G.credits=0; rollShop(G,false); save(); render(); });
   const h0 = await p.evaluate(()=>document.documentElement.scrollHeight);

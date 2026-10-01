@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const p = await b.newPage({ viewport:{width:1200,height:1000} });
   p.on('pageerror', e => console.log('PAGEERROR', e.message));
   p.on('console', m => { if(m.type()==='error') console.log('CONSOLE', m.text()); });
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(250);
 
   // stack the deck so the gym is winnable, then play it for real through the UI

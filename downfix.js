@@ -4,7 +4,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
 (async () => { const b = await chromium.launch();
   for(const [tag, dev, motion] of [['pc', { viewport:{ width:1250, height:900 } }, 'no-preference'], ['phone', devices['iPhone 13'], 'no-preference'], ['pc reduced motion', { viewport:{ width:1250, height:900 }, reducedMotion:'reduce' }, 'reduce']]){
     const ctx = await b.newContext(dev); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(400);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
     await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; }
       G.pendingRewards = []; G.team = [makeUnit('charizard', 4), makeUnit('blastoise', 4)]; fixSlots(G); G.stage = 0; G.turn = 2; setSpeed(4); rollShop(G, false); save(); render(); });
     await p.click('[data-act="endturn"]');

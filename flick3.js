@@ -3,7 +3,7 @@ const { chromium, devices } = require('playwright');
   const b = await chromium.launch();
   const ctx = await b.newContext({ ...devices['iPhone 13'], });
   const p = await ctx.newPage();
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(300);
   await p.evaluate(() => {
     G.turn=14; G.credits=60;

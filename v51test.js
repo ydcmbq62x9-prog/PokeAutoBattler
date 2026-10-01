@@ -118,7 +118,7 @@ check(NEW.every(k => H[k].boss === 'elite'), '…and marked as Elite Four / Cham
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport: { width: 1250, height: 950 } }]]){
     const p = await (await br.newContext(dev)).newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(250);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(250);
     const r = await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50;
       G.team = [makeUnit('machamp', 0), makeUnit('chansey', 0)]; G.team[0].held = 'choice'; G.team[1].held = 'scale'; fixSlots(G);
       G.mart = [{ id:'protein', held:false }, { id:'orb', held:true }, { id:'scale', held:true }]; render();

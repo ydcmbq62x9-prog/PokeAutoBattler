@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
     await ctx.addInitScript(t => { window.PKB_TITLE = true; localStorage.setItem('pkb_theme', t); localStorage.setItem('pkb_name','Sean');
       localStorage.setItem('pkb_records', JSON.stringify({runs:3,cleared:1,best:14})); localStorage.setItem('pkb_partner','charizard'); }, theme);
     const p = await ctx.newPage();
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(1600);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(1600);
     await p.screenshot({ path:`t38-${w}x${h}-${theme}.png` });
     // make a run in progress and reload to see the menu
     await p.evaluate(() => { G.turn = 9; G.stage = 6; G.badges = 2; save(); });

@@ -6,7 +6,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
   const br = await chromium.launch();
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport:{ width:1250, height:950 } }]]){
     const p = await (await br.newContext(dev)).newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
     const r = await p.evaluate(() => {
       PREF.set('text', 'instant'); G.turn = 14; G.badges = 4; G.credits = 40;
       G.team = [makeUnit('eevee', 0), makeUnit('pikachu', 0), makeUnit('machop', 0)]; G.pc = [makeUnit('eevee', 0)]; G.pc[0].box = 0; fixSlots(G);

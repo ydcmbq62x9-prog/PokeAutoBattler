@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const p = await b.newPage({ viewport:{width:1150,height:1050}, deviceScaleFactor:2 });
   const errs = [];
   p.on('pageerror', e => errs.push(e.message));
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
   await p.waitForTimeout(250);
   await p.click('[data-act="menu"]'); await p.waitForTimeout(120);
   await p.click('[data-m="dex"]');   await p.waitForTimeout(250);
