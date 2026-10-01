@@ -307,15 +307,19 @@ const tierForTurn = t => Math.max(1, Math.min(6, Math.floor((t + 1) / 2)));
    and the Champion. `G.stage` indexes this; it only advances when you clear
    the entry, so a lost gym is fought again.
    =================================================================== */
-function runPlan(){
+/* 4.0.0: the bosses come from the run's own plan (G.bossPlan, drawn when the run
+   starts — see drawBossPlan). A run without one, or a call without a game, is
+   the classic Gen 1 order: Brock … Giovanni, Lorelei … Lance, Blue. */
+function runPlan(G){
+  const bp = bossPlanOf(G);
   const plan = [];
   for(let b = 0; b < TUNING.badgesToWin; b++){
     for(let i = 0; i < TUNING.battlesPerBadge; i++) plan.push({ kind:'trainer', badge:b });
-    plan.push({ kind:'gym', badge:b, boss:GYMS[b % GYMS.length] });
+    plan.push({ kind:'gym', badge:b, boss:bp.gyms[b % bp.gyms.length] });
   }
   for(let i = 0; i < TUNING.eliteFourCount; i++)
-    plan.push({ kind:'elite', boss:ELITE_FOUR[i % ELITE_FOUR.length] });
-  plan.push({ kind:'champion', boss:CHAMPION });
+    plan.push({ kind:'elite', boss:bp.elite[i % bp.elite.length] });
+  plan.push({ kind:'champion', boss:bp.champion });
   return plan;
 }
 const RUN_LENGTH = () =>
@@ -323,7 +327,7 @@ const RUN_LENGTH = () =>
 
 /** What this turn is. Past the end means the run is already won. */
 function stageOf(G){
-  const plan = runPlan();
+  const plan = runPlan(G);
   return plan[Math.min(G.stage || 0, plan.length - 1)];
 }
 const isBoss = st => !!st && st.kind !== 'trainer';
@@ -440,8 +444,111 @@ const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
 /* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
   blurb:'He turns up three times a run, always when you least expect it. His starter beats yours, and his team grows every time you meet.' };
-const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];
-const bossById = id => ALL_BOSSES.find(b => b.id === id) || null;
+const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (balance tools and tests read this)
+
+/* ===================================================================
+   4.0.0 — THE GEN 2 BOSSES (Johto)
+   Placeholder benches until the Gen 2 pack lands: themes are set, but the
+   pools lean on Gen 1 pokémon and `calib` copies the Gen 1 leader in the same
+   slot. `person` ties a boss to whoever plays them, so a run never meets the
+   same person twice (Koga the gym leader and Koga of the Elite Four).
+   =================================================================== */
+const GYMS2 = [
+  { id:'falkner', name:'Falkner', title:'Violet Gym',    gen:2, theme:['Flying'], signature:['pidgeotto', 'pidgeot'],
+    badge:'Zephyr',  blurb:'Fast birds that strike first. Electric and Rock ground them.', calib:1.226 },
+  { id:'bugsy',   name:'Bugsy',   title:'Azalea Gym',    gen:2, theme:['Bug'], signature:['scyther', 'beedrill'],
+    badge:'Hive',    blurb:'Bugs that slow and sting, Scyther in front. Fire and Flying clear them out.', calib:1.868 },
+  { id:'whitney', name:'Whitney', title:'Goldenrod Gym', gen:2, theme:['Normal'], exclude:['Flying'], signature:['clefairy', 'tauros'],
+    badge:'Plain',   blurb:'Normal bruisers that hit hard and stay standing. Fighting cracks them.', calib:1.735 },
+  { id:'morty',   name:'Morty',   title:'Ecruteak Gym',  gen:2, theme:['Ghost'], also:['drowzee', 'hypno'], signature:['gengar', 'haunter'],
+    badge:'Fog',     blurb:'Ghosts that put you to sleep and pick you apart. Psychic and Ghost hit back.', calib:2.172 },
+  { id:'chuck',   name:'Chuck',   title:'Cianwood Gym',  gen:2, theme:['Fighting'], also:['poliwag', 'poliwhirl', 'poliwrath'], signature:['poliwrath', 'primeape'],
+    badge:'Storm',   blurb:'Raw Fighting power with Poliwrath in front. Psychic and Flying win it.', calib:2.08 },
+  { id:'jasmine', name:'Jasmine', title:'Olivine Gym',   gen:2, theme:['Steel'], also:['magnemite', 'magneton', 'onix', 'geodude', 'graveler', 'golem'], signature:['magneton', 'onix'],
+    badge:'Mineral', blurb:'Steel walls that refuse to fall. Fire and Ground melt them.', calib:1.894 },
+  { id:'pryce',   name:'Pryce',   title:'Mahogany Gym',  gen:2, theme:['Ice'], also:['seel', 'dewgong', 'shellder', 'cloyster'], signature:['dewgong', 'cloyster'],
+    badge:'Glacier', blurb:'Icy walls that chill and sleep you. Fire, Fighting and Rock break the ice.', calib:1.993 },
+  { id:'clair',   name:'Clair',   title:'Blackthorn Gym', gen:2, theme:['Dragon'], also:['gyarados', 'magikarp'], signature:['dragonair', 'dragonite'],
+    badge:'Rising',  blurb:'Dragons with a temper and Thunder Wave. Ice and Dragon bring them down.', calib:2.019 },
+];
+const ELITE_FOUR2 = [
+  { id:'will',  name:'Will',  title:'Elite Four', gen:2, theme:['Psychic'], signature:['alakazam', 'exeggutor', 'jynx'],
+    blurb:'Psychics that hit first and hard. Bug, Ghost and sheer bulk outlast them.', calib:2.392 },
+  { id:'koga2', person:'koga', name:'Koga', title:'Elite Four', gen:2, theme:['Poison'], also:['beedrill'], signature:['golbat', 'weezing', 'nidoking'],
+    blurb:'Koga, now of the Elite Four: poison, confusion and bats. Psychic and Ground cut through.', calib:1.973 },
+  { id:'bruno2', person:'bruno', name:'Bruno', title:'Elite Four', gen:2, theme:['Fighting'], also:['onix'], signature:['machamp', 'hitmonlee', 'hitmonchan'],
+    blurb:'Bruno again: the Hitmon trio and Machamp. Psychic is still the lever.', calib:1.83 },
+  { id:'karen', name:'Karen', title:'Elite Four', gen:2, theme:['Dark'], also:['gengar', 'vileplume', 'golbat'], signature:['gengar', 'vileplume'],
+    blurb:'Dark tricks and nasty surprises. Fighting and Bug punish them.', calib:1.661 },
+];
+const CHAMPION2 = { id:'lance2', person:'lance', name:'Lance', title:'Champion', gen:2, theme:['Dragon', 'Flying'], exclude:['Poison', 'Bug'],
+  signature:['dragonite', 'gyarados', 'charizard'],
+  blurb:'The Dragon master, now Champion: Dragonite after Dragonite. Ice and Dragon, and nerve.', calib:1.231 };
+const RIVAL2 = { id:'silver', name:'Silver', title:'Rival', gen:2, theme:null, bird:'zubat', support:null,
+  blurb:'He stole his starter, and it beats yours. Three times a run, getting meaner each time.' };
+RIVAL.bird = 'pidgey'; RIVAL.support = 'eevee'; RIVAL.person = 'blue'; CHAMPION.person = 'blue';
+for(const b of [...GYMS, ...ELITE_FOUR, CHAMPION, RIVAL]) b.gen = b.gen || 1;
+/** Every boss of every gen, for lookups. ALL_BOSSES stays Gen 1. */
+const EVERY_BOSS = [...ALL_BOSSES, ...GYMS2, ...ELITE_FOUR2, CHAMPION2];
+const bossById = id => EVERY_BOSS.find(b => b.id === id) || [RIVAL, RIVAL2].find(b => b.id === id) || null;
+const GEN_BOSSES = {
+  1: { gyms: GYMS,  elite: ELITE_FOUR,  champion: CHAMPION,  rival: RIVAL },
+  2: { gyms: GYMS2, elite: ELITE_FOUR2, champion: CHAMPION2, rival: RIVAL2 },
+};
+const personOf = b => b.person || b.id;
+/** The boss line-up for a new run. One gen: that gen's leaders in their own
+    order. Several: the champion is drawn first, then the rival (never the same
+    person), then the Elite Four and the gyms from what's left, shuffled — so
+    each person appears at most once. Pure: seed and gens only. */
+function drawBossPlan(seed, gens){
+  gens = cleanGens(gens);
+  const ids = x => x.map(b => b.id);
+  if(gens.length === 1){ const g = GEN_BOSSES[gens[0]];
+    return { gyms: ids(g.gyms), elite: ids(g.elite), champion: g.champion.id, rival: g.rival.id }; }
+  const r = makeRng(mix32(((seed || 1) ^ 0x6e2b1f3d) >>> 0, 404));
+  const shuffle = a => { a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const used = new Set(), take = b => { used.add(personOf(b)); return b; };
+  const free = arr => arr.filter(b => !used.has(personOf(b)));
+  const champion = take(shuffle(gens.map(g => GEN_BOSSES[g].champion))[0]);
+  const rival = take(shuffle(free(gens.map(g => GEN_BOSSES[g].rival)))[0]);
+  const draw = (pool, n) => { const out = []; for(const b of shuffle(pool)){ if(out.length >= n) break; if(!used.has(personOf(b))) out.push(take(b)); } return out; };
+  const elite = draw(gens.flatMap(g => GEN_BOSSES[g].elite), TUNING.eliteFourCount);   // the Elite Four first, so Koga or Bruno there leaves the gyms
+  const gyms = draw(gens.flatMap(g => GEN_BOSSES[g].gyms), TUNING.badgesToWin);
+  return { gyms: ids(gyms), elite: ids(elite), champion: champion.id, rival: rival.id };
+}
+/** The run's bosses as objects. No game, or an old save: the classic Gen 1 run. */
+function bossPlanOf(G){
+  const p = (G && G.bossPlan) || null;
+  if(!p) return { gyms: GYMS, elite: ELITE_FOUR, champion: CHAMPION, rival: RIVAL };
+  return { gyms: p.gyms.map(bossById), elite: p.elite.map(bossById), champion: bossById(p.champion), rival: bossById(p.rival) || RIVAL };
+}
+const rivalOf = G => bossPlanOf(G).rival;
+/** The leader whose badge is the b-th of this run (badge names, the badge case). */
+const gymAt = (G, b) => { const g = bossPlanOf(G).gyms; return g[b % g.length]; };
+/** Where a boss sits in its own gen: { kind, slot }. */
+function homeOf(b){
+  for(const g of [1, 2]){ const set = GEN_BOSSES[g];
+    let i = set.gyms.indexOf(b); if(i >= 0) return { kind:'gym', slot:i };
+    i = set.elite.indexOf(b); if(i >= 0) return { kind:'elite', slot:i };
+    if(set.champion === b) return { kind:'champion', slot:0 }; }
+  return null;
+}
+/** 4.0.0: a boss's correction for the slot it fights in. At home (a single-gen
+    run, or a mixed run that happens to put them in their own slot) it is their
+    own `calib`, so Gen 1 plays exactly as before. Moved, it is the average calib
+    of the bosses who live in that slot, times the boss's own `mix` factor —
+    Brock in slot 8 is priced like an eighth gym, not like a first. */
+function bossCalib(G, st){
+  const b = st && st.boss; if(!b) return 1;
+  const slot = st.kind === 'gym' ? (st.badge || 0) : st.kind === 'elite' ? Math.max(0, (G.stage || 0) - gauntletStart()) : 0;
+  const home = homeOf(b);
+  if(!home || (home.kind === st.kind && home.slot === slot)) return b.calib || 1;
+  const gens = cleanGens(G && G.gens);
+  const key = st.kind === 'gym' ? 'gyms' : st.kind === 'elite' ? 'elite' : 'champion';
+  const refs = gens.map(g => key === 'champion' ? GEN_BOSSES[g].champion : GEN_BOSSES[g][key][slot]).filter(Boolean);
+  const base = refs.length ? refs.reduce((s, x) => s + (x.calib || 1), 0) / refs.length : (b.calib || 1);
+  return base * (b.mix || 1);
+}
 /** The species a themed leader can draw on. No theme = the whole roster. */
 function themePool(themeOrBoss){
   /* 2.10.0: takes a leader too. `also` adds named species that the typing alone
@@ -449,7 +556,7 @@ function themePool(themeOrBoss){
      so two leaders don't share a bench (Koga leaves the Ghosts to Agatha). */
   const boss = themeOrBoss && !Array.isArray(themeOrBoss) ? themeOrBoss : null;
   const theme = boss ? boss.theme : themeOrBoss;
-  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary);   // 2.1.0: no trainer fields a legendary
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && inGens(k));   // 2.1.0: no trainer fields a legendary; 4.0.0: only this run's gens
   if(!theme) return all;
   const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
@@ -1132,10 +1239,45 @@ const SPECIES = {
                 move:M.rally('Conversion', 1.4, 0.07) },
 };
 
-const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary);
+/* ===================================================================
+   4.0.0 — GENERATIONS
+   Every species belongs to a gen (`gen`, 1 unless set). A run plays the gens it
+   was started with (G.gens). Gen 1 sells the Kanto roster; Gen 2 sells the
+   Johto Pokédex — its own pokémon plus the Gen 1 ones that live in Johto, so
+   KANTO_ONLY lists the Gen 1 pokémon a Gen 2-only run leaves out. `evo2` on a
+   species is an evolution that only exists with Gen 2 on (Golbat → Crobat).
+   Engine helpers read ACTIVE_GENS; setActiveGens / useGens(G) switch it, and
+   BUYABLE and MONO_TYPES are refilled in place so every reader follows.
+   =================================================================== */
+const GENS = { 1: { name:'Gen 1', region:'Kanto' }, 2: { name:'Gen 2', region:'Johto' } };
+/** The gens a player can switch on today. Gen 2 joins when its pack is complete. */
+const GENS_READY = [1, 2];   // gen2 branch: Gen 2 is playable here (placeholder benches until the pack lands)
+const KANTO_ONLY = ['bulbasaur', 'ivysaur', 'venusaur', 'charmander', 'charmeleon', 'charizard', 'squirtle', 'wartortle', 'blastoise',
+  'farfetchd', 'porygon', 'tangela', 'zapdos', 'articuno', 'moltres', 'mewtwo'];
+let ACTIVE_GENS = [1];
+const cleanGens = g => { const out = Object.keys(GENS).map(Number).filter(n => Array.isArray(g) && g.includes(n)); return out.length ? out : [1]; };
+const genOf = id => (SPECIES[id] && SPECIES[id].gen) || 1;
+/** Is this species part of a run that plays these gens? */
+function inGens(id, gens){
+  const sp = SPECIES[id]; if(!sp) return false;
+  gens = gens || ACTIVE_GENS;
+  if((sp.gen || 1) >= 2) return gens.includes(sp.gen);
+  return gens.includes(1) || (gens.includes(2) && !KANTO_ONLY.includes(id));
+}
+const buyableFor = gens => Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary && inGens(k, gens));
+const BUYABLE = buyableFor([1]);
 /** 3.0.0: the types a Mono run can pick — only those with enough buyable lines for the Daycare to be worth visiting. */
 const MONO_MIN_LINES = 3;   // 3.0.0: a Mono run needs at least three buyable lines (Fighting, Psychic and Rock have two)
-const MONO_TYPES = Object.keys(TYPES).filter(t => BUYABLE.filter(k => SPECIES[k].type === t).length >= MONO_MIN_LINES);
+const monoTypesFor = gens => { const b = buyableFor(cleanGens(gens)); return Object.keys(TYPES).filter(t => b.filter(k => SPECIES[k].type === t).length >= MONO_MIN_LINES); };
+const MONO_TYPES = monoTypesFor([1]);
+function setActiveGens(gens){
+  ACTIVE_GENS = cleanGens(gens);
+  BUYABLE.splice(0, BUYABLE.length, ...buyableFor(ACTIVE_GENS));
+  MONO_TYPES.splice(0, MONO_TYPES.length, ...monoTypesFor(ACTIVE_GENS));
+  return ACTIVE_GENS;
+}
+/** Make the engine follow this run's gens (cheap when they already match). */
+function useGens(G){ const g = cleanGens(G && G.gens); if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); return ACTIVE_GENS; }
 /** 2.1.0: a legendary has no tier and never levels. */
 const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECIES[typeof u === 'string' ? u : u.id].legendary);
 /* Second moves (v32), kept apart from the species table so the main moves stay
@@ -1272,13 +1414,31 @@ Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; })
 
 /** Every evolution a species can take next: [] · [one] · several for a
     branching line (1.3.0, Eevee), each { into, by, stone }. */
-function evoNext(id){
-  const e = SPECIES[id] && SPECIES[id].evo;
+/* 4.0.0: an evo entry can also be { by:'level', byStat:{ atk:id, hp:id, spd:id } }
+   (Tyrogue: its highest stat picks the evolution), and `evo2` adds options that
+   only exist with Gen 2 on — Gloom can level into Vileplume OR take a Sun Stone. */
+function evoOpts(e){
   if(!e) return [];
-  return e.branches ? Object.keys(e.branches).map(stone => ({ into: e.branches[stone], by:'stone', stone })) : [e];
+  if(e.branches) return Object.keys(e.branches).map(stone => ({ into: e.branches[stone], by:'stone', stone }));
+  if(e.byStat) return Object.keys(e.byStat).map(stat => ({ into: e.byStat[stat], by:'level', stat }));
+  return [e];
+}
+function evoNext(id){
+  const sp = SPECIES[id];
+  if(!sp) return [];
+  const out = evoOpts(sp.evo);
+  if(sp.evo2 && ACTIVE_GENS.includes(2)) out.push(...evoOpts(sp.evo2));
+  return out.filter(n => SPECIES[n.into]);
 }
 /** What a species evolved from, or null. */
-const evoParent = id => Object.keys(SPECIES).find(k => evoNext(k).some(n => n.into === id)) || null;
+const evoParent = id => Object.keys(SPECIES).find(k => inGens(k) && evoNext(k).some(n => n.into === id)) || null;
+/** Which of several level-up evolutions a pokémon takes: the one matching its highest stat. */
+function pickLevelEvo(u, opts){
+  if(opts.length <= 1) return opts[0] || null;
+  const withStat = opts.filter(n => n.stat);
+  if(!withStat.length) return opts[0];
+  return withStat.slice().sort((a, b) => (u[b.stat] || 0) - (u[a.stat] || 0))[0];
+}
 
 /** The evolution line a species sits on, base form first. A branching line
     stays linear here — Eevee alone is ['eevee'], Jolteon is ['eevee','jolteon']
@@ -1409,7 +1569,7 @@ const HELD_ITEMS = {
             text:'+20% Speed while held.', pct:{ spd:0.20 } },
   evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat', rarity:'uncommon',
             text:'+25% HP, but only while it can still evolve.',
-            pct:{ hp:0.25 }, when:u => !!(SPECIES[u.id] && SPECIES[u.id].evo),
+            pct:{ hp:0.25 }, when:u => evoNext(u.id).length > 0,
             offText:'No effect — this one has nowhere left to evolve.' },
   coat:   { name:'Metal Coat',   icon:'🛡️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
             text:'Takes 15% less damage from every hit.', cutPct:0.15 },
@@ -2218,10 +2378,11 @@ function opponentFor(G){
   return o;
 }
 function opponentFor0(G){
+  useGens(G);
   const st = stageOf(G);
   const m = rivalMeeting(G);
   if(m >= 0){
-    const opp = generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'rival', boss: RIVAL,
+    const opp = generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'rival', boss: rivalOf(G),
       lineup: rivalLineup(G, m),
       /* Priced against YOUR team, not the reference curve: a rival keeps pace
          with you. Off the curve, a player who was behind met a rival built for
@@ -2233,12 +2394,13 @@ function opponentFor0(G){
   const boss = st.boss || null;
   const kind = st.kind;
   const seen = boss && G.scouted ? G.scouted[boss.id] : null;
+  const rivalChamp = kind === 'champion' && boss && personOf(boss) === personOf(rivalOf(G));   // 4.0.0: only Blue-as-champion is your rival
   return generateAiTeam({
     // the Champion is your rival — if you've met, his starter leads, fully evolved
-    ace: kind === 'champion' && G.rival && G.rival.starter
+    ace: rivalChamp && G.rival && G.rival.starter
       ? evoLine(G.rival.starter)[evoLine(G.rival.starter).length - 1] : null,
     // 1.4.0: and, like in the games, an Eeveelution — the one his Eevee became
-    ace2: kind === 'champion' ? rivalEevo(G) : null,
+    ace2: rivalChamp ? rivalEevo(G) : null,
     // 2.2.0: …and a legendary you didn't recruit — his last surprise
     ace3: kind === 'champion' ? championLegend(G) : null,
     turn: G.turn, seed: G.seed, badges: G.badges || 0, kind, boss,
@@ -2252,7 +2414,7 @@ function opponentFor0(G){
        almost never scores a ×2 while Lt. Surge's Electric eats the Water half
        of the roster. Re-derive them with `node calibrate.js --tune`. */
     ratio: !boss ? 0
-      : (boss.calib || 1) * (kind === 'gym'
+      : bossCalib(G, st) * (kind === 'gym'
         ? TUNING.gymRatio[Math.min(st.badge || 0, TUNING.gymRatio.length - 1)]
         : (TUNING.bossRatio[kind] || 1)
           * (TUNING.gauntletRatio[(G.stage || 0) - gauntletStart()] || 1)),
@@ -2273,7 +2435,7 @@ const RIVAL_STARTERS = { Grass:'bulbasaur', Fire:'charmander', Water:'squirtle',
   Normal:'rattata' };
 /** The stage indexes where the rival ambushes this run. Pure: seed only. */
 function rivalStages(G){
-  const plan = runPlan(), rnd = makeRng(mix32((G.seed || 1) ^ 0x2c1b3c6d, 77));
+  const plan = runPlan(G), rnd = makeRng(mix32((G.seed || 1) ^ 0x2c1b3c6d, 77));
   return TUNING.rival.windows.map(([a, b]) => {
     const slots = plan.map((p, i) => ({ p, i }))
       .filter(x => x.p.kind === 'trainer' && x.p.badge >= a && x.p.badge <= b && x.i > 0).map(x => x.i);
@@ -2318,7 +2480,8 @@ function rivalCore(G){
   const counter = weakTo.find(t => ['Grass', 'Fire', 'Water'].includes(t)) || weakTo.find(t => RIVAL_STARTERS[t]);
   const starter = RIVAL_STARTERS[counter] || ['bulbasaur','charmander','squirtle'][Math.floor(rnd() * 3)];
   const take = [starter];
-  if(starter !== 'pidgey') take.push('pidgey');               // he always has his bird
+  const who = rivalOf(G), bird = who.bird || 'pidgey';
+  if(starter !== bird && SPECIES[bird]) take.push(bird);        // he always has his bird (Silver: his Zubat)
   const pickRole = (role, maxTier) => {
     const pool = BUYABLE.filter(k => roleOf(k) === role && SPECIES[k].tier <= maxTier && !take.includes(k)
       && SPECIES[k].type !== SPECIES[starter].type);
@@ -2326,7 +2489,8 @@ function rivalCore(G){
   };
   // early members come from what the Daycare has early; later ones from further up
   pickRole('tank', 2);
-  take.push('eevee');                                           // 1.4.0: his Support is always Eevee
+  if(who.support) take.push(who.support);                      // 1.4.0: Blue's Support is always Eevee
+  else pickRole('support', 3);
   pickRole('cannon', 4); pickRole('bruiser', 5);
   G.rival = { core: take, starter, versus: yours, met: 0, beaten: 0 };
   G.rival.eevo = rivalEevo(G);
@@ -2373,7 +2537,7 @@ function bossSignatureItem(team, boss, seed){
    this run may appear (seeded, so a reload can't re-roll it). It waits in the
    shop for one turn — recruit it for TUNING.legend.cost or let it go.
    =================================================================== */
-const LEGENDS = () => Object.keys(SPECIES).filter(k => SPECIES[k].legendary);
+const LEGENDS = () => Object.keys(SPECIES).filter(k => SPECIES[k].legendary && inGens(k));   // 4.0.0: this run's gens only
 function rollEncounter(G){
   G.encounter = null;
   if(G.badges < TUNING.legend.fromBadge) return null;
@@ -2489,8 +2653,14 @@ const MOD_INFO = {
   rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
   onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
 };
-const modList = G => { const m = (G && G.mods) || {}; return Object.keys(MOD_INFO).filter(k => m[k]); };
-const modName = (G, k) => MOD_INFO[k].name(G.mods[k]);
+/** 4.0.0: a run that isn't plain Gen 1 is labelled by its gens ("Gen 2", "Gen 1+2") and keeps its own records, like a rule. */
+const genLabel = G => { const g = cleanGens(G && G.gens); return g.join() === '1' ? '' : 'Gen ' + g.join('+'); };
+const genText = G => { const g = cleanGens(G && G.gens);
+  return g.length > 1 ? `Leaders, Elite Four and pokémon from ${g.map(n => GENS[n].region).join(' and ')}, drawn and shuffled. Each boss is scaled to the slot they land in.`
+    : `${GENS[g[0]].region} leaders, Elite Four and pokémon.`; };
+const modList = G => { const m = (G && G.mods) || {}; return [...(genLabel(G) ? ['gens'] : []), ...Object.keys(MOD_INFO).filter(k => m[k])]; };
+const modName = (G, k) => k === 'gens' ? genLabel(G) : MOD_INFO[k].name(G.mods[k]);
+const modText = (G, k) => k === 'gens' ? genText(G) : MOD_INFO[k].text(G.mods[k]);
 const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
 function cleanMods(m){
   const out = {};
@@ -2510,9 +2680,12 @@ function dailyMods(date){
 }
 
 function newGame(seed, opts){
+  const gens = setActiveGens(opts && opts.gens);   // 4.0.0: which gens this run plays
   const mods = cleanMods(opts && opts.mods);
+  seed = seed || Math.floor(Math.random() * 1e9);
   return {
-    seed: seed || Math.floor(Math.random() * 1e9),
+    seed,
+    gens, bossPlan: drawBossPlan(seed, gens),
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -2564,16 +2737,17 @@ function makeGameApi(G){
 /** Apply one level's worth of growth: evolve if the line evolves by level,
     otherwise take the larger flat bonus. */
 function applyLevelUp(G, u){
+  if(G) useGens(G);
   const sp = SPECIES[u.id];
   if(sp.legendary) return { evolved:false };
-  const canEvolve = sp.evo && sp.evo.by === 'level';
-  if(canEvolve){
-    const next = SPECIES[sp.evo.into];
+  const lv = pickLevelEvo(u, evoNext(u.id).filter(n => n.by === 'level'));   // 4.0.0: may be one of several (Tyrogue)
+  if(lv){
+    const next = SPECIES[lv.into];
     u.hp  += next.hp  - sp.hp;
     u.atk += next.atk - sp.atk;
     u.spd += next.spd - sp.spd;
     const was = u.nm;
-    u.id = sp.evo.into; u.nm = next.name;
+    u.id = lv.into; u.nm = next.name;
     growUnit(u, TUNING.levelUpBonus);      // grows as what it has become
     if(G) makeGameApi(G).log(`What? ${was} is evolving… into ${next.name}!`);
     return { evolved:true, from:was, into:next.name };
@@ -2599,6 +2773,7 @@ function addExp(G, u, n){
 
 /** Evolution stone: evolve now, regardless of level. */
 function evolveUnit(G, u, stone){
+  if(G) useGens(G);   // 4.0.0
   const sp = SPECIES[u.id];
   const opts = evoNext(u.id);
   if(!opts.length) return false;
@@ -2696,7 +2871,7 @@ function chooseReward(G, id){
   r.apply(G, makeRng(mix32((G.seed || 1) ^ 0x68e31da4, 2000 + off.badge)));
   G.pendingRewards.shift();
   (G.rewardLog = G.rewardLog || []).push({ badge: off.badge, id });
-  makeGameApi(G).log(`${GYMS[off.badge % GYMS.length].badge} Badge reward: ${r.name}.`);
+  makeGameApi(G).log(`${gymAt(G, off.badge).badge} Badge reward: ${r.name}.`);
   return { ok:true, id, gift: id === 'gift' ? G.lastGift : null };
 }
 
@@ -2732,6 +2907,7 @@ function payReroll(G){
 const rerollCost = G => (G.freeRolls || 0) > 0 ? 0 : TUNING.costRoll;
 
 function rollDaycare(G, payCost){
+  useGens(G);   // 4.0.0
   if(payCost && inGauntlet(G)) return false;
   if(payCost && !payReroll(G)) return false;
   const rnd = shopRng(G);
@@ -2898,6 +3074,7 @@ function reclaimHeld(G, u){
 }
 
 function rollShop(G, payCost){ // both shelves, used at the start of a turn
+  useGens(G);   // 4.0.0
   const a = rollDaycare(G, payCost);
   const b = rollMart(G, false);
   return a && b;
@@ -3349,7 +3526,7 @@ function scout(G, boss, opp){
 /** Everything the UI needs to describe what happens next, in one call. */
 function nextUp(G){
   const st = stageOf(G);
-  const plan = runPlan();
+  const plan = runPlan(G);
   const boss = st.boss || null;
   const untilGym = (() => {
     for(let i = G.stage || 0; i < plan.length; i++) if(plan[i].kind !== 'trainer') return i - (G.stage || 0);
@@ -3392,6 +3569,7 @@ function incomeFor(G){
 }
 
 function nextTurn(G){
+  useGens(G);   // 4.0.0
   /* Between Elite Four fights: no pay, no restock, and the clock doesn't move
      (so the next member is priced against the same turn). But "next battle
      only" still means the next battle, or one X Attack before Lorelei would
@@ -3429,9 +3607,9 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, KANTO_ONLY, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, modList, modName, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,

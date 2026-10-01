@@ -1020,7 +1020,7 @@ function badgeCase(count, fresh){
   const have = count === undefined ? G.badges : count;
   let pips = '';
   for(let i = 0; i < n; i++){
-    const g = GYMS[i % GYMS.length];
+    const g = gymAt(G, i);
     pips += `<i class="bdg g${i} ${i < have ? 'on' : ''} ${i === fresh ? 'fresh' : ''}"
       title="${esc(g.badge)} Badge — ${esc(g.name)}"></i>`;
   }
@@ -1041,7 +1041,7 @@ function livesHtml(){
    the road to the next badge: its trainer battles, then the gym (or the five
    fights of the Elite Four). A rival ambush still looks like a trainer here. */
 function dockHtml(closed){
-  const n = nextUp(G), st = stageOf(G), plan = runPlan(), at = G.stage || 0;
+  const n = nextUp(G), st = stageOf(G), plan = runPlan(G), at = G.stage || 0;
   const b = isBoss(st) ? st.boss : null;
   let road = '';
   if(n.gauntlet){
@@ -1051,7 +1051,7 @@ function dockHtml(closed){
     let nx = at; while(nx < plan.length && plan[nx].kind === 'trainer') nx++;
     for(let k = prev + 1; k < nx; k++) road += `<i class="${k < at ? 'done' : k === at ? 'now' : ''}"></i>`;
     const bi = plan[nx] ? plan[nx].badge : 0;
-    if(plan[nx]) road += `<i class="bdg g${bi % 8} ${at === nx ? 'on now' : ''}" title="${esc(GYMS[bi % GYMS.length].badge)} Badge"></i>`;
+    if(plan[nx]) road += `<i class="bdg g${bi % 8} ${at === nx ? 'on now' : ''}" title="${esc(gymAt(G, bi).badge)} Badge"></i>`;
   }
   const line = !b ? `${trainerName(G.turn)} wants to battle!`
     : n.kind === 'gym' ? `${b.name} wants to battle!`
@@ -1844,7 +1844,7 @@ function playIntro(S){
   const who = b.kind === 'gym' ? `${b.boss.name} wants to battle!`
     : b.kind === 'elite' ? `Elite Four ${b.boss.name} wants to battle!`
     : b.kind === 'champion' ? `Champion ${b.boss.name} wants to battle!`
-    : b.kind === 'rival' ? `Your rival ${RIVAL.name} blocks the way!`
+    : b.kind === 'rival' ? `Your rival ${rivalOf(G).name} blocks the way!`
     : `${b.oppName} wants to battle!`;
   const sub = b.kind === 'gym' ? `${b.boss.title} · ${b.boss.badge} Badge`
     : b.kind === 'rival' ? 'An ambush!' : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
@@ -1999,7 +1999,7 @@ function runTop(n){
 }
 function runSummaryHtml(){
   const R = G.runStats; const top = runTop(3);
-  const plan = runPlan(), reached = reachedStage();
+  const plan = runPlan(G), reached = reachedStage();
   const facts = [
     ['Turns', G.turn], ['Badges', `${G.badges}/8`], ['Stage', `${Math.min(reached, plan.length)}/${plan.length}`],
     ...(R ? [['Battles', `${R.wins}W · ${R.losses}L`]] : []), ['Lives left', Math.max(0, G.lives)] ];
@@ -2129,6 +2129,7 @@ let drawnPhase = null;
 function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cls); void el.offsetWidth; } el.classList.add(cls); }
 
 function render(){
+  if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
@@ -2219,7 +2220,7 @@ function recapHtml(){
 function modeBarHtml(){
   const bits = [];
   if(G.daily) bits.push(`<b>Daily Challenge</b> · ${esc(prettyDate(G.daily))}`);
-  for(const k of modList(G)) bits.push(`<span class="modechip" title="${esc(MOD_INFO[k].text(G.mods[k]))}">${esc(modName(G, k))}</span>`);
+  for(const k of modList(G)) bits.push(`<span class="modechip" title="${esc(modText(G, k))}">${esc(modName(G, k))}</span>`);
   return bits.length ? `<div class="modebar">${bits.join(' ')}</div>` : '';
 }
 
@@ -2276,20 +2277,33 @@ function openNewRun(onStart){
   const cur = mainRun();
   const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
   const pick = { mono: null, nopc: false, rich: false, onelife: false };
-  const types = MONO_TYPES;
+  const lastGens = cleanGens(PREF.get('gens', [1])).filter(n => GENS_READY.includes(n));
+  let gens = lastGens.length ? lastGens : [1];   // 4.0.0: remembered from your last run
+  const allTypes = Object.keys(TYPES);
   const d = modal(`<h3>New run</h3>
     ${live ? `<p class="warn">This ends your current run (turn ${cur.turn} · ${cur.badges} badge${cur.badges === 1 ? '' : 's'}).</p>` : ''}
+    <h4>Generations <span class="dim">pick one or more</span></h4>
+    <div class="gens">${Object.keys(GENS).map(Number).map(n => `<button class="gent" data-gen="${n}" ${GENS_READY.includes(n) ? '' : 'disabled'}>
+      <b>${esc(GENS[n].name)}</b><span>${esc(GENS[n].region)}${GENS_READY.includes(n) ? '' : ' · coming soon'}</span></button>`).join('')}</div>
+    <p class="dim gennote"></p>
     <h4>Rules <span class="dim">optional</span></h4>
     <div class="mods">
       <button class="modt" data-mod="mono"><b>Mono-type</b><span>Pick a type: the Daycare sells only that type. Opponents are tuned so every type is about as hard.</span></button>
-      <div class="monotypes" hidden>${types.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
+      <div class="monotypes" hidden>${allTypes.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
       ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}${k === 'onelife' ? ' Clear it for the Hardcore Badge.' : ''}</span></button>`).join('')}
     </div>
     <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
     <div class="btnrow"><button class="btn primary" data-n="go">Start run</button><button class="btn ghost" data-n="close">Cancel</button></div>`);
   d.classList.add('newrun');
   const types$ = d.querySelector('.monotypes'), go = d.querySelector('[data-n="go"]');
+  const note = d.querySelector('.gennote');
   const sync = () => {
+    const types = monoTypesFor(gens);
+    if(pick.mono && !types.includes(pick.mono)) pick.mono = null;
+    d.querySelectorAll('.gent').forEach(b => b.classList.toggle('on', gens.includes(+b.dataset.gen)));
+    d.querySelectorAll('.ntype').forEach(b => b.hidden = !types.includes(b.dataset.type));
+    note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in.`
+      : `${GENS[gens[0]].region}: its own gym leaders, Elite Four and Champion.`;
     d.querySelectorAll('.modt').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
     d.querySelectorAll('.ntype').forEach(b => b.classList.toggle('on', b.dataset.type === pick.mono));
     go.disabled = !types$.hidden && !pick.mono;
@@ -2302,12 +2316,18 @@ function openNewRun(onStart){
     sync();
   });
   d.querySelectorAll('.ntype').forEach(b => b.onclick = () => { pick.mono = b.dataset.type; SFX.play('tap'); sync(); });
+  d.querySelectorAll('.gent').forEach(b => b.onclick = () => {
+    const n = +b.dataset.gen; SFX.play('tap');
+    gens = gens.includes(n) ? (gens.length > 1 ? gens.filter(x => x !== n) : gens) : cleanGens([...gens, n]);
+    sync();
+  });
   d.querySelector('[data-n="close"]').onclick = () => d.remove();
   go.onclick = () => {
     d.remove();
     if(G && G.daily){ save(); const m = load(SAVE_KEY); G = m ? m.G : null; }   // the plain run is the one being replaced
     if(G && !G.daily) noteQuit();
-    newRun({ mods: pick });
+    PREF.set('gens', gens);
+    newRun({ mods: pick, gens });
     undo = null; drawnPhase = null; render();
     if(onStart) onStart();
   };
@@ -2750,7 +2770,7 @@ async function startBattle(){
   const sim = stageBattle(G, opp);
   // an ambush: the first thing that happens is your rival walking in
   const rv = opp.kind === 'rival' ? RIVAL_LINES[opp.meeting] || RIVAL_LINES[0] : null;
-  if(rv && sim.steps[0]) sim.steps[0].lines = [`${RIVAL.name}: “${rv.hi}”`, ...sim.steps[0].lines];
+  if(rv && sim.steps[0]) sim.steps[0].lines = [`${rivalOf(G).name}: “${rv.hi}”`, ...sim.steps[0].lines];
   battle = { steps: sim.steps, i: 0, result: sim.result, oppName: rv ? `Rival ${opp.name}` : opp.name,
              boss: opp.boss || null, kind: opp.kind || 'trainer', opp, sim,
              prize: rv ? rivalPrize(G, opp.meeting) : null, bagFull: rv ? bagRoom(G) === 0 : false,
@@ -2865,7 +2885,7 @@ function modal(html, sticky){
    it's the reward, not a pop-up — and a reload brings it straight back,
    offering the same three (they come from the run's seed).
    =================================================================== */
-const rewardBadgeName = b => GYMS[b % GYMS.length].badge;
+const rewardBadgeName = b => gymAt(G, b).badge;
 function openRewardPicker(){
   if(document.querySelector('.modal.reward')) return;
   const off = pendingOffer(G);
@@ -2881,7 +2901,7 @@ function openRewardPicker(){
       ${taken ? `<span class="rtaken">taken ${taken} of ${max}</span>` : ''}
     </button>`;
   }).join('');
-  const d = modal(`<div class="rhead">${bossArt(GYMS[off.badge % GYMS.length], 'hero')}<i class="bdg g${off.badge % 8} on big"></i>
+  const d = modal(`<div class="rhead">${bossArt(gymAt(G, off.badge), 'hero')}<i class="bdg g${off.badge % 8} on big"></i>
       <div><h3>${esc(rewardBadgeName(off.badge))} Badge</h3>
       <p class="rsub">Choose one reward to keep for the rest of the run.${
         left > 1 ? ` <b>${left - 1} more</b> after this.` : ''}</p></div></div>
@@ -2901,7 +2921,7 @@ function openRewardPicker(){
 /** Tap the badge case: every badge you hold and the reward it bought. */
 function openBadgeInfo(){
   const log = G.rewardLog || [];
-  const rows = GYMS.slice(0, TUNING.badgesToWin).map((g, i) => {
+  const rows = bossPlanOf(G).gyms.slice(0, TUNING.badgesToWin).map((g, i) => {
     const got = i < G.badges, e = log.find(x => x.badge === i), r = e && rewardById(e.id);
     return `<div class="brow ${got ? '' : 'locked'}"><i class="bdg g${i} ${got ? 'on' : ''}"></i>
       <b>${esc(g.badge)} Badge</b><span class="dim">${bossArt(g, 'tiny')}${esc(g.name)}</span>
@@ -3227,7 +3247,7 @@ const mergeHardcore = (a, b) => {
   const firsts = [a.first, b.first].filter(Boolean).sort();
   return { count: Math.max(a.count || 0, b.count || 0), first: firsts[0] || null, last: [a.last, b.last].filter(Boolean).sort().pop() || null };
 };
-const reachedStage = () => G.over === 'won' ? runPlan().length : (G.stage || 0);
+const reachedStage = () => G.over === 'won' ? runPlan(G).length : (G.stage || 0);
 /* 2.0.0: a daily run keeps its own result per day, and a run with rules keeps
    its own record per rule set — neither muddies your plain-run records. */
 const DAILY_REC = 'pkb_daily';
@@ -3266,7 +3286,7 @@ function noteBattle(b){
 }
 function bestRunLabel(stage){
   if(stage < 0) return '—';
-  const plan = runPlan();
+  const plan = runPlan(G);
   if(stage >= plan.length) return 'Champion!';
   if(plan[stage].boss) return `Reached ${plan[stage].boss.name}`;
   let k = stage; while(k < plan.length && !plan[k].boss) k++;
@@ -3283,7 +3303,7 @@ function openTrainerCard(fromTitle){
   const live = !fromTitle || runInProgress();     // from the title with no run going, only who you are
   const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
-  const cells = GYMS.slice(0, TUNING.badgesToWin).map((g, i) => i < G.badges
+  const cells = bossPlanOf(G).gyms.slice(0, TUNING.badgesToWin).map((g, i) => i < G.badges
     ? `<div class="bcell2 on" title="${esc(g.badge)} Badge — ${esc(g.name)}"><i class="bdg g${i} on"></i>${bossArt(g, 'case')}<span>${esc(g.badge)}</span></div>`
     : `<div class="bcell2" title="${esc(g.badge)} Badge — not won yet"><i class="bdg g${i}"></i></div>`).join('');
   const d = modal(`<div class="tcard">
@@ -3792,10 +3812,13 @@ function openDex(){
       ${b.theme ? b.theme.map(t => `<span class="ntype">${esc(t)}</span>`).join(' ') : '<span class="ntype">no theme</span>'}
       ${b.badge ? `<span class="dim">${esc(b.badge)} Badge</span>` : ''}
       <div class="abil">${esc(b.blurb)}</div></div></div>`;
-  const leaders = GYMS.map(b => leaderRow(b, 'gym')).join('')
-    + ELITE_FOUR.map(b => leaderRow(b, 'elite')).join('')
-    + leaderRow(CHAMPION, 'champion')
-    + leaderRow(RIVAL, 'rival');
+  /* 4.0.0: one block per gen that can be played */
+  const leaders = GENS_READY.map(n => { const g = GEN_BOSSES[n];
+    return (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')
+      + g.gyms.map(b => leaderRow(b, 'gym')).join('')
+      + g.elite.map(b => leaderRow(b, 'elite')).join('')
+      + leaderRow(g.champion, 'champion')
+      + leaderRow(g.rival, 'rival'); }).join('');
 
   /* Five sections is enough to need a way in. */
   const jump = `<div class="dexjump">

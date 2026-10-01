@@ -188,7 +188,7 @@ function fight(G){
 
 /** A whole run, with gauntlet telemetry. */
 function playRun(seed, opts){
-  const G = E.newGame(seed, opts && opts.mods ? { mods: opts.mods } : undefined);   // 2.0.0: run modifiers
+  const G = E.newGame(seed, opts && (opts.mods || opts.gens) ? { mods: opts.mods, gens: opts.gens } : undefined);   // 2.0.0: run modifiers; 4.0.0: gens
   E.rollShop(G, false);
   const g = { reached: false, attempts: 0, fell: {}, beaten: {} };
   let guard = 0;

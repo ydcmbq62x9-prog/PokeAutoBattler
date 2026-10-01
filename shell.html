@@ -1762,6 +1762,16 @@ html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a
 .modal.newrun .modt.on{border-color:var(--edge);box-shadow:inset 0 0 0 2px var(--gold)}
 .modal.newrun .modt.on b::before{content:'✓ ';color:var(--good)}
 .modal.newrun .monotypes{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px 4px}
+.modal.newrun .gens{display:flex;gap:6px;margin:6px 0 2px}
+.modal.newrun .gent{flex:1;text-align:left;display:flex;flex-direction:column;gap:1px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);cursor:pointer;font:inherit;min-height:44px}
+.modal.newrun .gent b{font-size:13.5px}
+.modal.newrun .gent span{font-size:11.5px;color:var(--muted)}
+.modal.newrun .gent.on{border-color:var(--edge);box-shadow:inset 0 0 0 2px var(--gold)}
+.modal.newrun .gent.on b::before{content:'✓ ';color:var(--good)}
+.modal.newrun .gent:disabled{opacity:.5;cursor:default}
+.modal.newrun .gennote{margin:2px 2px 8px;font-size:11.5px}
+.ntype[hidden]{display:none}
+h4.genhead{margin:12px 0 4px}
 .modal.newrun .ntype{font:inherit;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;border:2px solid var(--c);background:transparent;color:var(--text);cursor:pointer}
 .modal.newrun .ntype.on{background:var(--c);color:#10131a}
 .modal .warn{color:var(--bad);font-size:13px}
