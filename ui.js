@@ -2976,6 +2976,7 @@ const CHANGELOG = [
     'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it).',
     'Two new types, Steel and Dark, with the Gen 2 matchups. No Gen 1 pokémon changes type.',
     'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.',
+    'The Metal Coat held item is now the Assault Vest — same effect (15% less damage from every hit), new look — because Metal Coat is Gen 2\u2019s evolution item for Steelix and Scizor.',
     'The Pokédex has filters: show everything, or just Pokémon, Trainers or Items, and pick All gens, Gen 1 or Gen 2.' ] },
   { v:'3.8.1', date:'Sep 30, 2026', title:'Visual bug fixes', sub:'Art for all nineteen new pokémon', items:[
     'Weedle, Kakuna, Beedrill, Spearow, Fearow, Doduo, Dodrio, Diglett, Dugtrio, Sandshrew, Sandslash, both Nidorans and their evolutions, Farfetch\u2019d and Porygon now have their sprites instead of letter placeholders.' ] },

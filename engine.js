@@ -274,7 +274,7 @@ const TUNING = {
      about three rounds — whoever struck first won, HP was a weak stat, a heal
      never had time to matter and a Tank was just a slower Bruiser. Roles only
      mean something if a fight lasts long enough to hold a line. Flat damage
-     reduction (guard moves, Metal Coat) was scaled down with it. */
+     reduction (guard moves, the Assault Vest) was scaled down with it. */
   atkPerDamage: 0.2,
   weakMult:         2,
   resistMult:       0.5,
@@ -1870,7 +1870,7 @@ const HELD_ITEMS = {
             text:'+25% HP, but only while it can still evolve.',
             pct:{ hp:0.25 }, when:u => evoNext(u.id).length > 0,
             offText:'No effect — this one has nowhere left to evolve.' },
-  coat:   { name:'Metal Coat',   icon:'🛡️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
+  coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
             text:'Takes 15% less damage from every hit.', cutPct:0.15 },
   char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
             text:'Its hits are never resisted: a “not very effective” hit deals full damage instead.', unresist:true },
@@ -2115,7 +2115,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     const srcItem = heldOf(src);
     // (the old Expert Belt, before v50: a bonus on hits that were already super effective)
     const boost = (srcItem && srcItem.superBoost && m > 1) ? 1 + srcItem.superBoost : 1;
-    // Metal Coat (v50) / Iron Ball (v51): a share off every hit, so it still matters late in a run
+    // Assault Vest (v50, was Metal Coat) / Iron Ball (v51): a share off every hit, so it still matters late in a run
     if(tgt.itemCut) mult *= 1 - tgt.itemCut;
     // Life Orb (v51): harder hits, paid for once per action in act()
     if(srcItem && srcItem.dmgBoost && src !== tgt){ mult *= 1 + srcItem.dmgBoost; src.orbHit = true; }

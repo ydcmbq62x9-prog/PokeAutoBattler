@@ -18,7 +18,7 @@ ALIASES = {
     'water-stone': 'waterstone', 'leaf-stone': 'leafstone', 'x-attack': 'xattack', 'x-speed': 'xspeed',
     # held items — drop any of these PNGs in and the emoji placeholder retires
     'muscle-band': 'band', 'quick-claw': 'claw', 'eviolite': 'evio',
-    'metal-coat': 'coat', 'charcoal': 'char', 'leftovers': 'lefto',
+    'assault-vest': 'coat', 'metal-coat': 'metalcoat', 'charcoal': 'char', 'leftovers': 'lefto',
     'sitrus-berry': 'sitrus', 'focus-band': 'focus', 'lucky-egg': 'egg',
     'amulet-coin': 'coin', 'expert-belt': 'char', 'moon-stone': 'moonstone',
     # v51 trade-off items (drawn icons live in extra-sprites/ until real ones are uploaded)
@@ -65,8 +65,8 @@ def main():
         raw_total += os.path.getsize(f)
         enc_total += len(data)
         out[key] = 'data:image/png;base64,' + base64.b64encode(data).decode()
-    # 4.0.0: the same person or object under a second id (Koga of the Elite Four; Metal Coat as an evolution item)
-    for new, old in {'koga2': 'koga', 'bruno2': 'bruno', 'lance2': 'lance', 'metalcoat': 'coat'}.items():
+    # 4.0.0: the same person under a second id (Koga of the Elite Four)
+    for new, old in {'koga2': 'koga', 'bruno2': 'bruno', 'lance2': 'lance'}.items():
         if old in out and new not in out: out[new] = out[old]
     body = ',\n'.join('  %s: "%s"' % (json.dumps(k), v) for k, v in sorted(out.items()))
     OUT.write_text(

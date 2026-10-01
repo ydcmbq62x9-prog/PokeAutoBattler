@@ -759,7 +759,7 @@ try{
   check(!allLines(fight([noLeft], [poker])).some(l => /Leftovers/.test(l)),
         'and only when it is held');
 
-  // Metal Coat takes a point off every hit
+  // the Assault Vest (was Metal Coat) takes a share off every hit
   const dmgTo = (name, lines) => lines.filter(l => l.startsWith(name + ' took'))
     .map(l => +l.match(/took (\d+)/)[1]);
   const plain = E.makeUnit('tangela', 0); plain.hp = 120;
@@ -768,9 +768,9 @@ try{
     u.atk = Math.round(12 / E.TUNING.atkPerDamage); u.hp = 400; return u; };
   const dPlain  = dmgTo('Tangela', allLines(fight([plain],  [hitter()], 5150)));
   const dCoated = dmgTo('Tangela', allLines(fight([coated], [hitter()], 5150)));
-  check(dPlain.length && dCoated.length, 'the Metal Coat test landed some hits');
+  check(dPlain.length && dCoated.length, 'the Assault Vest test landed some hits');
   const cut = E.HELD_ITEMS.coat.cutPct;
-  check(dCoated[0] === Math.max(1, Math.round(dPlain[0] * (1 - cut))), `Metal Coat takes ${cut * 100}% off each hit (${dPlain[0]} -> ${dCoated[0]})`);
+  check(dCoated[0] === Math.max(1, Math.round(dPlain[0] * (1 - cut))), `the Assault Vest takes ${cut * 100}% off each hit (${dPlain[0]} -> ${dCoated[0]})`);
   // …and still takes the same share off a big hit late in a run (v50: it used to be a flat 2)
   const bigHitter = () => { const u = hitter(); u.atk *= 4; return u; };
   const bPlain = dmgTo('Tangela', allLines(fight([Object.assign(E.makeUnit('tangela', 0), { hp:400 })], [bigHitter()], 5150)))[0];
