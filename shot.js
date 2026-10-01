@@ -1,14 +1,18 @@
 const { chromium } = require('playwright');
 (async()=>{
-  const b = await chromium.launch(); const p = await b.newPage({ viewport:{width:390,height:800} });
-  const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
-  await p.evaluate(()=>{ openHelp(); });
-  await p.waitForTimeout(300);
-  await p.evaluate(()=>{ const t=document.querySelector('.tchart'); if(t) t.scrollIntoView(); });
-  await p.screenshot({path:'help.png'});
-  await p.evaluate(()=>{ document.querySelectorAll('.modal').forEach(m=>m.remove()); openNewRun && openNewRun(); });
-  await p.waitForTimeout(300); await p.screenshot({path:'newrun.png'});
+  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'}).catch(()=>chromium.launch());
+  const p = await b.newPage({viewport:{width:420,height:860}});
+  const errs=[]; p.on('pageerror',e=>errs.push(String(e))); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+  await p.addInitScript(()=>{window.PKB_TITLE=true;});
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.waitForTimeout(1800);
+  await p.screenshot({path:'/tmp/s1.png'});
+  await p.click('.tpress'); await p.waitForTimeout(500);
+  await p.screenshot({path:'/tmp/s2.png'});
+  await p.click('[data-t="dex"]'); await p.waitForTimeout(500);
+  await p.screenshot({path:'/tmp/s3.png'});
+  await p.click('.dextile[data-id="noctowl"]'); await p.waitForTimeout(300);
+  await p.screenshot({path:'/tmp/s4.png'});
   console.log('errors',errs);
   await b.close();
 })();

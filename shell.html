@@ -1791,6 +1791,57 @@ h4.genhead{margin:12px 0 4px}
 .dexseg .sp{min-height:32px}
 .dexseg .sp.on{background:var(--gold);color:#10131a;border-color:var(--edge)}
 .modal.dex [hidden]{display:none!important}
+/* ---- 4.1.0 · POKÉDEX grid + cards, Run Focus note, livelier title ---- */
+.dexsearch{width:100%;box-sizing:border-box;margin:6px 0 2px;padding:9px 12px;border:2px solid var(--line2);border-radius:10px;background:var(--panel2);color:var(--text);font:inherit;font-size:14px}
+.dexsearch:focus{outline:none;border-color:var(--gold)}
+.dexcount{font-size:12px;font-weight:600;margin-left:6px}
+.dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:8px}
+.dextile{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 6px;min-width:0;border:2px solid var(--line2);border-radius:12px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--tcol) 14%,var(--panel2)),var(--panel2));color:var(--text);font:inherit;cursor:pointer;transition:transform .12s,border-color .12s}
+.dextile:hover,.dextile:focus-visible{border-color:var(--tcol);outline:none;transform:translateY(-2px)}
+.dextile:active{transform:scale(.97)}
+.dextile b{font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dextile:not(.seen) .sprite{opacity:.8}
+.dextile .tmeta{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--dim)}
+.dextile .tmeta i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dextile .tseen{position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:var(--good,#5cc97a);border:1px solid rgba(0,0,0,.35)}
+.dextile[hidden]{display:none!important}
+.sprite.tile{width:60px;height:60px}
+.sprite.lg{width:88px;height:88px;border-radius:14px}
+.modal.dexcardm{z-index:60}
+.dcard .chead{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.dcard .chead h3{margin:0 0 4px;font-size:20px}
+.dcard h4{margin:12px 0 4px}
+.cbars{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.cbar{display:grid;grid-template-columns:58px 1fr 34px;gap:8px;align-items:center;font-size:12px}
+.cbar i{display:block;height:9px;border-radius:5px;background:var(--line);overflow:hidden}
+.cbar u{display:block;height:100%;border-radius:5px;text-decoration:none}
+.cbar u.hp{background:#5cc97a}.cbar u.atk{background:#ef6a5a}.cbar u.spd{background:#4fb5f5}
+.cbar b{text-align:right}
+.cmoves .abil{margin:4px 0;font-size:12.5px;color:var(--muted)}
+.cchain{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.cevo{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 7px;border:2px solid var(--line2);border-radius:10px;background:var(--panel2);color:var(--text);font:inherit;font-size:11px;cursor:pointer}
+.cevo.me{border-color:var(--gold)}
+.carrow{display:flex;flex-direction:column;align-items:center;font-size:16px;color:var(--dim);line-height:1}
+.carrow small{font-size:9px;max-width:70px;text-align:center}
+.cmu{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.runnote{margin:0 0 6px;padding:6px 9px;border:2px dashed var(--gold2,#e0a220);border-radius:10px;font-size:11.5px;line-height:1.5;background:color-mix(in srgb,var(--gold) 9%,transparent)}
+.runnote b{color:var(--gold)}
+.dfocus{font-style:normal;color:var(--gold);margin-left:5px;font-size:12px}
+.tcloud{position:absolute;height:10px;border-radius:6px;background:#fff;opacity:.75;animation:tdrift 26s linear infinite}
+.tcloud.c1{top:14%;left:-30px;width:34px}
+.tcloud.c2{top:30%;left:-60px;width:24px;animation-duration:38s;animation-delay:-14s}
+.tcloud.c3{top:8%;left:-40px;width:20px;animation-duration:31s;animation-delay:-22s}
+@keyframes tdrift{to{transform:translateX(520px)}}
+html.dark .tcloud{background:#f3eed8;opacity:.18}
+.tside{position:absolute;bottom:15%;width:clamp(64px,19vw,84px);height:clamp(64px,19vw,84px);transform:translateX(-50%)}
+.tside img{width:100%;height:100%;object-fit:contain;object-position:bottom;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(63,74,92,.25));animation:tbob 1.6s steps(2) infinite}
+.tside.l{left:20%}.tside.r{left:80%}.tside.r img{animation-delay:-.8s;transform:scaleX(-1)}
+.tside.l img{transform:scaleX(-1)}
+.title .tside{animation:tfade .5s .6s both}
+.title.still .tside{animation:none}
+.title.still .tcloud{animation:none}
+
 .modal.newrun .ntype{font:inherit;font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px;border:2px solid var(--c);background:transparent;color:var(--text);cursor:pointer}
 .modal.newrun .ntype.on{background:var(--c);color:#10131a}
 .modal .warn{color:var(--bad);font-size:13px}

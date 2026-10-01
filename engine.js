@@ -199,7 +199,7 @@ const TUNING = {
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
-  gensFoes: { '1': 1, '2': 1.03, '1+2': 0.909 },
+  gensFoes: { '1': 1, '2': 1.004, '1+2': 0.913 },
   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
@@ -1324,9 +1324,9 @@ const SPECIES = {
   feraligatr: { name:'Feraligatr', type:'Water', gen1:'Water', gen:2, tier:1, role:'bruiser', hp:TOTO.e[0], atk:TOTO.e[1], spd:TOTO.e[2], token:true,
                 move:M.hit('Crunch', 1.8) },
 
-  hoothoot:   { name:'Hoothoot',   type:'Flying', gen1:'Normal/Flying', gen:2, tier:1, role:'support', hp:HOOT.b[0], atk:HOOT.b[1], spd:HOOT.b[2],
+  hoothoot:   { name:'Hoothoot',   type:'Flying', gen1:'Normal/Flying', gen:2, tier:1, role:'tank', hp:HOOT.b[0], atk:HOOT.b[1], spd:HOOT.b[2],
                 evo:{into:'noctowl', by:'level'},     move:M.hit('Tackle', 1.0) },
-  noctowl:    { name:'Noctowl',    type:'Flying', gen1:'Normal/Flying', gen:2, tier:1, role:'support', hp:HOOT.e[0], atk:HOOT.e[1], spd:HOOT.e[2], token:true,
+  noctowl:    { name:'Noctowl',    type:'Flying', gen1:'Normal/Flying', gen:2, tier:1, role:'tank', hp:HOOT.e[0], atk:HOOT.e[1], spd:HOOT.e[2], token:true,
                 move:M.fast('Confusion', 1.3) },
   ledyba:     { name:'Ledyba',     type:'Bug', gen1:'Bug/Flying', gen:2, tier:1, role:'support', hp:LEDY.b[0], atk:LEDY.b[1], spd:LEDY.b[2],
                 evo:{into:'ledian', by:'level'},      move:M.multi('Comet Punch', 0.5, 2) },
@@ -1347,13 +1347,13 @@ const SPECIES = {
                 evo:{into:'ampharos', by:'level'},    move:M.all('Thunder Shock', 0.45) },
   ampharos:   { name:'Ampharos',   type:'Electric', gen1:'Electric', gen:2, tier:2, role:'cannon', hp:MARE.e[0], atk:MARE.e[1], spd:MARE.e[2], token:true,
                 move:M.all('Thunderbolt', 0.66) },
-  natu:       { name:'Natu',       type:'Psychic', gen1:'Psychic/Flying', gen:2, tier:2, role:'support', hp:NATU.b[0], atk:NATU.b[1], spd:NATU.b[2],
+  natu:       { name:'Natu',       type:'Psychic', gen1:'Psychic/Flying', gen:2, tier:2, role:'cannon', hp:NATU.b[0], atk:NATU.b[1], spd:NATU.b[2],
                 evo:{into:'xatu', by:'level'},        move:M.fast('Confusion', 0.95) },
-  xatu:       { name:'Xatu',       type:'Psychic', gen1:'Psychic/Flying', gen:2, tier:2, role:'support', hp:NATU.e[0], atk:NATU.e[1], spd:NATU.e[2], token:true,
+  xatu:       { name:'Xatu',       type:'Psychic', gen1:'Psychic/Flying', gen:2, tier:2, role:'cannon', hp:NATU.e[0], atk:NATU.e[1], spd:NATU.e[2], token:true,
                 move:M.fast('Psychic', 1.15) },
-  wooper:     { name:'Wooper',     type:'Water', gen1:'Water/Ground', gen:2, tier:2, role:'tank', hp:WOOP.b[0], atk:WOOP.b[1], spd:WOOP.b[2],
+  wooper:     { name:'Wooper',     type:'Water', gen1:'Water/Ground', gen:2, tier:1, role:'tank', hp:WOOP.b[0], atk:WOOP.b[1], spd:WOOP.b[2],
                 evo:{into:'quagsire', by:'level'},    move:M.wall('Body Slam', 0.8, 1.5) },
-  quagsire:   { name:'Quagsire',   type:'Water', gen1:'Water/Ground', gen:2, tier:2, role:'tank', hp:WOOP.e[0], atk:WOOP.e[1], spd:WOOP.e[2], token:true,
+  quagsire:   { name:'Quagsire',   type:'Water', gen1:'Water/Ground', gen:2, tier:1, role:'tank', hp:WOOP.e[0], atk:WOOP.e[1], spd:WOOP.e[2], token:true,
                 move:M.wall('Earthquake', 1.2, 2.0) },
   snubbull:   { name:'Snubbull',   type:'Normal', gen1:'Normal', gen:2, tier:2, role:'bruiser', hp:SNUB.b[0], atk:SNUB.b[1], spd:SNUB.b[2],
                 evo:{into:'granbull', by:'level'},    move:M.hit('Bite', 1.3) },
@@ -1382,7 +1382,7 @@ const SPECIES = {
                 evo:{into:'houndoom', by:'level'},    move:M.hit('Ember', 1.3) },
   houndoom:   { name:'Houndoom',   type:'Dark', gen1:'Dark/Fire', gen:2, tier:3, role:'cannon', hp:HOUN.e[0], atk:HOUN.e[1], spd:HOUN.e[2], token:true,
                 move:M.charge('Fire Blast', 2.2, 'Crunch', 1.0) },
-  girafarig:  { name:'Girafarig',  type:'Normal', gen1:'Normal/Psychic', gen:2, tier:3, role:'support', hp:GIRA[0], atk:GIRA[1], spd:GIRA[2],
+  girafarig:  { name:'Girafarig',  type:'Normal', gen1:'Normal/Psychic', gen:2, tier:3, role:'bruiser', hp:GIRA[0], atk:GIRA[1], spd:GIRA[2],
                 move:M.fast('Confusion', 1.15) },
   misdreavus: { name:'Misdreavus', type:'Ghost', gen1:'Ghost', gen:2, tier:3, role:'cannon', hp:MISD[0], atk:MISD[1], spd:MISD[2],
                 move:M.pierce('Shadow Ball', 1.3) },
@@ -1501,6 +1501,7 @@ function gen2Linked(id){
   return GEN2_LINKED.has(id);
 }
 let ACTIVE_GENS = [1];
+let ACTIVE_POOL = null;   // 4.1.0: the run's open cross-gen evolutions (null = all of them)
 const cleanGens = g => { const out = Object.keys(GENS).map(Number).filter(n => Array.isArray(g) && g.includes(n)); return out.length ? out : [1]; };
 const genOf = id => (SPECIES[id] && SPECIES[id].gen) || 1;
 /** Is this species part of a run that plays these gens? */
@@ -1518,12 +1519,13 @@ const monoTypesFor = gens => { const b = buyableFor(cleanGens(gens)); return Obj
 const MONO_TYPES = monoTypesFor([1]);
 function setActiveGens(gens){
   ACTIVE_GENS = cleanGens(gens);
+  ACTIVE_POOL = null;
   BUYABLE.splice(0, BUYABLE.length, ...buyableFor(ACTIVE_GENS));
   MONO_TYPES.splice(0, MONO_TYPES.length, ...monoTypesFor(ACTIVE_GENS));
   return ACTIVE_GENS;
 }
 /** Make the engine follow this run's gens (cheap when they already match). */
-function useGens(G){ const g = cleanGens(G && G.gens); if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); return ACTIVE_GENS; }
+function useGens(G){ const g = cleanGens(G && G.gens); if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); ACTIVE_POOL = (G && G.evoPool) || null; return ACTIVE_GENS; }
 /** 2.1.0: a legendary has no tier and never levels. */
 const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECIES[typeof u === 'string' ? u : u.id].legendary);
 /* Second moves (v32), kept apart from the species table so the main moves stay
@@ -1755,7 +1757,7 @@ function evoNext(id){
   const sp = SPECIES[id];
   if(!sp) return [];
   const out = evoOpts(sp.evo);
-  if(sp.evo2 && ACTIVE_GENS.includes(2)) out.push(...evoOpts(sp.evo2).map(n => ({ ...n, gen2:true })));
+  if(sp.evo2 && ACTIVE_GENS.includes(2) && (!ACTIVE_POOL || ACTIVE_POOL.includes(id))) out.push(...evoOpts(sp.evo2).map(n => ({ ...n, gen2:true })));
   return out.filter(n => SPECIES[n.into]);
 }
 /** What a species evolved from, or null. */
@@ -3030,13 +3032,52 @@ function dailyMods(date){
   return { onelife: true };
 }
 
+/* ===================================================================
+   4.1.0 — RUN FOCUS and the EVOLUTION POOL (runs that play more than one gen)
+   A mixed run sells nearly twice the roster, so copies merge far less often.
+   Each such run draws, from its seed alone:
+     · three FOCUS lines — the Daycare shows them more often, so there is always
+       something to build around (one Gen 1, one Gen 2, one from either), and
+     · an EVOLUTION POOL — only some of the cross-gen evolutions (Onix → Steelix,
+       Golbat → Crobat…) are open that run; the Mart stocks stones for those.
+   Single-gen runs and Gen 2-only runs are untouched: nothing here applies.
+   =================================================================== */
+const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra'];   // species that carry an `evo2`
+const EVO_POOL_SIZE = 4;
+const FOCUS_COUNT = 3;
+const FOCUS_CHANCE = 0.09;       // share of Daycare slots that show a focus line
+const FOCUS_MAX_TIER = 3;
+const isMixed = gens => cleanGens(gens).length > 1;
+function runDraw(seed, salt){ return makeRng(mix32(((seed || 1) ^ 0x51ed270b) >>> 0, salt)); }
+function drawEvoPool(seed, gens){
+  if(!isMixed(gens)) return null;
+  const r = runDraw(seed, 4101), a = CROSS_EVOS.slice();
+  for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a.slice(0, EVO_POOL_SIZE).sort((x, y) => CROSS_EVOS.indexOf(x) - CROSS_EVOS.indexOf(y));
+}
+function drawFocus(seed, gens){
+  gens = cleanGens(gens);
+  if(!isMixed(gens)) return null;
+  const r = runDraw(seed, 4102);
+  const lines = buyableFor(gens).filter(k => SPECIES[k].tier <= FOCUS_MAX_TIER);
+  const pick = (list, taken) => { const f = list.filter(k => !taken.includes(k)); return f.length ? f[Math.floor(r() * f.length)] : null; };
+  const out = [];
+  const one = pick(lines.filter(k => genOf(k) === 1), out); if(one) out.push(one);
+  const two = pick(lines.filter(k => genOf(k) === 2), out); if(two) out.push(two);
+  while(out.length < FOCUS_COUNT){ const x = pick(lines, out); if(!x) break; out.push(x); }
+  return out;
+}
+
 function newGame(seed, opts){
   const gens = setActiveGens(opts && opts.gens);   // 4.0.0: which gens this run plays
   const mods = cleanMods(opts && opts.mods);
   seed = seed || Math.floor(Math.random() * 1e9);
+  const evoPool = drawEvoPool(seed, gens);
+  ACTIVE_POOL = evoPool;
   return {
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
+    evoPool, focus: drawFocus(seed, gens),   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -3278,7 +3319,11 @@ function rollDaycare(G, payCost){
   for(let i = 0; i < n; i++){
     const weighted = pool.filter(k => SPECIES[k].tier >= Math.max(1, maxTier - 1));
     const src = (rnd() < 0.55 && weighted.length) ? weighted : pool;
-    next.push({ unit: trainerCatchUp(G, makeUnit(src[Math.floor(rnd() * src.length)], 0)),
+    let id = src[Math.floor(rnd() * src.length)];
+    // 4.1.0: a mixed run's focus lines show up more often
+    const foc = (G.focus || []).filter(k => pool.includes(k));
+    if(foc.length && rnd() < FOCUS_CHANCE) id = foc[Math.floor(rnd() * foc.length)];
+    next.push({ unit: trainerCatchUp(G, makeUnit(id, 0)),
                 bought:false });
   }
   G.daycare = next;
@@ -3958,7 +4003,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,

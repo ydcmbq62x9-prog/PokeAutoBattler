@@ -219,8 +219,17 @@ const SAVE_KEY = 'pokebattler.save.v3';
    Which slot a run lives in is a fact about the run (G.daily), not a mode. */
 const DAILY_KEY = 'pokebattler.save.daily';
 const slotKey = g => (g && g.daily) ? DAILY_KEY : SAVE_KEY;
+/* 4.1.0: the Pokédex remembers every pokémon the Daycare has shown you or you have owned. */
+const dexSeen = () => { try{ return new Set(JSON.parse(PREF.get('dexseen', '[]'))); }catch(e){ return new Set(); } };
+function noteSeen(){
+  if(!G) return;
+  const s = dexSeen(), n = s.size;
+  [...(G.team || []), ...(G.pc || []), ...(G.daycare || []).map(x => x && x.unit)].forEach(u => { if(u && u.id) s.add(u.id); });
+  if(s.size !== n) PREF.set('dexseen', JSON.stringify([...s]));
+}
 function save(){
   if(!G) return;
+  noteSeen();
   try{ localStorage.setItem(slotKey(G), JSON.stringify({ G, phase: phase === 'battle' ? 'shop' : phase })); }catch(e){}
   PREF.set('slot', G.daily ? 'daily' : 'main');
 }
@@ -1101,6 +1110,13 @@ function streakChip(){
 /* ===================================================================
    SHOP SCREEN
    =================================================================== */
+/** 4.1.0: a mixed run's Focus lines and open cross-gen evolutions, as a small note over the Daycare. */
+const poolLines = g => (g && g.evoPool || []).map(src => evoOpts(SPECIES[src].evo2).map(n => `${SPECIES[src].name} → ${SPECIES[n.into].name}`).join(' / '));
+function runNoteHtml(g){
+  if(!g || (!(g.focus && g.focus.length) && !(g.evoPool && g.evoPool.length))) return '';
+  return `<div class="runnote"><div><b>★ Focus</b> ${(g.focus || []).map(k => `${miniSprite(k)}${esc(SPECIES[k].name)}`).join(' · ')}</div>
+    <div class="dim"><b>Open evolutions</b> ${poolLines(g).map(esc).join(' · ')}</div></div>`;
+}
 function renderShop(){
   const maxTier = tierFor(G);
   /* Mid-gauntlet the shops are shut. The panels stay where they are — the
@@ -1163,7 +1179,7 @@ function renderShop(){
       ${SPRITES[u.id] ? `<img class="dart" src="${SPRITES[u.id]}" alt="">`
                       : `<span class="dart letters">${esc(sp.name.slice(0,2))}</span>`}
       <div class="dmain">
-        <b>${esc(sp.name)}${owned ? '<i class="downed" title="you have a copy that can level up from this one">●</i>' : ''}</b>
+        <b>${esc(sp.name)}${(G.focus || []).includes(u.id) ? '<i class="dfocus" title="This run\'s Focus line: it shows up more often">★</i>' : ''}${owned ? '<i class="downed" title="you have a copy that can level up from this one">●</i>' : ''}</b>
         <span class="dtype" style="background:${typeColor(u.id)}">${esc(sp.type)}</span>${roleChip(u.id)}
       </div>
       <div class="dnums">
@@ -1173,7 +1189,7 @@ function renderShop(){
       <span class="dprice">${TUNING.costBuy}₽</span>
     </div>`);
   }
-  const dcList = `<div class="dclist">${dcRows.join('')}</div>`;
+  const dcList = `${runNoteHtml(G)}<div class="dclist">${dcRows.join('')}</div>`;
 
   /* --- PokeMart: one scrollable shelf, restock above, always-in-stock below --- */
   const martRow = (inner, cls, act, i) =>
@@ -2316,7 +2332,7 @@ function openNewRun(onStart){
     if(pick.mono && !types.includes(pick.mono)) pick.mono = null;
     d.querySelectorAll('.gent').forEach(b => b.classList.toggle('on', gens.includes(+b.dataset.gen)));
     d.querySelectorAll('.ntype').forEach(b => b.hidden = !types.includes(b.dataset.type));
-    note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in.`
+    note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in. Each run also draws 3 Focus lines the Daycare shows more often, and 4 open cross-gen evolutions.`
       : `${GENS[gens[0]].region}: its own gym leaders, Elite Four and Champion.`;
     d.querySelectorAll('.modt').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
     d.querySelectorAll('.ntype').forEach(b => b.classList.toggle('on', b.dataset.type === pick.mono));
@@ -2970,10 +2986,14 @@ const CHANGELOG = [
   { v:'4.0.0', date:'Oct 1, 2026', title:'Major gameplay update', sub:'The Gen 2 pack: Johto, 68 new pokémon, and runs that mix both generations', items:[
     'New Run now has a toggle for each generation. Gen 1 plays exactly as before. Gen 2 is Johto: Falkner to Clair, then Will, Koga, Bruno and Karen, Lance as Champion, and Silver as your rival.',
     'Pick both and 8 of the 16 gym leaders and 4 of the Elite Four are drawn and shuffled, and the Champion is Blue or Lance. Every boss is scaled to the slot they land in — Brock as the eighth gym brings Golem, Rhydon and Onix — and nobody shows up twice.',
-    '67 Gen 2 pokémon: the Johto starters, Hoothoot, Ledyba, Spinarak, Marill, Mareep, Natu, Wooper, Snubbull, Murkrow, Teddiursa, Swinub, Phanpy, Pineco, Houndour, Girafarig, Misdreavus, Miltank, Sneasel, Skarmory, Hitmontop, Heracross, Larvitar to Tyranitar, the seven babies, and Raikou, Entei, Suicune, Lugia and Ho-Oh as encounters.',
+    'A Gen 2-only run plays Gen 2 pokémon only, plus the Gen 1 lines a Gen 2 pokémon belongs to (Onix with Steelix, Magby with Magmar, Pichu with Pikachu). Johto\u2019s leaders can still field Gen 1 pokémon from the Johto Pokédex, Dratini and Dragonite for Clair and Lance, but those are never sold to you.',
+    '68 Gen 2 pokémon: the Johto starters, Hoothoot, Ledyba, Spinarak, Marill, Mareep, Natu, Wooper, Snubbull, Murkrow, Teddiursa, Swinub, Phanpy, Pineco, Houndour, Girafarig, Misdreavus, Miltank, Sneasel, Skarmory, Hitmontop, Heracross, Larvitar to Tyranitar, the seven babies, and Raikou, Entei, Suicune, Lugia and Ho-Oh as encounters.',
     'With Gen 2 on, Gen 1 pokémon can evolve further: Golbat into Crobat and Chansey into Blissey by level, Onix and Scyther into Steelix and Scizor with a Metal Coat, Poliwhirl into Politoed with a King\u2019s Rock, Gloom into Bellossom and Eevee into Espeon with a Sun Stone, and Eevee into Umbreon with a Moon Stone.',
     'Tyrogue becomes Hitmonlee, Hitmonchan or Hitmontop depending on its highest stat — Attack, HP or Speed — so your vitamins choose.',
-    'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it).',
+    'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it). Horsea → Seadra joins Gen 1 too, and a Dragon Scale turns Seadra into Kingdra.',
+    'Mixed runs level up more easily. Each run draws 3 Focus lines (marked \u2605 in the Daycare), which show up more often, and a pool of 4 open cross-gen evolutions, so no two runs evolve the same way. Single-gen runs are unchanged.',
+    'Early Gen 2 was support-heavy. Hoothoot and Noctowl are now Tanks, Natu and Xatu Cannons and Girafarig a Bruiser, and the Wooper line arrives at Tier 1 as a Tank.',
+    'A new Pokédex: a grid of tiles with search, a card for every pokémon (stats, moves, evolutions, matchups and who uses it), and a count of the ones you have seen. It is also on the title menu now, and the title screen has a livelier field.',
     'Two new types, Steel and Dark, with the Gen 2 matchups. No Gen 1 pokémon changes type.',
     'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.',
     'The Metal Coat held item is now the Assault Vest — same effect (15% less damage from every hit), new look — because Metal Coat is Gen 2\u2019s evolution item for Steelix and Scizor.',
@@ -3792,21 +3812,41 @@ function openDex(){
   families.sort((a,b) => (SPECIES[a[0]].tier || 7) - (SPECIES[b[0]].tier || 7)
     || SPECIES[a[0]].name.localeCompare(SPECIES[b[0]].name));
 
-  const rows = families.map(line => line.map((k,i) => {
-    const s = SPECIES[k];
-    const from = i > 0 ? evoStep(k) : null;
-    const via = from ? (from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}` : from.stat ? `↑ level up with ${({ atk:'Attack', hp:'HP', spd:'Speed' })[from.stat]} as its highest stat` : '↑ level up') : '';
-    return `<div class="dexrow ${i ? 'sub' : ''}" ${dexGenAttr(k)}>
-      ${spriteHtml(k, 'sm')}
-      <div><b>${esc(s.name)}</b>
-        <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>
-        ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${GENS_READY.length > 1 && genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
-        <span class="dim">${s.legendary ? 'encounter only' : 'T' + s.tier} · ◆${s.atk} ♥${s.hp} »${s.spd}${via ? ' · ' + via : ''}</span>
-        <div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
-        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}
-      </div></div>`;
-  }).join('')).map(h => `<div class="dexfam">${h}</div>`).join('');
-  setActiveGens(gensBefore);
+  /* 4.1.0: the Pokémon are a grid of tiles; a tap opens that pokémon's card. */
+  const seenSet = dexSeen();
+  const allMons = families.flat();
+  const maxOf = f => Math.max(...Object.keys(SPECIES).map(k => SPECIES[k][f] || 0));
+  const MAXS = { hp: maxOf('hp'), atk: maxOf('atk'), spd: maxOf('spd') };
+  const viaOf = (k, i) => { const from = i > 0 ? evoStep(k) : null; if(!from) return '';
+    return from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}`
+      : from.stat ? `level up · ${({ atk:'Attack', hp:'HP', spd:'Speed' })[from.stat]} highest` : 'level up'; };
+  const bossesOf = k => { const out = []; EVERY_BOSS.forEach(b => { if(b.theme && (themePool(b).includes(k) || (b.bossOnly || []).includes(k))) out.push(b.name); }); return out; };
+  const barRow = (label, v, max, cls) => `<div class="cbar"><span>${label}</span><i><u class="${cls}" style="width:${Math.max(4, Math.round(100 * v / max))}%"></u></i><b>${v}</b></div>`;
+  const cardHtml = k => {
+    const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type];
+    const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${esc(SPECIES[m].name)}</span></button>`).join('');
+    const sold = s.legendary ? 'Encounter only' : [inGens(k, [1]) ? 'Gen 1 runs' : '', inGens(k, [2]) ? 'Gen 2 runs' : ''].filter(Boolean).join(' · ') || 'Bosses only';
+    const bs = bossesOf(k);
+    return `<div class="dcard">
+      <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
+        <div><h3>${esc(s.name)}</h3>
+          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span> ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
+          <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
+      <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
+      <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
+        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}</div>
+      ${fam.length > 1 ? `<h4>Evolution</h4><div class="cchain">${chain}</div>` : ''}
+      <h4>Matchups</h4><div class="cmu">${t.weak.length ? `<span class="mu bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}${t.resist.length ? `<span class="mu good">resists ${t.resist.join(', ')} ×½</span>` : ''}</div>
+      ${bs.length ? `<h4>Trainers who use it</h4><div class="dim">${bs.slice(0, 6).map(esc).join(' · ')}${bs.length > 6 ? ` · +${bs.length - 6} more` : ''}</div>` : ''}
+    </div>`; };
+  const cards = {}; allMons.forEach(k => { cards[k] = cardHtml(k); });
+  const rows = `<div class="dexgrid">` + allMons.map(k => { const s = SPECIES[k];
+    return `<button class="dextile ${seenSet.has(k) ? 'seen' : ''}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}">
+      ${spriteHtml(k, 'tile')}<b>${esc(s.name)}</b>
+      <span class="tmeta"><i style="background:${TYPES[s.type].color}"></i>${s.legendary ? '★' : 'T' + s.tier}${genOf(k) > 1 ? ' · G' + genOf(k) : ''}</span>
+      ${seenSet.has(k) ? '<em class="tseen" title="seen"></em>' : ''}</button>`; }).join('') + `</div>`;
+  const seenCount = allMons.filter(k => seenSet.has(k)).length;
+  setActiveGens(gensBefore); if(G) useGens(G);
 
   const items = Object.keys(ITEMS).map(k => { const it = ITEMS[k];
     const g2only = ['sunstone', 'kingsrock', 'metalcoat'].includes(k);   // 4.0.0: only useful with Gen 2 on
@@ -3863,8 +3903,9 @@ function openDex(){
     ${GENS_READY.length > 1 ? `<div class="dexseg" data-f="gen">${GENF.map(([id, label]) => `<button class="sp" data-v="${id}">${esc(label)}</button>`).join('')}</div>` : ''}
   </div>`;
 
-  const d = modal(`<h3>Pokédex</h3>${jump}
-    <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon</h3><div>${rows}</div></section>
+  const d = modal(`<h3>Pokédex <span class="dim dexcount">${seenCount} / ${allMons.length} seen</span></h3>${jump}
+    <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon <span class="dim">— tap one for its card</span></h3>
+      <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${rows}</section>
     <section data-sec="gym"><h3 class="dexh" id="dex-gym">Trainers <span class="dim">— gym leaders, the Elite Four, Champions and rivals</span></h3>
     <div>${leaders}</div></section>
     <section data-sec="items"><h3 class="dexh" id="dex-held">Held items <span class="dim">— one each, swap any time</span></h3>
@@ -3881,10 +3922,11 @@ function openDex(){
     d.querySelectorAll('section[data-sec]').forEach(x => x.hidden = sec !== 'all' && x.dataset.sec !== sec);
     const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) !== '0' && (el.hasAttribute('data-g' + gen) || !el.matches('.dexgen'));
     d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
-    d.querySelectorAll('.dexfam').forEach(f => f.hidden = ![...f.querySelectorAll('.dexrow')].some(r => !r.hidden));
+    const q = (d.querySelector('.dexsearch').value || '').trim().toLowerCase();
+    d.querySelectorAll('.dextile').forEach(t => { if(q && !t.dataset.name.includes(q)) t.hidden = true; });
     d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
     const shown = [...d.querySelectorAll('section[data-sec]')].filter(x => !x.hidden);
-    d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow')].some(r => !r.closest('[hidden]')));
+    d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow,.dextile')].some(r => !r.hidden && !r.closest('[hidden]')));
   };
   d.querySelectorAll('.dexseg .sp').forEach(b => b.onclick = () => {
     SFX.play('tap');
@@ -3892,6 +3934,15 @@ function openDex(){
     else { gen = b.dataset.v; PREF.set('dexgen', gen); }
     apply(); d.scrollTop = 0; const box = d.querySelector('.box') || d; box.scrollTop = 0;
   });
+  const showCard = k => {
+    SFX.play('tap');
+    const c = modal(cards[k]); c.classList.add('dexcardm');
+    c.querySelector('.boxscroll').insertAdjacentHTML('beforeend', '<div class="btnrow"><button class="btn ghost" data-m="x">Back</button></div>');
+    c.querySelector('[data-m="x"]').onclick = () => c.remove();
+    c.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { if(b.dataset.jump !== k){ c.remove(); showCard(b.dataset.jump); } });
+  };
+  d.querySelectorAll('.dextile').forEach(t => t.onclick = () => showCard(t.dataset.id));
+  d.querySelector('.dexsearch').addEventListener('input', apply);
   apply();
 }
 /** 4.0.0: which gens can meet this pokémon, for the dex filter (Gen 2 is the Johto Pokédex). */
@@ -3923,6 +3974,15 @@ function showTitle(then){
   const cont = !!(M && !M.over && ((M.stage || 0) > 0 || M.turn > 1));
   const runLine = cont ? `Turn ${M.turn} · ${M.badges} badge${M.badges === 1 ? '' : 's'} · ${Math.max(0, M.lives)} ${M.lives === 1 ? 'life' : 'lives'}${modList(M).length ? ' · ' + esc(modsLabel(M)) : ''}` : '';
   const dres = dailyResults()[localDate()];
+  /* 4.1.0: two more pokémon share the field — your party when a run is on, otherwise any two */
+  const flank = (() => {
+    const mine = runInProgress() ? [...G.team, ...G.pc].map(u => u.id).filter(k => k !== mon && SPRITES[k]) : [];
+    const any = Object.keys(SPECIES).filter(k => k !== mon && SPRITES[k] && !SPECIES[k].legendary && (SPECIES[k].tier || 9) <= 3);
+    const out = [];
+    for(const k of [...mine.sort(() => Math.random() - .5), ...any.sort(() => Math.random() - .5)]){ if(!out.includes(k)) out.push(k); if(out.length === 2) break; }
+    return out;
+  })();
+  const dexTotal = Object.keys(SPECIES).length, dexHave = Math.min(dexTotal, dexSeen().size);
   const who = PREF.get('name', '') ? `Welcome back, ${esc(playerName())}!` : 'Ready to battle, Trainer?';
   const d = document.createElement('div');
   d.id = 'title'; d.className = 'title' + (motionOff() ? ' still' : '');
@@ -3931,13 +3991,16 @@ function showTitle(then){
     <h1 class="tlogo" aria-label="PokéBattler"><span class="t1">POKé<i class="pball"></i></span><span class="t2">BATTLER</span></h1>
     <div class="tsub">A Pokémon Auto Battler</div>
     <div class="tver">${GAME_VERSION.v}</div>
-    <div class="tfield"><div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
+    <div class="tfield"><i class="tcloud c1"></i><i class="tcloud c2"></i><i class="tcloud c3"></i>
+      ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
+      <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
     <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
       <button class="tmi" role="menuitem" data-t="daily">DAILY CHALLENGE<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="dex">POKéDEX<small>${dexHave} / ${dexTotal} seen · cards, trainers, items</small></button>
       <button class="tmi" role="menuitem" data-t="trainer">TRAINER CARD<small>${HC0 ? `Hardcore Badge · ${HC0.count > 1 ? HC0.count + ' clears' : '1 clear'}` : 'your badges and records'}</small></button>
       <button class="tmi" role="menuitem" data-t="options">OPTIONS</button>
     </div>
@@ -3963,6 +4026,7 @@ function showTitle(then){
     } else if(t === 'continue'){ if(G && G.daily) switchSlot(SAVE_KEY); leave(); }
     else if(t === 'new'){ if(document.activeElement) document.activeElement.blur(); openNewRun(leave); }
     else if(t === 'daily'){ if(document.activeElement) document.activeElement.blur(); openDaily(leave); }
+    else if(t === 'dex'){ if(document.activeElement) document.activeElement.blur(); openDex(); }
     else if(t === 'trainer'){ if(document.activeElement) document.activeElement.blur(); openTrainerCard(true); }
     else if(t === 'options'){ if(document.activeElement) document.activeElement.blur(); openOptions(); }
   };

@@ -18,7 +18,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     check(!(await page.$('.twho .hcb')), `${tag}: no badge on the title before you earn it`);
     await page.mouse.click(w / 2, h - 30); await page.waitForTimeout(250);
     const items = await page.evaluate(() => [...document.querySelectorAll('#title .tmi')].map(b => b.dataset.t).join());
-    check(items === 'new,daily,trainer,options', `${tag}: title menu is NEW RUN / DAILY / TRAINER CARD / OPTIONS (${items})`);
+    check(items === 'new,daily,dex,trainer,options', `${tag}: title menu is NEW RUN / DAILY / TRAINER CARD / OPTIONS (${items})`);
     await page.click('#title [data-t="trainer"]'); await page.waitForTimeout(200);
     const c0 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && { txt: m.textContent.replace(/\s+/g, ' '), locked: !!m.querySelector('.hcrow:not(.on) .hcb.locked'),
       facts: [...m.querySelectorAll('.facts span')].map(x => x.textContent).join() }; });

@@ -30,7 +30,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     /* 2.0.0: with the Daily Challenge on the menu, START always opens the menu */
     await page.mouse.click(w / 2, h - 40); await page.waitForTimeout(200);
     const fm = await page.evaluate(() => [...document.querySelectorAll('#title .tmi')].map(b => b.dataset.t).join());
-    check(fm === 'new,daily,trainer,options', `${tag}: a tap anywhere opens NEW RUN / DAILY CHALLENGE / TRAINER CARD / OPTIONS (${fm})`);
+    check(fm === 'new,daily,dex,trainer,options', `${tag}: a tap anywhere opens NEW RUN / DAILY CHALLENGE / TRAINER CARD / OPTIONS (${fm})`);
     await page.click('[data-t="new"]'); await page.waitForTimeout(80);
     await page.click('.modal.newrun [data-n="go"]'); await page.waitForTimeout(700);
     check(!(await page.$('#title')) && !!(await page.$('.dock')), `${tag}: NEW RUN → Start run starts a fresh run`);
@@ -46,10 +46,10 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     await page.keyboard.press('Enter'); await page.waitForTimeout(80);
     const m = await page.evaluate(() => ({ items: [...document.querySelectorAll('.tmi')].map(b => b.textContent.replace(/\s+/g, ' ').trim()),
       cur: document.querySelector('.tmi.cur').dataset.t, press: document.querySelector('.tpress').hidden }));
-    check(m.press && m.items.length === 5 && /^CONTINUE ?Turn 9 · 2 badges · 4 lives$/.test(m.items[0]) && /^NEW RUN/.test(m.items[1]) && /^DAILY CHALLENGE/.test(m.items[2]) && /^TRAINER CARD/.test(m.items[3]) && m.items[4] === 'OPTIONS',
+    check(m.press && m.items.length === 6 && /^CONTINUE ?Turn 9 · 2 badges · 4 lives$/.test(m.items[0]) && /^NEW RUN/.test(m.items[1]) && /^DAILY CHALLENGE/.test(m.items[2]) && /^POK.DEX/.test(m.items[3]) && /^TRAINER CARD/.test(m.items[4]) && m.items[5] === 'OPTIONS',
       `${tag}: START opens CONTINUE (Turn 9 · 2 badges · 4 lives) / NEW RUN / DAILY CHALLENGE / TRAINER CARD / OPTIONS`);
     check(m.cur === 'continue', `${tag}: cursor starts on CONTINUE`);
-    for(let k = 0; k < 5; k++) await page.keyboard.press('ArrowDown');
+    for(let k = 0; k < 6; k++) await page.keyboard.press('ArrowDown');
     check(await page.evaluate(() => document.querySelector('.tmi.cur').dataset.t) === 'continue', `${tag}: arrows wrap round the menu`);
     await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(60);
     const yn = await page.evaluate(() => { const md = document.querySelector('.modal.newrun'); return { shown: !!md, warn: md && (md.querySelector('.warn') || {}).textContent, turn: G.turn }; });
