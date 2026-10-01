@@ -2038,6 +2038,7 @@ function runSummaryHtml(){
     <div class="rsfacts">${facts.map(([k, v]) => `<span><b>${esc(String(v))}</b><i>${esc(k)}</i></span>`).join('')}</div>
     ${mvp ? `<div class="rsmvp"><span class="rsart">${SPRITES[mvp.id] ? `<img src="${SPRITES[mvp.id]}" alt="">` : ""}</span><div><i class="rtag rt-mvp">RUN MVP</i>
       <b>${esc(SPECIES[mvp.id].name)}</b><span class="dim">${mvp.dealt} damage · ${mvp.kos} KO${mvp.kos === 1 ? '' : 's'}${mvp.healed ? ` · ${mvp.healed} healed` : ''} over ${mvp.fights} battle${mvp.fights === 1 ? '' : 's'}</span></div></div>` : ''}
+    ${runNoteHtml(G)}
     ${top.length > 1 ? `<div class="rsrest">${top.slice(1).map((m, k) => `<span>${k === 0 ? '🥈' : '🥉'} ${miniSprite(m.id)}${esc(SPECIES[m.id].name)} <i class="dim">${m.dealt} dmg · ${m.kos} KO</i></span>`).join('')}</div>` : ''}
   </div>`;
 }
@@ -2068,6 +2069,11 @@ async function runImage(){
   }
   const mvp = runTop(1)[0];
   if(mvp){ x.fillStyle = dark; x.font = font(16); x.fillText(`MVP: ${SPECIES[mvp.id].name} — ${mvp.dealt} damage, ${mvp.kos} KOs`, W / 2, 790); }
+  if(G.focus && G.focus.length){
+    x.font = font(14, 400); x.fillStyle = '#6b6f7a';
+    x.fillText('\u2605 Focus: ' + G.focus.map(k => SPECIES[k].name).join(' \u00b7 '), W / 2, 822);
+    const pl = poolLines(G); x.fillText('Open evolutions: ' + pl.slice(0, 2).join(' \u00b7 '), W / 2, 844); if(pl.length > 2) x.fillText(pl.slice(2).join(' \u00b7 '), W / 2, 864);
+  }
   x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
 }
@@ -2367,7 +2373,7 @@ function openNewRun(onStart){
 /* ---- 2.0.0 · DAILY CHALLENGE ------------------------------------------ */
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
-  const mods = dailyMods(date), label = Object.keys(mods).length ? modsLabel({ mods }) : 'no special rules';
+  const mods = dailyMods(date), gl = genLabel({ gens: dailyGens(date) }), label = [gl, Object.keys(mods).length ? modsLabel({ mods }) : (gl ? '' : 'no special rules')].filter(Boolean).join(' · ');
   return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
@@ -2387,6 +2393,10 @@ function openDaily(onGo){
   const d = modal(`<h3>Daily Challenge</h3>
     <p><b>${esc(prettyDate(today))}</b> — everyone gets the same run today: the same shops, the same trainers, the same bosses. It has its own save, so your normal run is safe.</p>
     <div class="drules"><h4>Today’s rule</h4><p>${rules}</p></div>
+    ${(() => { const dg = dailyGens(today), nm = dg.map(n => GENS[n].name).join(' + ');
+      const fo = drawFocus(dailySeed(today), dg), po = drawEvoPool(dailySeed(today), dg);
+      return `<div class="drules"><h4>Today’s generations</h4><p><b>${esc(nm)}</b>${dg.length > 1 ? ' — the gym leaders and the Elite Four are drawn from both regions.' : ''}</p>
+        ${fo ? `<p><b>★ Pool of the day</b> · Focus ${fo.map(k => miniSprite(k) + esc(SPECIES[k].name)).join(' · ')}<br><span class="dim">Open evolutions: ${poolLines({ evoPool: po }).map(esc).join(' · ')}</span></p>` : ''}</div>`; })()}
     ${inToday ? `<p class="dim">Your run today: turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
     ${older ? `<p class="dim">Unfinished: the ${esc(prettyDate(sg.daily))} challenge, turn ${sg.turn} · ${sg.badges} badge${sg.badges === 1 ? '' : 's'}</p>` : ''}
     ${res ? `<p>Today’s best: <b>${esc(res.cleared ? 'Champion!' : bestRunLabel(res.best))}</b>${res.hardcore ? ` <span class="hcnote">${hcBadge('sm')} Hardcore</span>` : ''}</p>` : ''}
@@ -2407,7 +2417,7 @@ function openDaily(onGo){
     if(x === 'start'){
       d.remove(); save();
       if(sg && sg.daily === today && !sg.over && G && G.daily === today) noteDaily();
-      G = newGame(dailySeed(today), { mods, daily: today });
+      G = newGame(dailySeed(today), { mods, daily: today, gens: dailyGens(today) });
       rollShop(G, false);
       phase = 'shop'; sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; undo = null;
       const all = dailyResults(); all[today] = Object.assign({ best:-1, cleared:false }, all[today], { tries: ((all[today] || {}).tries || 0) + 1 });
@@ -2993,7 +3003,8 @@ const CHANGELOG = [
     'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it). Horsea → Seadra joins Gen 1 too, and a Dragon Scale turns Seadra into Kingdra.',
     'Mixed runs level up more easily. Each run draws 3 Focus lines (marked \u2605 in the Daycare), which show up more often, and a pool of 4 open cross-gen evolutions, so no two runs evolve the same way. Single-gen runs are unchanged.',
     'Early Gen 2 was support-heavy. Hoothoot and Noctowl are now Tanks, Natu and Xatu Cannons and Girafarig a Bruiser, and the Wooper line arrives at Tier 1 as a Tank.',
-    'A new Pokédex: a grid of tiles with search, a card for every pokémon (stats, moves, evolutions, matchups and who uses it), and a count of the ones you have seen. It is also on the title menu now, and the title screen has a livelier field.',
+    'The Daily Challenge now rotates generations by date (Gen 1, Gen 1+2 or Gen 2, the same for everyone) and shows the day\u2019s Focus lines and open evolutions as the Pool of the day. The run summary, and the summary image you can save, list your run\u2019s Focus and evolutions.',
+    'A new Pokédex: families sit together left to right, with search, a card for every pokémon (stats, moves, evolutions, matchups and who uses it), and a count of the ones you have seen. It is also on the title menu now, and the title screen has a livelier field.',
     'Two new types, Steel and Dark, with the Gen 2 matchups. No Gen 1 pokémon changes type.',
     'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.',
     'The Metal Coat held item is now the Assault Vest — same effect (15% less damage from every hit), new look — because Metal Coat is Gen 2\u2019s evolution item for Steelix and Scizor.',
@@ -3230,7 +3241,7 @@ function openMenu(){
     if(m === 'restart-no'){ yn.hidden = true; desc.hidden = false; return; }
     d.remove();
     if(m === 'restart-yes'){
-      if(G.daily){ noteQuit(); G = newGame(dailySeed(G.daily), { mods: G.mods, daily: G.daily }); rollShop(G, false);
+      if(G.daily){ noteQuit(); G = newGame(dailySeed(G.daily), { mods: G.mods, daily: G.daily, gens: G.gens }); rollShop(G, false);
         phase = 'shop'; sel = null; inspect = null; battle = null; undo = null; save(); render(); }
       else openNewRun();
     }
@@ -3840,11 +3851,13 @@ function openDex(){
       ${bs.length ? `<h4>Trainers who use it</h4><div class="dim">${bs.slice(0, 6).map(esc).join(' · ')}${bs.length > 6 ? ` · +${bs.length - 6} more` : ''}</div>` : ''}
     </div>`; };
   const cards = {}; allMons.forEach(k => { cards[k] = cardHtml(k); });
-  const rows = `<div class="dexgrid">` + allMons.map(k => { const s = SPECIES[k];
+  const tileHtml = k => { const s = SPECIES[k];
     return `<button class="dextile ${seenSet.has(k) ? 'seen' : ''}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}">
       ${spriteHtml(k, 'tile')}<b>${esc(s.name)}</b>
       <span class="tmeta"><i style="background:${TYPES[s.type].color}"></i>${s.legendary ? '★' : 'T' + s.tier}${genOf(k) > 1 ? ' · G' + genOf(k) : ''}</span>
-      ${seenSet.has(k) ? '<em class="tseen" title="seen"></em>' : ''}</button>`; }).join('') + `</div>`;
+      ${seenSet.has(k) ? '<em class="tseen" title="seen"></em>' : ''}</button>`; };
+  /* one box per evolution family, in order, so a line reads left to right */
+  const rows = `<div class="dexfams">` + families.map(line => `<div class="dexfam">${line.map(tileHtml).join('<span class="farrow">›</span>')}</div>`).join('') + `</div>`;
   const seenCount = allMons.filter(k => seenSet.has(k)).length;
   setActiveGens(gensBefore); if(G) useGens(G);
 
@@ -3924,6 +3937,7 @@ function openDex(){
     d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
     const q = (d.querySelector('.dexsearch').value || '').trim().toLowerCase();
     d.querySelectorAll('.dextile').forEach(t => { if(q && !t.dataset.name.includes(q)) t.hidden = true; });
+    d.querySelectorAll('.dexfam').forEach(f => { f.hidden = ![...f.querySelectorAll('.dextile')].some(t => !t.hidden); f.querySelectorAll('.farrow').forEach(a => a.hidden = !(a.previousElementSibling && !a.previousElementSibling.hidden && a.nextElementSibling && !a.nextElementSibling.hidden)); });
     d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
     const shown = [...d.querySelectorAll('section[data-sec]')].filter(x => !x.hidden);
     d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow,.dextile')].some(r => !r.hidden && !r.closest('[hidden]')));

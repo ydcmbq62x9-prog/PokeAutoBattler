@@ -12,7 +12,7 @@ check(Object.keys(E.TYPES).every(t => E.TYPES[t].weak.every(w => E.typeMult(w, t
 check(E.MONO_TYPES.join() === 'Normal,Fire,Water,Electric,Grass,Fighting,Ground,Flying,Poison,Bug', `Mono runs: ${E.MONO_TYPES.join(', ')}`);
 check(E.MONO_TYPES.every(t => E.BUYABLE.filter(k => S[k].type === t).length >= 3), 'every Mono type has at least three buyable lines');
 check(E.cleanMods({ mono:'Psychic' }).mono === undefined && E.cleanMods({ mono:'Lightning' }).mono === undefined && E.cleanMods({ mono:'Bug' }).mono === 'Bug', 'old or too-small Mono types are dropped, Bug is kept');
-for(let s = 1; s < 60; s++){ const m = E.dailyMods(s); if(m.mono) check(E.MONO_TYPES.includes(m.mono), 'daily Mono type is valid'); }
+for(let s = 1; s < 60; s++){ const m = E.dailyMods(s); if(m.mono) check(E.monoTypesFor(E.dailyGens(s)).includes(m.mono), 'daily Mono type is valid'); }
 /* re-measured factors */
 check(T.gauntletRatio.length === 5, 'Elite Four and Champion ratios exist (values pinned in v320test)');
 check(T.mods.richFoes > 1.1 && T.mods.nopcFoes < 1.1 && T.mods.onelifeFoes < 1.1, 'Rich, No PC and One Life factors exist (pinned in v320test)');

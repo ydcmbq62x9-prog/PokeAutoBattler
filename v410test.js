@@ -52,4 +52,15 @@ check(/dragonscale/.test(sprites), 'the Dragon Scale has its art');
 const ui = fs.readFileSync('ui.js', 'utf8');
 check(/class="dextile/.test(ui) && /showCard/.test(ui) && /dexsearch/.test(ui) && /data-t="dex"/.test(ui), 'the Pokédex is a tile grid with cards, search, and a title-menu entry');
 check(/runNoteHtml/.test(ui) && /class="dfocus"/.test(ui), 'the Daycare marks focus lines and shows the open evolutions');
+/* daily */
+let cnt = { '1': 0, '1,2': 0, '2': 0 };
+for(let d = 1; d <= 120; d++){ const date = '2026-' + String(1 + (d % 12)).padStart(2, '0') + '-' + String(1 + (d % 28)).padStart(2, '0') + '-' + d; cnt[E.dailyGens(date).join()]++; }
+check(cnt['1'] > 30 && cnt['1,2'] > 20 && cnt['2'] > 8, `the daily rotates Gen 1 / Gen 1+2 / Gen 2 (${JSON.stringify(cnt)})`);
+check(E.dailyGens('2026-10-03').join() === E.dailyGens('2026-10-03').join(), 'a day always plays the same gens');
+let okMono = true; for(let d = 1; d <= 200; d++){ const date = 'x' + d, m = E.dailyMods(date); if(m.mono && !E.monoTypesFor(E.dailyGens(date)).includes(m.mono)) okMono = false; }
+check(okMono, 'a daily Mono type always exists in that day\u2019s gens');
+const dg = E.newGame(E.dailySeed('x7'), { mods: E.dailyMods('x7'), daily: 'x7', gens: E.dailyGens('x7') });
+check(JSON.stringify(dg.gens) === JSON.stringify(E.dailyGens('x7')), 'a daily run plays the day\u2019s gens');
+check(/\$\{runNoteHtml\(G\)\}\s*\n\s*\$\{top\.length/.test(ui) && /Open evolutions: ' \+ pl/.test(ui) && /Pool of the day/.test(ui), 'the summary, the summary image and the daily show Focus and evolutions');
+check(/class="dexfam"/.test(ui) && /farrow/.test(ui), 'the Pokédex groups tiles by evolution line');
 console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);

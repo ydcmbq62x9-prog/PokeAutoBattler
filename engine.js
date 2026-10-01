@@ -3023,10 +3023,15 @@ function cleanMods(m){
 }
 /** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
 function dailySeed(date){ let h = 2166136261; for(const c of 'pkb-daily-' + date){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return (h % 999999937) + 1; }
+/** 4.1.0: which generations the daily plays: Gen 1 half the time, Gen 1+2 three days in ten, Gen 2 the rest. */
+function dailyGens(date){
+  const x = makeRng((dailySeed(date) ^ 0x2545f491) >>> 0)();
+  return x < 0.5 ? [1] : x < 0.8 ? [1, 2] : [2];
+}
 function dailyMods(date){
   const r = makeRng(dailySeed(date) ^ 0x9e3779b9), x = r();
   if(x < 0.35) return {};
-  if(x < 0.55){ const t = MONO_TYPES; return { mono: t[Math.floor(r() * t.length)] }; }
+  if(x < 0.55){ const t = monoTypesFor(dailyGens(date)); return { mono: t[Math.floor(r() * t.length)] }; }
   if(x < 0.70) return { nopc: true };
   if(x < 0.85) return { rich: true };
   return { onelife: true };
@@ -4005,7 +4010,7 @@ if(typeof module !== 'undefined' && module.exports){
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
