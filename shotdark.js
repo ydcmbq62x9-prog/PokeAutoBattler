@@ -1,0 +1,28 @@
+const { chromium } = require('playwright');
+(async()=>{
+  const b = await chromium.launch(); const errs=[];
+  const p = await b.newPage({viewport:{width:390,height:844}});
+  p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.evaluate(()=>{ localStorage.setItem('pkb_theme','dark'); });
+  await p.reload(); await p.waitForTimeout(400);
+  await p.evaluate(()=>{ G.team=['wartortle','geodude','pidgeotto','clefairy','charmeleon','pikachu'].map(i=>makeUnit(i,0));
+      G.team.forEach((u,k)=>u.pos=[2,5,1,4,0,3][k]); G.badges=3; G.stage=15; G.turn=16; G.credits=18; G.lives=4; G.streak=5; save(); render(); });
+  await p.waitForTimeout(300);
+  await p.screenshot({path:'shots/dark-shop.png'});
+  await p.evaluate(()=>scrollTo(0,900)); await p.waitForTimeout(200);
+  await p.screenshot({path:'shots/dark-shop2.png'});
+  await p.evaluate(()=>scrollTo(0,0));
+  await p.click('[data-act="menu"]'); await p.click('.smi[data-m="options"]'); await p.waitForTimeout(300);
+  await p.screenshot({path:'shots/dark-opts.png'});
+  await p.click('.modal [data-o="theme"][data-v="light"]'); await p.waitForTimeout(200);
+  console.log('light now dark?', await p.evaluate(()=>document.documentElement.classList.contains('dark')));
+  await p.click('.modal [data-o="theme"][data-v="dark"]');
+  await p.click('.modal [data-m="close"]');
+  await p.click('[data-act="menu"]'); await p.click('.smi[data-m="trainer"]'); await p.waitForTimeout(300);
+  await p.screenshot({path:'shots/dark-card.png'});
+  await p.click('.modal [data-m="close"]');
+  await p.click('[data-act="endturn"]'); await p.waitForTimeout(3500);
+  await p.screenshot({path:'shots/dark-battle.png'});
+  console.log(errs); await b.close();
+})();

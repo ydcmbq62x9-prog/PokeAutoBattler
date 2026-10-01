@@ -1,0 +1,3261 @@
+/* ===================================================================
+   POKEBATTLER — ENGINE (pure logic, no DOM)      Gen 1 · v3
+   ===================================================================
+   COMBAT
+   - Three stats: HP, ATTACK, SPEED.
+   - A round = every living pokémon acts once, fastest first. Turn order
+     is recomputed each round, so speed buffs and debuffs matter.
+   - Everything targets the enemy's FRONT RANK unless its move says otherwise,
+     picking one of the two at random — so a second body up front genuinely
+     splits incoming damage. Ranks shift forward as pokémon faint.
+   - One signature move per pokémon. No faint/hurt triggers.
+   - damage = Attack x move power x type multiplier - flat reduction, min 1.
+
+   PROGRESSION
+   - Three copies of a pokémon = level 2, six = level 3.
+   - Levelling EVOLVES it if its line evolves by level. Stone lines wait
+     for their stone. Pokémon with nowhere left to evolve get a bigger
+     flat stat bonus instead, so they are never strictly worse.
+
+   Everything worth tuning lives in TUNING, TYPES, SPECIES, ITEMS and
+   BATTLE_ITEMS.
+   =================================================================== */
+
+/* ---------------- TUNING ---------------- */
+const TUNING = {
+  startingLives:    5,
+
+  /* --- the run: eight badges, then the Elite Four and the Champion ---
+     The run is a SCHEDULE, not a win counter. `runPlan()` builds it from these
+     numbers and every other system asks the plan what this turn is, so the
+     whole shape can be re-cut by editing four values. */
+  badgesToWin:      8,
+  battlesPerBadge:  3,     // trainer battles before each gym
+  eliteFourCount:   4,
+  // Losing a boss doesn't end the run — it blacks you out, the way it does in
+  // the real games. You keep your team and your badges and lose your money.
+  blackoutPct:      0.5,   // share of credits lost on a boss defeat
+  freeAttempts:     2,     // …after this many tries, a defeat also costs a life
+  turnsPerTier:     5,     // the turn floor under the badge tier clock
+  /* Boss difficulty is a SHARE OF WHAT THE PLAYER IS WORTH, not a stat
+     multiplier. Measured over 250 bot runs, a player's team power grows almost
+     perfectly linearly — about 94 a turn — while the themed pools a leader
+     draws from range from 362 (Brock's Geodudes) to 2984 (Giovanni's Golems)
+     at the same point in the run. Multiplying a pool by a constant therefore
+     makes some gyms trivial and others impossible: Lt. Surge beat 75% of bots
+     while every gym around him lost 75%. So each boss team is built and then
+     scaled to hit a target, and the target is the one dial worth turning. */
+  powerCurve:     { base:317, perTurn:103 },   // refit with fitcurve.js after ANY change to expGain*
+  /* The global difficulty ramp. Re-derived with ramp.js against a player who
+     REROLLS the Mart, because that is the strongest play available and a real
+     player will find it. Tuned so that player clears ~34% of runs and one who
+     never rerolls clears ~25% — rerolling should be worth something, not worth
+     double, which is what it was worth before the Mart shelf was widened. */
+  /* Eased ×0.92 when the gauntlet arrived: difficulty moved from the middle of
+     the run to its end. Before, 55% of runs died at a gym and never saw the
+     Elite Four at all, and the few who arrived found five ordinary turns. Now
+     ~72% arrive and the gauntlet is the filter.
+     v26 (vitamin cap): the reference player used to pour all its medicine into
+     one pokémon, and that concentration was most of its strength — spread out,
+     the same medicine cleared 0% against the old prices. Re-priced for a player
+     who focuses medicine on its best hitter within the cap, at Sean's "middle"
+     difficulty: that player clears ~61%, typical habits 30–42%, very casual ~9%.
+     v28 (roles): re-priced after roles, longer fights and new calibs. Reference
+     (lines up by role) ~76%; habits 30–50%; casual who taps "Line up by role"
+     ~6%; casual who never arranges ~1%. Formation is now a real skill. */
+  gymRatio:       [0.355, 0.383, 0.387, 0.413, 0.439, 0.451, 0.471, 0.483],   // v31 ×0.96 (snowball nerf), v32 ×0.97 (second moves), v34 ×0.95 (no step-up: gyms only)
+  bossRatio:      { elite:0.89, champion:1.01 },
+  /* The gauntlet, by position (Lorelei … Blue), on top of bossRatio. Each member
+     is a full boss fight but the player arrives WOUNDED, so five standalone-
+     priced bosses in a row with damage carrying is close to unwinnable. Tuned
+     with gauntlet-measure.js against a player who stocks a PC bench. */
+  /* Shaped, not flat. Lorelei is the one member you meet at full HP, so at a
+     flat price she was the biggest wall — and falling at the first door is the
+     least interesting place to fail. She now costs you HP rather than stopping
+     you; Agatha and Lance grind; the Champion is the single biggest wall.
+     Measured falls (400 runs): Lorelei 10% · Bruno 11% · Agatha 24% ·
+     Lance 23% · Blue 31%. */
+  /* v52: each member brings a Very rare item (Sean), and v53 keeps the v51
+     prices on purpose: Sean wants the Elite Four harder, with the reference
+     clear rate in the low 70s (was 77–78%). Scale these to move it: against the
+     v51 prices, x0.975 gave 78%, x0.995 ~72%, x1.0 70% (with v53's items). */
+  gauntletRatio:  [0.4233, 0.4798, 0.4546, 0.4495, 0.5361],   // v51 prices x0.995; 2.2.0 x1.04 (every run now meets a legendary); 2.5.0 x1.01 (starter roles swapped, Jolteon's Thunderbolt)
+  /* Between gauntlet fights, a pokémon resting in the PC recovers this share of
+     its max HP for each fight it sits out. Fainted pokémon don't recover. */
+  benchRest:      0.25,
+  // X Attack / X Speed: party-wide, a share of each pokémon's own stat per use
+  /* v28: 5% → 3%. Longer fights make every stat edge more decisive (a fight
+     is less of a coin flip at the same power gap), so the full package took a
+     coin-flip Champion fight up ~40 points at 5%. At 3% it is ~+33. */
+  xItems:         { pct: 0.05, perBattle: 2, cost: 2 },   // v50: back to Sean's +5%; v54: 2 uses a battle (Sean)
+  bossScaleClamp: [0.45, 3.0],   // never distort a pool beyond this
+  bossSize:       { gym:0,    elite:1,    champion:1 },     // extra bodies
+  bossHeldFrom:   { gym:2,    elite:0,    champion:0 },     // badge to start holding items
+  bossOffTheme:     0.3,   // share of a themed team that is off-theme bodyguards
+  /* The rival (v30): three surprise fights a run, in place of a trainer battle
+     somewhere inside each window of gyms (0-based badge numbers). Priced like a
+     boss, but `ratio` × YOUR team's power (not the reference curve), so he
+     stays a step above a trainer and a step below the gym for every player. A loss is an ordinary trainer loss; a win pays
+     `winCredits` on top of next turn's income and hands over a held item. */
+  /* The snowball items (v31). Exp. Share and Lucky Egg grow a pokémon with no
+     ceiling, where medicine stops at the vitamin cap. Measured in v30: the
+     reference player bought ~20 Exp. Shares a run, and the game with neither
+     item cleared 31% where it cleared 77%. Now:
+     - both are RARE: a shop slot rolls one at `rareWeight` the odds of anything else;
+     - Exp. Share trains the PARTY only — not the PC, not the trainer bank that
+       new buys inherit, and it doesn't trigger Lucky Eggs;
+     - a Lucky Egg gives a pokémon at most `eggCap` bonus rounds, like vitamins. */
+  rareWeight:   0.25,
+  /* Rarity (v50): how often a shop slot, a rival prize or a Gift Item rolls
+     each item, relative to a common one. Tier says WHEN an item can appear;
+     rarity says HOW OFTEN. The rule: the rarer an item, the stronger it is for
+     one slot — rarity is never just an item being hard to find. Exp. Share and
+     Lucky Egg keep the 0.25 they were measured at in v31. */
+  rarity: {
+    common:   { weight: 1,    name: 'Common' },
+    uncommon: { weight: 0.6,  name: 'Uncommon' },
+    rare:     { weight: 0.25, name: 'Rare' },
+    veryrare: { weight: 0.1,  name: 'Very rare' },
+  },
+  /* Status conditions (v32), Gen 1's five plus a flinch. One at a time, and a
+     pokémon suffers each one at most once per battle (flinch excepted) so a
+     sleeper can't be locked down. Rounds are the upkeep clock; actions are the
+     victim's own turns. */
+  status: {
+    brn: { name:'Burn',      icon:'🔥', short:'BRN', rounds:4, dotPct:0.03, atkCut:0.25 },   // v33: 6% → 3% a round, plus −25% damage dealt
+    psn: { name:'Poison',    icon:'☠️', short:'PSN', rounds:5, dotPct:0.08 },
+    par: { name:'Paralysis', icon:'⚡', short:'PAR', rounds:3, slow:1.6 },
+    slp: { name:'Sleep',     icon:'💤', short:'SLP', actions:2 },
+    cnf: { name:'Confusion', icon:'💫', short:'CNF', actions:3, selfHit:0.35, selfPower:0.5 },
+    fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
+  },
+  eggCap:       10,
+  rival: {
+    windows:    [[0, 1], [3, 4], [6, 7]],
+    size:       [3, 5, 6],
+    ratio:      [0.8, 0.9, 0.9],   // × your own team: ref wins ~81/89/94%, casual ~75/75/56%
+    winCredits: [4, 6, 8],
+  },
+  // Badges, not turns, unlock the Daycare roster — a 37-turn run would
+  // otherwise have the full roster available by turn 11 and nothing new after.
+  tierForBadge:   [1, 2, 2, 3, 4, 4, 5, 6, 6],
+  maxTeam:          6,     // a full pokémon party
+  // The battle formation: three ranks, two pokémon abreast. Party slots fill
+  // it front-rank first, so 1-2 are Front, 3-4 Middle, 5-6 Back. Ranks are
+  // recomputed from the LIVING line, so when a front pokémon faints the one
+  // behind steps up.
+  rankWidth:        2,
+  rankNames: ['Front', 'Middle', 'Back'],
+  // The PC: storage for pokémon you own but aren't carrying. It exists so you
+  // can bank spare copies toward a level up without clogging your party or
+  // tying up a Daycare slot.
+  pcSlots:          8,     // two rows to start; the Storage badge reward adds more
+  pcExpFraction:    0.5,   // benched pokémon train at half rate
+  // The Bag: held items you own but nobody is carrying. It sits under the PC
+  // box because it is the same idea — storage for things not currently in play.
+  bagSlots:         4,
+  /* --- badge rewards: every badge offers a choice of three ---
+     Each entry is how much one pick is worth; `max` is how many times it can be
+     taken in one run. Offers are drawn from the run's seed, so they are the same
+     for the same run and can be measured. See BADGE_REWARDS.
+     Measured one at a time with reward-measure.js: +2₽ a turn was worth more
+     than everything else put together, so it is +1₽; a wider medicine shelf
+     measured as a slight LOSS (more medicine, fewer pokémon), so it was cut
+     rather than offered as a trap. */
+  badgeRewards: {
+    offer: 3,
+    pcRow:     { amount: 4,  max: 2 },   // +4 PC slots
+    pocket:    { amount: 1,  max: 3 },   // +1 Bag slot
+    allowance: { amount: 1,  max: 3 },   // +1₽ at the start of every turn
+    freeRoll:  { amount: 1,  max: 2 },   // free rerolls each turn (either shop)
+    piggy:     { amount: 10, max: 2 },   // +10₽ carry-over cap
+    training:  { amount: 4,  max: 3 },   // rounds of battle EXP, right now
+    gift:      { amount: 1,  max: 3 },   // a held item, straight into the Bag
+  },
+  /* Vitamins (Protein, HP Up, Carbos) per pokémon, each — the real games' rule.
+     Without it a player could pour sixty Proteins and thirty Carbos into one
+     Raichu (751 Attack, 485 Speed, found in playtesting v25): damage grows with
+     Attack × Speed on the same pokémon, and × every enemy for a spread move, so
+     one stacked carry was worth far more than the same medicine spread out,
+     and far more than the boss pricing (which adds stats up) could see. */
+  vitaminCap:       10,
+  martSlots:  [2, 3, 3, 4, 4, 5],   // medicine & stone slots by tier — see martSlotsFor
+  heldFromTier:     2,     // the Mart starts stocking held items at this tier
+  heldSlotsMax:     3,     // …and never more than this many at once
+
+  /* --- economy --- */
+  creditsPerTurn:   10,    // base income each turn
+  /* 2.0.0 — run modifiers. Rich & Ruthless: income is doubled and every
+     opponent's stats are multiplied by `richFoes`. */
+  /* Mono-type scales opponents per type, measured so each type clears ~50% for
+     the reference player (as Rich does): a Colorless team has no weakness to
+     exploit, a Water or Fire team meets gyms that wall it. */
+  mods: { richIncome: 2, richFoes: 1.21, nopcFoes: 0.961,     // 2.5.0: re-measured after the starter lines swapped jobs
+          monoFoes: { Grass:0.95, Fire:0.945, Water:0.892, Lightning:0.985, Fighting:0.97, Psychic:0.993, Colorless:1.038 } },
+  /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
+     Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
+  legend: { fromBadge: 5, chance: 0.17, cost: 12, growth: 1.2, pityBadge: 7 },   // 2.2.0: a run that hasn't met one by the 7th gym always does
+  maxCarryOver:     15,    // unspent credits kept into the next turn (cap)
+  winBonus:         2,     // extra for winning the last battle
+  lossBonus:        1,     // extra for losing it (keeps a comeback alive)
+  // index = streak length, clamped to the last entry
+  winStreakBonus:  [0, 0, 1, 2, 3, 4],
+  lossStreakBonus: [0, 0, 1, 1, 2, 2],
+  costBuy:          3,     // a pokémon from the Daycare
+  costRoll:         1,     // reroll either shop
+  sellRefundPerLevel: 1,
+  itemResale:       0.5,   // share of an item's price the Mart buys it back for
+
+  /* --- levelling --- */
+  expForLevel2:     2,     // extra copies needed (3 total)
+  expForLevel3:     5,     // extra copies needed (6 total)
+  mergeBonus:      { hp:2, atk:3, spd:1 },   // per combine
+  levelUpBonus:    { hp:4, atk:3, spd:3 },   // on levelling INTO an evolution
+  levelUpBonusMax: { hp:9, atk:9, spd:6 },   // on levelling with nowhere to evolve
+  movePowerPerLevel: 0.25,
+
+  /* --- EXP from battling: the player's stat curve --- */
+  /* Who the battle EXP belongs to.
+     'unit'    — each pokémon banks its own, as it always has. A veteran carried
+                 from turn 1 ends the run 4.4× the power of the same species
+                 bought on turn 40, which is why a party locks at turn 3 and the
+                 Daycare, the PC and the scouting report all go dead behind it.
+     'trainer' — the TRAINER banks it, and anything you acquire is topped up to
+                 that level on arrival. A fresh buy is competitive immediately,
+                 so swapping and counter-drafting stay live all run. */
+  aiDifficulty: 0.78,     // the AI's stat growth per turn; must move WITH the player's
+  expModel:    'trainer',
+  /* Cut from 3/3/2. Battle EXP was 41% of all the power gained in a run and it
+     was unconditional — you got it for turning up — which left the shops with
+     little to decide. At 2/2/1 purchased power rises from 66% to 74% of the
+     total. Any change here needs powerCurve refitted and aiDifficulty moved
+     with it, or bosses and trainers are priced for a player who no longer
+     exists; expmodel2.js does both. */
+  expGainWin:  { hp:2, atk:2, spd:1 },
+  expGainLoss: { hp:1, atk:0, spd:0 },
+
+  /* --- combat --- */
+  // Moves that grant HP or damage reduction instead of dealing damage are
+  // capped PER BATTLE, or two walls stare at each other forever. The cap is
+  // measured against the pokémon's own HP at the start of the fight, so items
+  // and EXP raise it too — this limits the MOVE, not the pokémon.
+  moveGuardCap: {
+    hpPct:          1.0,   // a move may add at most this much of starting HP
+    reducePerLevel: 3,     // and at most this much flat damage reduction, per level (4 before v28's longer fights)
+  },
+  /* Speed buys extra actions. `scale` turns a speed ratio into banked surplus,
+     `gainCap` stops one absurd matchup snowballing, `extraCap` is the most
+     extra actions a single unit can take in one round. */
+  /* The action meter. A pokémon's next action lands `atbQuantum / speed` later,
+     so speed IS the rate at which you act — there are no rounds to be capped
+     by. A "round" survives only as a unit of TIME (how long an average-speed
+     pokémon takes to act once), which is what item upkeep and the battle
+     length cap are measured in. */
+  atbQuantum:       1000,
+  maxBattleActions: 500,   // hard stop, whatever the speeds
+  /* What a point of speed is worth next to a point of HP or Attack, measured
+     with statvalue.js. Under the action meter speed edged ahead (1.42 against
+     1.17 and 1.18), so the power score weights it up to match. Re-measure and
+     update this together — it is the number that keeps the score honest. */
+  spdPower:         1.2,
+  /* Attack points per point of damage at 100% power. Attack was rescaled ×2 so
+     it has the resolution to matter late; halving this kept every hit landing
+     for exactly what it did before (1/3).
+     v28: cut to 0.2 so fights last ~1.7× longer. At 1/3 a late fight was over in
+     about three rounds — whoever struck first won, HP was a weak stat, a heal
+     never had time to matter and a Tank was just a slower Bruiser. Roles only
+     mean something if a fight lasts long enough to hold a line. Flat damage
+     reduction (guard moves, Metal Coat) was scaled down with it. */
+  atkPerDamage: 0.2,
+  weakMult:         2,
+  resistMult:       0.5,
+  maxBattleRounds:  40,
+
+  /* --- roles (v28) ---
+     Every pokémon has one of four roles. The role decides how its stats GROW
+     (battle EXP, the trainer catch-up, level-ups and merges are all split by
+     these weights; medicine stays flat) and gives it one trait in battle.
+     Growth is what shapes a pokémon late — base stats are only 5–20% of a
+     late-game pokémon — so without this a Blastoise and a Mewtwo converged on
+     the same even spread. Each weight set sums to 3, so no role grows more
+     than another in total, only differently. */
+  roles: {
+    tank:    { grow:{ hp:1.8, atk:0.6, spd:0.6 } },               // Bodyguard
+    bruiser: { grow:{ hp:1.0, atk:1.0, spd:1.0 }, superTaken:1.5, dmgTaken:0.9 },// Steady
+    cannon:  { grow:{ hp:0.6, atk:1.5, spd:0.9 }, backBoost:0.25 },// Covering Fire (behind a Tank/Bruiser)
+    support: { grow:{ hp:1.2, atk:0.6, spd:1.2 }, careRound:0.10 },// Aftercare
+  },
+  rallyMax: 3,
+  /* Stat drops (Speed and Attack cuts from moves) stack, but never below this
+     share of what the pokémon started the battle with. Longer fights (v28) let a
+     team of Supports stack Stun Spore and Sing until the other side barely moved. */
+  dropFloor: 0.7,
+  /* A move that hits every enemy lands at this share behind the front rank (v28).
+     With Tanks holding the front, reaching the back line is the most valuable
+     thing a move can do — Thunderbolt at full power was the strongest move in the
+     game before roles and the only way past a Tank after them. */
+  spreadBack: 0.5,             // a Rally move stacks at most this many times per ally
+};
+
+// Which tier is unlocked on a given turn (1..6)
+const tierForTurn = t => Math.max(1, Math.min(6, Math.floor((t + 1) / 2)));
+
+/* ===================================================================
+   THE RUN — a schedule of battles, not a win counter
+   Three trainer battles, then a gym, eight times over, then the Elite Four
+   and the Champion. `G.stage` indexes this; it only advances when you clear
+   the entry, so a lost gym is fought again.
+   =================================================================== */
+function runPlan(){
+  const plan = [];
+  for(let b = 0; b < TUNING.badgesToWin; b++){
+    for(let i = 0; i < TUNING.battlesPerBadge; i++) plan.push({ kind:'trainer', badge:b });
+    plan.push({ kind:'gym', badge:b, boss:GYMS[b % GYMS.length] });
+  }
+  for(let i = 0; i < TUNING.eliteFourCount; i++)
+    plan.push({ kind:'elite', boss:ELITE_FOUR[i % ELITE_FOUR.length] });
+  plan.push({ kind:'champion', boss:CHAMPION });
+  return plan;
+}
+const RUN_LENGTH = () =>
+  TUNING.badgesToWin * (TUNING.battlesPerBadge + 1) + TUNING.eliteFourCount + 1;
+
+/** What this turn is. Past the end means the run is already won. */
+function stageOf(G){
+  const plan = runPlan();
+  return plan[Math.min(G.stage || 0, plan.length - 1)];
+}
+const isBoss = st => !!st && st.kind !== 'trainer';
+
+/* ===================================================================
+   THE ELITE FOUR GAUNTLET
+   The last five stages — the Elite Four, then the Champion — are one
+   continuous challenge rather than five ordinary turns:
+   - damage CARRIES between fights, and a fainted pokémon sits out the rest;
+   - between fights the shops are CLOSED, but you can rearrange, swap fresh
+     pokémon in from the PC and move held items — the PC is your bench;
+   - lose any of them and you black out back to Lorelei, fully healed, and the
+     whole gauntlet counts as ONE boss attempt for lives.
+   `G.gauntlet` exists only while you are mid-way through: once at least one
+   member has fallen and before you win or black out.
+   =================================================================== */
+const gauntletStart = () => TUNING.badgesToWin * (TUNING.battlesPerBadge + 1);
+const isGauntletStage = st => !!st && (st.kind === 'elite' || st.kind === 'champion');
+const inGauntlet = G => !!(G && G.gauntlet);
+/** What share of its max HP a pokémon has left. Stored as a SHARE, not a number,
+    so moving an HP item on or off scales the current HP with the max instead of
+    fainting or healing it. Anything never tracked is at full. */
+function hpFracOf(G, u){
+  if(!inGauntlet(G) || !u) return 1;
+  const f = G.gauntlet.hpFrac[u.uid];
+  return f == null ? 1 : f;
+}
+const canFight = (G, u) => hpFracOf(G, u) > 0;
+const fightersOf = G => (G.team || []).filter(u => canFight(G, u));
+/** The one way to fight the current stage — wounds, benched fainters and all.
+    Every caller (the UI and the balance bots) goes through here, so the game
+    and the tuning can never be measuring two different gauntlets. */
+function stageBattle(G, opp, seed){
+  fixSlots(G);
+  return simulateBattle(fightersOf(G), opp.team,
+    seed != null ? seed : G.seed + G.turn * 977 + (G.stage || 0) * 131,
+    { hpFrac: inGauntlet(G) ? G.gauntlet.hpFrac : null });
+}
+/** After a gauntlet fight, write down what everyone who fought has left. */
+function recordWounds(G, sim){
+  if(!sim || !sim.steps || !sim.steps.length) return;
+  const fought = sim.steps[0].p.map(c => c.uid);
+  const left = {};
+  for(const c of sim.steps[sim.steps.length - 1].p) left[c.uid] = c.hp;
+  const owned = ownedUnits(G);
+  for(const uid of fought){
+    const u = owned.find(x => x.uid === uid);
+    if(!u) continue;
+    // a move like Harden can lift HP past max inside a fight; it doesn't come home
+    G.gauntlet.hpFrac[uid] = left[uid] == null ? 0 : Math.max(0, Math.min(1, left[uid] / effHp(u)));
+  }
+}
+const shopClosed = () => ({ ok:false, why:'The shops are closed until the Elite Four is over.' });
+/* Badges unlock the shop — but turns do too, and that matters more than it
+   looks. If badges were the only clock, a player stuck on a gym would be stuck
+   with the roster that lost them the gym, and the whole retry mechanic would be
+   pointless. The turn floor is what lets a blacked-out trainer out-grow a wall. */
+const tierFor = G => Math.max(
+  TUNING.tierForBadge[Math.min(G.badges || 0, TUNING.tierForBadge.length - 1)],
+  Math.min(6, 1 + Math.floor((G.turn || 1) / TUNING.turnsPerTier)));
+
+/* ===================================================================
+   GYM LEADERS, THE ELITE FOUR AND THE CHAMPION
+   Themed on the REAL Gen 1 typing (`gen1`), not the card type. The card ring
+   has six types and only three buyable Grass lines; the Gen 1 typings give
+   fifteen, eleven of them with four or more members, so a Rock gym and a
+   Fighting gym read completely differently even though the cards call them
+   both Fighting. A theme is a list, because a two-type leader draws on a
+   deeper bench and is harder to hard-counter with one pokémon.
+   =================================================================== */
+const GYMS = [
+  { id:'brock',    name:'Brock',        title:'Pewter Gym',     theme:['Rock'],
+    badge:'Boulder', blurb:'Rock-hard defence. Bring something that hits fast.'  , calib:1.55 },
+  { id:'misty',    name:'Misty',        title:'Cerulean Gym',   theme:['Water'],
+    badge:'Cascade', blurb:'The deepest bench in the game. Lightning is your friend.'  , calib:1.46 },
+  { id:'surge',    name:'Lt. Surge',    title:'Vermilion Gym',  theme:['Electric'],
+    badge:'Thunder', blurb:'Fast and shocking. Something sturdy up front.'  , calib:1.41 },
+  { id:'erika',    name:'Erika',        title:'Celadon Gym',    theme:['Grass','Bug'],
+    badge:'Rainbow', blurb:'Leeches and powders. Fire ends it quickly.'  , calib:1.59 },
+  { id:'koga',     name:'Koga',         title:'Fuchsia Gym',    theme:['Poison','Ghost'],
+    badge:'Soul',    blurb:'Awkward to pin down. Psychic pressure works.'  , calib:1.62 },
+  { id:'sabrina',  name:'Sabrina',      title:'Saffron Gym',    theme:['Psychic'],
+    badge:'Marsh',   blurb:'Glass cannons that hit first. Out-speed or out-bulk.'  , calib:1.58 },
+  { id:'blaine',   name:'Blaine',       title:'Cinnabar Gym',   theme:['Fire'],
+    badge:'Volcano', blurb:'Everything hurts. Water walls it.'  , calib:1.48 },
+  { id:'giovanni', name:'Giovanni',     title:'Viridian Gym',   theme:['Ground','Normal'],
+    badge:'Earth',   blurb:'Muscle, not tricks. The hardest stat check of the eight.'  , calib:1.30 },
+];
+const ELITE_FOUR = [
+  { id:'lorelei', name:'Lorelei', title:'Elite Four', theme:['Ice','Water'],
+    blurb:'Walls of ice. Chip her down before the clock does.'  , calib:1.86 },
+  { id:'bruno',   name:'Bruno',   title:'Elite Four', theme:['Fighting','Rock'],
+    blurb:'Raw attack. Psychic is the lever.'  , calib:1.65 },
+  { id:'agatha',  name:'Agatha',  title:'Elite Four', theme:['Ghost','Poison'],
+    blurb:'Fragile and vicious. Whoever moves first wins.'  , calib:1.88 },
+  { id:'lance',   name:'Lance',   title:'Elite Four', theme:['Dragon','Flying'],
+    blurb:'Dragonite and friends. No easy type answer.'  , calib:1.87 },
+];
+const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
+  blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.37 };
+
+/* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
+const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
+  blurb:'He turns up three times a run, always when you least expect it. His starter beats yours, and his team grows every time you meet.' };
+const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];
+const bossById = id => ALL_BOSSES.find(b => b.id === id) || null;
+/** The species a themed leader can draw on. No theme = the whole roster. */
+function themePool(theme){
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary);   // 2.1.0: no trainer fields a legendary
+  if(!theme) return all;
+  return all.filter(k => {
+    const g = SPECIES[k].gen1 || '';
+    return theme.some(t => g.split('/').includes(t));
+  });
+}
+/* Slot counts. These run off the same effective tier as the roster, not off
+   badges alone — a player stuck on a gym was getting tier-5 pokémon in the
+   Daycare and no held-item shelf to equip them from. One clock, everywhere. */
+const daycareSlotsFor = tier => (tier < 2 ? 4 : tier < 4 ? 5 : 6);
+/* Medicine & stones, by tier. This is a TABLE rather than a formula because it
+   is the real throttle on how fast a player can grow: measured over 250 runs, a
+   fixed 3-slot shelf absorbed only ~11₽ of a ~30₽ turn from turn 8 on, and the
+   surplus either evaporated over the carry cap or went into rerolling — which
+   was a 1₽ bypass around this very limit and doubled the clear rate. Widening
+   the shelf gives the income somewhere honest to go. Sweep it with econ7.js. */
+const martSlotsFor = tier =>
+  TUNING.martSlots[Math.max(0, Math.min(TUNING.martSlots.length - 1, tier - 1))];
+/* Held items are EXTRA shelf, not a share of it. Taking a consumable slot away
+   to make room for them measurably weakened the player — medicine stacks every
+   turn, so losing a slot of it costs compounding stats. The Mart grows instead. */
+function heldSlotsFor(tier){
+  if(tier < TUNING.heldFromTier) return 0;
+  return Math.min(TUNING.heldSlotsMax, 1 + Math.floor((tier - TUNING.heldFromTier) / 2));
+}
+
+/* ===================================================================
+   TYPES — trading-card style: 6 types in a ring plus Colorless.
+   Each type is WEAK to the next one round the ring (x2 damage taken)
+   and RESISTS the one before it (x0.5).
+
+       Grass → Fire → Water → Lightning → Fighting → Psychic → Grass
+       (read "→" as "is weak to")
+
+   Colorless resists nothing and is weak to Fighting.
+   =================================================================== */
+const TYPES = {
+  Grass:     { color:'#57b85f', weak:'Fire',      resist:'Psychic'   },
+  Fire:      { color:'#f2622e', weak:'Water',     resist:'Grass'     },
+  Water:     { color:'#3d8bf0', weak:'Lightning', resist:'Fire'      },
+  Lightning: { color:'#e8c020', weak:'Fighting',  resist:'Water'     },
+  Fighting:  { color:'#c1452f', weak:'Psychic',   resist:'Lightning' },
+  Psychic:   { color:'#b04fc4', weak:'Grass',     resist:'Fighting'  },
+  Colorless: { color:'#a9a79b', weak:'Fighting',  resist:null        },
+};
+
+/* The TCG-type mapping this roster follows: each pokémon's GAME type (its
+   real Gen 1 typing, kept on `gen1` for reference) maps to one of the seven
+   trading-card types above via its PRIMARY type. Poison and Dragon sat in
+   different card types in different eras; these are the Gen 1 / Base Set
+   placements. Darkness and Metal have no Gen 1 members, which is why the
+   ring has six types and not eight. */
+const TCG_FROM_GEN1 = {
+  Grass:'Grass',   Poison:'Grass',    Bug:'Grass',
+  Fire:'Fire',
+  Water:'Water',   Ice:'Water',
+  Electric:'Lightning',
+  Fighting:'Fighting', Rock:'Fighting', Ground:'Fighting',
+  Psychic:'Psychic',   Ghost:'Psychic',
+  Normal:'Colorless',  Flying:'Colorless', Dragon:'Colorless',
+};
+/** The card type a pokémon should have, from its Gen 1 typing. */
+const tcgTypeFor = id => {
+  const g = SPECIES[id] && SPECIES[id].gen1;
+  return g ? TCG_FROM_GEN1[g.split('/')[0]] : null;
+};
+
+function typeMult(atkType, defType){
+  const d = TYPES[defType];
+  if(!d) return 1;
+  if(d.weak === atkType)   return TUNING.weakMult;
+  if(d.resist === atkType) return TUNING.resistMult;
+  return 1;
+}
+
+/* ---- roles ----
+   Display data for the four roles. Numbers live in TUNING.roles. */
+const ROLES = {
+  tank:    { name:'Tank',    icon:'🛡️', trait:'Bodyguard',
+             text:() => 'Soaks hits. Grows mostly HP. Bodyguard: an attack aimed at its front rank always lands on it.' },
+  bruiser: { name:'Bruiser', icon:'👊', trait:'Steady',
+             text:() => `Even all-rounder. Grows evenly. Steady: takes ${Math.round((1 - TUNING.roles.bruiser.dmgTaken)*100)}% less from every hit, and super-effective hits deal ×${TUNING.roles.bruiser.superTaken} to it, not ×${TUNING.weakMult}.` },
+  cannon:  { name:'Cannon',  icon:'💥', trait:'Covering Fire',
+             text:() => `Glass cannon. Grows mostly Attack. Covering Fire: +${Math.round(TUNING.roles.cannon.backBoost*100)}% damage while it stands behind your front rank and a Tank or Bruiser holds it.` },
+  support: { name:'Support', icon:'✚', trait:'Aftercare',
+             text:() => `Keeps the team going. Grows HP and Speed. Aftercare: every round it heals its most-hurt teammate ${Math.round(TUNING.roles.support.careRound*100)}% of that pokémon's HP.` },
+};
+const ROLE_ORDER = { tank:0, bruiser:1, support:2, cannon:3 };
+/** A pokémon's role, from its species (so it changes if it evolves into another). */
+const roleOf = x => {
+  const id = typeof x === 'string' ? x : x && x.id;
+  return (SPECIES[id] && SPECIES[id].role) || 'bruiser';
+};
+/* Add stat growth to a pokémon, split by its role. `d` is the even amount
+   ({hp,atk,spd}) the old flat rules gave; each stat is multiplied by the role's
+   weight. Fractions are banked on the unit (u.gf) rather than rounded away, so
+   a Tank's 0.6 × 1 Speed is a point every few battles, not never. */
+function growUnit(u, d){
+  const w = (TUNING.roles[roleOf(u)] || TUNING.roles.bruiser).grow;
+  const lg = SPECIES[u.id] && SPECIES[u.id].legendary ? TUNING.legend.growth : 1;   // 2.1.0
+  u.gf = u.gf || { hp:0, atk:0, spd:0 };
+  for(const k of ['hp','atk','spd']){
+    const x = (d[k] || 0) * w[k] * lg + (u.gf[k] || 0);
+    const n = Math.floor(x + 1e-9);
+    u[k] += n; u.gf[k] = x - n;
+  }
+  return u;
+}
+/** The order a sensible trainer lines up in: tanks, bruisers, supports, cannons.
+    Stable within a role, so a player's own order among equals is kept. */
+/** Line a party up by role, filling the formation front-first (the button). */
+function lineUpByRole(G){
+  const order = formationSort(G.team);
+  order.forEach((u, i) => { u.pos = i; });
+  G.team.splice(0, G.team.length, ...order);
+  return G;
+}
+function formationSort(team){
+  return team.map((u, i) => ({ u, i }))
+    .sort((a, b) => ROLE_ORDER[roleOf(a.u)] - ROLE_ORDER[roleOf(b.u)] || a.i - b.i)
+    .map(x => x.u);
+}
+
+/* ---- scaling + display helpers ---- */
+const pw  = (base, l) => base * (1 + TUNING.movePowerPerLevel * ((l || 1) - 1));
+const pct = (base, l) => Math.round(pw(base, l) * 100) + '%';
+const sc  = (base, l) => Math.round(base * (1 + 0.5 * ((l || 1) - 1)));
+/* A share (0.08 = 8%) that grows with level like sc(), and its label. */
+const sf  = (f, l) => f * (1 + 0.5 * ((l || 1) - 1));
+const sfp = (f, l) => Math.round(sf(f, l) * 100) + '%';
+
+/* ===================================================================
+   MOVE FACTORIES
+   Every move in the game is one of these shapes. To rebalance a pokémon
+   change the numbers in its SPECIES line; to invent a new KIND of move,
+   add a factory here.
+   =================================================================== */
+const M = {
+  /* plain damage to the enemy front */
+  hit: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l)); } }),
+
+  /* hits every enemy */
+  all: (name, p) => ({ name,
+    text:l=>`Hits every enemy: ${pct(p,l)} to the front rank, ${pct(p*TUNING.spreadBack,l)} to everyone behind it.`,
+    fn:(u,B,l)=>{ B.enemies(u).forEach(t=>B.hit(u,t,pw(p,l) * (B.isFront(t) ? 1 : TUNING.spreadBack))); } }),
+
+  /* hits the two frontmost enemies */
+  two: (name, p) => ({ name, text:l=>`Hits the enemy's whole front rank for ${pct(p,l)} each.`,
+    fn:(u,B,l)=>{ B.frontRank(u).forEach(t=>B.hit(u,t,pw(p,l))); } }),
+
+  /* several hits on the front enemy */
+  multi: (name, p, n) => ({ name, text:l=>`Strikes the front rank ${n} times for ${pct(p,l)} each.`,
+    fn:(u,B,l)=>{ for(let i=0;i<n;i++){ const t=B.front(u); if(t) B.hit(u,t,pw(p,l)); } } }),
+
+  /* snipes past the front line */
+  fast: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} to the FASTEST enemy, ignoring the front line.`,
+    fn:(u,B,l)=>{ const t=B.fastest(u); if(t) B.hit(u,t,pw(p,l)); } }),
+
+  big: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} to the enemy with the most HP, ignoring the front line.`,
+    fn:(u,B,l)=>{ const t=B.biggest(u); if(t) B.hit(u,t,pw(p,l),{ignoreResist:true}); } }),
+
+  /* damage that ignores resistance / all type matchups */
+  pierce: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage that is never resisted.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l),{ignoreResist:true}); } }),
+
+  trueHit: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} damage, ignoring type matchups entirely.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l),{noType:true}); } }),
+
+  /* lifesteal */
+  drain: (name, p, frac) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage and heals itself for ${Math.round(frac*100)}% of it.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; const d=B.hit(u,t,pw(p,l)); B.heal(u,Math.ceil(d*frac),u); } }),
+
+  /* damage + speed debuff */
+  slow: (name, p, n) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage and cuts the target's Speed by ${sc(n,l)}.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l)); B.slow(t,sc(n,l)); } }),
+
+  /* damage + attack debuff */
+  weaken: (name, p, n) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage and cuts the target's Attack by ${sc(n,l)}.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l));
+      B.boost(t,{atk:-sc(n,l)}); B.log(`${t.nm}'s Attack fell.`); } }),
+
+  /* big damage, hurts itself */
+  recoil: (name, p, n) => ({ name, text:l=>`Deals ${pct(p,l)} damage and takes ${n} recoil.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t,pw(p,l)); B.recoil(u,n); } }),
+
+  /* ramps its own attack every turn */
+  ramp: (name, p, n) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage, then gains +${sc(n,l)} Attack for the rest of the battle.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l)); B.boost(u,{atk:sc(n,l)}); } }),
+
+  /* pure defence, stacking */
+  guard: (name, hp, red) => ({ name,
+    text:l=>`No damage. Gains +${sc(hp,l)} HP and blocks ${sc(red,l)} more damage per hit, stacking — `
+      + `up to +${Math.round(TUNING.moveGuardCap.hpPct*100)}% HP and ${TUNING.moveGuardCap.reducePerLevel*l} blocked per battle.`,
+    fn:(u,B,l)=>{ B.fortify(u, sc(hp,l), sc(red,l)); } }),
+
+  /* damage + heals your own front pokémon by a share of ITS max HP.
+     (A flat number until v28 — 9 HP was a lot on turn 3 and nothing on turn 30.) */
+  heal: (name, p, f) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage and heals your front pokémon ${sfp(f,l)} of its HP.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
+      const a=B.ownFront(u); if(a && a.hp < a.maxHp){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))), u);
+        if(n) B.log(`${a.nm} was healed (+${n} HP).`); } } }),
+
+  /* SUPPORT: damage + heals whichever teammate is most hurt (itself included) */
+  mend: (name, p, f) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage, then heals your most-hurt pokémon ${sfp(f,l)} of its HP.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
+      const a=B.mostHurt(u); if(a){ const n=B.heal(a, Math.max(1, Math.round(a.maxHp*sf(f,l))), u);
+        if(n) B.log(`${a.nm} was healed (+${n} HP).`); } } }),
+
+  /* SUPPORT: damage + raises the whole team's Attack by a share of each one's own */
+  rally: (name, p, f) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage and raises your whole team's Attack by ${sfp(f,l)} — `
+      + `up to ${TUNING.rallyMax} times per battle for each pokémon.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
+      let n=0;
+      for(const a of B.teams[u.side]){
+        if(a.dead || (a.rallies||0) >= TUNING.rallyMax) continue;
+        a.rallies = (a.rallies||0) + 1; n++;
+        B.boost(a, { atk: Math.max(1, Math.round(a.atk0 * sf(f,l))) });
+      }
+      if(n) B.log(`Your team's Attack rose!`); } }),
+
+  /* SUPPORT: a weak hit on EVERY enemy that also cuts each one's Speed */
+  hush: (name, p, n) => ({ name,
+    text:l=>`Hits every enemy for ${pct(p,l)} and cuts each one's Speed by ${sc(n,l)}.`,
+    fn:(u,B,l)=>{ B.enemies(u).forEach(t=>{ B.hit(u,t,pw(p,l)); if(!t.dead) B.slow(t,sc(n,l)); }); } }),
+
+  /* does nothing but grows */
+  grow: (name, n) => ({ name, text:l=>`Does nothing at all — but permanently gains +${sc(n,l)} Attack.`,
+    fn:(u,B,l)=>{ B.log('Nothing happened… yet.'); B.boost(u,{atk:sc(n,l)}); } }),
+
+  /* a heavy move on a cooldown, with a weak filler in between */
+  charge: (name, p, basicName, basicP) => ({ name, every:2, basic:{ name:basicName, mult:basicP },
+    text:l=>`Every 2nd turn: ${pct(p,l)} damage. Otherwise ${basicName}, ${pct(basicP,l)}.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l)); } }),
+
+  /* rewards being the front pokémon */
+  wall: (name, p, pFront) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage — ${pct(pFront,l)} while it stands in your front rank.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(!t) return; B.hit(u,t, B.isFront(u) ? pw(pFront,l) : pw(p,l)); } }),
+
+  /* ---- v32: status, targeting and team moves ---- */
+  /* damage (or none) plus a chance of a status, on a chosen target */
+  afflict: (name, p, st, chance, target) => ({ name,
+    text:l=>`${p ? `Deals ${pct(p,l)} damage to ${TARGET_TEXT[target||'front']}` : `Aims at ${TARGET_TEXT[target||'front']}`}${
+      chance >= 1 ? ` and ${STATUS_VERB[st]}.` : ` — ${Math.round(chance*100)}% chance to ${STATUS_VERB[st].replace(/^(\w+)s /, '$1 ')}.`}`,
+    fn:(u,B,l)=>{ const t=B.pickTarget(u, target||'front'); if(!t) return; if(p) B.hit(u,t,pw(p,l)); B.inflict(t, st, chance); } }),
+  /* the enemy with the least HP left — a finisher */
+  weakest: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} to the enemy with the least HP left, wherever it stands.`,
+    fn:(u,B,l)=>{ const t=B.pickTarget(u,'weakest'); if(t) B.hit(u,t,pw(p,l)); } }),
+  /* the back-most enemy */
+  back: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} to the enemy furthest back.`,
+    fn:(u,B,l)=>{ const t=B.pickTarget(u,'back'); if(t) B.hit(u,t,pw(p,l)); } }),
+  /* any enemy at random */
+  random: (name, p) => ({ name, text:l=>`Deals ${pct(p,l)} to a random enemy, front or back.`,
+    fn:(u,B,l)=>{ const t=B.pickTarget(u,'random'); if(t) B.hit(u,t,pw(p,l)); } }),
+  /* a barrier that soaks damage: on itself, the most-hurt ally, or the whole team */
+  shield: (name, f, who) => ({ name,
+    text:l=>`No damage. ${who === 'team' ? 'Your whole team gets' : who === 'hurt' ? 'Your most-hurt pokémon gets' : 'Gets'} a barrier worth ${sfp(f,l)} of ${who === 'team' ? 'each one’s' : 'its'} HP that soaks up hits.`,
+    fn:(u,B,l)=>{ const ts = who === 'team' ? B.teams[u.side].filter(x=>!x.dead) : [who === 'hurt' ? (B.mostHurt(u) || u) : u];
+      for(const t of ts) B.barrier(t, Math.max(1, Math.round(t.maxHp * sf(f,l)))); } }),
+  /* its next hit lands harder */
+  focus: (name, f) => ({ name, text:l=>`No damage. Its next hit deals +${sfp(f,l)}.`,
+    fn:(u,B,l)=>{ u.focus = Math.max(u.focus || 0, sf(f,l)); B.fx(u,'buff'); B.log(`${u.nm} is getting pumped!`); } }),
+  /* heal itself */
+  recover: (name, f, sleeps) => ({ name,
+    text:l=>`No damage. Heals itself ${sfp(f,l)} of its HP${sleeps ? ', then falls asleep for 2 actions' : ''}.`,
+    fn:(u,B,l)=>{ const n = B.heal(u, Math.round(u.maxHp * sf(f,l)), u); if(n || !heldOf(u) || !heldOf(u).noHeal) B.log(`${u.nm} regained ${n} HP.`);
+      if(sleeps){ u.st = { id:'slp', left:2 }; B.log(`${u.nm} fell asleep.`); } } }),
+  /* cure the team's statuses, and heal them a little */
+  cleanse: (name, f) => ({ name, text:l=>`No damage. Cures your whole team's status conditions and heals each ${sfp(f,l)}.`,
+    fn:(u,B,l)=>{ for(const a of B.teams[u.side]){ if(a.dead) continue; if(a.st){ a.st = null; } B.heal(a, Math.round(a.maxHp * sf(f,l)), u); }
+      B.log('A soothing aroma filled the air.'); } }),
+  /* move itself to the back of the formation */
+  teleport: (name) => ({ name, text:()=>`No damage. Moves itself to the back of your formation.`,
+    fn:(u,B)=>{ const arr = B.teams[u.side], used = new Set(arr.map(x => x.pos));
+      let to = -1; for(let p = TUNING.maxTeam - 1; p > u.pos; p--) if(!used.has(p)){ to = p; break; }
+      if(to < 0){ B.log('But there was nowhere further back to go.'); return; }
+      u.pos = to; arr.sort((a, b) => a.pos - b.pos); B.fx(u,'buff'); B.log(`${u.nm} teleported to the back!`); } }),
+};
+
+/* 2.5.0: every move remembers what KIND of effect it is (`kind`, plus a status and
+   target for afflicting moves) as `sig`. One move name must mean one effect on
+   every pokémon that has it; only the percentages may differ. movenames.js checks it. */
+for(const k of Object.keys(M)){
+  const f = M[k];
+  M[k] = (...a) => Object.assign(f(...a), { kind:k, sig: k === 'afflict' ? `afflict:${a[2]}:${a[4] || 'front'}` : k });
+}
+
+/* A second move fires INSTEAD of the main move when its trigger is met:
+     open    — its first action of the battle (priority: before anyone else)
+     every   — every nth action
+     low     — once, the first time it drops below half HP
+     allyLow — when a teammate is below half HP (not twice in a row)          */
+const TRIGGER_TEXT = {
+  open:    m => m.priority ? 'First, before anyone moves' : m.free ? 'At the start, for free' : 'Its first action',
+  every:   m => `Every ${m.n}${m.n === 2 ? 'nd' : m.n === 3 ? 'rd' : 'th'} action`,
+  low:     () => 'Once, below half HP',
+  allyLow: () => 'When a teammate is below half HP',
+};
+const on = (trig, move, extra) => ({ ...move, trig, ...(extra || {}),
+  when: function(){ return TRIGGER_TEXT[trig](this); } });
+const TARGET_TEXT = { biggest:'the enemy with the most HP', front:'the enemy front', random:'a random enemy', fastest:'the fastest enemy', back:'the enemy furthest back', weakest:'the weakest enemy' };
+const STATUS_VERB = { brn:'burns it', psn:'poisons it', par:'paralyses it', slp:'puts it to sleep', cnf:'confuses it', fln:'makes it flinch' };
+
+/* ===================================================================
+   SPECIES — Gen 1, organised by evolution line.
+   -------------------------------------------------------------------
+   hp/atk/spd : base stats
+   evo        : { into, by:'level' }            evolves on level up
+                { into, by:'stone', stone:id }  needs that evolution stone
+                { by:'stone', branches:{ stone:into, … } }  (1.3.0) the stone
+                                                 picks the evolution — Eevee
+   token      : true -> never sold in the Daycare (evolved forms only)
+   -------------------------------------------------------------------
+   A pokémon with no `evo` left gets TUNING.levelUpBonusMax on level up
+   instead of an evolution, so final forms and non-evolvers keep pace.
+   =================================================================== */
+/* 2.5.0: the starter lines swapped jobs — Bulbasaur's is a Tank now, Squirtle's a
+   Bruiser. [hp, atk, spd] for the base, middle and final form of each. */
+const BULB   = { b:[18, 12, 29], i:[28, 21, 39], v:[46, 39, 52] };
+const PARAS  = { b:[26, 25, 32], e:[54, 64, 46] };    // 2.6.0
+const TANGELA = [58, 36, 38];   // 2.8.0
+const BELL   = { b:[16, 26, 32], m:[28, 46, 44], e:[42, 64, 52] };   // 2.6.1
+const EGG    = { b:[22, 32, 36], e:[52, 76, 54] };
+const SQUIRT = { b:[16, 12, 30], w:[26, 24, 40], l:[42, 42, 53] };
+const JOLT_TB = 0.5; const JOLT_N = 3;   // Jolteon's Thunderbolt: the front rank's share; the ranks behind take half (M.all)
+const SPECIES = {
+
+  /* ============ TIER 1 — starters and early routes ============ */
+  caterpie:   { name:'Caterpie',   type:'Grass', gen1:'Bug', tier:1, role:'support', hp:14, atk:9,  spd:30,
+                evo:{into:'metapod', by:'level'},    move:M.slow('String Shot', 1, 5) },
+  metapod:    { name:'Metapod',    type:'Grass', gen1:'Bug', tier:1, role:'tank', hp:32, atk:12,  spd:20, token:true,
+                evo:{into:'butterfree', by:'level'}, move:M.guard('Harden', 5, 1) },
+  butterfree: { name:'Butterfree', type:'Grass', gen1:'Bug/Flying', tier:1, role:'support', hp:30, atk:30, spd:47, token:true,
+                move:M.hush('Silver Wind', 0.5, 6) },
+
+  bulbasaur:  { name:'Bulbasaur',  type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.b[0], atk:BULB.b[1],  spd:BULB.b[2],
+                evo:{into:'ivysaur', by:'level'},    move:M.drain('Absorb', 1.1, 0.5) },
+  ivysaur:    { name:'Ivysaur',    type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.i[0], atk:BULB.i[1],  spd:BULB.i[2], token:true,
+                evo:{into:'venusaur', by:'level'},   move:M.drain('Mega Drain', 1.2, 0.5) },
+  venusaur:   { name:'Venusaur',   type:'Grass', gen1:'Grass/Poison', tier:1, role:'tank', hp:BULB.v[0], atk:BULB.v[1], spd:BULB.v[2], token:true,
+                move:M.drain('Giga Drain', 1.35, 0.6) },
+
+  charmander: { name:'Charmander', type:'Fire', gen1:'Fire',  tier:1, role:'cannon', hp:14, atk:15,  spd:43,
+                evo:{into:'charmeleon', by:'level'}, move:M.hit('Ember', 1.3) },
+  charmeleon: { name:'Charmeleon', type:'Fire', gen1:'Fire',  tier:1, role:'cannon', hp:24, atk:27,  spd:53, token:true,
+                evo:{into:'charizard', by:'level'},  move:M.hit('Flamethrower', 1.5) },
+  charizard:  { name:'Charizard',  type:'Fire', gen1:'Fire/Flying',  tier:1, role:'cannon', hp:40, atk:48, spd:67, token:true,
+                move:M.charge('Fire Blast', 2.1, 'Slash', 1.0) },
+
+  squirtle:   { name:'Squirtle',   type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.b[0], atk:SQUIRT.b[1],  spd:SQUIRT.b[2],
+                evo:{into:'wartortle', by:'level'},  move:M.hit('Water Gun', 1.05) },
+  wartortle:  { name:'Wartortle',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.w[0], atk:SQUIRT.w[1],  spd:SQUIRT.w[2], token:true,
+                evo:{into:'blastoise', by:'level'},  move:M.hit('Water Gun', 1.2) },
+  blastoise:  { name:'Blastoise',  type:'Water', gen1:'Water', tier:1, role:'bruiser', hp:SQUIRT.l[0], atk:SQUIRT.l[1], spd:SQUIRT.l[2], token:true,
+                move:M.charge('Hydro Pump', 2.1, 'Water Gun', 1.1) },
+
+  pidgey:     { name:'Pidgey',     type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:12, atk:12,  spd:37,
+                evo:{into:'pidgeotto', by:'level'},  move:M.two('Gust', 0.7) },
+  pidgeotto:  { name:'Pidgeotto',  type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:22, atk:24,  spd:47, token:true,
+                evo:{into:'pidgeot', by:'level'},    move:M.two('Wing Attack', 0.9) },
+  pidgeot:    { name:'Pidgeot',    type:'Colorless', gen1:'Normal/Flying', tier:1, role:'bruiser', hp:34, atk:39, spd:61, token:true,
+                move:M.two('Sky Attack', 1.2) },
+
+  rattata:    { name:'Rattata',    type:'Colorless', gen1:'Normal', tier:1, role:'cannon', hp:12, atk:18,  spd:48,
+                evo:{into:'raticate', by:'level'},   move:M.hit('Hyper Fang', 1.2) },
+  raticate:   { name:'Raticate',   type:'Colorless', gen1:'Normal', tier:1, role:'cannon', hp:24, atk:33, spd:65, token:true,
+                move:M.recoil('Super Fang', 1.8, 3) },
+
+  /* ============ TIER 2 ============ */
+  geodude:    { name:'Geodude',    type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:22, atk:15,  spd:13,
+                evo:{into:'graveler', by:'level'},   move:M.wall('Rock Throw', 1.0, 1.7) },
+  graveler:   { name:'Graveler',   type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:34, atk:27,  spd:23, token:true,
+                evo:{into:'golem', by:'level'},      move:M.wall('Rock Slide', 1.1, 1.8) },
+  golem:      { name:'Golem',      type:'Fighting', gen1:'Rock/Ground', tier:2, role:'tank', hp:50, atk:42, spd:30, token:true,
+                move:M.wall('Earthquake', 1.2, 2.0) },
+
+  machop:     { name:'Machop',     type:'Fighting', gen1:'Fighting', tier:2, role:'bruiser', hp:18, atk:21,  spd:23,
+                evo:{into:'machoke', by:'level'},    move:M.hit('Karate Chop', 1.4) },
+  machoke:    { name:'Machoke',    type:'Fighting', gen1:'Fighting', tier:2, role:'bruiser', hp:30, atk:33, spd:30, token:true,
+                evo:{into:'machamp', by:'level'},    move:M.hit('Seismic Toss', 1.6) },
+  machamp:    { name:'Machamp',    type:'Fighting', gen1:'Fighting', tier:2, role:'bruiser', hp:44, atk:51, spd:37, token:true,
+                move:M.recoil('Submission', 2.0, 5) },
+
+  poliwag:    { name:'Poliwag',    type:'Water', gen1:'Water', tier:2, role:'bruiser', hp:18, atk:15,  spd:60,
+                evo:{into:'poliwhirl', by:'level'},  move:M.slow('Bubble', 1.0, 9) },
+  poliwhirl:  { name:'Poliwhirl',  type:'Water', gen1:'Water', tier:2, role:'bruiser', hp:28, atk:24,  spd:60, token:true,
+                evo:{into:'poliwrath', by:'level'},  move:M.multi('Doubleslap', 0.75, 2) },
+  poliwrath:  { name:'Poliwrath',  type:'Water', gen1:'Water/Fighting', tier:2, role:'bruiser', hp:46, atk:45, spd:47, token:true,
+                move:M.multi('Double Kick', 1.0, 2) },
+
+  magikarp:   { name:'Magikarp',   type:'Water', gen1:'Water', tier:2, role:'bruiser', hp:12, atk:6,  spd:53,
+                evo:{into:'gyarados', by:'level'},   move:M.grow('Splash', 3) },
+  gyarados:   { name:'Gyarados',   type:'Water', gen1:'Water/Flying', tier:2, role:'bruiser', hp:42, atk:51, spd:54, token:true,
+                move:M.charge('Hydro Pump', 2.2, 'Bite', 1.0) },
+
+  pikachu:    { name:'Pikachu',    type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:14, atk:18,  spd:60,
+                evo:{into:'raichu', by:'stone', stone:'thunderstone'},
+                move:M.all('Thunder Shock', 0.42) },
+  raichu:     { name:'Raichu',     type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:28, atk:36, spd:67, token:true,
+                move:M.all('Thunderbolt', 0.6) },
+
+  vulpix:     { name:'Vulpix',     type:'Fire', gen1:'Fire', tier:2, role:'cannon', hp:16, atk:18,  spd:43,
+                evo:{into:'ninetales', by:'stone', stone:'firestone'},
+                move:M.hit('Ember', 1.4) },
+  ninetales:  { name:'Ninetales',  type:'Fire', gen1:'Fire', tier:2, role:'cannon', hp:32, atk:36, spd:67, token:true,
+                move:M.hit('Flamethrower', 1.9) },
+
+  /* ============ TIER 3 ============ */
+  abra:       { name:'Abra',       type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:12, atk:21,  spd:60,
+                evo:{into:'kadabra', by:'level'},    move:M.fast('Confusion', 1.0) },
+  kadabra:    { name:'Kadabra',    type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:20, atk:33, spd:70, token:true,
+                evo:{into:'alakazam', by:'level'},   move:M.fast('Confusion', 1.1) },
+  alakazam:   { name:'Alakazam',   type:'Psychic', gen1:'Psychic', tier:3, role:'cannon', hp:26, atk:48, spd:80, token:true,
+                move:M.fast('Psychic', 1.2) },
+
+  gastly:     { name:'Gastly',     type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:12, atk:27,  spd:53,
+                evo:{into:'haunter', by:'level'},    move:M.trueHit('Night Shade', 1.0) },
+  haunter:    { name:'Haunter',    type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:20, atk:36, spd:63, token:true,
+                evo:{into:'gengar', by:'level'},     move:M.trueHit('Lick', 1.2) },
+  gengar:     { name:'Gengar',     type:'Psychic', gen1:'Ghost/Poison', tier:3, role:'cannon', hp:30, atk:48, spd:73, token:true,
+                move:M.pierce('Shadow Ball', 1.35) },
+
+  magnemite:  { name:'Magnemite',  type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:18, atk:21,  spd:30,
+                evo:{into:'magneton', by:'level'},   move:M.guard('Barrier', 4, 1) },
+  magneton:   { name:'Magneton',   type:'Lightning', gen1:'Electric', tier:3, role:'tank', hp:30, atk:36, spd:47, token:true,
+                move:M.wall('Flash Cannon', 1.1, 1.8) },
+
+  growlithe:  { name:'Growlithe',  type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:22, atk:24,  spd:40,
+                evo:{into:'arcanine', by:'stone', stone:'firestone'},
+                move:M.recoil('Flame Wheel', 1.6, 3) },
+  arcanine:   { name:'Arcanine',   type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:38, atk:42, spd:63, token:true,
+                move:M.hit('Flamethrower', 1.7) },
+
+  staryu:     { name:'Staryu',     type:'Water', gen1:'Water', tier:3, role:'cannon', hp:20, atk:21,  spd:57,
+                evo:{into:'starmie', by:'stone', stone:'waterstone'},
+                move:M.pierce('Swift', 1.15) },
+  starmie:    { name:'Starmie',    type:'Water', gen1:'Water/Psychic', tier:3, role:'cannon', hp:30, atk:39, spd:77, token:true,
+                move:M.pierce('Swift', 1.5) },
+
+  onix:       { name:'Onix',       type:'Fighting', gen1:'Rock/Ground', tier:3, role:'tank', hp:40, atk:18, spd:47,
+                move:M.wall('Rock Throw', 1.0, 1.7) },
+
+  /* ============ TIER 4 ============ */
+  seel:       { name:'Seel',       type:'Water', gen1:'Water', tier:4, role:'support', hp:30, atk:21,  spd:30,
+                evo:{into:'dewgong', by:'level'},    move:M.weaken('Aurora Beam', 1.1, 11) },
+  dewgong:    { name:'Dewgong',    type:'Water', gen1:'Water/Ice', tier:4, role:'support', hp:44, atk:36, spd:47, token:true,
+                move:M.hush('Powder Snow', 0.4, 8) },
+
+  drowzee:    { name:'Drowzee',    type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:24, atk:24,  spd:28,
+                evo:{into:'hypno', by:'level'},      move:M.mend('Dream Eater', 1.1, 0.08) },
+  hypno:      { name:'Hypno',      type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:36, atk:39, spd:45, token:true,
+                move:M.mend('Dream Eater', 1.4, 0.12) },
+
+  dratini:    { name:'Dratini',    type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:20, atk:21,  spd:33,
+                evo:{into:'dragonair', by:'level'},  move:M.hit('Wrap', 1.3) },
+  dragonair:  { name:'Dragonair',  type:'Colorless', gen1:'Dragon', tier:4, role:'bruiser', hp:32, atk:36, spd:47, token:true,
+                evo:{into:'dragonite', by:'level'},  move:M.hit('Dragon Breath', 1.6) },
+  dragonite:  { name:'Dragonite',  type:'Colorless', gen1:'Dragon/Flying', tier:4, role:'bruiser', hp:50, atk:57, spd:53, token:true,
+                move:M.charge('Hyper Beam', 2.4, 'Slam', 1.0) },
+
+  scyther:    { name:'Scyther',    type:'Grass', gen1:'Bug/Flying', tier:4, role:'cannon', hp:24, atk:30, spd:70,
+                move:M.ramp('Fury Cutter', 1.2, 12) },
+
+  /* ============ TIER 5 — no evolutions, strong as they are ====== */
+  hitmonlee:  { name:'Hitmonlee',  type:'Fighting', gen1:'Fighting', tier:5, role:'cannon', hp:24, atk:36, spd:58,
+                move:M.recoil('Hi Jump Kick', 1.9, 4) },
+  lapras:     { name:'Lapras',     type:'Water', gen1:'Water/Ice', tier:5, role:'support', hp:46, atk:33, spd:40,
+                move:M.rally('Ice Beam', 1.3, 0.1) },
+  electabuzz: { name:'Electabuzz', type:'Lightning', gen1:'Electric', tier:5, role:'cannon', hp:26, atk:33, spd:70,
+                move:M.hit('Thunder Punch', 1.5) },
+  tauros:     { name:'Tauros',     type:'Colorless', gen1:'Normal', tier:5, role:'bruiser', hp:38, atk:42, spd:73,
+                move:M.hit('Take Down', 1.5) },
+
+
+  /* ============ v28 — fourteen more Gen 1 pokémon, mostly Tanks and Supports ====
+     The roster was built as fighters; these give the Tank and Support roles
+     real depth, and each gym leader who had them in Gen 1 now fields them. */
+  jigglypuff: { name:'Jigglypuff', type:'Colorless', gen1:'Normal', tier:1, role:'support', hp:22, atk:9, spd:20,
+                evo:{into:'wigglytuff', by:'stone', stone:'moonstone'}, move:M.hit('Pound', 0.9) },
+  wigglytuff: { name:'Wigglytuff', type:'Colorless', gen1:'Normal', tier:1, role:'support', hp:44, atk:24, spd:38, token:true,
+                move:M.hush('Hyper Voice', 0.55, 7) },
+
+  oddish:     { name:'Oddish',     type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:18, atk:15, spd:28,
+                evo:{into:'gloom', by:'level'},      move:M.mend('Heal Pulse', 1.0, 0.07) },
+  gloom:      { name:'Gloom',      type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:28, atk:24, spd:36, token:true,
+                evo:{into:'vileplume', by:'level'},  move:M.mend('Floral Healing', 1.1, 0.09) },
+  vileplume:  { name:'Vileplume',  type:'Grass', gen1:'Grass/Poison', tier:2, role:'support', hp:40, atk:36, spd:46, token:true,
+                move:M.mend('Petal Dance', 1.3, 0.12) },
+
+  voltorb:    { name:'Voltorb',    type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:16, atk:15, spd:63,
+                evo:{into:'electrode', by:'level'},  move:M.hit('Sonic Boom', 1.3) },
+  electrode:  { name:'Electrode',  type:'Lightning', gen1:'Electric', tier:2, role:'cannon', hp:26, atk:30, spd:84, token:true,
+                move:M.charge('Explosion', 1.8, 'Tackle', 0.9) },
+
+  clefairy:   { name:'Clefairy',   type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
+                evo:{into:'clefable', by:'stone', stone:'moonstone'}, move:M.rally('Metronome', 0.8, 0.05) },
+  clefable:   { name:'Clefable',   type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:40, atk:33, spd:50, token:true,
+                move:M.rally('Metronome', 1.0, 0.07) },
+
+  shellder:   { name:'Shellder',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:26, atk:18, spd:33,
+                evo:{into:'cloyster', by:'stone', stone:'waterstone'}, move:M.guard('Withdraw', 5, 1) },
+  cloyster:   { name:'Cloyster',   type:'Water', gen1:'Water/Ice', tier:3, role:'tank', hp:44, atk:36, spd:52, token:true,
+                move:M.wall('Spike Cannon', 1.0, 1.8) },
+
+  rhyhorn:    { name:'Rhyhorn',    type:'Fighting', gen1:'Ground/Rock', tier:4, role:'tank', hp:32, atk:27, spd:20,
+                evo:{into:'rhydon', by:'level'},     move:M.wall('Horn Attack', 1.0, 1.7) },
+  rhydon:     { name:'Rhydon',     type:'Fighting', gen1:'Ground/Rock', tier:4, role:'tank', hp:54, atk:48, spd:30, token:true,
+                move:M.wall('Horn Drill', 1.2, 2.0) },
+
+  chansey:    { name:'Chansey',    type:'Colorless', gen1:'Normal', tier:5, role:'tank', hp:64, atk:12, spd:40,   // v35: a Tank that supports — huge HP, heals and shields
+                move:M.mend('Softboiled', 0.6, 0.25) },
+
+  /* ============ TIER 6 ============ */
+  snorlax:    { name:'Snorlax',    type:'Colorless', gen1:'Normal', tier:6, role:'tank', hp:62, atk:33, spd:20,
+                move:M.wall('Body Slam', 1.2, 1.7) },
+  /* ============ LEGENDARIES (2.1.0) ============
+     Encounter only. A legendary has NO tier and NEVER levels up — no copies,
+     no Rare Candy, no evolution. It pays for that up front with a higher base
+     stat total than any regular pokémon, and grows TUNING.legend.growth times
+     as fast from every EXP source (battles, Exp. Share, the trainer's bank). */
+  zapdos:     { name:'Zapdos',     type:'Lightning', gen1:'Electric/Flying', role:'cannon', hp:62, atk:75, spd:106, legendary:true,
+                move:M.all('Thunder', 0.55) },
+  mewtwo:     { name:'Mewtwo',     type:'Psychic', gen1:'Psychic', role:'cannon', hp:66, atk:86, spd:112, legendary:true,
+                move:M.big('Psystrike', 1.6) },
+  articuno:   { name:'Articuno',   type:'Water', gen1:'Ice/Flying', role:'tank', hp:102, atk:62, spd:88, legendary:true,
+                move:M.wall('Icicle Crash', 1.2, 1.8) },
+  moltres:    { name:'Moltres',    type:'Fire', gen1:'Fire/Flying', role:'bruiser', hp:80, atk:86, spd:94, legendary:true,
+                move:M.hit('Air Slash', 1.5) },
+
+  /* ============ 1.3.0 — Eevee and three of its evolutions (Sean) ============
+     The first BRANCHING line: the stone you use decides what it becomes, and
+     each evolution plays a different role. Eevee itself is a Support. */
+  eevee:      { name:'Eevee',      type:'Colorless', gen1:'Normal', tier:3, role:'support', hp:22, atk:18, spd:40,
+                evo:{ by:'stone', branches:{ waterstone:'vaporeon', thunderstone:'jolteon', firestone:'flareon' } },
+                move:M.rally('Helping Hand', 0.8, 0.05) },
+  vaporeon:   { name:'Vaporeon',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:56, atk:33, spd:46, token:true,
+                move:M.wall('Waterfall', 1.0, 1.7) },
+  jolteon:    { name:'Jolteon',    type:'Lightning', gen1:'Electric', tier:3, role:'cannon', hp:24, atk:38, spd:72, token:true,
+                move:M.multi('Pin Missile', 0.6, 3) },
+  flareon:    { name:'Flareon',    type:'Fire', gen1:'Fire', tier:3, role:'bruiser', hp:42, atk:48, spd:60, token:true,
+                move:M.ramp('Rage', 1.5, 12) },
+
+  /* ============ 2.6.0 — two more Grass lines (Sean) ============
+     Grass had four lines, nothing at tier 3, and no Bruiser once Bulbasaur became
+     a Tank. Paras is the Grass Bruiser; Exeggcute is a slow Cannon that evolves
+     with the new Leaf Stone and sits happily behind Bulbasaur or Parasect. */
+  paras:      { name:'Paras',      type:'Grass', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.b[0], atk:PARAS.b[1], spd:PARAS.b[2],
+                evo:{into:'parasect', by:'level'},    move:M.hit('Scratch', 1.3) },
+  parasect:   { name:'Parasect',   type:'Grass', gen1:'Bug/Grass', tier:2, role:'bruiser', hp:PARAS.e[0], atk:PARAS.e[1], spd:PARAS.e[2], token:true,
+                move:M.hit('Slash', 1.9) },
+  exeggcute:  { name:'Exeggcute',  type:'Grass', gen1:'Grass/Psychic', tier:3, role:'cannon', hp:EGG.b[0], atk:EGG.b[1], spd:EGG.b[2],
+                evo:{into:'exeggutor', by:'stone', stone:'leafstone'}, move:M.multi('Barrage', 0.6, 3) },
+  exeggutor:  { name:'Exeggutor',  type:'Grass', gen1:'Grass/Psychic', tier:3, role:'cannon', hp:EGG.e[0], atk:EGG.e[1], spd:EGG.e[2], token:true,
+                move:M.charge('Solar Beam', 2.9, 'Egg Bomb', 1.1) },
+
+  /* 2.7.0 — the Bellsprout line (Sean): a poisoning Grass Cannon. Weepinbell
+     evolves by level, Victreebel takes a Leaf Stone (like the games). */
+  bellsprout: { name:'Bellsprout', type:'Grass', gen1:'Grass/Poison', tier:3, role:'cannon', hp:BELL.b[0], atk:BELL.b[1], spd:BELL.b[2],
+                evo:{into:'weepinbell', by:'level'}, move:M.hit('Vine Whip', 1.3) },
+  weepinbell: { name:'Weepinbell', type:'Grass', gen1:'Grass/Poison', tier:3, role:'cannon', hp:BELL.m[0], atk:BELL.m[1], spd:BELL.m[2], token:true,
+                evo:{into:'victreebel', by:'stone', stone:'leafstone'}, move:M.hit('Razor Leaf', 1.5) },
+  victreebel: { name:'Victreebel', type:'Grass', gen1:'Grass/Poison', tier:3, role:'cannon', hp:BELL.e[0], atk:BELL.e[1], spd:BELL.e[2], token:true,
+                move:M.hit('Razor Leaf', 1.85) },
+
+  /* 2.8.0 — Tangela (Sean): the Grass Tank at Tier 3, a single stage like Onix. */
+  tangela:    { name:'Tangela',    type:'Grass', gen1:'Grass', tier:3, role:'tank', hp:TANGELA[0], atk:TANGELA[1], spd:TANGELA[2],
+                move:M.wall('Bind', 1.1, 1.8) },
+};
+
+const BUYABLE = Object.keys(SPECIES).filter(k => !SPECIES[k].token && !SPECIES[k].legendary);
+/** 2.1.0: a legendary has no tier and never levels. */
+const isLegend = u => !!(u && SPECIES[typeof u === 'string' ? u : u.id] && SPECIES[typeof u === 'string' ? u : u.id].legendary);
+/* Second moves (v32), kept apart from the species table so the main moves stay
+   readable. Each fires instead of the main move when its trigger is met. */
+const MOVE2 = {
+  // ---- tier 1
+  caterpie:   on('every', M.random('Bug Bite', 0.9), { n:3 }),
+  metapod:    on('low',   M.shield('Iron Defense', 0.3, 'self')),
+  butterfree: on('every', M.afflict('Sleep Powder', 0, 'slp', 1, 'random'), { n:3 }),
+  bulbasaur:  on('every', M.afflict('Poison Powder', 0.3, 'psn', 1, 'front'), { n:3 }),
+  ivysaur:    on('every', M.afflict('Poison Powder', 0.4, 'psn', 1, 'front'), { n:3 }),
+  venusaur:   on('every', M.afflict('Poison Powder', 0.5, 'psn', 1, 'front'), { n:3 }),
+  charmander: on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.7, 'front'), { n:3 }),
+  charmeleon: on('every', M.afflict('Fire Spin', 0.7, 'brn', 0.8, 'front'), { n:3 }),
+  charizard:  on('every', M.afflict('Fire Spin', 0.8, 'brn', 1, 'front'), { n:3 }),
+  squirtle:   on('every', M.slow('Bubble', 0.9, 6), { n:3 }),
+  wartortle:  on('every', M.slow('Bubble', 1.0, 8), { n:3 }),
+  blastoise:  on('every', M.slow('Bubble', 1.1, 10), { n:3 }),
+  pidgey:     on('open',  M.hit('Quick Attack', 0.7), { priority:true }),
+  pidgeotto:  on('open',  M.hit('Quick Attack', 0.8), { priority:true }),
+  pidgeot:    on('open',  M.hit('Quick Attack', 0.9), { priority:true }),
+  rattata:    on('every', M.weakest('Pursuit', 1.0), { n:3 }),
+  raticate:   on('every', M.weakest('Pursuit', 1.3), { n:3 }),
+  jigglypuff: on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
+  wigglytuff: on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
+  // ---- tier 2
+  geodude:    on('low',   M.shield('Defense Curl', 0.25, 'self')),
+  graveler:   on('low',   M.shield('Defense Curl', 0.3, 'self')),
+  golem:      on('low',   M.shield('Defense Curl', 0.35, 'self')),
+  machop:     on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  machoke:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
+  machamp:    on('open',  M.focus('Focus Energy', 0.5), { free:true }),
+  poliwag:    on('every', M.afflict('Hypnosis', 0, 'slp', 0.6, 'front'), { n:3 }),
+  poliwhirl:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.7, 'front'), { n:3 }),
+  poliwrath:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
+  magikarp:   on('every', M.hit('Tackle', 0.7), { n:3 }),
+  gyarados:   on('open',  M.trueHit('Dragon Rage', 1.1)),
+  pikachu:    on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  raichu:     on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  vulpix:     on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
+  ninetales:  on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
+  oddish:     on('every', M.afflict('Poison Sting', 0.3, 'psn', 1, 'random'), { n:3 }),
+  gloom:      on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
+  vileplume:  on('allyLow', M.cleanse('Aromatherapy', 0.15)),
+  voltorb:    on('open',  M.afflict('Spark', 0.5, 'par', 0.3, 'front'), { priority:true }),
+  electrode:  on('open',  M.afflict('Spark', 0.6, 'par', 0.3, 'front'), { priority:true }),
+  // ---- tier 3
+  abra:       on('low',   M.teleport('Teleport')),
+  kadabra:    on('low',   M.teleport('Teleport')),
+  alakazam:   on('every', M.afflict('Psybeam', 1.3, 'cnf', 0.3, 'random'), { n:3 }),   // v33: Cannons don't heal
+  gastly:     on('every', M.afflict('Dark Void', 0, 'slp', 0.6, 'random'), { n:3 }),
+  haunter:    on('every', M.afflict('Dark Void', 0, 'slp', 0.7, 'random'), { n:3 }),
+  gengar:     on('every', M.afflict('Dark Void', 0, 'slp', 0.8, 'random'), { n:3 }),
+  magnemite:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  magneton:   on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  growlithe:  on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.5, 'front'), { n:3 }),
+  arcanine:   on('open',  M.hit('Extreme Speed', 1.2), { priority:true }),
+  staryu:     on('every', M.hit('Water Gun', 1.3), { n:3 }),
+  starmie:    on('every', M.back('Water Pulse', 1.4), { n:3 }),
+  onix:       on('low',   M.shield('Iron Defense', 0.35, 'self')),
+  clefairy:   on('allyLow', M.shield('Light Screen', 0.1, 'team')),
+  clefable:   on('allyLow', M.shield('Light Screen', 0.14, 'team')),
+  shellder:   on('every', M.afflict('Supersonic', 0, 'cnf', 0.8, 'front'), { n:3 }),
+  cloyster:   on('every', M.afflict('Supersonic', 0, 'cnf', 1, 'front'), { n:3 }),
+  // ---- tier 4
+  seel:       on('low',   M.recover('Rest', 0.6, true)),
+  dewgong:    on('low',   M.recover('Rest', 0.7, true)),
+  drowzee:    on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
+  hypno:      on('every', M.afflict('Hypnosis', 0, 'slp', 1, 'front'), { n:3 }),
+  dratini:    on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  dragonair:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  dragonite:  on('every', M.afflict('Thunder Wave', 0, 'par', 1, 'fastest'), { n:3 }),
+  scyther:    on('open',  M.hit('Quick Attack', 1.0), { priority:true }),
+  rhyhorn:    on('every', M.afflict('Stomp', 0.8, 'fln', 0.3, 'front'), { n:3 }),
+  rhydon:     on('every', M.afflict('Stomp', 1.0, 'fln', 0.3, 'front'), { n:3 }),
+  // ---- tier 5-6
+  hitmonlee:  on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  lapras:     on('every', M.afflict('Sing', 0, 'slp', 1, 'front'), { n:3 }),
+  electabuzz: on('open',  M.hit('Quick Attack', 0.7), { priority:true }),
+  tauros:     on('every', M.afflict('Stomp', 1.0, 'fln', 0.3, 'front'), { n:3 }),
+  chansey:    on('allyLow', M.shield('Light Screen', 0.12, 'team')),
+  snorlax:    on('low',   M.recover('Rest', 0.6, true)),
+  zapdos:     on('every', M.afflict('Zap Cannon', 2.0, 'par', 0.7, 'biggest'), { n:4 }),   // 2.2.0 (Sean)
+  articuno:   on('every', M.all('Blizzard', 0.45), { n:4 }),
+  moltres:    on('every', M.afflict('Sacred Fire', 1.6, 'brn', 1, 'front'), { n:3 }),
+  mewtwo:     on('every', M.trueHit('Psyshock', 1.5), { n:3 }),
+  // 1.3.0 — the Eevee line
+  eevee:      on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
+  vaporeon:   on('low',   M.shield('Acid Armor', 0.35, 'self')),
+  jolteon:    on('every', M.all('Thunderbolt', JOLT_TB), { n:JOLT_N }),
+  flareon:    on('every', M.afflict('Fire Spin', 1.4, 'brn', 1, 'front'), { n:3 }),
+  // 2.6.0 — Paras and Exeggcute
+  paras:      on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
+  parasect:   on('every', M.afflict('Spore', 0, 'slp', 1, 'front'), { n:2 }),
+  exeggcute:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.6, 'front'), { n:3 }),
+  exeggutor:  on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
+  // 2.7.0 — Bellsprout line
+  bellsprout: on('every', M.afflict('Poison Powder', 0.3, 'psn', 1, 'front'), { n:3 }),
+  weepinbell: on('every', M.afflict('Poison Powder', 0.4, 'psn', 1, 'front'), { n:3 }),
+  victreebel: on('every', M.afflict('Poison Powder', 0.5, 'psn', 1, 'front'), { n:3 }),
+  // 2.8.0 — Tangela
+  tangela:    on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
+};
+Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
+
+/** Every evolution a species can take next: [] · [one] · several for a
+    branching line (1.3.0, Eevee), each { into, by, stone }. */
+function evoNext(id){
+  const e = SPECIES[id] && SPECIES[id].evo;
+  if(!e) return [];
+  return e.branches ? Object.keys(e.branches).map(stone => ({ into: e.branches[stone], by:'stone', stone })) : [e];
+}
+/** What a species evolved from, or null. */
+const evoParent = id => Object.keys(SPECIES).find(k => evoNext(k).some(n => n.into === id)) || null;
+
+/** The evolution line a species sits on, base form first. A branching line
+    stays linear here — Eevee alone is ['eevee'], Jolteon is ['eevee','jolteon']
+    — so "the line" always means one path; evoFamily() has every branch. */
+function evoLine(id){
+  let base = id, guard = 0, prev = evoParent(base);
+  while(prev && guard++ < 8){ base = prev; prev = evoParent(base); }
+  const line = [base];
+  let cur = base; guard = 0;
+  while(guard++ < 8){
+    const nx = evoNext(cur);
+    if(nx.length === 1){ cur = nx[0].into; line.push(cur); continue; }
+    if(nx.length > 1){ const on = nx.find(n => evoLine0(n.into, id)); if(on){ cur = on.into; line.push(cur); continue; } }
+    break;
+  }
+  return line;
+}
+/* does the path from `from` onward pass through `id`? (for picking the branch) */
+function evoLine0(from, id){
+  let cur = from, guard = 0;
+  while(cur && guard++ < 8){ if(cur === id) return true; const nx = evoNext(cur); cur = nx.length === 1 ? nx[0].into : null; }
+  return false;
+}
+/** The whole family, base first, every branch included. */
+function evoFamily(id){
+  const base = evoLine(id)[0], out = [base];
+  for(let i = 0; i < out.length; i++) for(const n of evoNext(out[i])) if(!out.includes(n.into)) out.push(n.into);
+  return out;
+}
+
+/* ===================================================================
+   ITEMS — Gen 1. Two shelves in the PokéMart:
+
+   ITEMS        rolled each turn, permanent effects, sell out when used.
+   BATTLE_ITEMS two fixed slots that are ALWAYS stocked and never sell
+                out, whose effect lasts only for the coming battle.
+
+   `eligible(u)` gates the tap target and also keeps a stone nobody can
+   use out of the shop entirely.
+   =================================================================== */
+const ITEMS = {
+  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', text:'+9 Attack, permanently.',
+                  eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{atk:9}) },
+  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', text:'+8 HP, permanently.',
+                  eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:8}) },
+  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
+                  eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{spd:10}) },
+  candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
+                  text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
+                  eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
+                  apply:(u,G)=>G.addExp(u,1) },
+  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rarity:'rare',
+                  text:'Everyone in your party gets EXP as if they had just won a fight. (Not the PC, and not pokémon you buy later.)',
+                  apply:(u,G)=>G.shareExp() },
+  thunderstone: { name:'Thunder Stone', icon:'⚡', tier:3, cost:4, rarity:'common', text:'Evolves Pikachu, or Eevee into Jolteon.',
+                  eligible:u => stonesFor(u.id).includes('thunderstone'), apply:(u,G)=>G.evolve(u, 'thunderstone') },
+  firestone:    { name:'Fire Stone', icon:'🔥', tier:3, cost:4, rarity:'common', text:'Evolves Vulpix or Growlithe, or Eevee into Flareon.',
+                  eligible:u => stonesFor(u.id).includes('firestone'), apply:(u,G)=>G.evolve(u, 'firestone') },
+  moonstone:    { name:'Moon Stone', icon:'🌙', tier:2, cost:4, rarity:'common', text:'Evolves Jigglypuff or Clefairy.',
+                  eligible:u => stonesFor(u.id).includes('moonstone'), apply:(u,G)=>G.evolve(u, 'moonstone') },
+  waterstone:   { name:'Water Stone', icon:'💧', tier:3, cost:4, rarity:'common', text:'Evolves Staryu or Shellder, or Eevee into Vaporeon.',
+                  eligible:u => stonesFor(u.id).includes('waterstone'), apply:(u,G)=>G.evolve(u, 'waterstone') },
+  leafstone:    { name:'Leaf Stone', icon:'🍃', tier:3, cost:4, rarity:'common', text:'Evolves Exeggcute or Weepinbell.',
+                  eligible:u => stonesFor(u.id).includes('leafstone'), apply:(u,G)=>G.evolve(u, 'leafstone') },
+};
+
+/** How many of a vitamin this pokémon has had. */
+const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
+
+/** The stone a line needs (the first one, for a branching line). */
+const stoneFor = id => { const s = stonesFor(id); return s.length ? s[0] : null; };
+/** Every stone that evolves this species (1.3.0: Eevee takes three). */
+const stonesFor = id => evoNext(id).filter(n => n.by === 'stone').map(n => n.stone);
+
+/* The two always-stocked shelves: X Attack and X Speed. One use boosts EVERY
+   pokémon in your party by a share of its own stat for the next battle, and
+   each can be used at most `xItems.perBattle` times per battle.
+
+   History, because every part of this is a fix. X items used to add a flat
+   amount to ONE pokémon that grew with the turn (+9 +2.7/turn Attack) and
+   stacked without limit: by turn 24 one X Attack was +73 Attack — a 70% boost
+   for 2₽ — and a dozen on Zapdos, whose Thunder hits every enemy, one-shot
+   whole teams (measured: an 82% gym fight became 95%). Capping it at once per
+   pokémon stopped the one-shot but not the purchase: one of each on all six
+   still took that gym to 98%, because close fights turn on small margins and
+   the cap only moved the power from one pokémon to six. So now: party-wide
+   (nothing to stack on a carry), a SMALL share per use (it lands six times),
+   and a hard cap on uses (the total is bounded, not just the spread). A
+   percentage can't outgrow the pokémon it boosts, which is why held items
+   made the same change. Add a third entry here and the UI picks it up. */
+const xBoost = (u, def) => Math.max(1, Math.round((def.stat === 'atk' ? u.atk : u.spd) * TUNING.xItems.pct));
+/** How many times this X item has been used for the coming battle. */
+const xUses = (G, def) => (G && G.xUses && G.xUses[def.id]) || 0;
+const pctText = () => Math.round(TUNING.xItems.pct * 100);
+const BATTLE_ITEMS = [
+  { id:'xattack', name:'X Attack', icon:'⚔️', stat:'atk', get cost(){ return TUNING.xItems.cost; },
+    amount: u => xBoost(u, BATTLE_ITEMS[0]),
+    text: () => `+${pctText()}% Attack for your whole party, next battle only. Up to ${TUNING.xItems.perBattle} per battle.`,
+    apply: G => { for(const u of G.team) u.tmpAtk = (u.tmpAtk || 0) + xBoost(u, BATTLE_ITEMS[0]); } },
+  { id:'xspeed', name:'X Speed', icon:'👟', stat:'spd', get cost(){ return TUNING.xItems.cost; },
+    amount: u => xBoost(u, BATTLE_ITEMS[1]),
+    text: () => `+${pctText()}% Speed for your whole party, next battle only. Up to ${TUNING.xItems.perBattle} per battle.`,
+    apply: G => { for(const u of G.team) u.tmpSpd = (u.tmpSpd || 0) + xBoost(u, BATTLE_ITEMS[1]); } },
+];
+
+/* ===================================================================
+   HELD ITEMS
+   A pokémon holds at most one, and keeps it until you move it. Unequipped
+   items live in the Bag (TUNING.bagSlots). Three flavours:
+     stat     — a flat bonus while held; `when` gates it (Eviolite)
+     trigger  — fires during the battle; `once` spends the item's one use
+     economy  — pays off between rounds, handled in incomeFor / grantBattleExp
+   Nothing here inflicts a status effect: every effect is a number.
+   =================================================================== */
+/* Stat held items are PERCENTAGES, not flat numbers. Medicine is flat and
+   stacks — buy Protein every turn and it compounds — so a flat held item is
+   strictly worse than the consumable it competes with on the shelf, and by
+   turn 20 it is noise. A percentage keeps one item slot worth having all run,
+   and it means a held item is a multiplier on a pokémon you have invested in
+   rather than a substitute for investing. */
+const HELD_ITEMS = {
+  band:   { name:'Muscle Band',  icon:'🎽', tier:2, cost:4, kind:'stat', rarity:'common',
+            text:'+25% Attack while held.', pct:{ atk:0.25 } },
+  claw:   { name:'Quick Claw',   icon:'🪝', tier:2, cost:4, kind:'stat', rarity:'common',
+            text:'+20% Speed while held.', pct:{ spd:0.20 } },
+  evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat', rarity:'uncommon',
+            text:'+25% HP, but only while it can still evolve.',
+            pct:{ hp:0.25 }, when:u => !!(SPECIES[u.id] && SPECIES[u.id].evo),
+            offText:'No effect — this one has nowhere left to evolve.' },
+  coat:   { name:'Metal Coat',   icon:'🛡️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
+            text:'Takes 15% less damage from every hit.', cutPct:0.15 },
+  char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
+            text:'Its hits are never resisted: a “not very effective” hit deals full damage instead.', unresist:true },
+  lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Heals 12% of its max HP on a steady beat, all fight long.', endRoundPct:0.12 },
+  sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
+            text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
+  egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
+            text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
+            when:u => (u.eggTicks || 0) < TUNING.eggCap,
+            offText:`Fully trained — this pokémon has had all ${TUNING.eggCap} bonus rounds. Pass the egg on.` },
+  coin:   { name:'Amulet Coin',  icon:'🪙', tier:2, cost:5, kind:'economy', rarity:'uncommon',
+            text:'+2₽ at the start of each turn.', income:2 },
+  /* v53 — two items for the two ends of a formation. `boss:'none'` keeps them
+     off gym leaders, whose difficulty was measured with the older list. */
+  bell:   { name:'Shell Bell',   icon:'🐚', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
+            text:'35% of the damage it deals heals your most-hurt pokémon (itself included).', bell:0.35 },
+  helmet: { name:'Rocky Helmet', icon:'🪖', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
+            text:'Anything that hits it takes 10% of its own max HP.', helmet:0.10 },
+  /* v51 — the trade-off items (Very rare). Each is a big number with a real
+     cost attached, so where you put it is a decision. Two are Sean's (Iron
+     Ball, Heart Scale). `boss:'elite'`: gym leaders never hold them, but each
+     Elite Four member and the Champion carries one (v52, Sean) — see
+     generateAiTeam. */
+  /* v52 (Sean): like the real item, it locks the holder into one move — the
+     second move never fires — instead of costing Speed. */
+  choice: { name:'Choice Band',  icon:'🎀', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
+            text:'+30% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.30, hp:-0.05 }, lockMain:true },
+  orb:    { name:'Life Orb',     icon:'🔮', tier:4, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
+            text:'Its attacks deal 50% more damage, but each attack that lands costs it 6% of its max HP.',
+            dmgBoost:0.50, orbCost:0.06 },
+  iron:   { name:'Iron Ball',    icon:'⚫', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
+            text:'Takes 35% less damage from every hit, but nothing can heal it for the whole battle — not even its own moves. (Resting in the PC still works.)',
+            cutPct:0.35, noHeal:true },
+  scale:  { name:'Heart Scale',  icon:'💗', tier:3, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
+            text:'Every heal it gives is doubled (its healing moves, and a Support’s Aftercare), but −15% Attack.', healBoost:1.0, pct:{ atk:-0.15 } },
+};
+
+const heldOf = u => (u && u.held && HELD_ITEMS[u.held]) || null;
+/** Is a gated stat item (Eviolite) actually doing anything on this pokémon? */
+const heldActive = u => { const h = heldOf(u); return !!h && (!h.when || h.when(u)); };
+/** The stat bonus a held item is currently granting, in whole points.
+    `stat` is flat, `pct` is a share of the pokémon's own number. */
+function heldStats(u){
+  const out = { hp:0, atk:0, spd:0 };
+  const h = heldOf(u);
+  if(!h || (h.when && !h.when(u))) return out;
+  if(h.stat){ out.hp += h.stat.hp||0; out.atk += h.stat.atk||0; out.spd += h.stat.spd||0; }
+  if(h.pct){
+    const base = { hp:u.hp, atk:u.atk + (u.tmpAtk||0), spd:u.spd + (u.tmpSpd||0) };
+    for(const k of ['hp','atk','spd'])
+      if(h.pct[k]) out[k] += h.pct[k] > 0 ? Math.max(1, Math.round(base[k] * h.pct[k]))
+                                          : Math.min(-1, Math.round(base[k] * h.pct[k]));   // Choice Band's cost (v51)
+  }
+  return out;
+}
+/* Effective stats: base + EXP/levels (already baked into u.*) + X items + held.
+   Held bonuses are NOT baked in, so taking the item off simply removes them. */
+const effHp  = u => Math.max(1, u.hp + heldStats(u).hp);
+const effAtk = u => Math.max(0, u.atk + (u.tmpAtk || 0) + heldStats(u).atk);
+const effSpd = u => Math.max(1, u.spd + (u.tmpSpd || 0) + heldStats(u).spd);
+
+/* How long one pokémon waits between actions. The battle's clock and the
+   shop's preview both read this: if each computed the gap itself they would
+   drift apart on the next tuning change and the preview would quietly start
+   lying about the fight. Battle units already carry effSpd baked into .spd,
+   so the primitive takes a NUMBER and each caller supplies the speed it has. */
+const intervalFor = spd => TUNING.atbQuantum / Math.max(1, spd);
+const actionInterval = u => intervalFor(effSpd(u));
+
+/* The order a group of pokémon would act in, walked forward on that clock.
+   Pure — it never touches the units it is given. */
+function previewOrder(units, n = 8){
+  const q = units.filter(Boolean).map((u, i) => ({ u, i, at: actionInterval(u) }));
+  const out = [];
+  while(out.length < n && q.length){
+    q.sort((a, b) => a.at - b.at || effSpd(b.u) - effSpd(a.u) || a.i - b.i);
+    out.push(q[0].u);
+    q[0].at += actionInterval(q[0].u);
+  }
+  return out;
+}
+
+/* A pokémon's rate as a multiple of the party's — the number that answers
+   "is 61 speed fast?", which the raw stat never could. Null with no party to
+   compare against, because 1.00x against yourself alone says nothing. */
+function paceVs(u, team){
+  const live = (team || []).filter(Boolean);
+  if(!live.length) return null;
+  const avg = live.reduce((n, x) => n + effSpd(x), 0) / live.length;
+  if(!(avg > 0)) return null;
+  return effSpd(u) / avg;
+}
+
+/* Where it would slot in: 0 = fastest on the team. */
+function paceRank(u, team){
+  const live = (team || []).filter(Boolean).filter(x => x !== u);
+  return live.filter(x => effSpd(x) > effSpd(u)).length;
+}
+/** Everything the player owns, party and PC alike — both can hold items. */
+const ownedUnits = G => [...(G.team || []), ...(G.pc || [])];
+
+/* ===================================================================
+   RNG — seedable so battles can be replayed / verified server-side
+   =================================================================== */
+function makeRng(seed){
+  let s = (seed >>> 0) || 1;
+  return function(){ s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+}
+
+/* ===================================================================
+   UNITS
+   =================================================================== */
+let _uid = 1;
+/** Restore the uid counter above everything a saved game already holds.
+    Without this a reload restarts the counter at 1 and freshly rolled
+    pokémon collide with the uids of the team and PC that were loaded from
+    storage — which silently swaps them anywhere uid is used as a key. */
+function syncUid(G){
+  let max = 0;
+  const see = u => { if(u && u.uid > max) max = u.uid; };
+  (G.team || []).forEach(see);
+  (G.pc || []).forEach(see);
+  (G.daycare || []).forEach(s => s && see(s.unit));
+  if(max >= _uid) _uid = max + 1;
+  return _uid;
+}
+const levelFromExp = exp =>
+  exp >= TUNING.expForLevel3 ? 3 : exp >= TUNING.expForLevel2 ? 2 : 1;
+
+function makeUnit(id, exp){
+  const sp = SPECIES[id];
+  return { uid:_uid++, id, nm:sp.name, hp:sp.hp, atk:sp.atk, spd:sp.spd, exp:exp||0,
+           tmpAtk:0, tmpSpd:0, rest:0 };
+}
+const unitLevel = u => isLegend(u) ? 1 : levelFromExp(u.exp);
+
+function expPipsToNext(u){
+  if(isLegend(u)) return { have:0, need:0 };   // 2.1.0: no levels, no pips
+  const l = levelFromExp(u.exp || 0);
+  if(l === 3) return { have:0, need:0 };
+  const base = l === 1 ? 0 : TUNING.expForLevel2;
+  const next = l === 1 ? TUNING.expForLevel2 : TUNING.expForLevel3;
+  return { have: (u.exp||0) - base, need: next - base };
+}
+const moveOf = u => SPECIES[u.id].move;
+const move2Of = u => SPECIES[u.id].move2 || null;
+
+/* ===================================================================
+   BATTLE SIMULATOR
+   Records one step per ACTION (all of that action's log lines plus a
+   snapshot of both teams), so the UI can replay it at any speed.
+   =================================================================== */
+function simulateBattle(playerTeam, enemyTeam, seed, opts){
+  const rnd = makeRng(seed || 12345);
+
+  const clone = (u, side, idx) => {
+    const sp = SPECIES[u.id];
+    const h = heldOf(u), hp = effHp(u);
+    // in the Elite Four a pokémon starts where its last fight left it
+    const f = side === 'p' && opts && opts.hpFrac ? opts.hpFrac[u.uid] : null;
+    const start = f == null ? hp : Math.max(1, Math.round(hp * f));
+    return { uid:u.uid, id:u.id, nm:sp.name, type:sp.type,
+      pos: Number.isInteger(u.pos) ? u.pos : idx,
+      hp:start, maxHp:hp,
+      atk:effAtk(u),                    // X Attack / X Speed apply here and
+      spd:effSpd(u),                    // are cleared when the turn ends
+      exp:u.exp||0, lvl:unitLevel(u), side, dead:false, turns:0, reduce:0, init:rnd(),
+      role:roleOf(u), atk0:effAtk(u), spd0:effSpd(u), rallies:0,
+      st:null, stHad:{}, shield:0, focus:0,
+      // the held item rides along: its flat reduction, and one use of a trigger
+      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct) || 0,
+      moveHp:0, moveHpCap: Math.max(1, Math.round(hp * TUNING.moveGuardCap.hpPct)) };
+  };
+
+  const byPos = (a, b) => a.pos - b.pos;
+  const B = { teams: { p: playerTeam.map((u, i)=>clone(u,'p',i)).sort(byPos), e: enemyTeam.map((u, i)=>clone(u,'e',i)).sort(byPos) },
+              steps: [], rnd };
+  const everyone = [...B.teams.p, ...B.teams.e];   // 2.0.0: kill() removes the fallen, the recap needs them all
+
+  const other = s => (s === 'p' ? 'e' : 'p');
+  B.enemies  = u => B.teams[other(u.side)].slice();
+  B.allies   = u => B.teams[u.side].filter(x => x !== u);
+  /* The frontmost living rank on the far side, and one of its members at
+     random — two bodies up front halve each attack's chance of landing on
+     either. Seeded, so the fight still replays identically. */
+  /* Ranks come from where each pokémon STANDS (pos / rankWidth). The front is
+     the frontmost rank anyone is still standing in: nobody shuffles forward when
+     a pokémon faints — the rank behind only becomes the front once the whole
+     rank ahead of it is down. (v34; before, the line closed up one by one.) */
+  const rankNo = u => Math.floor(u.pos / TUNING.rankWidth);
+  const frontNo = side => { const t = B.teams[side]; return t.length ? Math.min(...t.map(rankNo)) : 0; };
+  B.frontRank = u => { const s = other(u.side), f = frontNo(s); return B.teams[s].filter(x => rankNo(x) === f); };
+  /* Bodyguard: a Tank in the rank takes the hit. Two Tanks share it. */
+  B.front    = u => { const all = B.frontRank(u); if(!all.length) return null;
+    const tanks = all.filter(x => x.role === 'tank');
+    const r = tanks.length ? tanks : all;
+    return r[Math.floor(rnd() * r.length)]; };
+  /* Covering Fire: behind its own front rank, with a Tank or Bruiser in it */
+  B.covered  = u => { if(B.isFront(u)) return false; const f = frontNo(u.side);
+    return B.teams[u.side].some(x => !x.dead && rankNo(x) === f && (x.role === 'tank' || x.role === 'bruiser')); };
+  // an Iron Ball holder can't be healed, so healers look past it (v51)
+  B.mostHurt = u => B.teams[u.side].filter(x => !x.dead && x.hp < x.maxHp && !(heldOf(x) && heldOf(x).noHeal))
+    .sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.init - b.init)[0] || null;
+  B.ownFront = u => B.teams[u.side][0] || null;
+  B.isFront  = u => rankNo(u) === frontNo(u.side);
+  B.rankOf   = u => rankNo(u);
+  B.fastest  = u => B.enemies(u).slice().sort((a,b)=>b.spd-a.spd || b.init-a.init)[0] || null;
+  B.biggest  = u => B.enemies(u).slice().sort((a,b)=>b.hp-a.hp   || b.init-a.init)[0] || null;
+
+  let pendingFx = [], lines = [];
+  const cap = u => ({ uid:u.uid, id:u.id, nm:u.nm, hp:Math.max(0,u.hp), maxHp:u.maxHp,
+                      atk:Math.max(0,u.atk), spd:Math.max(0,u.spd), exp:u.exp, lvl:u.lvl,
+                      st: u.st ? u.st.id : null, shield: u.shield || 0, pos: u.pos });
+  B.log = text => { lines.push(text); };
+  B.fx  = (u, kind) => { pendingFx.push({ uid:u.uid, side:u.side, kind }); };   // v36: side, so the arena can't mix up equal uids
+  B.snap = actorUid => {
+    if(!lines.length && !pendingFx.length) return;
+    B.steps.push({ lines, actor: actorUid || null,
+      p: B.teams.p.map(cap), e: B.teams.e.map(cap), fx: pendingFx });
+    lines = []; pendingFx = [];
+  };
+
+  B.hit = (src, tgt, mult, opts) => {
+    opts = opts || {};
+    if(!tgt || tgt.dead) return 0;
+    let m = 1;
+    if(!opts.noType){
+      m = typeMult(src.type, tgt.type);
+      if(m < 1 && opts.ignoreResist) m = 1;
+      // Expert Belt (v50): the holder's hits are never resisted
+      if(m < 1 && heldOf(src) && heldOf(src).unresist) m = 1;
+      // Steady: a Bruiser takes super-effective hits at a reduced multiplier
+      if(m > 1 && tgt.role === 'bruiser') m = TUNING.roles.bruiser.superTaken;
+    }
+    // Covering Fire: a Cannon hits harder while a Tank or Bruiser holds its front rank
+    if(src.role === 'cannon' && B.covered(src)) mult *= 1 + TUNING.roles.cannon.backBoost;
+    // …and a Bruiser shrugs a share of every hit off
+    if(tgt.role === 'bruiser') mult *= TUNING.roles.bruiser.dmgTaken || 1;
+    const srcItem = heldOf(src);
+    // (the old Expert Belt, before v50: a bonus on hits that were already super effective)
+    const boost = (srcItem && srcItem.superBoost && m > 1) ? 1 + srcItem.superBoost : 1;
+    // Metal Coat (v50) / Iron Ball (v51): a share off every hit, so it still matters late in a run
+    if(tgt.itemCut) mult *= 1 - tgt.itemCut;
+    // Life Orb (v51): harder hits, paid for once per action in act()
+    if(srcItem && srcItem.dmgBoost && src !== tgt){ mult *= 1 + srcItem.dmgBoost; src.orbHit = true; }
+    // a burned pokémon hits softer (v33) — like the real games' halved Attack, but gentler
+    if(src.st && src.st.id === 'brn' && src !== tgt) mult *= 1 - TUNING.status.brn.atkCut;
+    // Focus Energy and friends: the next hit lands harder, then it's spent
+    if(src.focus && src !== tgt){ mult *= 1 + src.focus; src.focusSpent = true; }
+    let dealt = Math.max(1,
+      Math.round(src.atk * TUNING.atkPerDamage * mult * m * boost)
+        - (tgt.reduce || 0) - (tgt.itemReduce || 0));
+    const note = m > 1 ? " It's super effective!" : m < 1 ? " It's not very effective…" : '';
+    // a barrier soaks the hit first
+    if(tgt.shield > 0){
+      const soak = Math.min(tgt.shield, dealt);
+      tgt.shield -= soak; dealt -= soak;
+      B.log(`${tgt.nm}'s barrier soaked ${soak}${tgt.shield ? '' : ' and broke'}.`);
+    }
+    tgt.hp -= dealt;
+    // 2.0.0: the recap's numbers
+    if(src !== tgt){ src.rDealt = (src.rDealt || 0) + dealt; tgt.rTaken = (tgt.rTaken || 0) + dealt;
+      if(tgt.hp <= 0 && !tgt.dead) src.rKos = (src.rKos || 0) + 1; }
+    B.fx(tgt, m > 1 ? 'crit' : 'hit');
+    if(dealt || !note) B.log(`${tgt.nm} took ${dealt} damage.${note}`);
+    itemOnDamaged(tgt);
+    if(tgt.hp <= 0) kill(tgt);
+    // v53: Shell Bell turns a share of the damage it deals into healing for
+    // whichever teammate is most hurt (itself included) — a back-row hitter
+    // rarely needs the HP itself, so it rings for the front line
+    if(srcItem && srcItem.bell && src !== tgt && src.side !== tgt.side && dealt > 0 && !src.dead){
+      const a = B.mostHurt(src);
+      const n = a ? B.heal(a, Math.max(1, Math.round(dealt * srcItem.bell)), src) : 0;
+      if(n) B.log(`${src.nm}'s ${srcItem.name} rang: ${a === src ? 'itself' : a.nm} +${n} HP.`);
+    }
+    // …and a Rocky Helmet hurts whoever hits its holder
+    const tgtItem = heldOf(tgt);
+    if(tgtItem && tgtItem.helmet && src !== tgt && src.side !== tgt.side && !src.dead){
+      const n = Math.max(1, Math.round(src.maxHp * tgtItem.helmet));
+      src.hp -= n; B.fx(src, 'hit'); B.log(`${src.nm} was hurt by ${tgt.nm}'s ${tgtItem.name} (${n}).`);
+      if(src.hp <= 0) kill(src);
+    }
+    return dealt;
+  };
+
+  /* ---- v32 helpers ---- */
+  B.pickTarget = (u, how) => {
+    const foes = B.enemies(u).filter(x => !x.dead);
+    if(!foes.length) return null;
+    if(how === 'random')  return foes[Math.floor(rnd() * foes.length)];
+    if(how === 'fastest') return B.fastest(u);
+    if(how === 'back')    return foes[foes.length - 1];
+    if(how === 'biggest') return B.biggest(u);
+    if(how === 'weakest') return foes.slice().sort((a, b) => a.hp - b.hp || b.init - a.init)[0];
+    return B.front(u);
+  };
+  B.barrier = (t, n) => {
+    if(!t || t.dead) return;
+    if(n > (t.shield || 0)){ t.shield = n; B.fx(t,'buff'); B.log(`${t.nm} is protected by a barrier (${n}).`); }
+    else B.log(`${t.nm}'s barrier is already as strong.`);
+  };
+  /* Inflict a status. One at a time; each (but flinch) at most once a battle;
+     Fire can't burn, Lightning can't be paralysed, Poison types can't be poisoned. */
+  B.inflict = (t, id, chance) => {
+    const S = TUNING.status[id];
+    if(!t || t.dead || !S || t.st) return false;
+    if(!S.repeat && t.stHad[id]) return false;
+    const g1 = (SPECIES[t.id].gen1 || '').split('/');
+    if((id === 'brn' && t.type === 'Fire') || (id === 'par' && t.type === 'Lightning') || (id === 'psn' && g1.includes('Poison'))){
+      B.log(`${t.nm} is unaffected.`); return false; }
+    if(chance < 1 && rnd() >= chance) return false;
+    t.st = { id, left: S.rounds || S.actions }; t.stHad[id] = true;
+    B.fx(t,'hit');
+    B.log(`${t.nm} ${{ brn:`was burned! Its attacks are ${Math.round(S.atkCut*100)}% weaker.`, psn:'was poisoned!', par:'is paralysed! It will act less often.',
+      slp:'fell asleep!', cnf:'became confused!', fln:'flinched!' }[id]}`);
+    return true;
+  };
+
+  /* Every in-battle heal from a pokémon goes through here (v51: with its source).
+     Heart Scale makes the healer's heals bigger; Iron Ball refuses them. */
+  B.heal = (t, n, src) => { if(!t || t.dead) return 0;
+    const th = heldOf(t);
+    if(th && th.noHeal){ if(!t.ironSaid){ t.ironSaid = true; B.log(`${t.nm}'s ${th.name} stops it from being healed for the rest of this battle.`); } return 0; }
+    const sh = src && heldOf(src);
+    if(sh && sh.healBoost) n = Math.round(n * (1 + sh.healBoost));
+    const was = t.hp;
+    t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff');
+    if(src && t.hp > was) src.rHealed = (src.rHealed || 0) + (t.hp - was);   // 2.0.0: recap
+    return t.hp - was; };
+  B.boost = (t, d) => {
+    if(!t || t.dead) return;
+    // a drop can take at most TUNING.dropFloor off the stat it started the battle with
+    if(d.atk) t.atk = d.atk < 0 ? Math.max(Math.round(t.atk0 * TUNING.dropFloor), t.atk + d.atk) : t.atk + d.atk;
+    if(d.spd) t.spd = Math.max(1, t.spd + d.spd);
+    if(d.hp){ t.maxHp += d.hp; t.hp += d.hp; }
+    B.fx(t, (d.atk < 0 || d.spd < 0) ? 'hit' : 'buff');
+  };
+  /* HP / damage reduction granted BY A MOVE, clamped to this battle's
+     allowance. Item and EXP health is already baked into u.hp before the
+     fight, so it raises the allowance rather than being limited by it. */
+  B.fortify = (u, hp, reduce) => {
+    if(!u || u.dead) return;
+    const hpGain = Math.max(0, Math.min(hp, u.moveHpCap - u.moveHp));
+    if(hpGain){ u.moveHp += hpGain; u.maxHp += hpGain; u.hp += hpGain; }
+    const rCap = TUNING.moveGuardCap.reducePerLevel * u.lvl;
+    const rGain = Math.max(0, Math.min(reduce, rCap - u.reduce));
+    if(rGain) u.reduce += rGain;
+    if(hpGain || rGain){
+      B.fx(u, 'buff');
+      B.log(`${u.nm} braced${hpGain ? ` (+${hpGain} HP)` : ''}${rGain ? `, blocking ${u.reduce}` : ''}.`);
+    } else {
+      B.log(`${u.nm} can't harden any further.`);
+    }
+  };
+
+  B.slow = (t, n) => {
+    if(!t || t.dead) return;
+    const floor = Math.max(1, Math.round(t.spd0 * TUNING.dropFloor));
+    if(t.spd <= floor){ B.log(`${t.nm}'s Speed won't go any lower.`); return; }
+    t.spd = Math.max(floor, t.spd - n);
+    B.fx(t,'hit'); B.log(`${t.nm}'s Speed fell to ${t.spd}.`);
+  };
+  B.recoil = (u, n) => {
+    if(!u || u.dead) return;
+    u.hp -= n; B.fx(u,'hit'); B.log(`${u.nm} is hurt by recoil (${n}).`);
+    if(u.hp <= 0) kill(u);
+  };
+
+  /* A held item's one reaction to taking damage: Focus Band catches a fatal
+     hit, Sitrus Berry catches the drop below half. Each spends the item. */
+  function itemOnDamaged(u){
+    const h = heldOf(u);
+    if(!h || u.itemUsed || u.dead) return;
+    if(h.endure && u.hp <= 0){
+      u.hp = 1; u.itemUsed = true;
+      B.fx(u,'buff'); B.log(`${u.nm} hung on with its ${h.name}!`);
+      return;
+    }
+    if(h.berry && u.hp > 0 && u.hp <= u.maxHp / 2){
+      const heal = Math.max(1, Math.round(u.maxHp * h.berry));
+      u.hp = Math.min(u.maxHp, u.hp + heal);
+      u.itemUsed = true;
+      B.fx(u,'buff'); B.log(`${u.nm} ate its ${h.name} (+${heal} HP).`);
+    }
+  }
+  /* End-of-round upkeep: Leftovers and anything else that ticks. */
+  function itemUpkeep(){
+    let any = false;
+    // burns and poison hurt; round-counted statuses wear off
+    for(const u of [...B.teams.p, ...B.teams.e]){
+      if(u.dead || !u.st) continue;
+      const S = TUNING.status[u.st.id];
+      if(!S.rounds) continue;
+      if(S.dotPct){
+        const n = Math.max(1, Math.round(u.maxHp * S.dotPct));
+        u.hp -= n; B.fx(u,'hit'); B.log(`${u.nm} is hurt by its ${S.name.toLowerCase()} (${n}).`); any = true;
+        if(u.hp <= 0){ kill(u); continue; }
+      }
+      if(--u.st.left <= 0){ B.log(`${u.nm} is no longer ${{ brn:'burned', psn:'poisoned', par:'paralysed' }[u.st.id]}.`); u.st = null; any = true; }
+    }
+    // Aftercare: each Support tends its most-hurt teammate
+    for(const u of [...B.teams.p, ...B.teams.e]){
+      if(u.dead || u.role !== 'support') continue;
+      const a = B.mostHurt(u); if(!a) continue;
+      const n = B.heal(a, Math.max(1, Math.round(a.maxHp * TUNING.roles.support.careRound)), u);
+      if(n){ B.log(`${u.nm} tended to ${a === u ? 'itself' : a.nm} (+${n} HP).`); any = true; }
+    }
+    for(const u of [...B.teams.p, ...B.teams.e]){
+      const h = heldOf(u);
+      if(!h || !(h.endRound || h.endRoundPct) || u.dead || u.hp >= u.maxHp) continue;
+      const want = h.endRound || Math.max(1, Math.round(u.maxHp * h.endRoundPct));
+      const heal = Math.min(want, u.maxHp - u.hp);
+      u.hp += heal; B.fx(u,'buff');
+      B.log(`${u.nm} restored ${heal} HP with its ${h.name}.`);
+      any = true;
+    }
+    if(any) B.snap(null);
+  }
+
+  function kill(u){
+    if(u.dead) return;
+    u.dead = true;
+    const arr = B.teams[u.side];
+    const i = arr.indexOf(u);
+    if(i >= 0) arr.splice(i, 1);
+    B.fx(u,'faint');
+    B.log(`${u.nm} fainted!`);
+  }
+
+  /* Does this pokémon's second move fire on this action? */
+  function secondFires(u, m2){
+    if(!m2) return false;
+    if(m2.trig === 'open')  return u.turns === 1;
+    if(m2.trig === 'every') return u.turns % m2.n === 0;
+    if(m2.trig === 'low'){ if(u.m2used || u.hp > u.maxHp / 2) return false; u.m2used = true; return true; }
+    if(m2.trig === 'allyLow'){
+      if(u.turns - (u.m2last || -9) < 2) return false;
+      if(!B.teams[u.side].some(a => a !== u && !a.dead && a.hp < a.maxHp / 2)) return false;
+      u.m2last = u.turns; return true;
+    }
+    return false;
+  }
+  function act(u){
+    if(u.dead) return;
+    // status that costs the action
+    if(u.st && (u.st.id === 'slp' || u.st.id === 'fln')){
+      B.log(u.st.id === 'slp' ? `${u.nm} is fast asleep.` : `${u.nm} flinched and couldn't move!`);
+      if(--u.st.left <= 0){ if(u.st.id === 'slp') B.log(`${u.nm} woke up!`); u.st = null; }
+      B.fx(u, 'hit'); B.snap(u.uid); return;
+    }
+    if(u.st && u.st.id === 'cnf'){
+      const S = TUNING.status.cnf;
+      const left = --u.st.left; if(left <= 0) u.st = null;
+      if(rnd() < S.selfHit){
+        B.log(`${u.nm} is confused! It hurt itself in its confusion!`);
+        B.hit(u, u, pw(S.selfPower, u.lvl), { noType:true });
+        if(!u.st && !u.dead) B.log(`${u.nm} snapped out of confusion.`);
+        B.snap(u.uid); return;
+      }
+      if(!u.st) B.log(`${u.nm} snapped out of confusion.`);
+    }
+    u.turns++;
+    // Choice Band (v52): locked into the main move, so the second never fires
+    const m2 = heldOf(u) && heldOf(u).lockMain ? null : move2Of(u);
+    if(secondFires(u, m2)){
+      B.log(`${u.nm} used ${m2.name}!`);
+      m2.fn(u, B, u.lvl);
+      if(m2.free) actMain(u);        // a free move (Focus Energy) doesn't cost the action
+    } else {
+      actMain(u);
+    }
+    if(u.focusSpent){ u.focus = 0; u.focusSpent = false; }
+    // Life Orb: the cost of an action that hit something
+    if(u.orbHit){ u.orbHit = false; const h = heldOf(u);
+      if(h && h.orbCost && !u.dead){ const n = Math.max(1, Math.round(u.maxHp * h.orbCost));
+        u.hp -= n; B.fx(u, 'hit'); B.log(`${u.nm} lost ${n} HP to its ${h.name}.`); if(u.hp <= 0) kill(u); } }
+    B.fx(u, 'act');
+    B.snap(u.uid);
+  }
+  function actMain(u){
+    const mv = moveOf(u);
+    if(!mv.every || (u.turns % mv.every === 0)){
+      B.log(`${u.nm} used ${mv.name}!`);
+      mv.fn(u, B, u.lvl);
+    } else {
+      const basic = mv.basic || { name:'Tackle', mult:1 };
+      B.log(`${u.nm} used ${basic.name}!`);
+      const t = B.front(u);
+      if(t) B.hit(u, t, pw(basic.mult, u.lvl));
+    }
+  }
+
+  /* ---------------- the action meter ----------------
+     Rounds are gone as a unit of action. Every pokémon's next action lands
+     `Q / speed` later on a shared clock, so speed is simply the rate at which
+     you act: twice the speed is twice the actions, at every value, with no
+     threshold and no cap. A slow pokémon is not merely last any more — it
+     genuinely acts less often, which is what makes speed a real stat and a
+     real cost to skip.
+
+     A "round" survives only as a quantum of TIME — how long a pokémon of the
+     battle's average speed takes to act once. Item upkeep (Leftovers) ticks on
+     that clock rather than on a turn count, so it means the same thing it
+     always did however fast the field is. */
+  const Q = TUNING.atbQuantum;
+  const interval = u => intervalFor(u.spd);   // .spd is already effective here
+  const allUnits = () => [...B.teams.p, ...B.teams.e];
+
+  // a priority opener (Quick Attack…) goes before anybody's first action
+  const prio = u => { const m = move2Of(u); return !!(m && m.trig === 'open' && m.priority); };
+  for(const u of allUnits()) u.next = interval(u) * (prio(u) ? 0.05 : 1);
+  const startSpeeds = allUnits().map(u => Math.max(1, u.spd));
+  const refSpeed = startSpeeds.reduce((a, b) => a + b, 0) / Math.max(1, startSpeeds.length);
+  const roundTime = Q / refSpeed;
+
+  /* Who acts next, and after that — the battle screen shows this so a player
+     can see speed working instead of inferring it. Pure: it walks a copy. */
+  B.upcoming = (n) => {
+    const q = allUnits().filter(u => !u.dead).map(u => ({ u, at: u.next }));
+    const out = [];
+    while(out.length < n && q.length){
+      q.sort((a, b) => a.at - b.at || b.u.spd - a.u.spd || b.u.init - a.u.init);
+      const head = q[0];
+      out.push(head.u.uid);
+      head.at += interval(head.u);
+    }
+    return out;
+  };
+
+  B.log('Battle start!'); B.snap(null);
+  let rounds = 0, actions = 0, now = 0, nextUpkeep = roundTime;
+  while(B.teams.p.length && B.teams.e.length
+        && rounds < TUNING.maxBattleRounds && actions < TUNING.maxBattleActions){
+    const living = allUnits().filter(u => !u.dead);
+    if(!living.length) break;
+    // the earliest action on the clock; ties go to the faster pokémon
+    let turn = living[0];
+    for(const u of living)
+      if(u.next < turn.next
+         || (u.next === turn.next && (u.spd > turn.spd || (u.spd === turn.spd && u.init > turn.init))))
+        turn = u;
+
+    // upkeep happens on the clock, not between turns
+    if(nextUpkeep <= turn.next){
+      now = nextUpkeep; nextUpkeep += roundTime; rounds++;
+      itemUpkeep();
+      continue;
+    }
+
+    now = turn.next;
+    act(turn);
+    turn.next = now + interval(turn) * (turn.st && turn.st.id === 'par' ? TUNING.status.par.slow : 1);
+    actions++;
+    // tell the last step who is queued up behind this action
+    const last = B.steps[B.steps.length - 1];
+    if(last && last.actor === turn.uid) last.up = B.upcoming(6);
+  }
+
+  let result = 'draw';
+  if(B.teams.p.length && !B.teams.e.length) result = 'win';
+  else if(!B.teams.p.length && B.teams.e.length) result = 'lose';
+  B.log(result === 'win' ? 'You win!' : result === 'lose' ? 'You lost the battle.' : "It's a draw!");
+  B.snap(null);
+
+  const stats = everyone.map(u => ({ uid:u.uid, id:u.id, side:u.side, dealt:u.rDealt || 0, taken:u.rTaken || 0,
+    healed:u.rHealed || 0, kos:u.rKos || 0, fainted:!!u.dead }));
+  return { result, steps:B.steps, rounds, actions, stats };
+}
+
+/* ===================================================================
+   AI OPPONENT BUILDER
+   =================================================================== */
+/* Kept in TUNING so it can be swept: a change to how the PLAYER grows has to be
+   matched here or trainer battles silently become a different game. */
+const AI_DIFFICULTY = 0.95;  // stat growth per turn — lower = easier run (see TUNING.aiDifficulty)
+/* How fast the AI fills its party. This is the dial the longer run broke: at
+   1.2 the AI fielded six pokémon by turn 6, which was fair over an 11-turn run
+   and crushing over a 37-turn one, because the player's money buys a team at
+   the same rate it always did. Keep it roughly runLength / 11. */
+const AI_PARTY_PACE = 3.4;   // higher = easier run
+/* Ordinary trainers only, roughly easiest to toughest. No gym leader, Elite
+   Four member or Champion may appear here — the list used to end in "Elite
+   Four Agatha" and "Champion Lance", so a random turn-10 team was billed as the
+   final boss. test.js checks that no name here contains a boss's name. The list
+   is spread across the whole run, so the titles get tougher as you go. */
+const AI_NAMES = ['Youngster Joey','Bug Catcher Rick','Lass Mira','Camper Theo','Picnicker Tess',
+  'Hiker Dale','Sailor Dwayne','Fisherman Wade','Swimmer Luca','Gambler Rico',
+  'Super Nerd Kip','Juggler Quinn','Bird Keeper Ash','Beauty Selene','Black Belt Kenji',
+  'Psychic Iris','Scientist Morrow','Cooltrainer Nia','Veteran Kell','Ace Trainer Rowan'];
+const trainerName = turn =>
+  AI_NAMES[Math.max(0, Math.min(AI_NAMES.length - 1,
+    Math.floor((turn - 1) / Math.max(1, RUN_LENGTH() / AI_NAMES.length))))] || 'Trainer';
+
+/* One builder for every opponent in the game. A gym leader is this function
+   with a themed pool, a stat multiplier and a couple of held items — which is
+   why the signature is a spec and not a turn number. */
+function generateAiTeam(spec){
+  const { turn = 1, seed = 1, badges = 0 } = spec || {};
+  const boss = spec && spec.boss ? spec.boss : null;
+  const kind = (spec && spec.kind) || 'trainer';
+  const rnd = makeRng((seed || 1) * 7919 + turn * 104729 + (boss ? hashId(boss.id) : 0));
+
+  const maxTier = spec && spec.tier ? spec.tier : tierForTurn(turn);
+  /* A rematch fields the SAME pokémon. The picks below are seeded with the
+     turn, and a blackout moves the turn on, so without this a rematch re-rolled
+     its whole lineup — measured, the scouting report was wrong about the rematch
+     in 59 of 60 cases. A known lineup keeps who they are and still re-prices
+     them to the current turn: they train too, but they are the same team. */
+  const lineup = spec && spec.lineup && spec.lineup.length ? spec.lineup : null;
+  const size = lineup ? lineup.length : Math.max(1, Math.min(TUNING.maxTeam,
+    (spec && spec.size) || Math.floor(turn / AI_PARTY_PACE) + 1 + (rnd() < 0.35 ? 1 : 0)));
+
+  /* A trainer draws from the buyable base forms and evolves some of them.
+     A boss draws from its theme INCLUDING evolved forms, so its line-up looks
+     like a team someone built rather than a shop roll — but how far up the
+     lines it may reach is gated on badges, or Brock fields Golem. */
+  const maxDepth = spec && spec.depth !== undefined ? spec.depth
+    : badges < 2 ? 0 : badges < 5 ? 1 : 2;
+  // Legendaries are endgame property — a gym leader never fields one.
+  const openTier = kind === 'gym' || kind === 'trainer' ? 5 : 6;
+  const base = boss ? themePool(boss.theme) : BUYABLE;
+  const fits = k => SPECIES[k].tier <= Math.min(maxTier, openTier)
+                 && (!boss || evoDepth(k) <= maxDepth);
+  let pool = base.filter(fits);
+  /* Bodyguards. A pure mono-type leader is a coin flip on whether you happened
+     to draft its counter — Lt. Surge beat 21% of the bots that reached him and
+     every other gym beat 60–95%, because the roster is Water-heavy and
+     Lightning eats Water. Real gym leaders keep a couple of off-type bodies for
+     exactly this reason, so a share of the team comes from outside the theme. */
+  const offPool = boss && boss.theme
+    ? BUYABLE.filter(k => !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier))
+    : [];
+  const offSlots = boss && boss.theme && offPool.length
+    ? Math.max(1, Math.round(size * TUNING.bossOffTheme)) : 0;
+  // A themed pool is small, so give a boss room before it starts repeating.
+  if(pool.length < 3)
+    pool = base.filter(k => SPECIES[k].tier <= Math.min(openTier, maxTier + 2)
+                         && evoDepth(k) <= maxDepth);
+  if(!pool.length) pool = base.filter(k => evoDepth(k) <= maxDepth);
+  if(!pool.length) pool = base.slice();
+  if(!pool.length) pool = BUYABLE.slice();
+
+  const team = [];
+  const usedSrc = new Set();    // species drawn out of the pool
+  const usedFinal = new Set();  // …and what they turned into after levelling
+  for(let i = 0; i < size; i++){
+    /* A boss uses everything in its theme before doubling up — picking from
+       the high-tier slice first and only then falling back is what gave Erika
+       four Scythers. Unused species win, whatever their tier. */
+    // the last `offSlots` bodies are the bodyguards, drawn from outside the theme
+    const table = ((offSlots && i >= size - offSlots) ? offPool : pool)
+      .filter(k => !(spec && spec.ace2 && evoFamily(spec.ace2).includes(k)));   // 1.4.0: his one Eeveelution — no spare Eevee or second Eeveelution
+    const pick = () => {
+      const unused = boss ? table.filter(k => !usedSrc.has(k)) : table;
+      const from = unused.length ? unused : table;
+      const weighted = from.filter(k => SPECIES[k].tier >= Math.max(1, maxTier - 1));
+      const src = (rnd() < 0.7 && weighted.length) ? weighted : from;
+      return src[Math.floor(rnd() * src.length)];
+    };
+    let u = null, srcId = null;
+    if(!lineup && i === 0 && spec && spec.ace && SPECIES[spec.ace]){
+      u = makeUnit(spec.ace, 0); u.exp = TUNING.expForLevel3; srcId = spec.ace;
+      usedSrc.add(spec.ace); usedFinal.add(spec.ace);
+    } else if(!lineup && i === 1 && spec && spec.ace2 && SPECIES[spec.ace2] && !usedFinal.has(spec.ace2)){
+      // 1.4.0: the Champion's second fixed member (his Eeveelution)
+      u = makeUnit(spec.ace2, 0); u.exp = TUNING.expForLevel3; srcId = spec.ace2;
+      usedSrc.add(spec.ace2); usedFinal.add(spec.ace2);
+      const base = evoLine(spec.ace2)[0]; usedSrc.add(base); usedFinal.add(base);   // no second Eevee beside it
+    } else if(!lineup && i === 2 && spec && spec.ace3 && SPECIES[spec.ace3]){
+      // 2.2.0: the Champion's legendary — level 1 forever, like yours
+      u = makeUnit(spec.ace3, 0); srcId = spec.ace3; usedSrc.add(spec.ace3); usedFinal.add(spec.ace3);
+    } else if(lineup){
+      u = makeUnit(lineup[i].id, 0);
+      u.exp = lineup[i].exp || 0;
+    } else {
+      let exp = 0;
+      if(turn >= 5 && rnd() < 0.45) exp = TUNING.expForLevel2;
+      if(turn >= 9 && rnd() < 0.30) exp = TUNING.expForLevel3;
+      if(boss && rnd() < 0.5) exp = Math.max(exp, TUNING.expForLevel2);
+
+      /* Levelling evolves, so two different picks can land on the same pokémon —
+         a Bulbasaur and an Ivysaur both become Venusaur. Dedupe on what the
+         unit ENDS as, or Agatha fields three identical Venusaurs. */
+      for(let tries = 0; tries < 6; tries++){
+        const src = pick();
+        const cand = makeUnit(src, 0);
+        if(exp) aiLevelTo(cand, levelFromExp(exp));
+        u = cand; srcId = src;
+        if(!boss || !usedFinal.has(cand.id)) break;
+      }
+      usedSrc.add(srcId); usedFinal.add(u.id);
+    }
+    const lv = unitLevel(u);
+    // the AI grows along its pokémon's roles exactly like the player's do
+    growUnit(u, { hp:  Math.floor(turn * TUNING.aiDifficulty * 2)   + lv * TUNING.levelUpBonus.hp,
+                  atk: Math.floor(turn * TUNING.aiDifficulty * 3)   + lv * TUNING.levelUpBonus.atk,
+                  spd: Math.floor(turn * TUNING.aiDifficulty * 1.3) + lv * TUNING.levelUpBonus.spd });
+    team.push(u);
+  }
+
+  // Bosses hold items too — the same ones you can buy, so nothing is unfair.
+  const heldFrom = TUNING.bossHeldFrom[kind];
+  if(lineup){
+    team.forEach((u, i) => { u.held = lineup[i].held && HELD_ITEMS[lineup[i].held] ? lineup[i].held : null; });
+  } else if(boss && heldFrom !== undefined && badges >= heldFrom){
+    const ids = Object.keys(HELD_ITEMS).filter(k => !HELD_ITEMS[k].boss);
+    const howMany = Math.min(team.length, 1 + Math.floor((badges - heldFrom) / 3) + (kind === 'trainer' ? 0 : 1));
+    for(let i = 0; i < howMany; i++) team[i].held = ids[Math.floor(rnd() * ids.length)];
+    /* v52 (Sean): the Elite Four and the Champion each bring one Very rare
+       item, on the pokémon it suits — a Choice Band or Life Orb on their
+       hardest hitter, an Iron Ball on their sturdiest, a Heart Scale on a
+       Support. Its own seeded roll, so the rest of the team is unchanged. */
+    if(kind === 'elite' || kind === 'champion') bossSignatureItem(team, boss, seed);
+  }
+
+  /* Price the boss against the player curve. Building first and scaling second
+     is what keeps a themed team's shape — Brock still fields rocks, they are
+     just worth what a fourth-turn team can beat. */
+  const ratio = spec && spec.ratio;
+  if(boss && ratio){
+    const target = playerPowerAt(turn) * ratio;
+    const actual = teamPower(team);
+    if(actual > 0){
+      const [lo, hi] = TUNING.bossScaleClamp;
+      const k = Math.max(lo, Math.min(hi, target / actual));
+      for(const u of team){
+        u.hp  = Math.max(1, Math.round(u.hp  * k));
+        u.atk = Math.max(1, Math.round(u.atk * k));
+        u.spd = Math.max(1, Math.round(u.spd * k));
+      }
+    }
+  }
+
+  /* Line up by role — tanks in front, cannons at the back — and the sturdiest
+     first within a role, like a human would. */
+  team.sort((a,b) => ROLE_ORDER[roleOf(a)] - ROLE_ORDER[roleOf(b)] || effHp(b) - effHp(a));
+  const name = boss ? boss.name
+    : trainerName(turn);
+  return { name, team, boss: boss || null, kind };
+}
+
+/* ---------------- power score ----------------
+   A single number for "how strong is this team", used to make bosses
+   comparable. It used to need lopsided weights (atk ×4, spd ×0.35) because the
+   three stats were on wildly different scales and worth wildly different
+   amounts per point. Since the rescale a point of each is worth about the same
+   in a fight — measured at 1.25 / 1.25 / 1.12 percentage points of win rate —
+   so the weights are near 1:1:1 and a plain stat total finally means something
+   to a player as well as to the tuner. Re-derive with statvalue.js. */
+const unitPower = u => effHp(u) + effAtk(u) + TUNING.spdPower * effSpd(u);
+const teamPower = team => (team || []).reduce((n, u) => n + unitPower(u), 0);
+/** What a player's team is worth on this turn, measured not guessed. */
+const playerPowerAt = t =>
+  TUNING.powerCurve.base + TUNING.powerCurve.perTurn * Math.max(1, t);
+
+/** How many evolutions deep a species sits in its own line. */
+function evoDepth(id){
+  let d = 0, p = evoParent(id), guard = 0;
+  while(p && guard++ < 8){ d++; p = evoParent(p); }
+  return d;
+}
+
+/** A stable small number from a boss id, so each leader rolls differently. */
+function hashId(id){
+  let h = 0;
+  for(let i = 0; i < String(id).length; i++) h = (h * 31 + String(id).charCodeAt(i)) % 100003;
+  return h;
+}
+
+/** The opponent for whatever stage the game is on. */
+/** 2.0.0: Rich & Ruthless makes every opponent tougher. */
+function opponentFor(G){
+  const o = opponentFor0(G);
+  const k = (G.mods && G.mods.rich ? TUNING.mods.richFoes : 1) * (G.mods && G.mods.mono ? (TUNING.mods.monoFoes[G.mods.mono] || 1) : 1)
+          * (G.mods && G.mods.nopc ? TUNING.mods.nopcFoes : 1);   // 2.2.0
+  if(k !== 1 && o && o.team){
+    for(const u of o.team){ u.hp = Math.round(u.hp * k); u.atk = Math.round(u.atk * k); u.spd = Math.round(u.spd * k); }
+  }
+  return o;
+}
+function opponentFor0(G){
+  const st = stageOf(G);
+  const m = rivalMeeting(G);
+  if(m >= 0){
+    const opp = generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'rival', boss: RIVAL,
+      lineup: rivalLineup(G, m),
+      /* Priced against YOUR team, not the reference curve: a rival keeps pace
+         with you. Off the curve, a player who was behind met a rival built for
+         a player who wasn't and lost the late meetings ~90% of the time. */
+      ratio: (TUNING.rival.ratio[m] || 1) * Math.max(0.5, teamPower(fightersOf(G)) / playerPowerAt(G.turn)) });
+    opp.meeting = m;
+    return opp;
+  }
+  const boss = st.boss || null;
+  const kind = st.kind;
+  const seen = boss && G.scouted ? G.scouted[boss.id] : null;
+  return generateAiTeam({
+    // the Champion is your rival — if you've met, his starter leads, fully evolved
+    ace: kind === 'champion' && G.rival && G.rival.starter
+      ? evoLine(G.rival.starter)[evoLine(G.rival.starter).length - 1] : null,
+    // 1.4.0: and, like in the games, an Eeveelution — the one his Eevee became
+    ace2: kind === 'champion' ? rivalEevo(G) : null,
+    // 2.2.0: …and a legendary you didn't recruit — his last surprise
+    ace3: kind === 'champion' ? championLegend(G) : null,
+    turn: G.turn, seed: G.seed, badges: G.badges || 0, kind, boss,
+    lineup: seen ? seen.filter(u => u && SPECIES[u.id]) : null,
+    tier: kind === 'elite' || kind === 'champion' ? Math.min(6, tierFor(G) + 1) : tierFor(G),
+    size: boss ? Math.min(TUNING.maxTeam,
+      Math.max(3, Math.floor(G.turn / AI_PARTY_PACE) + 1 + (TUNING.bossSize[kind] || 0))) : undefined,
+    /* `calib` is the per-leader correction. The badge ramp sets how hard this
+       point in the run should be; calib absorbs what a theme is worth in a
+       fight, which is not something the power score can see — Erika's Grass
+       almost never scores a ×2 while Lt. Surge's Lightning eats the Water half
+       of the roster. Re-derive them with `node calibrate.js --tune`. */
+    ratio: !boss ? 0
+      : (boss.calib || 1) * (kind === 'gym'
+        ? TUNING.gymRatio[Math.min(st.badge || 0, TUNING.gymRatio.length - 1)]
+        : (TUNING.bossRatio[kind] || 1)
+          * (TUNING.gauntletRatio[(G.stage || 0) - gauntletStart()] || 1)),
+  });
+}
+
+/* ===================================================================
+   THE RIVAL
+   Three ambushes a run. WHERE is fixed by the run's seed (one trainer slot in
+   each of TUNING.rival.windows) but never shown — the next-up strip says
+   "Trainer battle" right up until he walks in. WHO he fields is decided the
+   first time you meet: his starter is the type that beats the type your party
+   has most of, like picking second in Oak's lab, and the rest of his core team
+   is drawn once and kept, evolving each time you meet.
+   =================================================================== */
+const RIVAL_STARTERS = { Grass:'bulbasaur', Fire:'charmander', Water:'squirtle',
+  Lightning:'pikachu', Fighting:'machop', Psychic:'abra', Colorless:'pidgey' };
+/** The stage indexes where the rival ambushes this run. Pure: seed only. */
+function rivalStages(G){
+  const plan = runPlan(), rnd = makeRng(mix32((G.seed || 1) ^ 0x2c1b3c6d, 77));
+  return TUNING.rival.windows.map(([a, b]) => {
+    const slots = plan.map((p, i) => ({ p, i }))
+      .filter(x => x.p.kind === 'trainer' && x.p.badge >= a && x.p.badge <= b && x.i > 0).map(x => x.i);
+    return slots[Math.floor(rnd() * slots.length)];
+  });
+}
+/** Which meeting this stage is (0, 1, 2), or -1 if it's an ordinary battle. */
+const rivalMeeting = G => inGauntlet(G) ? -1 : rivalStages(G).indexOf(G.stage || 0);
+const isRivalStage = G => rivalMeeting(G) >= 0;
+/** The type most of your party is, front-most breaking ties. */
+function partyType(G){
+  const n = {};
+  (G.team || []).forEach((u, i) => { const t = SPECIES[u.id].type; n[t] = (n[t] || 0) + 10 - i * 0.1; });
+  return Object.keys(n).sort((a, b) => n[b] - n[a])[0] || null;
+}
+/* 1.4.0: Blue raises an Eevee, as in the games. It evolves into whichever
+   Eeveelution covers his starter's weakness (a Charmander's Blue gets
+   Vaporeon, a Squirtle's Jolteon, a Bulbasaur's Flareon), or a seeded pick
+   when no Eeveelution covers it. The Champion fields the same one. */
+const EEVOS = { Water:'vaporeon', Lightning:'jolteon', Fire:'flareon' };
+/** 2.2.0: the Champion's legendary — seeded, never one you recruited or own. */
+function championLegend(G){
+  const mine = new Set([...(G.legendsCaught || []), ...[...(G.team || []), ...(G.pc || [])].filter(isLegend).map(u => u.id)]);
+  const pool = LEGENDS().filter(k => !mine.has(k));
+  return pool.length ? pool[mix32((G.seed || 1) ^ 0x2545f491, 9) % pool.length] : null;
+}
+function rivalEevo(G){
+  if(G.rival && G.rival.eevo) return G.rival.eevo;
+  const starter = G.rival && G.rival.starter;
+  const weak = starter && TYPES[SPECIES[starter].type] ? TYPES[SPECIES[starter].type].weak : null;
+  return EEVOS[weak] || ['vaporeon', 'jolteon', 'flareon'][mix32((G.seed || 1) ^ 0x3b9ac9ff, 5) % 3];
+}
+/** Decide the rival's team the first time you meet, and keep it. */
+function rivalCore(G){
+  if(G.rival && G.rival.core) return G.rival;
+  const rnd = makeRng(mix32((G.seed || 1) ^ 0x51ed270b, 3));
+  const yours = partyType(G);
+  const counter = yours && TYPES[yours] ? TYPES[yours].weak : null;
+  const starter = RIVAL_STARTERS[counter] || ['bulbasaur','charmander','squirtle'][Math.floor(rnd() * 3)];
+  const take = [starter];
+  if(starter !== 'pidgey') take.push('pidgey');               // he always has his bird
+  const pickRole = (role, maxTier) => {
+    const pool = BUYABLE.filter(k => roleOf(k) === role && SPECIES[k].tier <= maxTier && !take.includes(k)
+      && SPECIES[k].type !== SPECIES[starter].type);
+    if(pool.length) take.push(pool[Math.floor(rnd() * pool.length)]);
+  };
+  // early members come from what the Daycare has early; later ones from further up
+  pickRole('tank', 2);
+  take.push('eevee');                                           // 1.4.0: his Support is always Eevee
+  pickRole('cannon', 4); pickRole('bruiser', 5);
+  G.rival = { core: take, starter, versus: yours, met: 0, beaten: 0 };
+  G.rival.eevo = rivalEevo(G);
+  return G.rival;
+}
+/** What he fields at meeting m: the first `size` of his core, evolved m times. */
+function rivalLineup(G, m){
+  const R = rivalCore(G), size = TUNING.rival.size[m];
+  const rnd = makeRng(mix32((G.seed || 1) ^ 0x7f4a7c15, 10 + m));
+  const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy');   // no Amulet Coins in a fight
+  return R.core.slice(0, size).map((base, i) => {
+    // his Eevee stays an Eevee the first time, then evolves (1.4.0)
+    const line = base === 'eevee' ? ['eevee', 'eevee', R.eevo || rivalEevo(G)] : evoLine(base);
+    const id = line[Math.min(line.length - 1, m)];
+    // his starter always holds something once you've met; one more item a meeting
+    const holds = m > 0 && i < m + 1;
+    return { id, exp: m >= 2 ? TUNING.expForLevel3 : m === 1 ? TUNING.expForLevel2 : 0,
+             held: holds ? held[Math.floor(rnd() * held.length)] : null };
+  });
+}
+/** What beating him pays at meeting m: credits next turn and a held item. Pure. */
+function rivalPrize(G, m){
+  const pool = heldPool(G), rnd = makeRng(mix32((G.seed || 1) ^ 0x1b873593, 20 + m));
+  return { credits: TUNING.rival.winCredits[m] || 0, item: pool.length ? pickWeighted(pool, HELD_ITEMS, rnd()) : null };
+}
+
+function bossSignatureItem(team, boss, seed){
+  if(!team.length) return null;
+  const r = makeRng(mix32(((seed || 1) ^ 0x2c1b3c6d) >>> 0, hashId(boss.id)));
+  const pool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].boss === 'elite');
+  const byAtk = team.slice().sort((a, b) => b.atk - a.atk);
+  const byHp  = team.slice().sort((a, b) => b.hp - a.hp);
+  const pick = k => k === 'scale' ? team.find(u => roleOf(u.id) === 'support')
+    : k === 'iron' ? (byHp.find(u => roleOf(u.id) === 'tank') || byHp[0])
+    : (byAtk.find(u => roleOf(u.id) === 'cannon' || roleOf(u.id) === 'bruiser') || byAtk[0]);
+  const order = pool.slice().sort(() => r() - 0.5);
+  for(const k of order){ const u = pick(k); if(u){ u.held = k; return k; } }
+  return null;
+}
+
+/* ===================================================================
+   2.0.0 · LEGENDARY ENCOUNTERS
+   After each gym from TUNING.legend.fromBadge on, a legendary you haven't met
+   this run may appear (seeded, so a reload can't re-roll it). It waits in the
+   shop for one turn — recruit it for TUNING.legend.cost or let it go.
+   =================================================================== */
+const LEGENDS = () => Object.keys(SPECIES).filter(k => SPECIES[k].legendary);
+function rollEncounter(G){
+  G.encounter = null;
+  if(G.badges < TUNING.legend.fromBadge) return null;
+  const met = G.legendsMet || [];
+  const mono = G.mods && G.mods.mono;
+  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || SPECIES[k].type === mono));
+  const r = makeRng(mix32(((G.seed || 1) ^ 0x6a09e667) >>> 0, 40 + G.badges));
+  const pity = G.badges === TUNING.legend.pityBadge && !met.length;   // 2.2.0: never a run without one
+  if(!pool.length || (r() >= TUNING.legend.chance && !pity)) return null;
+  const id = pool[Math.floor(r() * pool.length)];
+  G.encounter = { id, cost: TUNING.legend.cost, turn: G.turn + 1 };
+  G.legendsMet = [...met, id];
+  makeGameApi(G).log(`A wild ${SPECIES[id].name} appeared!`);
+  return G.encounter;
+}
+const encounterOpen = G => !!(G.encounter && G.encounter.turn === G.turn && !G.encounter.taken && !inGauntlet(G));
+/** Recruit the waiting legendary: into the party if there's room, else the PC. */
+function recruitLegend(G, pos){
+  if(!encounterOpen(G)) return { ok:false, why:'Nothing is waiting.' };
+  const e = G.encounter;
+  if(G.credits < e.cost) return { ok:false, why:`Not enough pokecredits (it costs ${e.cost}₽).` };
+  fixSlots(G);
+  const u = trainerCatchUp(G, makeUnit(e.id, 0));
+  if(G.team.length < TUNING.maxTeam){
+    u.pos = Number.isInteger(pos) && !teamAt(G, pos) && pos < TUNING.maxTeam ? pos : freePos(G);
+    G.team.push(u);
+  } else if(pcRoom(G) > 0){
+    u.box = freeBox(G); G.pc.push(u);
+  } else return { ok:false, why:'Your party and PC are full.' };
+  G.credits -= e.cost; e.taken = true; fixSlots(G);
+  G.legendsCaught = [...(G.legendsCaught || []), e.id];   // 2.2.0: the Champion brings one you didn't
+  makeGameApi(G).log(`${u.nm} joined your team!`);
+  return { ok:true, unit:u };
+}
+
+/** Level an AI unit up, evolving it the same way the player's would. */
+function aiLevelTo(u, level){
+  const target = level === 3 ? TUNING.expForLevel3 : TUNING.expForLevel2;
+  while(unitLevel(u) < level){
+    u.exp = unitLevel(u) === 1 ? TUNING.expForLevel2 : target;
+    applyLevelUp(null, u);
+  }
+}
+
+/* ===================================================================
+   NETWORK SEAM — swap this out for real online PvP.
+   The game only ever talks to Net; replace these bodies with fetch()
+   calls and nothing else changes.
+   =================================================================== */
+const Net = {
+  mode: 'local-ai',
+  endpoint: '',
+  playerId: null,
+  async findOpponent(state){
+    if(this.mode === 'online' && !isRivalStage(state)){   // your rival is always yours
+      // const r = await fetch(`${this.endpoint}/matchmake`, {method:'POST',
+      //   headers:{'content-type':'application/json'},
+      //   body: JSON.stringify({playerId:this.playerId, turn:state.turn, badges:state.badges})});
+      // return await r.json();   // -> { name, team:[{id,hp,atk,spd,exp}] }
+      // Online play only ever replaces the TRAINER battles — the gyms, the
+      // Elite Four and the Champion are the run's spine and stay local.
+    }
+    return opponentFor(state);
+  },
+  async submitTeam(state){ /* POST exportTeam(state.team) when online */ },
+  async reportResult(state, result){ /* POST the result when online */ },
+};
+
+/* ===================================================================
+   TEAM CODES
+   =================================================================== */
+function exportTeam(team, label){
+  const payload = { v:3, n:label || 'Trainer', t:team.map(u => [u.id, u.hp, u.atk, u.spd, u.exp, Number.isInteger(u.pos) ? u.pos : null]) };
+  const json = JSON.stringify(payload);
+  const b64 = (typeof btoa !== 'undefined')
+    ? btoa(unescape(encodeURIComponent(json)))
+    : Buffer.from(json, 'utf8').toString('base64');
+  return 'PKB3-' + b64.replace(/=+$/, '');
+}
+function importTeam(code){
+  try{
+    const b64 = String(code).trim().replace(/^PKB\d-/, '');
+    const json = (typeof atob !== 'undefined')
+      ? decodeURIComponent(escape(atob(b64)))
+      : Buffer.from(b64, 'base64').toString('utf8');
+    const p = JSON.parse(json);
+    if(!p || !Array.isArray(p.t)) return null;
+    const team = p.t.map(r => {
+      if(!SPECIES[r[0]]) return null;
+      const u = makeUnit(r[0], r[4] | 0);
+      u.hp  = Math.max(1, r[1] | 0);
+      u.atk = Math.max(0, r[2] | 0);
+      u.spd = Math.max(1, r[3] | 0);
+      if(Number.isInteger(r[5]) && r[5] >= 0 && r[5] < TUNING.maxTeam) u.pos = r[5];   // where they stood (v34)
+      return u;
+    }).filter(Boolean).slice(0, TUNING.maxTeam);
+    return team.length ? { name: p.n || 'Trainer', team } : null;
+  }catch(e){ return null; }
+}
+
+/* ===================================================================
+   GAME STATE
+   =================================================================== */
+/* 2.0.0 — run modifiers, chosen at New Run (the daily challenge draws one):
+     mono:     'Fire' …  the Daycare only sells that type
+     nopc:     true      no PC at all — just the six you carry
+     rich:     true      double income, opponents ×TUNING.mods.richFoes
+     onelife:  true      one life
+   G.daily is the date ('2026-09-27') when this is a daily-challenge run. */
+const MOD_INFO = {
+  mono:    { name: t => `Mono-${t}`, text: t => `The Daycare only sells ${t} pokémon. Opponents are tuned so every type is about as hard.` },
+  nopc:    { name: () => 'No PC', text: () => 'No PC box: just the six you carry, no bench.' },
+  rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
+  onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
+};
+const modList = G => { const m = (G && G.mods) || {}; return Object.keys(MOD_INFO).filter(k => m[k]); };
+const modName = (G, k) => MOD_INFO[k].name(G.mods[k]);
+const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
+function cleanMods(m){
+  const out = {};
+  if(m && m.mono && TYPES[m.mono]) out.mono = m.mono;
+  for(const k of ['nopc', 'rich', 'onelife']) if(m && m[k]) out[k] = true;
+  return out;
+}
+/** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
+function dailySeed(date){ let h = 2166136261; for(const c of 'pkb-daily-' + date){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return (h % 999999937) + 1; }
+function dailyMods(date){
+  const r = makeRng(dailySeed(date) ^ 0x9e3779b9), x = r();
+  if(x < 0.35) return {};
+  if(x < 0.55){ const t = Object.keys(TYPES); return { mono: t[Math.floor(r() * t.length)] }; }
+  if(x < 0.70) return { nopc: true };
+  if(x < 0.85) return { rich: true };
+  return { onelife: true };
+}
+
+function newGame(seed, opts){
+  const mods = cleanMods(opts && opts.mods);
+  return {
+    seed: seed || Math.floor(Math.random() * 1e9),
+    mods, daily: (opts && opts.daily) || null,
+    turn: 1,
+    credits: TUNING.creditsPerTurn,
+    lives: mods.onelife ? 1 : TUNING.startingLives,
+    stage: 0,               // index into runPlan() — the run's schedule
+    badges: 0,
+    attempt: 0,             // consecutive defeats at the current boss
+    scouted: {},            // boss id -> the team you saw, revealed by losing
+    blackout: 0,            // credits the last defeat cost, for the UI to say so
+    streak: 0,              // >0 win streak, <0 loss streak
+    lastResult: null,
+    income: null,           // breakdown of this turn's pay, for the UI
+    trainerExp: { hp:0, atk:0, spd:0 },   // TUNING.expModel === 'trainer'
+    gauntlet: null,         // mid-Elite-Four: { hpFrac: { uid: 0..1 } }
+    team: [],               // index 0 = front rank; fills the formation grid
+    pc: [],                 // owned but not carried — spare copies live here
+    daycare: [],            // { unit, bought }
+    mart: [],               // { id, held, reserved, bought }
+    bag: [],                // held items you own but nobody is carrying
+    log: [],
+    over: null,
+    rolls: 0,
+    shopRolls: 0,           // how far through the seed's shop sequence we are
+    perks: {},              // badge rewards taken: { id: amount so far }
+    rewardLog: [],          // [{ badge, id }] — which reward each badge bought
+    pendingRewards: [],     // badges won whose reward hasn't been chosen yet
+    freeRolls: 0,           // free rerolls left this turn (badge reward)
+  };
+}
+
+function makeGameApi(G){
+  return {
+    log: txt => { G.log.push(txt); if(G.log.length > 60) G.log.shift(); },
+    team: () => G.team,
+    boost: (u, d) => {
+      if(!u) return;
+      if(d.atk) u.atk = Math.max(0, u.atk + d.atk);
+      if(d.hp)  u.hp  = Math.max(1, u.hp  + d.hp);
+      if(d.spd) u.spd = Math.max(1, u.spd + d.spd);
+    },
+    addExp: (u, n) => addExp(G, u, n),
+    evolve: (u, stone) => evolveUnit(G, u, stone),
+    teamExp: () => grantBattleExp(G, 'win'),
+    shareExp: () => shareExp(G),
+    addCredits: n => { G.credits += n; },
+  };
+}
+
+/** Apply one level's worth of growth: evolve if the line evolves by level,
+    otherwise take the larger flat bonus. */
+function applyLevelUp(G, u){
+  const sp = SPECIES[u.id];
+  if(sp.legendary) return { evolved:false };
+  const canEvolve = sp.evo && sp.evo.by === 'level';
+  if(canEvolve){
+    const next = SPECIES[sp.evo.into];
+    u.hp  += next.hp  - sp.hp;
+    u.atk += next.atk - sp.atk;
+    u.spd += next.spd - sp.spd;
+    const was = u.nm;
+    u.id = sp.evo.into; u.nm = next.name;
+    growUnit(u, TUNING.levelUpBonus);      // grows as what it has become
+    if(G) makeGameApi(G).log(`What? ${was} is evolving… into ${next.name}!`);
+    return { evolved:true, from:was, into:next.name };
+  }
+  growUnit(u, TUNING.levelUpBonusMax);
+  return { evolved:false };
+}
+
+/** Grant exp; crossing a threshold levels up (and may evolve). */
+function addExp(G, u, n){
+  if(isLegend(u)) return { leveled:false, level:1, evolved:null };   // 2.1.0: legendaries never level
+  const before = unitLevel(u);
+  u.exp += n;
+  const after = unitLevel(u);
+  let evolved = null;
+  for(let i = before; i < after; i++){
+    const r = applyLevelUp(G, u);
+    if(r.evolved) evolved = r;
+  }
+  if(after > before && G) makeGameApi(G).log(`${u.nm} reached level ${after}!`);
+  return { leveled: after > before, level:after, evolved };
+}
+
+/** Evolution stone: evolve now, regardless of level. */
+function evolveUnit(G, u, stone){
+  const sp = SPECIES[u.id];
+  const opts = evoNext(u.id);
+  if(!opts.length) return false;
+  // a branching line goes where the stone says; otherwise its one evolution
+  const pick = (stone && opts.find(n => n.stone === stone)) || (opts.length === 1 ? opts[0] : null);
+  if(!pick) return false;
+  const next = SPECIES[pick.into];
+  if(!next) return false;
+  u.hp  += next.hp  - sp.hp;
+  u.atk += next.atk - sp.atk;
+  u.spd += next.spd - sp.spd;
+  const was = u.nm;
+  u.id = pick.into; u.nm = next.name;
+  if(G) makeGameApi(G).log(`What? ${was} is evolving… into ${next.name}!`);
+  return true;
+}
+
+function canUseItem(itemId, u){
+  const def = ITEMS[itemId];
+  if(!def || !u) return false;
+  return def.eligible ? def.eligible(u) : true;
+}
+
+/* ===================================================================
+   BADGE REWARDS
+   Every badge offers three rewards and you keep one. They are the run's
+   choices about SHAPE — room, money, rerolls, growth — rather than a flat stat
+   bump, so two players with the same badges end up with different runs.
+   `amount` and `max` live in TUNING.badgeRewards; the text reads them.
+   =================================================================== */
+const perk = (G, id) => (G && G.perks && G.perks[id]) || 0;
+const carryCap = G => TUNING.maxCarryOver + perk(G, 'piggy');
+const rewardCfg = id => TUNING.badgeRewards[id];
+const timesTaken = (G, id) => Math.round(perk(G, id) / rewardCfg(id).amount);
+
+const BADGE_REWARDS = [
+  { id:'pcRow',     name:'Storage Box',  icon:'📦',
+    text: () => `+${rewardCfg('pcRow').amount} PC slots.` ,
+    now: G => `PC ${pcCap(G)} → ${pcCap(G) + rewardCfg('pcRow').amount}`,
+    apply: G => {} },
+  { id:'pocket',    name:'Bag Pocket',   icon:'🎒',
+    text: () => `+${rewardCfg('pocket').amount} Bag slot for held items.`,
+    now: G => `Bag ${bagCap(G)} → ${bagCap(G) + rewardCfg('pocket').amount}`,
+    apply: G => {} },
+  { id:'allowance', name:'Allowance',    icon:'💰',
+    text: () => `+${rewardCfg('allowance').amount}₽ at the start of every turn.`,
+    now: G => perk(G, 'allowance') ? `+${perk(G, 'allowance')}₽ → +${perk(G, 'allowance') + rewardCfg('allowance').amount}₽ a turn` : '',
+    apply: G => {} },
+  { id:'freeRoll',  name:'Lucky Ticket', icon:'🎟️',
+    text: () => `${rewardCfg('freeRoll').amount} free reroll every turn, in either shop.`,
+    apply: G => { G.freeRolls = (G.freeRolls || 0) + rewardCfg('freeRoll').amount; } },
+  { id:'piggy',     name:'Piggy Bank',   icon:'🐷',
+    text: () => `Carry over up to ${rewardCfg('piggy').amount}₽ more between turns.`,
+    now: G => `carry-over ${carryCap(G)}₽ → ${carryCap(G) + rewardCfg('piggy').amount}₽`,
+    apply: G => {} },
+  { id:'training',  name:'Special Training', icon:'🏋️',
+    text: () => `${rewardCfg('training').amount} rounds of battle EXP right now — your party, and everything you buy after.`,
+    apply: G => { for(let n = 0; n < rewardCfg('training').amount; n++) grantBattleExp(G, 'win', true); } },
+  { id:'gift',      name:'Gift Item',    icon:'🎁',
+    text: () => 'A random held item from the current shop tier, straight into your Bag.',
+    ok: G => bagRoom(G) > 0 && heldPool(G).length > 0,
+    apply: (G, rnd) => { const pool = heldPool(G);
+      const id = pickWeighted(pool, HELD_ITEMS, rnd ? rnd() : 0);
+      G.bag.push(id); G.lastGift = id; } },
+];
+const rewardById = id => BADGE_REWARDS.find(r => r.id === id) || null;
+const heldPool = G => Object.keys(HELD_ITEMS).filter(k =>
+  HELD_ITEMS[k].tier <= Math.max(TUNING.heldFromTier, tierFor(G)));
+const rewardAvailable = (G, r) => timesTaken(G, r.id) < rewardCfg(r.id).max && (!r.ok || r.ok(G));
+
+/** The three rewards on offer for a badge. Drawn from the run's seed and the
+    badge number, so the offer is fixed — reloading can't re-roll it. */
+function rewardOffer(G, badge){
+  const rnd = makeRng(mix32((G.seed || 1) ^ 0x5bd1e995, 1000 + badge));
+  const pool = BADGE_REWARDS.filter(r => rewardAvailable(G, r));
+  const out = [];
+  while(out.length < TUNING.badgeRewards.offer && pool.length)
+    out.push(pool.splice(Math.floor(rnd() * pool.length), 1)[0].id);
+  return out;
+}
+/** What the player is being asked to choose right now, if anything. */
+function pendingOffer(G){
+  const q = G.pendingRewards || [];
+  if(!q.length) return null;
+  return { badge: q[0], options: rewardOffer(G, q[0]) };
+}
+/** Take reward `id` for the badge at the front of the queue. */
+function chooseReward(G, id){
+  const off = pendingOffer(G);
+  if(!off) return { ok:false, why:'No badge reward waiting.' };
+  if(!off.options.includes(id)) return { ok:false, why:'That reward is not on offer.' };
+  const r = rewardById(id), cfg = rewardCfg(id);
+  G.perks = G.perks || {};
+  G.perks[id] = (G.perks[id] || 0) + cfg.amount;
+  r.apply(G, makeRng(mix32((G.seed || 1) ^ 0x68e31da4, 2000 + off.badge)));
+  G.pendingRewards.shift();
+  (G.rewardLog = G.rewardLog || []).push({ badge: off.badge, id });
+  makeGameApi(G).log(`${GYMS[off.badge % GYMS.length].badge} Badge reward: ${r.name}.`);
+  return { ok:true, id, gift: id === 'gift' ? G.lastGift : null };
+}
+
+/* ---------------- the two shops ---------------- */
+/* Shop rolls come from the RUN'S OWN SEED, not Math.random(). Every roll takes
+   the next number in a sequence the save remembers (`G.shopRolls`), so the same
+   seed and the same choices always produce the same shelves. Two reasons:
+   - balance sweeps compare like with like. Unseeded, the exact same measurement
+     run five times cleared anywhere from 36% to 44% — wider than most of the
+     changes it was being used to judge;
+   - a run can be replayed, and friends can play the same run.
+   Reloading doesn't re-roll anything: the counter is saved after every action,
+   so the next roll after a reload is the one you would have had anyway. */
+function mix32(a, b){
+  let h = (Math.imul((a >>> 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((b >>> 0) + 0x632be5ab, 0xc2b2ae35)) >>> 0;
+  h ^= h >>> 16; h = Math.imul(h, 0x7feb352d) >>> 0;
+  h ^= h >>> 15; h = Math.imul(h, 0x846ca68b) >>> 0;
+  h ^= h >>> 16;
+  return h >>> 0 || 1;
+}
+function shopRng(G){
+  G.shopRolls = (G.shopRolls || 0) + 1;
+  return makeRng(mix32(G.seed || 1, G.shopRolls));
+}
+
+/** Pay for a reroll: a free one from the badge reward first, then credits. */
+function payReroll(G){
+  if((G.freeRolls || 0) > 0){ G.freeRolls--; G.rolls++; return true; }
+  if(G.credits < TUNING.costRoll) return false;
+  G.credits -= TUNING.costRoll; G.rolls++;
+  return true;
+}
+const rerollCost = G => (G.freeRolls || 0) > 0 ? 0 : TUNING.costRoll;
+
+function rollDaycare(G, payCost){
+  if(payCost && inGauntlet(G)) return false;
+  if(payCost && !payReroll(G)) return false;
+  const rnd = shopRng(G);
+  /* The roster follows the BADGE clock (with its slow turn floor), as the
+     TUNING comment always said it did. Until v25 this read tierForTurn, which
+     opened the whole roster — Mewtwo included — by turn 11 whatever your badges. */
+  const maxTier = tierFor(G);
+  // 2.0.0: legendaries only come as encounters; Mono-type sells one type
+  const mono = G.mods && G.mods.mono;
+  // (one tier ahead for Mono-type, or tier 1 would offer a single line)
+  let pool = BUYABLE.filter(k => SPECIES[k].tier <= maxTier + (mono ? 1 : 0) && !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
+  if(!pool.length) pool = BUYABLE.filter(k => !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
+  const n = daycareSlotsFor(tierFor(G));
+  // Nothing is held here — if you want to keep a pokémon, buy it and park it
+  // in the PC. That is what the PC is for.
+  const next = [];
+  for(let i = 0; i < n; i++){
+    const weighted = pool.filter(k => SPECIES[k].tier >= Math.max(1, maxTier - 1));
+    const src = (rnd() < 0.55 && weighted.length) ? weighted : pool;
+    next.push({ unit: trainerCatchUp(G, makeUnit(src[Math.floor(rnd() * src.length)], 0)),
+                bought:false });
+  }
+  G.daycare = next;
+  return true;
+}
+
+/** Pick from a list of item ids, a rare one at TUNING.rareWeight the odds. */
+const rarityOf = def => (def && (def.rarity || (def.rare ? 'rare' : 'common'))) || 'common';
+const itemWeight = def => { const r = TUNING.rarity[rarityOf(def)]; return r ? r.weight : 1; };
+function pickWeighted(ids, defs, r){
+  const total = ids.reduce((n, k) => n + itemWeight(defs[k]), 0);
+  let x = r * total;
+  for(const k of ids){ x -= itemWeight(defs[k]); if(x < 0) return k; }
+  return ids[ids.length - 1];
+}
+function rollMart(G, payCost){
+  if(payCost && inGauntlet(G)) return false;
+  if(payCost && !payReroll(G)) return false;
+  const rnd = shopRng(G);
+  const maxTier = tierFor(G);
+  // never stock a stone nobody you own can use
+  const owned = ownedUnits(G);
+  const pool = Object.keys(ITEMS).filter(k =>
+    ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u))
+      // vitamins are for anyone until someone owns a pokémon that has maxed them
+      || (ITEMS[k].vitamin && !owned.length)));
+  const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier);
+  /* The shelf is [consumables…, held…]. Consumables keep the indices they have
+     always had, and held slots are appended, so a reserved item stays put. */
+  const plan = [];
+  for(let i = 0; i < martSlotsFor(tierFor(G)); i++) plan.push(false);
+  for(let i = 0; i < heldSlotsFor(tierFor(G)); i++) plan.push(true);
+  const next = [];
+  plan.forEach((wantHeld, i) => {
+    const prev = G.mart[i];
+    if(prev && prev.reserved && !prev.bought && !!prev.held === wantHeld){ next.push(prev); return; }
+    const src = wantHeld ? heldPool : pool;
+    if(!src.length) return;
+    next.push({ id: pickWeighted(src, wantHeld ? HELD_ITEMS : ITEMS, rnd()),
+                held: wantHeld, reserved:false, bought:false });
+  });
+  G.mart = next;
+  return true;
+}
+
+/* ---------------- the Bag ---------------- */
+const bagCap   = G => TUNING.bagSlots + perk(G, 'pocket');
+const bagRoom  = G => Math.max(0, bagCap(G) - (G.bag || []).length);
+const defOfSlot = s => s && (s.held ? HELD_ITEMS[s.id] : ITEMS[s.id]);
+
+/** Buy a held item off the Mart shelf. It goes into the Bag, not onto a
+    pokémon — giving it out is a separate, free, reversible move. */
+function buyHeld(G, idx){
+  if(inGauntlet(G)) return shopClosed();
+  const s = G.mart[idx];
+  if(!s || s.bought || !s.held) return { ok:false, why:'Nothing to buy there.' };
+  const def = HELD_ITEMS[s.id];
+  if(!def) return { ok:false, why:'Nothing to buy there.' };
+  if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
+  if(bagRoom(G) <= 0) return { ok:false, why:'Your Bag is full.' };
+  G.credits -= def.cost; s.bought = true;
+  G.bag.push(s.id);
+  makeGameApi(G).log(`Bought ${def.name}.`);
+  return { ok:true, id:s.id };
+}
+
+/** Buy a held item straight onto a pokémon, skipping the Bag. Whatever it was
+    holding goes back to the Bag, so that needs room; a pokémon holding nothing
+    needs no Bag space at all. */
+function buyHeldOnto(G, idx, u){
+  if(inGauntlet(G)) return shopClosed();
+  const s = G.mart[idx];
+  if(!s || s.bought || !s.held) return { ok:false, why:'Nothing to buy there.' };
+  const def = HELD_ITEMS[s.id];
+  if(!def) return { ok:false, why:'Nothing to buy there.' };
+  if(!u) return { ok:false, why:'Pick a pokémon first.' };
+  if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
+  if(u.held && bagRoom(G) <= 0)
+    return { ok:false, why:`Your Bag is full — ${u.nm}'s ${HELD_ITEMS[u.held].name} would have nowhere to go.` };
+  G.credits -= def.cost; s.bought = true;
+  const was = u.held || null;
+  u.held = s.id;
+  if(was) G.bag.push(was);
+  makeGameApi(G).log(`Bought ${def.name} for ${u.nm}.`);
+  return { ok:true, id:s.id, given:s.id, taken:was, unit:u };
+}
+
+/** Give a Bag item to a pokémon. Whatever it was holding goes back to the Bag,
+    so a swap never needs a free slot and never loses an item. */
+function equipHeld(G, bagIdx, u){
+  const id = (G.bag || [])[bagIdx];
+  if(!id || !HELD_ITEMS[id]) return { ok:false, why:'No such item.' };
+  if(!u) return { ok:false, why:'Pick a pokémon first.' };
+  if(u.held === id) return { ok:false, why:`${u.nm} is already holding that.` };
+  const was = u.held || null;
+  G.bag.splice(bagIdx, 1);
+  u.held = id;
+  if(was) G.bag.splice(bagIdx, 0, was);        // the swap lands in the same slot
+  return { ok:true, given:id, taken:was };
+}
+
+/** Take an item off a pokémon. Needs a free Bag slot. */
+function unequipHeld(G, u){
+  if(!u || !u.held) return { ok:false, why:'Nothing to take.' };
+  if(bagRoom(G) <= 0) return { ok:false, why:'Your Bag is full.' };
+  const id = u.held;
+  u.held = null;
+  G.bag.push(id);
+  return { ok:true, id };
+}
+
+/** What the Mart pays for a held item you no longer want. */
+const heldResale = id => {
+  const d = HELD_ITEMS[id];
+  return d ? Math.max(1, Math.round(d.cost * TUNING.itemResale)) : 0;
+};
+
+/* Sell a held item back. Straight from the Bag, or straight off a pokémon —
+   the second matters, because with a full Bag you could not take an item off
+   to sell it, and the thing you want to sell is often the one in the way. */
+function sellHeld(G, where, i){
+  let id = null;
+  if(where === 'bag'){
+    id = (G.bag || [])[i];
+    if(!id || !HELD_ITEMS[id]) return { ok:false, why:'Nothing to sell.' };
+    G.bag.splice(i, 1);
+  } else {
+    const u = where === 'pc' ? (G.pc || [])[i] : (G.team || [])[i];
+    if(!u || !u.held || !HELD_ITEMS[u.held]) return { ok:false, why:'Nothing to sell.' };
+    id = u.held; u.held = null;
+  }
+  const paid = heldResale(id);
+  G.credits += paid;
+  makeGameApi(G).log(`Sold ${HELD_ITEMS[id].name} for ${paid}₽.`);
+  return { ok:true, id, paid };
+}
+
+/** Selling or releasing a pokémon must not silently bin its item. */
+function reclaimHeld(G, u){
+  if(!u || !u.held) return { ok:true };
+  if(bagRoom(G) <= 0) return { ok:false, why:`Your Bag is full — take ${u.nm}'s ${HELD_ITEMS[u.held].name} off first.` };
+  G.bag.push(u.held); u.held = null;
+  return { ok:true, reclaimed:true };
+}
+
+function rollShop(G, payCost){ // both shelves, used at the start of a turn
+  const a = rollDaycare(G, payCost);
+  const b = rollMart(G, false);
+  return a && b;
+}
+
+/* Bring a pokémon up to the trainer's level.
+   Applied when the Daycare is ROLLED, not when a pokémon is bought. Two reasons.
+   It is not done inside effHp/effAtk/effSpd because those are called for enemy
+   units too and have no idea whose pokémon they are holding. And it is not done
+   at purchase because the Daycare row shows a pokémon's own stats — topping it
+   up on the way out of the shop would mean the shelf advertised one number and
+   sold you another. Rolling happens after the bank has been paid, so the stats
+   on the shelf are exactly what arrives. */
+function trainerCatchUp(G, u){
+  if(TUNING.expModel !== 'trainer' || !u) return u;
+  const t = G.trainerExp;
+  if(!t) return u;
+  growUnit(u, t);          // the bank, split by this pokémon's role
+  return u;
+}
+
+function buyPokemon(G, idx, slot, pos){
+  if(inGauntlet(G)) return shopClosed();
+  fixSlots(G);
+  const s = G.daycare[idx];
+  if(!s || s.bought) return { ok:false, why:'That slot is empty.' };
+  if(G.credits < TUNING.costBuy) return { ok:false, why:'Not enough pokecredits.' };
+  const target = G.team[slot];
+  if(target){
+    if(target.id !== s.unit.id) return { ok:false, why:'That slot is taken.' };
+    if(unitLevel(target) >= 3)  return { ok:false, why:`${target.nm} is already level 3.` };
+    G.credits -= TUNING.costBuy; s.bought = true;
+    const r = mergeInto(G, target, s.unit);
+    return { ok:true, merged:true, unit:target, evolved:r.evolved };
+  }
+  if(G.team.length >= TUNING.maxTeam) return { ok:false, why:'Your party is full.' };
+  G.credits -= TUNING.costBuy; s.bought = true;
+  const u = s.unit;
+  // an empty cell the player picked, or else the first free one (front first)
+  u.pos = Number.isInteger(pos) && !teamAt(G, pos) && pos < TUNING.maxTeam ? pos : freePos(G);
+  G.team.push(u); fixSlots(G);
+  makeGameApi(G).log(`Bought ${u.nm} for ${TUNING.costBuy}₽.`);
+  return { ok:true, unit:u };
+}
+
+/** Combine two copies: better of each stat, plus the merge bonus, plus exp. */
+function mergeInto(G, dst, src){
+  // stats combine as the better of the two, so the vitamins they carry do too
+  for(const k of ['protein','hpup','carbos']){
+    const n = Math.max(vitaminsTaken(dst, k), vitaminsTaken(src, k));
+    if(n){ dst.vit = dst.vit || {}; dst.vit[k] = n; }
+  }
+  // …and so do the Lucky Egg rounds it has already had
+  if(src.eggTicks || dst.eggTicks) dst.eggTicks = Math.max(dst.eggTicks || 0, src.eggTicks || 0);
+  dst.hp  = Math.max(dst.hp,  src.hp);
+  dst.atk = Math.max(dst.atk, src.atk);
+  dst.spd = Math.max(dst.spd, src.spd);
+  growUnit(dst, TUNING.mergeBonus);
+  return addExp(G, dst, (src.exp || 0) + 1);
+}
+
+/** A copy about to be absorbed hands its held item back first — a merge must
+    never quietly bin one. Refuses if the Bag has no room, like selling does. */
+function consumeCopy(G, src){
+  return reclaimHeld(G, src);
+}
+
+/* ===================================================================
+   SLOTS (v34)
+   Where a pokémon STANDS is its own fact, not its place in the list. Party
+   members carry `pos` (0-5: rank = pos / rankWidth, so 0-1 front, 2-3 middle,
+   4-5 back) and PC pokémon carry `box` (0 … pcCap-1), so a player can leave
+   gaps and arrange things their own way. G.team and G.pc stay plain lists,
+   kept sorted by slot — every function that takes an INDEX still works, and a
+   party with no gaps has index === pos, exactly as before.
+   =================================================================== */
+const teamAt  = (G, pos) => (G.team || []).find(u => u.pos === pos) || null;
+const pcAt    = (G, box) => (G.pc || []).find(u => u.box === box) || null;
+const teamIdx = (G, pos) => (G.team || []).findIndex(u => u.pos === pos);
+const pcIdx   = (G, box) => (G.pc || []).findIndex(u => u.box === box);
+const firstFree = (used, max) => { for(let i = 0; i < max; i++) if(!used.has(i)) return i; return -1; };
+/** Give every pokémon a slot (old saves, bots and tests add them bare), fix any
+    clash, and keep both lists sorted by slot. Idempotent; call after changes. */
+function fixSlots(G){
+  const place = (arr, key, max) => {
+    const used = new Set();
+    for(const u of arr){                       // keep good slots, first come first served
+      if(Number.isInteger(u[key]) && u[key] >= 0 && u[key] < max && !used.has(u[key])) used.add(u[key]);
+      else u[key] = null;
+    }
+    for(const u of arr) if(u[key] == null){ u[key] = firstFree(used, Math.max(max, arr.length)); used.add(u[key]); }
+    arr.sort((a, b) => a[key] - b[key]);
+  };
+  place(G.team || (G.team = []), 'pos', TUNING.maxTeam);
+  place(G.pc || (G.pc = []), 'box', Math.max(pcCap(G), (G.pc || []).length));
+  for(const u of G.team) delete u.box;
+  for(const u of G.pc) delete u.pos;
+  return G;
+}
+const freePos = G => firstFree(new Set(G.team.map(u => u.pos)), TUNING.maxTeam);
+const freeBox = G => firstFree(new Set(G.pc.map(u => u.box)), pcCap(G));
+
+/* ===================================================================
+   THE PC
+   Owned pokémon that aren't in the party. Spare copies wait here until you
+   cash them in for a level up, so keeping one no longer means freezing a
+   Daycare slot. Benched pokémon train at TUNING.pcExpFraction.
+   =================================================================== */
+const pcCap  = G => (G.mods && G.mods.nopc) ? 0 : TUNING.pcSlots + perk(G, 'pcRow');   // 2.0.0: No PC
+const pcRoom = G => pcCap(G) - (G.pc ? G.pc.length : 0);
+
+/** Buy straight from the Daycare into storage. */
+function buyToPc(G, idx, box){
+  if(inGauntlet(G)) return shopClosed();
+  const s = G.daycare[idx];
+  if(!s || s.bought) return { ok:false, why:'That slot is empty.' };
+  if(G.credits < TUNING.costBuy) return { ok:false, why:'Not enough pokecredits.' };
+  fixSlots(G);
+  /* v35: dropped onto a stored copy of the same pokémon, it combines with it
+     right there, like it would in the party. Levels don't have to match — the
+     only thing that stops it is the stored one already being level 3. */
+  const there = Number.isInteger(box) ? pcAt(G, box) : null;
+  if(there){
+    if(there.id !== s.unit.id) return { ok:false, why:'That box is taken.' };
+    if(unitLevel(there) >= 3) return { ok:false, why:`${there.nm} is already level 3.` };
+    G.credits -= TUNING.costBuy; s.bought = true;
+    const r = mergeInto(G, there, s.unit);
+    makeGameApi(G).log(`${s.unit.nm} joined the ${there.nm} in the PC.`);
+    return { ok:true, merged:true, unit:there, evolved:r.evolved };
+  }
+  if(pcRoom(G) <= 0) return { ok:false, why:'The PC is full.' };
+  G.credits -= TUNING.costBuy; s.bought = true;
+  fixSlots(G);
+  s.unit.box = Number.isInteger(box) && !pcAt(G, box) && box < pcCap(G) ? box : freeBox(G);
+  G.pc.push(s.unit); fixSlots(G);
+  makeGameApi(G).log(`${s.unit.nm} was sent to the PC.`);
+  return { ok:true, unit:s.unit };
+}
+
+/** Withdraw: merge onto a matching party member, fill an empty slot, or swap. */
+function pcToParty(G, pcIdx, slot, pos){
+  fixSlots(G);
+  const u = G.pc[pcIdx];
+  if(!u) return { ok:false };
+  const t = G.team[slot];
+  if(t){
+    if(t.id === u.id && unitLevel(t) < 3){
+      const keep = consumeCopy(G, u);
+      if(!keep.ok) return keep;
+      G.pc.splice(pcIdx, 1); fixSlots(G);
+      const r = mergeInto(G, t, u);
+      return { ok:true, merged:true, unit:t, evolved:r.evolved };
+    }
+    if(t.id === u.id) return { ok:false, why:`${t.nm} is already level 3.` };
+    // straight swap: each takes the other's spot
+    const p = t.pos, b = u.box;
+    G.pc[pcIdx] = t; G.team[slot] = u; u.pos = p; t.box = b; fixSlots(G);
+    makeGameApi(G).log(`Swapped ${u.nm} in for ${t.nm}.`);
+    return { ok:true, swapped:true, unit:u };
+  }
+  if(G.team.length >= TUNING.maxTeam) return { ok:false, why:'Your party is full.' };
+  G.pc.splice(pcIdx, 1);
+  u.pos = Number.isInteger(pos) && !teamAt(G, pos) && pos < TUNING.maxTeam ? pos : freePos(G);
+  G.team.push(u); fixSlots(G);
+  makeGameApi(G).log(`Withdrew ${u.nm} from the PC.`);
+  return { ok:true, unit:u };
+}
+
+/** Deposit a party member into storage. */
+function partyToPc(G, slot, box){
+  fixSlots(G);
+  const u = G.team[slot];
+  if(!u) return { ok:false };
+  if(pcRoom(G) <= 0) return { ok:false, why:'The PC is full.' };
+  G.team.splice(slot, 1);
+  u.box = Number.isInteger(box) && !pcAt(G, box) && box < pcCap(G) ? box : freeBox(G);
+  G.pc.push(u); fixSlots(G);
+  makeGameApi(G).log(`${u.nm} was deposited in the PC.`);
+  return { ok:true, unit:u };
+}
+
+function releaseFromPc(G, pcIdx){
+  const u = G.pc[pcIdx];
+  if(!u) return { ok:false };
+  const keep = reclaimHeld(G, u);
+  if(!keep.ok) return keep;
+  const refund = unitLevel(u) * TUNING.sellRefundPerLevel;
+  G.pc.splice(pcIdx, 1); fixSlots(G);
+  G.credits += refund;
+  makeGameApi(G).log(`Released ${u.nm} for ${refund}₽.`);
+  return { ok:true, refund };
+}
+
+/** Is there a party member this stored copy could be merged into? */
+function pcMergeTarget(G, pcIdx){
+  const u = G.pc[pcIdx];
+  if(!u) return -1;
+  return G.team.findIndex(t => t.id === u.id && unitLevel(t) < 3);
+}
+
+/** …and is there another copy in the box itself? */
+function pcTwinInBox(G, pcIdx){
+  const u = G.pc[pcIdx];
+  if(!u) return -1;
+  return (G.pc || []).findIndex((t, i) =>
+    i !== pcIdx && t && t.id === u.id && unitLevel(t) < 3);
+}
+
+/** Anywhere at all — what the ＋ badge on a box sprite means. */
+const pcCanMerge = (G, i) => pcMergeTarget(G, i) >= 0 || pcTwinInBox(G, i) >= 0;
+
+/** Combine two stored copies without going through the party. Levelling up
+    in the box is the whole point of keeping spares there. */
+function pcMerge(G, fromIdx, toIdx){
+  if(fromIdx === toIdx) return { ok:false };
+  const src = G.pc[fromIdx], dst = G.pc[toIdx];
+  if(!src || !dst) return { ok:false };
+  if(src.id !== dst.id) return { ok:false, why:`${src.nm} and ${dst.nm} are different pokémon.` };
+  if(unitLevel(dst) >= 3) return { ok:false, why:`${dst.nm} is already level 3.` };
+  const keep = consumeCopy(G, src);
+  if(!keep.ok) return keep;
+  G.pc.splice(fromIdx, 1);
+  const r = mergeInto(G, dst, src); fixSlots(G);
+  makeGameApi(G).log(`Combined two ${dst.nm} in the PC.`);
+  return { ok:true, merged:true, unit:dst, evolved:r.evolved,
+           // the box closes up when a slot empties, so the target may have moved
+           at: G.pc.indexOf(dst) };
+}
+
+function sellUnit(G, slot){
+  const u = G.team[slot];
+  if(!u) return { ok:false };
+  const keep = reclaimHeld(G, u);
+  if(!keep.ok) return keep;
+  const refund = unitLevel(u) * TUNING.sellRefundPerLevel;
+  G.team.splice(slot, 1); fixSlots(G);
+  G.credits += refund;
+  makeGameApi(G).log(`Released ${u.nm} for ${refund}₽.`);
+  return { ok:true, refund };
+}
+
+/** Old index-based rearrange, kept for the bots and tests: from and to are
+    list indexes, and the two pokémon trade places (or merge, if twins). */
+function moveUnit(G, from, to){
+  fixSlots(G);
+  if(from === to) return { ok:false };
+  const u = G.team[from];
+  if(!u) return { ok:false };
+  const dst = G.team[to];
+  return placeUnit(G, from, dst ? dst.pos : Math.min(to, TUNING.maxTeam - 1));
+}
+/** Put party member `idx` on formation cell `pos`: an empty cell just moves it;
+    a twin that can still level merges; anyone else trades places with it. */
+function placeUnit(G, idx, pos){
+  fixSlots(G);
+  const u = G.team[idx];
+  if(!u || !Number.isInteger(pos) || pos < 0 || pos >= TUNING.maxTeam || u.pos === pos) return { ok:false };
+  const dst = teamAt(G, pos);
+  if(dst && dst.id === u.id && unitLevel(dst) < 3){
+    const keep = consumeCopy(G, u); if(!keep.ok) return keep;
+    G.team.splice(idx, 1);
+    const r = mergeInto(G, dst, u); fixSlots(G);
+    return { ok:true, merged:true, unit:dst, evolved:r.evolved };
+  }
+  if(dst) dst.pos = u.pos;
+  u.pos = pos; fixSlots(G);
+  return { ok:true, swapped:!!dst };
+}
+/** The same for the PC: move stored pokémon `idx` to box `box`, swapping with
+    whoever is there. (Twins merge through pcMerge, which the UI calls first.) */
+function placeInBox(G, idx, box){
+  fixSlots(G);
+  const u = G.pc[idx];
+  if(!u || !Number.isInteger(box) || box < 0 || box >= pcCap(G) || u.box === box) return { ok:false };
+  const dst = pcAt(G, box);
+  if(dst) dst.box = u.box;
+  u.box = box; fixSlots(G);
+  return { ok:true, swapped:!!dst };
+}
+
+/** Use a Mart item on a pokémon — in the party (`where` 'team', the default)
+    or in the PC ('pc'). A held item given this way goes straight onto it. */
+function buyItem(G, idx, slot, where){
+  if(inGauntlet(G)) return shopClosed();
+  const s = G.mart[idx];
+  if(!s || s.bought) return { ok:false, why:'Already used.' };
+  const u = where === 'pc' ? (G.pc || [])[slot] : G.team[slot];
+  if(s.held) return u ? buyHeldOnto(G, idx, u) : buyHeld(G, idx);
+  const def = ITEMS[s.id];
+  if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
+  if(!u) return { ok:false, why:'Pick a pokémon first.' };
+  if(!canUseItem(s.id, u)) return { ok:false, why: def.vitamin
+    ? `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`
+    : `${def.name} does nothing for ${u.nm}.` };
+  G.credits -= def.cost; s.bought = true;
+  const api = makeGameApi(G);
+  def.apply(u, api);
+  if(def.vitamin){ u.vit = u.vit || {}; u.vit[s.id] = vitaminsTaken(u, s.id) + 1; }
+  api.log(`Used ${def.name} on ${u.nm}.`);
+  return { ok:true };
+}
+
+/** The always-stocked shelf. Boosts the whole party; wears off after the
+    battle; at most `xItems.perBattle` uses of each per battle. Any extra
+    arguments (older callers passed a party slot) are ignored. */
+function buyBattleItem(G, idx){
+  if(inGauntlet(G)) return shopClosed();
+  const def = BATTLE_ITEMS[idx];
+  if(!def) return { ok:false, why:'No such item.' };
+  if(!G.team.length) return { ok:false, why:'You need a party first.' };
+  if(xUses(G, def) >= TUNING.xItems.perBattle)
+    return { ok:false, why:`That's all ${TUNING.xItems.perBattle} ${def.name} for this battle.` };
+  if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
+  G.credits -= def.cost;
+  def.apply(G);
+  G.xUses = G.xUses || {};
+  G.xUses[def.id] = xUses(G, def) + 1;
+  makeGameApi(G).log(`Used ${def.name} (${xUses(G, def)}/${TUNING.xItems.perBattle}) — ${def.text()}`);
+  return { ok:true, uses: xUses(G, def) };
+}
+
+/** Hook kept for the UI; nothing happens between rounds in this model. */
+function endTurnEffects(G){ /* no shop-phase abilities */ }
+
+/** Exp. Share: one round of battle EXP for the PARTY only. No trainer bank (so
+    it doesn't compound into every future buy), no PC, no Lucky Egg bonus. */
+function shareExp(G){
+  for(const u of G.team) growUnit(u, TUNING.expGainWin);
+  makeGameApi(G).log('Your party gained a round of EXP from the Exp. Share.');
+}
+
+/** After a battle every pokémon gains EXP — the player's stat curve. */
+function grantBattleExp(G, result, quiet){
+  const g = result === 'win' ? TUNING.expGainWin : TUNING.expGainLoss;
+  // the trainer's own bank, always kept so the model can be switched
+  G.trainerExp = G.trainerExp || { hp:0, atk:0, spd:0 };
+  G.trainerExp.hp += g.hp; G.trainerExp.atk += g.atk; G.trainerExp.spd += g.spd;
+  const tick = u => growUnit(u, g);
+  // a Lucky Egg's bonus rounds count toward TUNING.eggCap, like vitamins
+  const bonusTicks = u => { const h = heldOf(u); if(!h || !h.expTick) return 0;
+    const n = Math.min(h.expTick, Math.max(0, TUNING.eggCap - (u.eggTicks || 0)));
+    u.eggTicks = (u.eggTicks || 0) + n; return n; };
+  for(const u of G.team){ tick(u); for(let n = bonusTicks(u); n > 0; n--) tick(u); }
+  // Benched pokémon train at a fraction of the rate. The remainder is banked
+  // on the unit rather than rounded away, so at 0.5 a stored pokémon gains a
+  // full tick every second battle instead of nothing at all.
+  let trained = 0;
+  for(const u of (G.pc || [])){
+    u.rest = (u.rest || 0) + TUNING.pcExpFraction;
+    while(u.rest >= 1 - 1e-9){ u.rest -= 1; tick(u); trained++; }
+    for(let n = bonusTicks(u); n > 0; n--){ tick(u); trained++; }
+  }
+  const api = makeGameApi(G);
+  if(quiet) return;
+  if(G.team.length) api.log(
+    `Your party gained EXP — each pokémon grows along its role.`);
+  if(trained) api.log(`${trained} pokémon in the PC trained too.`);
+}
+
+/* The run advances by clearing schedule entries.
+   A trainer battle is pass-or-pay: win or lose, you move on, and a loss costs
+   a life. A boss is a gate: you stay on it until you beat it, and losing
+   blacks you out — you keep your team and your badges and lose your money.
+   Two attempts are free; from the third, a defeat costs a life as well, so a
+   wall you cannot climb still ends the run. */
+function applyBattleResult(G, result, opp, sim){
+  const st = stageOf(G);
+  const meeting = rivalMeeting(G);
+  const boss = st.boss || null;
+  const gauntlet = isGauntletStage(st);
+  /* Wounds are read BEFORE the battle EXP lands. They are stored as a share of
+     max HP and EXP raises max HP, so reading afterwards would quietly round every
+     survivor up toward full. A draw mid-gauntlet still costs you what it cost. */
+  if(gauntlet && sim && (result === 'win' || (result === 'draw' && inGauntlet(G)))){
+    G.gauntlet = G.gauntlet || { hpFrac: {} };
+    recordWounds(G, sim);
+  }
+  grantBattleExp(G, result);
+  G.lastResult = result;
+  G.blackout = 0;
+
+  if(result === 'draw'){
+    // nobody advances and nobody pays; the streak is left alone
+    return G.over;
+  }
+  if(meeting >= 0){
+    const R = rivalCore(G);
+    R.met = meeting + 1;
+    G.lastRival = { meeting, result, credits:0, item:null, sold:0 };
+    if(result === 'win'){
+      R.beaten = (R.beaten || 0) + 1;
+      const prize = rivalPrize(G, meeting);
+      G.rivalPay = (G.rivalPay || 0) + prize.credits;       // lands with next turn's income
+      G.lastRival.credits = prize.credits;
+      if(prize.item && bagRoom(G) > 0){ G.bag.push(prize.item); G.lastRival.item = prize.item; }
+      else if(prize.item){                                   // full Bag: he pays its worth instead
+        const worth = heldResale(prize.item); G.rivalPay += worth; G.lastRival.sold = worth; G.lastRival.item = prize.item;
+      }
+      makeGameApi(G).log(`You beat your rival! +${prize.credits}₽ next turn${prize.item ? ` and a ${HELD_ITEMS[prize.item].name}` : ''}.`);
+    }
+  }
+  if(result === 'win'){
+    G.streak = G.streak > 0 ? G.streak + 1 : 1;
+    if(st.kind === 'gym'){
+      G.badges++; G.lastBadge = boss ? boss.badge : null;
+      (G.pendingRewards = G.pendingRewards || []).push(G.badges - 1);   // pick one of three
+      rollEncounter(G);                                                 // 2.0.0: maybe a legendary
+    }
+    /* Beating Lorelei is not a fresh start. The gauntlet as a whole is the
+       attempt, or a player who can always beat the first member would never pay
+       a life for falling at the fourth. */
+    if(!gauntlet) G.attempt = 0;
+    // you will face them again if you fall further in, so remember what they fielded
+    if(gauntlet && boss && opp) scout(G, boss, opp);
+    G.stage = (G.stage || 0) + 1;
+    if(st.kind === 'champion'){ G.over = 'won'; G.gauntlet = null; }
+  } else {
+    G.streak = G.streak < 0 ? G.streak - 1 : -1;
+    if(isBoss(st)){
+      G.attempt = (G.attempt || 0) + 1;
+      const lost = Math.floor(G.credits * TUNING.blackoutPct);
+      G.credits -= lost;
+      G.blackout = lost;
+      // you lose, but you learn: the rematch shows you exactly what they field
+      if(boss && opp) scout(G, boss, opp);
+      if(G.attempt > freeAttemptsFor(G)) G.lives--;
+      // fall anywhere in the gauntlet and it starts again from Lorelei, healed
+      if(gauntlet){ G.stage = gauntletStart(); G.gauntlet = null; }
+      makeGameApi(G).log(`You blacked out! Lost ${lost}₽.`);
+    } else {
+      G.lives--;
+      G.stage = (G.stage || 0) + 1;
+    }
+  }
+  if(!G.over && G.lives <= 0) G.over = 'lost';
+  return G.over;
+}
+
+/** Remember a boss's team. A rematch is rebuilt from this, so it is the truth. */
+/** 2.2.1 (Sean): One Life means every lost battle takes the life — the free boss
+    rematches don't apply, so a first defeat by a gym leader ends the run too. */
+function freeAttemptsFor(G){ return G && G.mods && G.mods.onelife ? 0 : TUNING.freeAttempts; }
+function scout(G, boss, opp){
+  G.scouted = G.scouted || {};
+  G.scouted[boss.id] = opp.team.map(u => ({
+    id:u.id, nm:u.nm, hp:u.hp, atk:u.atk, spd:u.spd, exp:u.exp || 0, held:u.held || null }));
+}
+
+/** Everything the UI needs to describe what happens next, in one call. */
+function nextUp(G){
+  const st = stageOf(G);
+  const plan = runPlan();
+  const boss = st.boss || null;
+  const untilGym = (() => {
+    for(let i = G.stage || 0; i < plan.length; i++) if(plan[i].kind !== 'trainer') return i - (G.stage || 0);
+    return 0;
+  })();
+  return {
+    kind: st.kind, boss, badge: st.badge,
+    stage: (G.stage || 0) + 1, total: plan.length, untilGym,
+    attempt: G.attempt || 0,
+    lifeAtRisk: isBoss(st) && (G.attempt || 0) >= freeAttemptsFor(G),
+    scouted: boss ? (G.scouted || {})[boss.id] || null : null,
+    gauntlet: isGauntletStage(st) ? {
+      at: (G.stage || 0) - gauntletStart(),
+      members: plan.slice(gauntletStart()).map(p => p.boss),
+      running: inGauntlet(G),
+    } : null,
+    // the shop turn before Lorelei is the last one until the gauntlet is over
+    lastShop: isGauntletStage(st) && !inGauntlet(G),
+  };
+}
+
+/** What next turn's pay packet looks like. Shown in the UI, so it lives here. */
+function incomeFor(G){
+  const carry = Math.min(Math.max(0, G.credits), carryCap(G));
+  const base = TUNING.creditsPerTurn;
+  const result = G.lastResult === 'win' ? TUNING.winBonus
+               : G.lastResult === 'lose' ? TUNING.lossBonus : 0;
+  const tbl = G.streak > 0 ? TUNING.winStreakBonus : TUNING.lossStreakBonus;
+  const streak = Math.abs(G.streak) >= 2
+    ? tbl[Math.min(Math.abs(G.streak), tbl.length - 1)] : 0;
+  // held items that pay — an Amulet Coin earns wherever the pokémon is kept
+  const items = ownedUnits(G).reduce((n, u) => {
+    const h = heldOf(u); return n + ((h && h.income) || 0); }, 0);
+  const badges = perk(G, 'allowance');
+  const rival = G.rivalPay || 0;                   // beating your rival pays next turn
+  // 2.0.0: Rich & Ruthless doubles everything earned (not what you carried over)
+  const rich = G.mods && G.mods.rich ? (TUNING.mods.richIncome - 1) * (base + result + streak + items + badges + rival) : 0;
+  return { carry, base, result, streak, items, badges, rival, rich,
+           total: carry + base + result + streak + items + badges + rival + rich };
+}
+
+function nextTurn(G){
+  /* Between Elite Four fights: no pay, no restock, and the clock doesn't move
+     (so the next member is priced against the same turn). But "next battle
+     only" still means the next battle, or one X Attack before Lorelei would
+     last all five fights. */
+  if(inGauntlet(G)){
+    for(const u of ownedUnits(G)){ u.tmpAtk = 0; u.tmpSpd = 0; }
+    G.xUses = null;
+    /* Resting on the bench. Anything that sat the last fight out in the PC
+       recovers a share of its max HP. A FAINTED pokémon stays fainted — rest
+       heals the hurt, it doesn't revive — or a full rotation would bring the
+       whole team back and attrition would mean nothing. Applied here, straight
+       after the fight, so it counts the fight a pokémon actually sat out. */
+    for(const u of G.pc || []){
+      const f = hpFracOf(G, u);
+      if(f > 0 && f < 1) G.gauntlet.hpFrac[u.uid] = Math.min(1, f + TUNING.benchRest);
+    }
+    return;
+  }
+  G.turn++;
+  const inc = incomeFor(G);
+  G.income = inc;
+  G.credits = inc.total;
+  G.rivalPay = 0;
+  for(const u of ownedUnits(G)){ u.tmpAtk = 0; u.tmpSpd = 0; }   // X items wear off
+  G.xUses = null;
+  G.mart.forEach(s => { if(s.bought) s.reserved = false; });
+  G.freeRolls = perk(G, 'freeRoll');
+  rollShop(G, false);
+}
+
+/* ---- export for node-based testing ---- */
+if(typeof module !== 'undefined' && module.exports){
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TCG_FROM_GEN1, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+    heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
+    intervalFor, actionInterval, previewOrder, paceVs, paceRank,
+    heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
+    tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, modList, modName, modsLabel, cleanMods, dailySeed, dailyMods, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
+    buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
+    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
+    applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
+    trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
+    chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
+    fightersOf, stageBattle, recordWounds, scout,
+    evolveUnit, makeGameApi };
+}

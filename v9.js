@@ -1,0 +1,20 @@
+const op=(name,mv)=>(s,M,on)=>{ s.move2 = on('open', mv(M), {free:true}); };
+module.exports = {
+ tangela: [{label:'base'},
+  {label:'open Growth +8', set:op('x',M=>M.grow('Growth', 8))},
+  {label:'open team shield .12', set:op('x',M=>M.shield('Ingrain', 0.12, 'team'))},
+  {label:'open hurt shield .4', set:op('x',M=>M.shield('Ingrain', 0.4, 'hurt'))},
+  {label:'Stun every2', set:(s,M,on)=>{ s.move2 = on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), {n:2}); }},
+  {label:'guard every3', set:(s,M,on)=>{ s.move2 = on('every', M.guard('Harden', 6, 1), {n:3}); }}],
+ venusaur: [{label:'base'},
+  {label:'open Growth +8', set:op('x',M=>M.grow('Growth', 8))},
+  {label:'open Growth +14', set:op('x',M=>M.grow('Growth', 14))},
+  {label:'open team shield .12', set:op('x',M=>M.shield('Ingrain', 0.12, 'team'))},
+  {label:'Poison every2', set:(s,M,on)=>{ s.move2 = on('every', M.afflict('Poison Powder', 0.5, 'psn', 1, 'front'), {n:2}); }},
+  {label:'Razor: two 1.0 main', set:(s,M)=>{ s.move = M.two('Razor Leaf', 1.0); }}],
+ vaporeon: [{label:'base'},
+  {label:'open Growth +8', set:op('x',M=>M.grow('Aqua Ring', 8))},
+  {label:'allyLow cleanse', set:(s,M,on)=>{ s.move2 = on('allyLow', M.cleanse('Aqua Ring', 0.2)); }},
+  {label:'open team shield .12', set:op('x',M=>M.shield('Mist', 0.12, 'team'))},
+  {label:'open shield self .3', set:op('x',M=>M.shield('Acid Armor', 0.3, 'self'))}],
+};

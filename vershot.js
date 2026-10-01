@@ -1,0 +1,10 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await (await b.newContext(devices['iPhone 13'])).newPage();
+  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(300);
+  await p.evaluate(() => { localStorage.setItem('pkb_seen', 'v54'); });
+  const tag = await p.evaluate(() => document.querySelector('.vtag').textContent);
+  await p.evaluate(() => openChangelog()); await p.waitForTimeout(300);
+  const top = await p.evaluate(() => [...document.querySelectorAll('.clog summary')].slice(0,3).map(s => s.textContent.replace(/\s+/g,' ').trim()));
+  console.log(tag, '\n', top.join('\n '));
+  await (await p.$('.modal .box')).screenshot({ path:'ver-news.png' });
+  await b.close(); })();

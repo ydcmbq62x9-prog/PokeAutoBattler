@@ -1,0 +1,10 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const ctx = await b.newContext(devices['iPhone 13']); await ctx.addInitScript(() => { window.PKB_TITLE = true; });
+  const p = await ctx.newPage(); await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(1500);
+  await p.screenshot({ path:'s130-title.png' });
+  await p.evaluate(() => { const t = document.getElementById('title'); if(t) t.remove(); document.body.classList.remove('titled');
+    PREF.set('text','instant'); G.team = [makeUnit('eevee', 0), makeUnit('flareon', 0)]; fixSlots(G); sel = { kind:'team', idx:0 }; inspect = { kind:'unit', u:G.team[0] }; render(); });
+  await p.waitForTimeout(800); await (await p.$('#inspect')).screenshot({ path:'s130-eevee.png' });
+  await p.evaluate(async () => { sel = null; inspect = null; render(); openTransfer(); document.querySelector('.modal.xfer [data-x="make"]').click(); await new Promise(r => setTimeout(r, 300)); });
+  await p.waitForTimeout(300); await p.screenshot({ path:'s130-xfer.png' });
+  await b.close(); })();

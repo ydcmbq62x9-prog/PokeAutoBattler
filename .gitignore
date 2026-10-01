@@ -1,0 +1,15 @@
+/*
+!/.gitignore
+!/*.js
+!/shell.html
+!/arena.css
+!/build.py
+!/gen-sprites.py
+!/runtests.sh
+!/runmodes.sh
+!/app/
+!/extra-sprites/
+*.pre-*
+engine.after*.js
+engine.new.js
+ui.new.js

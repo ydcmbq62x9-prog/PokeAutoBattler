@@ -1,0 +1,32 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport:{width:390,height:800}, hasTouch:true, isMobile:true });
+  const p = await ctx.newPage();
+  p.on('pageerror', e => console.log('ERR', e.message));
+  await p.goto('file:///mnt/user-data/outputs/pokebattler.html');
+  await p.waitForTimeout(300);
+  await p.evaluate(() => {
+    G.turn=14; G.badges=3; G.credits=30;
+    G.team=[makeUnit('wartortle',2), makeUnit('onix',0)];
+    G.team[0].held='band'; G.bag=['sitrus']; rollShop(G,false); save(); render();
+  });
+  await p.waitForTimeout(200);
+  const bb = await p.$eval('[data-act="team"][data-i="0"]', e => { const r=e.getBoundingClientRect();
+    return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)}; });
+  console.log('slot box', JSON.stringify(bb));
+  await p.tap('[data-act="team"][data-i="0"]');
+  await p.waitForTimeout(300);
+  console.log('after tap sel:', await p.evaluate(() => JSON.stringify(sel)));
+  await p.click('[data-act="team"][data-i="0"]');
+  await p.waitForTimeout(300);
+  console.log('after click sel:', await p.evaluate(() => JSON.stringify(sel)));
+  console.log('sel:', await p.evaluate(() => JSON.stringify(sel)));
+  console.log('body classes:', await p.evaluate(() => document.body.className));
+  console.log('ctxbar count:', await p.$$eval('.ctxbar', e => e.length));
+  console.log('shopbar count:', await p.$$eval('.shopbar', e => e.length));
+  console.log('held:', await p.evaluate(() => G.team[0].held), 'bag:', await p.evaluate(() => JSON.stringify(G.bag)));
+  console.log('ctx html:', await p.$eval('.ctxbar', e => e.innerHTML.replace(/\s+/g,' ').slice(0,300)).catch(()=>'none'));
+  console.log('shopbars:', await p.$$eval('.shopbar', els => els.map(e => e.className + ' :: ' + e.textContent.trim().slice(0,50))));
+  await b.close();
+})();

@@ -1,0 +1,17 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const ctx = await b.newContext(devices['iPhone 13']); await ctx.addInitScript(() => { window.PKB_TITLE = true; });
+  const p = await ctx.newPage(); await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(1200);
+  await p.evaluate(() => document.querySelector('#title [data-t="start"]').click()); await p.waitForTimeout(400);
+  await p.screenshot({ path:'s200-title.png' });
+  await p.evaluate(() => document.querySelector('#title [data-t="daily"]').click()); await p.waitForTimeout(300);
+  await p.screenshot({ path:'s200-daily.png' });
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); document.querySelector('#title [data-t="new"]').click(); }); await p.waitForTimeout(300);
+  await p.evaluate(() => { const d = document.querySelector('.modal.newrun'); d.querySelector('[data-mod="mono"]').click(); d.querySelector('[data-type="Water"]').click(); d.querySelector('[data-mod="rich"]').click(); });
+  await p.screenshot({ path:'s200-newrun.png' });
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); const t = document.getElementById('title'); t.remove(); document.body.classList.remove('titled'); titleEl = null;
+    newRun({ mods:{ rich:true } }); PREF.set('text','instant'); G.credits = 30; G.team = [makeUnit('machop', 0), makeUnit('clefairy', 0)]; fixSlots(G); G.encounter = { id:'zapdos', cost:12, turn:G.turn }; render();
+    document.querySelector('.drow[data-act="dc"][data-i="0"]').click(); document.querySelector('.slot[data-act="team"][data-i="2"]').click(); });
+  await p.waitForTimeout(600); await p.screenshot({ path:'s200-shop.png', fullPage:true });
+  await p.evaluate(async () => { await startBattle(); await new Promise(r => setTimeout(r, 300)); finishPlayback(); render(); });
+  await p.waitForTimeout(500); await (await p.$('.recap')).screenshot({ path:'s200-recap.png' });
+  await b.close(); })();

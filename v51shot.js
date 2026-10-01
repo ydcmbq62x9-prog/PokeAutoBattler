@@ -1,0 +1,11 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await (await b.newContext(devices['iPhone 13'])).newPage();
+  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(250);
+  await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50; PREF.set('text','instant');
+    G.team = [makeUnit('machamp', 0), makeUnit('abra', 0)]; G.team[0].held = 'choice'; G.team[1].held = 'iron'; fixSlots(G);
+    G.mart = [{ id:'protein', held:false }, { id:'choice', held:true }, { id:'orb', held:true }, { id:'iron', held:true }, { id:'scale', held:true }]; render(); });
+  await p.waitForTimeout(700);
+  await (await p.$('.martlist')).screenshot({ path:'v51-mart.png' });
+  await p.evaluate(() => { sel = { kind:'team', idx:0 }; inspect = { kind:'unit', u:G.team[0] }; render(); }); await p.waitForTimeout(700);
+  await (await p.$('#inspect')).screenshot({ path:'v51-insp.png' });
+  await b.close(); })();
