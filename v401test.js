@@ -42,5 +42,8 @@ check(E.themePool(E.bossById('jasmine')).includes('steelix') && E.themePool(E.bo
 { const G = E.newGame(21, { gens:[2] }); E.rollShop(G, false); G.team = [E.makeUnit('chikorita', 0)];
   const R = E.rivalCore(G);
   check(['chikorita','cyndaquil','totodile'].includes(R.starter) && R.core.includes('zubat') && !R.core.includes('eevee'), `Silver steals a Johto starter (${R.starter}) and brings Zubat`); }
+/* the Pokédex filters (Sean): what to show, and which gen */
+{ const ui = require('fs').readFileSync('ui.js', 'utf8');
+  check(/data-f="sec"/.test(ui) && /\['gym','Trainers'\]/.test(ui) && /\['items','Items'\]/.test(ui) && /data-f="gen"/.test(ui) && /PREF\.set\('dexgen'/.test(ui), 'the Pokédex filters by Pokémon / Trainers / Items and by gen, and remembers the choice'); }
 E.setActiveGens([1]);
 console.log(fails ? fails + ' FAILED' : 'v401 passed'); process.exit(fails ? 1 : 0);

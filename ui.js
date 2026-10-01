@@ -2975,7 +2975,8 @@ const CHANGELOG = [
     'Tyrogue becomes Hitmonlee, Hitmonchan or Hitmontop depending on its highest stat — Attack, HP or Speed — so your vitamins choose.',
     'Magmar joins Gen 1 as a Fire Cannon (Magby grows into it).',
     'Two new types, Steel and Dark, with the Gen 2 matchups. No Gen 1 pokémon changes type.',
-    'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.' ] },
+    'Gen 2 and mixed runs keep their own records, and the Mono-type list follows the generations you pick. Badges keep their own look wherever their leader lands.',
+    'The Pokédex has filters: show everything, or just Pokémon, Trainers or Items, and pick All gens, Gen 1 or Gen 2.' ] },
   { v:'3.8.1', date:'Sep 30, 2026', title:'Visual bug fixes', sub:'Art for all nineteen new pokémon', items:[
     'Weedle, Kakuna, Beedrill, Spearow, Fearow, Doduo, Dodrio, Diglett, Dugtrio, Sandshrew, Sandslash, both Nidorans and their evolutions, Farfetch\u2019d and Porygon now have their sprites instead of letter placeholders.' ] },
   { v:'3.8.0', date:'Sep 30, 2026', title:'Major gameplay update', sub:'Nineteen new pokémon: Weedle, Spearow, Doduo, Diglett, Sandshrew, both Nidorans, Farfetch\u2019d and Porygon', items:[
@@ -3794,7 +3795,7 @@ function openDex(){
     const s = SPECIES[k];
     const from = i > 0 ? evoStep(k) : null;
     const via = from ? (from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}` : from.stat ? `↑ level up with ${({ atk:'Attack', hp:'HP', spd:'Speed' })[from.stat]} as its highest stat` : '↑ level up') : '';
-    return `<div class="dexrow ${i ? 'sub' : ''}">
+    return `<div class="dexrow ${i ? 'sub' : ''}" ${dexGenAttr(k)}>
       ${spriteHtml(k, 'sm')}
       <div><b>${esc(s.name)}</b>
         <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>
@@ -3803,11 +3804,12 @@ function openDex(){
         <div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}
       </div></div>`;
-  }).join('')).join('');
+  }).join('')).map(h => `<div class="dexfam">${h}</div>`).join('');
   setActiveGens(gensBefore);
 
   const items = Object.keys(ITEMS).map(k => { const it = ITEMS[k];
-    return `<div class="dexrow">${itemSpriteHtml(k, it.icon, 'sm')}
+    const g2only = ['sunstone', 'kingsrock', 'metalcoat'].includes(k);   // 4.0.0: only useful with Gen 2 on
+    return `<div class="dexrow" data-g1="${g2only ? 0 : 1}" data-g2="1">${itemSpriteHtml(k, it.icon, 'sm')}
       <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent</span>
       <div class="abil">${esc(it.text)}</div></div></div>`; }).join('');
 
@@ -3842,33 +3844,57 @@ function openDex(){
       <div class="abil">${esc(b.blurb)}</div></div></div>`;
   /* 4.0.0: one block per gen that can be played */
   const leaders = GENS_READY.map(n => { const g = GEN_BOSSES[n];
-    return (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')
+    return `<div class="dexgen" data-g${n}="1">` + (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')
       + g.gyms.map(b => leaderRow(b, 'gym')).join('')
       + g.elite.map(b => leaderRow(b, 'elite')).join('')
       + leaderRow(g.champion, 'champion')
-      + leaderRow(g.rival, 'rival'); }).join('');
+      + leaderRow(g.rival, 'rival') + '</div>'; }).join('');
 
-  /* Five sections is enough to need a way in. */
-  const jump = `<div class="dexjump">
-    ${[['mon','Pokémon'],['gym','Leaders'],['held','Held items'],['mart','PokéMart'],['ctr','Battle counter']]
-      .map(([id,label]) => `<button class="sp" data-jump="${id}">${label}</button>`).join('')}
+  /* 4.0.0 (Sean): filters — what to show (Pokémon, Trainers, Items) and, with more
+     than one gen to play, which gen. Remembered between visits. */
+  const SECS = [['all','All'], ['mon','Pokémon'], ['gym','Trainers'], ['items','Items']];
+  const GENF = [['all','All gens'], ...GENS_READY.map(n => [String(n), GENS[n].name])];
+  let sec = PREF.get('dexsec', 'all'), gen = PREF.get('dexgen', 'all');
+  if(!SECS.some(x => x[0] === sec)) sec = 'all';
+  if(!GENF.some(x => x[0] === gen)) gen = 'all';
+  const jump = `<div class="dexjump dexfilt">
+    <div class="dexseg" data-f="sec">${SECS.map(([id, label]) => `<button class="sp" data-v="${id}">${label}</button>`).join('')}</div>
+    ${GENS_READY.length > 1 ? `<div class="dexseg" data-f="gen">${GENF.map(([id, label]) => `<button class="sp" data-v="${id}">${esc(label)}</button>`).join('')}</div>` : ''}
   </div>`;
 
   const d = modal(`<h3>Pokédex</h3>${jump}
-    <h3 class="dexh" id="dex-mon">Pokémon</h3><div>${rows}</div>
-    <h3 class="dexh" id="dex-gym">Gym leaders <span class="dim">— ${TUNING.battlesPerBadge} battles apart</span></h3>
-    <div>${leaders}</div>
-    <h3 class="dexh" id="dex-held">Held items <span class="dim">— one each, swap any time</span></h3>
+    <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon</h3><div>${rows}</div></section>
+    <section data-sec="gym"><h3 class="dexh" id="dex-gym">Trainers <span class="dim">— gym leaders, the Elite Four, Champions and rivals</span></h3>
+    <div>${leaders}</div></section>
+    <section data-sec="items"><h3 class="dexh" id="dex-held">Held items <span class="dim">— one each, swap any time</span></h3>
     <div>${held}</div>
     <h3 class="dexh" id="dex-mart">PokéMart <span class="dim">— used right away</span></h3><div>${items}</div>
-    <h3 class="dexh" id="dex-ctr">Battle counter <span class="dim">— next battle only</span></h3><div>${bitems}</div>
+    <h3 class="dexh" id="dex-ctr">Battle counter <span class="dim">— next battle only</span></h3><div>${bitems}</div></section>
+    <p class="dim dexnone" hidden>Nothing here for that generation.</p>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
+  d.classList.add('dex');
   d.querySelector('[data-m]').onclick = () => d.remove();
-  d.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => {
-    const t = d.querySelector('#dex-' + b.dataset.jump);
-    if(t) t.scrollIntoView({ block:'start', behavior:'smooth' });
+  const apply = () => {
+    d.querySelectorAll('.dexseg[data-f="sec"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === sec));
+    d.querySelectorAll('.dexseg[data-f="gen"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === gen));
+    d.querySelectorAll('section[data-sec]').forEach(x => x.hidden = sec !== 'all' && x.dataset.sec !== sec);
+    const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) !== '0' && (el.hasAttribute('data-g' + gen) || !el.matches('.dexgen'));
+    d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
+    d.querySelectorAll('.dexfam').forEach(f => f.hidden = ![...f.querySelectorAll('.dexrow')].some(r => !r.hidden));
+    d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
+    const shown = [...d.querySelectorAll('section[data-sec]')].filter(x => !x.hidden);
+    d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow')].some(r => !r.closest('[hidden]')));
+  };
+  d.querySelectorAll('.dexseg .sp').forEach(b => b.onclick = () => {
+    SFX.play('tap');
+    if(b.closest('.dexseg').dataset.f === 'sec'){ sec = b.dataset.v; PREF.set('dexsec', sec); }
+    else { gen = b.dataset.v; PREF.set('dexgen', gen); }
+    apply(); d.scrollTop = 0; const box = d.querySelector('.box') || d; box.scrollTop = 0;
   });
+  apply();
 }
+/** 4.0.0: which gens can meet this pokémon, for the dex filter (Gen 2 is the Johto Pokédex). */
+const dexGenAttr = k => GENS_READY.map(n => `data-g${n}="${inGens(k, [n]) ? 1 : 0}"`).join(' ');
 
 /* ===================================================================
    TITLE SCREEN (v38)
