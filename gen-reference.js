@@ -42,6 +42,11 @@ const rewardRows = E.BADGE_REWARDS.map(r => {
     <td class="n">${cfg.max}</td><td class="n">${d >= 0 ? '+' : ''}${d.toFixed(0)} pt</td></tr>`;
 }).join('');
 
+/* ---------- 4.1.0: from here on the tables show every generation (the Gen 1 numbers above were measured on a Gen 1 run) ---------- */
+E.setActiveGens(E.GENS_READY);
+const GD = {};
+for(const [key, file] of [['2', 'gens-2.json'], ['1+2', 'gens-12.json']]) if(fs.existsSync(file)){ try{ GD[key] = JSON.parse(fs.readFileSync(file, 'utf8')); }catch(e){} }
+
 /* ---------- what changed in THIS update (Sean: whenever a balance pass touches a pokémon's stats or moves, show it, for that update only) ----------
    Diffs the live engine against `released-engine.js`, a snapshot of the engine as it was when the PREVIOUS update shipped.
    After an update is published, copy engine.js over released-engine.js so the next sheet starts clean; an update that
@@ -197,7 +202,7 @@ const familyHtml = line => {
       <span class="tchip" style="--c:${E.TYPES[base.type].color}">${base.type}</span>
       ${line.map(k=>pic(k,'lineup')).join('')}
       <h3>${line.map(k=>esc(E.SPECIES[k].name)).join(' <span class="a">→</span> ')}</h3>
-      <span class="tier">tier ${base.tier}</span>
+      <span class="tier">tier ${base.tier}${E.genOf(line[0]) > 1 ? ' · Gen 2' : line.some(k => E.genOf(k) > 1) ? ' · Gen 1 + 2' : ''}</span>
     </header>
     <div class="scroller"><table class="stats">
       <thead><tr><th>stage</th><th>from</th><th class="n">◆</th><th class="n">♥</th><th class="n">»</th><th class="n">tot</th><th>gen 1</th><th>role</th><th>moves (main, then second)</th></tr></thead>
@@ -250,6 +255,47 @@ const bossRows = plan.map((st, i) => ({ st, i })).filter(x => x.st.boss).map(({ 
     <td class="n">${st.kind === 'gym' ? pctOf(lost) + ' of runs end here' : (lost / RUNS).toFixed(2) + ' falls / run'}</td></tr>`;
 }).join('');
 
+
+/* ---------- 4.1.0: how each combination of generations plays ---------- */
+const gensHtml = () => {
+  const row = (label, c, e4, note) => `<tr><td class="nm">${label}</td><td class="n"><b>${c}</b></td><td class="n">${e4}</td><td>${note}</td></tr>`;
+  const pc = v => Math.round(v * 100) + '%';
+  const rows = [
+    row('Gen 1', pctOf(measured.cleared), pctOf(measured.reached), 'The original game, exactly as before (' + RUNS + ' seeded runs).'),
+    GD['2'] ? row('Gen 2 only', pc(GD['2'].cleared), pc(GD['2'].reachedE4), `Johto only (${GD['2'].N} seeded runs). Foes ×${E.TUNING.gensFoes['2']}.`) : '',
+    GD['1+2'] ? row('Gen 1 + 2', pc(GD['1+2'].cleared), pc(GD['1+2'].reachedE4), `Both regions, bosses pooled and scaled to their slot (${GD['1+2'].N} seeded runs). Foes ×${E.TUNING.gensFoes['1+2']}.`) : '' ].join('');
+  const nmB = id => { const b = E.EVERY_BOSS.find(x => x.id === id); return b ? b.name : id; };
+  const bossTable = (key, home) => !GD[key] ? '' : (() => {
+    const list = Object.entries(GD[key].bosses).filter(([id]) => !home || (E.EVERY_BOSS.find(x => x.id === id) || {}).gen === 2)
+      .map(([id, f]) => ({ id, n: f.n, w: f.w, slots: f.slots })).sort((a, b) => a.id.localeCompare(b.id));
+    const slotLine = sl => Object.keys(sl).sort((a, b) => (a[0] + a.slice(1).padStart(2, '0')).localeCompare(b[0] + b.slice(1).padStart(2, '0'))).map(k => `${k} ${Math.round(sl[k].w / sl[k].n * 100)}%`).join(' · ');
+    return `<div class="scroller"><table><thead><tr><th>boss</th><th class="n">met</th><th class="n">first-try win</th><th>by slot</th></tr></thead><tbody>${
+      list.map(b => `<tr><td class="nm">${pic(b.id, 'sm')} ${esc(nmB(b.id))}</td><td class="n">${b.n}</td><td class="n"><b>${Math.round(b.w / b.n * 100)}%</b></td><td>${esc(slotLine(b.slots))}</td></tr>`).join('')}</tbody></table></div>`; })();
+  const g2 = Object.keys(E.SPECIES).filter(k => E.genOf(k) === 2 && !E.SPECIES[k].legendary && !E.SPECIES[k].token);
+  const roles = ['tank', 'bruiser', 'cannon', 'support'];
+  const roleRows = [1, 2, 3, 4, 5].map(t => `<tr><td class="nm">tier ${t}</td>${roles.map(r => `<td class="n">${g2.filter(k => E.SPECIES[k].tier === t && E.roleOf(k) === r).length}</td>`).join('')}</tr>`).join('');
+  const T = E.TUNING;
+  return `<h2>Generations <span class="dim" style="font-size:14px;font-weight:400">— new in 4.0.0</span></h2>
+  <p class="note" style="margin-bottom:12px">New Run has a toggle per generation. Each gen has its own gym leaders, Elite Four, Champion and rival;
+  with both on, 8 of the 16 gym leaders and 4 of the Elite Four are drawn and shuffled, and every boss is scaled to the slot they land in.
+  The reference player clears each combination about three runs in four.</p>
+  <div class="scroller"><table><thead><tr><th>generations</th><th class="n">runs cleared</th><th class="n">reach Elite Four</th><th>note</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <h3 style="margin-top:18px">Who is sold</h3>
+  <p class="note">A Gen 1 run sells Gen 1 only. A <b>Gen 2-only</b> run sells Gen 2 pokémon plus the Gen 1 lines that one of them belongs to (Onix with Steelix, Magby with Magmar, Pichu with Pikachu), and nothing else.
+  Johto's leaders can still field Gen 1 pokémon from the Johto Pokédex, but those are never sold to you. Gen 2's evolutions of Gen 1 pokémon only exist when Gen 2 is on.</p>
+  <h3 style="margin-top:18px">Run Focus and the Evolution Pool <span class="dim" style="font-size:13px;font-weight:400">— runs with both gens</span></h3>
+  <p class="note">A mixed run sells nearly twice the roster, so copies merge far less often (a level 3 is about three times rarer). Each run draws, from its seed:
+  <b>3 Focus lines</b> (one Gen 1, one Gen 2, one either; tier ${3} or lower) that fill about ${Math.round(E.FOCUS_CHANCE * 100)}% of Daycare slots between them, and
+  an <b>Evolution Pool</b> of 4 of the ${E.CROSS_EVOS.length} cross-gen evolutions (${E.CROSS_EVOS.map(k => esc(E.SPECIES[k].name)).join(', ')}); the Mart only stocks stones for the open ones.
+  Single-gen and Gen 2-only runs are untouched. The Daily Challenge rotates generations by date (Gen 1 half the time, Gen 1+2 three days in ten, Gen 2 otherwise).</p>
+  <h3 style="margin-top:18px">Gen 2 roster by tier and role <span class="dim" style="font-size:13px;font-weight:400">— buyable lines</span></h3>
+  <div class="scroller"><table><thead><tr><th></th>${roles.map(r => `<th class="n">${E.ROLES[r].icon} ${E.ROLES[r].name}</th>`).join('')}</tr></thead><tbody>${roleRows}</tbody></table></div>
+  ${GD['2'] ? `<h3 style="margin-top:18px">Johto bosses, Gen 2-only run</h3>
+  <p class="note">Share of runs that beat the boss on the first try (bosses that stop a run are met less often).</p>${bossTable('2', true)}` : ''}
+  ${GD['1+2'] ? `<h3 style="margin-top:18px">Every boss, Gen 1 + 2 run</h3>
+  <p class="note">The same boss lands in different slots in different runs; the slot column shows how they do wherever they appear.</p>${bossTable('1+2', false)}` : ''}`;
+};
+
 /* ---------- tuning ---------- */
 const T = E.TUNING;
 const num = (label, value, note) =>
@@ -284,7 +330,7 @@ const typeCounts = RING.map(t => {
 /* =================================================================== */
 
 /* ---------- 2.10.0: who each gym leader / Elite Four member can field (Sean) ---------- */
-const bossPools = E.ALL_BOSSES.map(b => ({ b, pool: E.themePool(b) }));
+const bossPools = E.EVERY_BOSS.map(b => ({ b, pool: E.themePool(b) }));
 const nm = k => E.SPECIES[k].name;
 const overlapWith = (b, pool) => bossPools.filter(o => o.b.id !== b.id && o.b.theme && b.theme)
   .map(o => ({ id:o.b.id, name:o.b.name, n: o.pool.filter(k => pool.includes(k)).length }))
@@ -445,7 +491,7 @@ td.mv b{color:var(--ink);font-weight:600}
 </style>
 
 <div class="wrap">
-  <h1>PokéBattler Balance Sheet</h1>
+  <h1>PokéBattler Balance Sheet <span class="dim" style="font-size:16px;font-weight:400">· Gen 2 build</span></h1>
   <p class="lede">Every pokémon, item and type matchup currently in the game, pulled straight out of
   the engine. Move descriptions are the level-1 numbers; power scales ×${1 + T.movePowerPerLevel}
   at level 2 and ×${(1 + T.movePowerPerLevel * 2).toFixed(2)} at level 3.</p>
@@ -456,17 +502,19 @@ td.mv b{color:var(--ink);font-weight:600}
   ${changeHtml()}
   ${bossChangeHtml()}
 
+  ${gensHtml()}
+
   <h2>Type chart</h2>
   <p class="note" style="margin-bottom:14px"><b>Where the types come from (3.0.0).</b> Each pokémon has <b>one</b> type:
   its first (main) Gen 1 type, except that Normal/Flying pokémon count as Flying. So Bulbasaur (Grass/Poison) is
   Grass, Scyther (Bug/Flying) is Bug, Gyarados (Water/Flying) is Water and the Pidgey line is Flying.
   Every species is checked against this rule in the test suite, so the "gen 1" column and the type chip can never disagree.</p>
-  <p class="note" style="margin-bottom:14px">The chart is the modern one without Dark, Steel and Fairy. Where the games
+  <p class="note" style="margin-bottom:14px">The chart is the modern one: Steel and Dark joined in 4.0.0 with the Gen 2 pack, and there is still no Fairy. Gen 1 pokémon keep their Gen 1 types. Where the games
   make a type immune (Ghost vs Normal, Ground vs Electric…) this game makes it <b>resist</b> (×½) instead, so an attack never does nothing.
   A type can now be weak to, or resist, several types at once.</p>
   ${matrix()}
   <p class="note" style="margin-top:14px">Read each row as an <b>attacker</b>: ×2 is a super-effective hit, ×½ a resisted one.
-  Poison is not a type here (no pokémon has it as its main type); Ice has no buyable pokémon yet, only Articuno.</p>
+  Poison is not a type here (no pokémon has it as its main type).</p>
   <p class="note" style="margin-top:12px">Roster spread by type — a type with very few pokémon is hard to
   build around, which is why Mono runs are only offered for the types with enough: ${E.MONO_TYPES.join(', ')}.</p>
   <div style="margin-top:8px">${typeCounts}</div>
