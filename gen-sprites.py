@@ -30,7 +30,7 @@ ALIASES = {
     'nidoran-m': 'nidoranm', 'nidoran_m': 'nidoranm', 'nidoran-male': 'nidoranm', 'nidoran♂': 'nidoranm',
     "farfetch'd": 'farfetchd', 'farfetch-d': 'farfetchd', 'farfetch_d': 'farfetchd', 'farfetchd': 'farfetchd',
     # 4.0.0 Gen 2 pack
-    'sun-stone': 'sunstone', 'kings-rock': 'kingsrock',
+    'sun-stone': 'sunstone', 'kings-rock': 'kingsrock', 'dragon-scale': 'dragonscale',
     'ltsurge': 'surge', 'lt-surge': 'surge', 'blue-champion': 'blue', 'blue-rival': 'rival',
 }
 
