@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.3.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.4.0', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1424,7 +1424,7 @@ function renderBattle(){
         : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
   const redNote = !done ? '' : battle.kind === 'red'
     ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge(battle.boss.id, 'big')}
-        <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
+        <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${G.secrets && (G.secIdx || 0) < G.secrets.length - 1 ? `${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].name)} is next, at ${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].place)}. You are healed and the shops are open for one turn.` : battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
       : `<div class="award redlose">${bossArt(battle.boss, 'hero')}
         <div><b>${esc(battle.boss.name)} ${battle.boss.id === 'oak' ? 'smiles and shakes his head.' : 'didn\u2019t flinch.'}</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
     : battle.kind === 'champion' && won && G.redOpen
@@ -2368,8 +2368,8 @@ function applyPreset(p){
 function openNewRun(onStart){
   const cur = mainRun();
   const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
-  const pick = { mono: null, nopc: false, rich: false, onelife: false, ticket: null };
-  const lastGens = cleanGens(PREF.get('gens', [1])).filter(n => GENS_READY.includes(n));
+  const pick = { mono: null, nopc: false, rich: false, onelife: false, secrets: false, ticket: null };
+  const lastGens = cleanGens(String(PREF.get('gens', '1')).split(',').map(Number)).filter(n => GENS_READY.includes(n));
   let gens = lastGens.length ? lastGens : [1];   // 4.0.0: remembered from your last run
   const allTypes = Object.keys(TYPES);
   const d = modal(`<h3>New run</h3>
@@ -2382,6 +2382,7 @@ function openNewRun(onStart){
     <div class="mods">
       <button class="modt" data-mod="mono"><b>Mono-type</b><span>Pick a type: the Daycare sells only that type. Opponents are tuned so every type is about as hard.</span></button>
       <div class="monotypes" hidden>${allTypes.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
+      <button class="modt" data-mod="secrets"><b>${esc(MOD_INFO.secrets.name())}</b><span>${esc(MOD_INFO.secrets.text())}<em class="gneed"></em></span></button>
       ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}${k === 'onelife' ? ' Clear it for the Hardcore Badge.' : ''}</span></button>`).join('')}
     </div>
     <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
@@ -2398,6 +2399,11 @@ function openNewRun(onStart){
     d.querySelectorAll('.ntype').forEach(b => b.hidden = !types.includes(b.dataset.type));
     note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in. Each run also draws 3 Focus lines the Daycare shows more often, and 4 open cross-gen evolutions.`
       : `${GENS[gens[0]].region}: its own gym leaders, Elite Four and Champion.`;
+    const gOk = gens.includes(1) && gens.includes(2) && ticketCount('red') > 0 && ticketCount('oak') > 0;
+    if(pick.secrets && !gOk) pick.secrets = false;
+    const gb = d.querySelector('[data-mod="secrets"]'); gb.classList.toggle('off', !gOk);
+    gb.querySelector('.gneed').textContent = gOk ? '' : ` Locked: ${!(gens.includes(1) && gens.includes(2)) ? 'turn on Gen 1 and Gen 2' : 'needs a Red ticket and an Oak ticket'}.`;
+    if(pick.secrets) pick.ticket = null;
     if(pick.ticket && !gens.includes(SECRETS[pick.ticket].gen)) pick.ticket = null;
     d.querySelectorAll('[data-tkt]').forEach(b => { const ok = gens.includes(SECRETS[b.dataset.tkt].gen); b.classList.toggle('on', pick.ticket === b.dataset.tkt); b.classList.toggle('off', !ok); b.setAttribute('aria-disabled', ok ? 'false' : 'true'); });
     d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
@@ -2407,6 +2413,7 @@ function openNewRun(onStart){
   };
   d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.onclick = () => {
     const k = b.dataset.mod; SFX.play('tap');
+    if(k === 'secrets' && b.classList.contains('off')){ say(b.querySelector('.gneed').textContent.trim()); return; }
     if(k === 'mono'){ if(types$.hidden){ types$.hidden = false; } else { types$.hidden = true; pick.mono = null; } }
     else pick[k] = !pick[k];
     sync();
@@ -2414,7 +2421,7 @@ function openNewRun(onStart){
   d.querySelectorAll('[data-tkt]').forEach(b => b.onclick = () => {
     const id = b.dataset.tkt; SFX.play('tap');
     if(!gens.includes(SECRETS[id].gen)){ say(`${SECRETS[id].name} needs ${GENS[SECRETS[id].gen].name} in the run.`); return; }
-    pick.ticket = pick.ticket === id ? null : id; sync();
+    pick.ticket = pick.ticket === id ? null : id; if(pick.ticket) pick.secrets = false; sync();
   });
   d.querySelectorAll('.ntype').forEach(b => b.onclick = () => { pick.mono = b.dataset.type; SFX.play('tap'); sync(); });
   d.querySelectorAll('.gent').forEach(b => b.onclick = () => {
@@ -2429,6 +2436,8 @@ function openNewRun(onStart){
     if(G && !G.daily) noteQuit();
     PREF.set('gens', gens);
     const secret = pick.ticket && gens.includes(SECRETS[pick.ticket].gen) && useTicket(pick.ticket) ? pick.ticket : null;
+    if(pick.secrets && !(ticketCount('red') > 0 && ticketCount('oak') > 0)) pick.secrets = false;
+    if(pick.secrets){ useTicket('red'); useTicket('oak'); }
     const { ticket: _t, ...mods } = pick;
     newRun({ mods, gens, secret });
     undo = null; drawnPhase = null; render();
@@ -3083,6 +3092,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.4.0', date:'Oct 5, 2026', title:'Minor gameplay changes', sub:'The Secret Gauntlet, a secret-boss streak, and a Gauntlet Badge', items:[
+    'A new rule on the New Run screen: Secret Gauntlet. Red and Professor Oak both wait after the Champion, back to back, one try each. It needs Gen 1 and Gen 2 turned on and costs one Red ticket and one Oak ticket. You are healed and the shops open for one turn between them. Win a fight and you still earn that boss\u2019s badge and a ticket back, even if the other one beats you.',
+    'Beat both in one Secret Gauntlet run and you earn the Gauntlet Badge, shown on your Trainer Card under the other secret badges.',
+    'Fixed the New Run screen forgetting your generations. It was meant to remember the ones you picked last time, but a mixed Gen 1 + Gen 2 pick always came back as Gen 1.',
+    'Your Trainer Card now tracks your secret-boss streak: wins in a row against Red and Oak, with your best ever. A loss to either one resets it.',
+  ]},
   { v:'4.3.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Secret Boss Tickets, secret bosses in the Pokédex, and sound that pauses with the fight', items:[
     'Beating a secret boss now earns a Secret Boss Ticket for that boss (you can hold up to 3 of each). On the New Run screen, tap a ticket and that boss waits for you after the Champion in that run. It still takes one try, and the generation he belongs to has to be in the run: Red needs Gen 2, Oak needs Gen 1. Tickets are not earned or spent in the Daily Challenge, and they show on your Trainer Card and travel in a transfer code.',
     'The Pokédex has a Secret bosses section under Trainers. Red and Oak stay a silhouette marked ??? until you have met them in a battle, then it shows their portrait, place, team, and whether you have their badge. The 1 in 6 chance stays pure luck, with no hints.',
@@ -3405,8 +3420,10 @@ function hcBadge(cls = ''){
 const secretBoss = () => secretOf(G) || RED;
 const SECRET_HOW = { red:'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.',
                      oak:'Beat Professor Oak in Pallet Town. He turns up in about one Gen 1 run in six, after the Champion.' };
+const GAUNT_HOW = 'Beat both Red and Oak in one Secret Gauntlet run (Gen 1 + Gen 2, costs a ticket for each).';
 function redBadge(cls = ''){ return secretBadge('red', cls); }
 function secretBadge(id, cls = ''){
+  if(id === 'gauntlet') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Gauntlet Badge"><circle cx="16" cy="16" r="14.5" fill="#2b1a22" stroke="#e0a526" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 14.5-14.5v29A14.5 14.5 0 0 1 1.5 16z" fill="#d6342c"/><path d="M16 1.5a14.5 14.5 0 0 1 0 29z" fill="#3d9a4c"/><circle cx="16" cy="16" r="6" fill="#fff" stroke="#2b1a22" stroke-width="1.5"/><polygon points="17,10 13,17 16,17 15,22 19,15 16.2,15" fill="#ffd23a" stroke="#2b1a22" stroke-width=".8"/></svg>`;
   const nm = id === 'oak' ? 'Oak\u2019s Badge' : 'Red\u2019s Badge', img = id === 'oak' ? SPRITES.oakbadge : SPRITES.redbadge;
   if(img) return `<img class="hcb rdb ${cls}" src="${img}" alt="${nm}">`;
   if(id === 'oak') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="${nm}"><circle cx="16" cy="16" r="14.5" fill="#f4f0e2" stroke="#2b1a22" stroke-width="2"/><circle cx="16" cy="16" r="10.5" fill="none" stroke="#3d9a4c" stroke-width="1.5"/><path d="M16 26c-1-6 0-11 2-14 2 1 6 3 6 8-3 0-5 1-6 3 0-4-2-7-4-9-1 3-1 8 2 12z" fill="#3d9a4c" stroke="#1d5a2a" stroke-width="1" stroke-linejoin="round"/><circle cx="16" cy="9" r="3.2" fill="#d6342c" stroke="#2b1a22" stroke-width="1"/></svg>`;
@@ -3414,15 +3431,34 @@ function secretBadge(id, cls = ''){
 }
 function secretRec(id){ const h = records()[id]; return h && h.count > 0 ? h : null; }
 function redRec(){ return secretRec('red'); }
+const secWonIds = () => G.secWon || (G.redResult === 'won' ? [secretBoss().id] : []);
 function awardRed(){
-  if(!G || G.over !== 'won' || G.redResult !== 'won' || G.redDone) return;
-  const id = secretBoss().id, r = records(), h = r[id] || { count:0, first:null, last:null };
-  G.redNew = !h.count; G.redDone = true;
-  h.count++; h.first = h.first || localDate(); h.last = localDate();
-  r[id] = h;
-  if(!G.daily){ r.tickets = { ...(r.tickets || {}), [id]: Math.min(TICKET_MAX, ((r.tickets || {})[id] || 0) + 1) }; G.ticketNew = true; }   // 4.3.0: a ticket for a rematch (not from a daily)
-  r.met = { ...(r.met || {}), [id]: true };
+  if(!G || G.over !== 'won' || G.redDone) return;
+  const ids = secWonIds(); if(!ids.length) return;
+  const r = records(); G.redDone = true;
+  for(const id of ids){
+    const h = r[id] || { count:0, first:null, last:null };
+    if(id === secretBoss().id) G.redNew = !h.count;
+    h.count++; h.first = h.first || localDate(); h.last = localDate();
+    r[id] = h;
+    if(!G.daily){ r.tickets = { ...(r.tickets || {}), [id]: Math.min(TICKET_MAX, ((r.tickets || {})[id] || 0) + 1) }; G.ticketNew = true; }   // 4.3.0: a ticket for a rematch (not from a daily)
+    r.met = { ...(r.met || {}), [id]: true };
+  }
+  if(G.secrets && ids.length >= G.secrets.length){   // 4.4.0: both bosses down in the Secret Gauntlet
+    const g = r.gauntlet || { count:0, first:null, last:null }; G.gauntNew = !g.count;
+    g.count++; g.first = g.first || localDate(); g.last = localDate(); r.gauntlet = g;
+  }
   saveRecords(r);
+}
+/* 4.4.0: your run of secret-boss wins in a row (a loss to a secret boss resets it) */
+function noteSecretStreak(){
+  if(!G || G.streakDone || !G.redOpen || !G.over) return;
+  G.streakDone = true;
+  const wins = secWonIds().length, lost = G.redResult === 'lost'; if(!wins && !lost) return;
+  const r = records(), t = r.secStreak || { cur:0, best:0 };
+  for(let k = 0; k < wins; k++){ t.cur++; t.best = Math.max(t.best, t.cur); }
+  if(lost) t.cur = 0;
+  r.secStreak = t; saveRecords(r);
 }
 const TICKET_MAX = 3;
 const ticketCount = id => (records().tickets || {})[id] || 0;
@@ -3443,7 +3479,8 @@ const mergeHardcore = (a, b) => {
   const firsts = [a.first, b.first].filter(Boolean).sort();
   return { count: Math.max(a.count || 0, b.count || 0), first: firsts[0] || null, last: [a.last, b.last].filter(Boolean).sort().pop() || null };
 };
-const reachedStage = () => G.over === 'won' ? runPlan(G).length - (G.redOpen && G.redResult !== 'won' ? 1 : 0) : (G.stage || 0);   // Red is a bonus, not part of 'Champion'
+const secretStages = () => G.redOpen ? (G.secrets ? G.secrets.length : 1) : 0;
+const reachedStage = () => G.over === 'won' ? runPlan(G).length - (G.redOpen ? secretStages() - (G.secrets ? secWonIds().length : (G.redResult === 'won' ? 1 : 0)) : 0) : (G.stage || 0);   // Red is a bonus, not part of 'Champion'
 /* 2.0.0: a daily run keeps its own result per day, and a run with rules keeps
    its own record per rule set — neither muddies your plain-run records. */
 const DAILY_REC = 'pkb_daily';
@@ -3462,7 +3499,7 @@ function recBucket(r){
   return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
 }
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ awardHardcore(); awardRed(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ awardHardcore(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
 function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
@@ -3484,7 +3521,7 @@ function noteBattle(b){
 function bestRunLabel(stage){
   if(stage < 0) return '—';
   const plan = runPlan(G);
-  if(stage >= plan.length - (G.redOpen ? 1 : 0)) return 'Champion!';
+  if(stage >= plan.length - secretStages()) return 'Champion!';
   if(plan[stage].boss) return `Reached ${plan[stage].boss.name}`;
   let k = stage; while(k < plan.length && !plan[k].boss) k++;
   return plan[k] ? `On the way to ${plan[k].boss.name}` : '—';
@@ -3520,7 +3557,10 @@ function openTrainerCard(fromTitle){
       <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
     ${[['red', RD, 'Red'], ['oak', OK, 'Oak']].map(([id, rec, nm]) => `<div class="hcrow ${rec ? 'on red' : ''}" title="${rec ? nm + '\u2019s Badge' : esc(SECRET_HOW[id])}">${secretBadge(id, rec ? '' : 'locked')}
       <div><b>${nm}\u2019s Badge</b><span>${rec ? esc(hcLine(rec)) : `Not earned yet. ${esc(SECRET_HOW[id])}`}${ticketCount(id) ? ` <em class="tkt">\uD83C\uDFAB ${ticketCount(id)} ticket${ticketCount(id) === 1 ? '' : 's'}</em>` : ''}</span></div></div>`).join('')}
+    ${(() => { const g = R.gauntlet && R.gauntlet.count ? R.gauntlet : null; return `<div class="hcrow ${g ? 'on red' : ''}" title="${g ? 'Gauntlet Badge' : esc(GAUNT_HOW)}">${secretBadge('gauntlet', g ? '' : 'locked')}
+      <div><b>Gauntlet Badge</b><span>${g ? esc(hcLine(g)) : `Not earned yet. ${esc(GAUNT_HOW)}`}</span></div></div>`; })()}
     <h4>Records</h4><div class="recs">
+      ${R.secStreak && R.secStreak.best ? `<div><span>Secret boss streak</span><b>${R.secStreak.cur} now · best ${R.secStreak.best}</b></div>` : ''}
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
       ${live ? `<div><span>Partner</span><b>${P ? `${esc(SPECIES[P.u.id].name)} · ${P.n} battle${P.n === 1 ? '' : 's'}` : '—'}</b></div>
@@ -3683,8 +3723,8 @@ function applyTransfer(data){
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
-    const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) };
-    saveRecords({ ...a, tickets: tk, met: mt, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) }, ga = mergeHardcore(a.gauntlet, b.gauntlet), st = { cur: Math.max((a.secStreak || {}).cur || 0, (b.secStreak || {}).cur || 0), best: Math.max((a.secStreak || {}).best || 0, (b.secStreak || {}).best || 0) };
+    saveRecords({ ...a, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;

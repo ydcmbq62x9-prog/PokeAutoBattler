@@ -331,7 +331,7 @@ function runPlan(G){
   for(let i = 0; i < TUNING.eliteFourCount; i++)
     plan.push({ kind:'elite', boss:bp.elite[i % bp.elite.length] });
   plan.push({ kind:'champion', boss:bp.champion });
-  if(G && G.redOpen) plan.push({ kind:'red', boss: secretOf(G) });   // 4.1.0: Mt. Silver
+  if(G && G.redOpen) for(const id of (G.secrets || [null])) plan.push({ kind:'red', boss: id ? SECRETS[id] : secretOf(G) });   // 4.1.0: Mt. Silver (4.4.0: the Secret Gauntlet has two)
   return plan;
 }
 const RUN_LENGTH = () =>
@@ -3047,6 +3047,7 @@ const MOD_INFO = {
   mono:    { name: t => `Mono-${t}`, text: t => `The Daycare only sells ${t} pokémon. Opponents are tuned so every type is about as hard.` },
   nopc:    { name: () => 'No PC', text: () => 'No PC box: just the six you carry, no bench.' },
   rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
+  secrets: { name: () => 'Secret Gauntlet', text: () => 'Red and Professor Oak both wait after the Champion, back to back, one try each. Needs Gen 1 and Gen 2, and costs a Red ticket and an Oak ticket. Beat both for the Gauntlet Badge.' },
   onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
 };
 /** 4.0.0: a run that isn't plain Gen 1 is labelled by its gens ("Gen 2", "Gen 1+2") and keeps its own records, like a rule. */
@@ -3061,7 +3062,7 @@ const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
 function cleanMods(m){
   const out = {};
   if(m && m.mono && MONO_TYPES.includes(m.mono)) out.mono = m.mono;
-  for(const k of ['nopc', 'rich', 'onelife']) if(m && m[k]) out[k] = true;
+  for(const k of ['nopc', 'rich', 'onelife', 'secrets']) if(m && m[k]) out[k] = true;
   return out;
 }
 /** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
@@ -3115,7 +3116,7 @@ function drawSecret(seed, gens){
   return has1 && has2 ? (r() < 0.5 ? 'red' : 'oak') : has2 ? 'red' : 'oak';
 }
 /** The secret boss of this run (old saves stored `true`, which was always Red). */
-function secretOf(G){ const f = G && G.redFlag; return !f ? null : (typeof f === 'string' && SECRETS[f]) || RED; }
+function secretOf(G){ if(G && G.secrets) return SECRETS[G.secrets[G.secIdx || 0]]; const f = G && G.redFlag; return !f ? null : (typeof f === 'string' && SECRETS[f]) || RED; }
 function drawFocus(seed, gens){
   gens = cleanGens(gens);
   if(!isMixed(gens)) return null;
@@ -3132,6 +3133,7 @@ function drawFocus(seed, gens){
 function newGame(seed, opts){
   const gens = setActiveGens(opts && opts.gens);   // 4.0.0: which gens this run plays
   const mods = cleanMods(opts && opts.mods);
+  if(mods.secrets && !(gens.includes(1) && gens.includes(2))) delete mods.secrets;   // 4.4.0: both bosses need both gens
   seed = seed || Math.floor(Math.random() * 1e9);
   const evoPool = drawEvoPool(seed, gens);
   ACTIVE_POOL = evoPool;
@@ -3141,7 +3143,8 @@ function newGame(seed, opts){
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
-    redFlag: ticket || drawSecret(seed, gens), ticketUsed: ticket, redOpen: false, redResult: null,   // 4.1.0
+    redFlag: mods.secrets ? 'red' : ticket || drawSecret(seed, gens), ticketUsed: ticket, redOpen: false, redResult: null,
+    ...(mods.secrets ? { secrets: ['red', 'oak'], secIdx: 0, secWon: [] } : {}),   // 4.4.0   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -3922,7 +3925,11 @@ function applyBattleResult(G, result, opp, sim){
     G.redResult = result === 'win' ? 'won' : 'lost';
     G.lastResult = result;
     G.stage = (G.stage || 0) + 1;
-    G.over = 'won'; G.gauntlet = null;
+    if(result === 'win'){ G.secWon = [...(G.secWon || []), secretOf(G).id]; }
+    G.gauntlet = null;
+    /* 4.4.0: in the Secret Gauntlet a win sends you on to the next boss (healed, one turn in the shop) */
+    if(result === 'win' && G.secrets && (G.secIdx || 0) < G.secrets.length - 1){ G.secIdx = (G.secIdx || 0) + 1; G.attempt = 0; G.redResult = null; return G.over; }
+    G.over = 'won';
     return G.over;
   }
   if(result === 'draw'){
