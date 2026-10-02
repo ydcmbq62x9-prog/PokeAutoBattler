@@ -132,7 +132,7 @@ const TUNING = {
   eggCap:       10,
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
      Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
-  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
+  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, oakRatio: { '1': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
   rival: {
     windows:    [[0, 1], [3, 4], [6, 7]],
     size:       [3, 5, 6],
@@ -331,7 +331,7 @@ function runPlan(G){
   for(let i = 0; i < TUNING.eliteFourCount; i++)
     plan.push({ kind:'elite', boss:bp.elite[i % bp.elite.length] });
   plan.push({ kind:'champion', boss:bp.champion });
-  if(G && G.redOpen) plan.push({ kind:'red', boss:RED });   // 4.1.0: Mt. Silver
+  if(G && G.redOpen) plan.push({ kind:'red', boss: secretOf(G) });   // 4.1.0: Mt. Silver
   return plan;
 }
 const RUN_LENGTH = () =>
@@ -458,7 +458,7 @@ const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
    from its seed whether he is up there (G.redFlag), and he only appears once the
    Champion has fallen. His team is the Mt. Silver team from Gold, Silver and
    Crystal, exactly, each at level 3 and holding something that suits it. */
-const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', gen:2, theme:null, special:true,
+const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', place:'Mt. Silver', gen:2, theme:null, special:true,
   lineup:[
     { id:'pikachu',  exp:5, held:'claw' },
     { id:'espeon',   exp:5, held:'focus' },
@@ -468,6 +468,19 @@ const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', gen:2, the
     { id:'blastoise',exp:5, held:'coat' },
   ],
   blurb:'He has not said a word in years. One chance, no rematch: if you fall here, the run simply ends as it would have.' };
+/* 4.2.0 — PROFESSOR OAK, the Gen 1 secret boss. Gen 1 never has him battle, so his
+   team is the professor's best: the three starters and three Kanto classics. */
+const OAK = { id:'oak', person:'oak', name:'Oak', title:'Professor', place:'Pallet Town', gen:1, theme:null, special:true,
+  lineup:[
+    { id:'pikachu',   exp:5, held:'claw' },
+    { id:'snorlax',   exp:5, held:'coat' },
+    { id:'dragonite', exp:5, held:'band' },
+    { id:'venusaur',  exp:5, held:'lefto' },
+    { id:'charizard', exp:5, held:'char' },
+    { id:'blastoise', exp:5, held:'sitrus' },
+  ],
+  blurb:'The professor has watched every trainer who ever left his lab, and he brought his best. One chance, no rematch.' };
+const SECRETS = { red: RED, oak: OAK };
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
   blurb:'He turns up three times a run, always when you least expect it. His starter beats yours, and his team grows every time you meet.' };
 const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (balance tools and tests read this)
@@ -1001,6 +1014,7 @@ const MAGM = [30, 34, 62];
 const HORS = { b:[14, 20, 46], m:[36, 42, 60], e:[42, 44, 58] };
 const CROB = [56, 46, 78];
 const BLIS = [76, 14, 44];
+const PORY2 = [58, 50, 56];
 const STLX = [54, 36, 30];
 const SCIZ = [48, 60, 54];
 const POLT = [52, 42, 46];
@@ -1454,6 +1468,8 @@ const SPECIES = {
                 move:M.drain('Leech Life', 1.6, 0.6) },
   blissey:    { name:'Blissey',    type:'Normal', gen1:'Normal', gen:2, tier:5, role:'tank', hp:BLIS[0], atk:BLIS[1], spd:BLIS[2], token:true,
                 move:M.mend('Softboiled', 0.7, 0.3) },
+  porygon2:   { name:'Porygon2',   type:'Normal', gen1:'Normal', gen:2, tier:5, role:'support', hp:PORY2[0], atk:PORY2[1], spd:PORY2[2], token:true,
+                move:M.rally('Download', 1.6, 0.09) },
   steelix:    { name:'Steelix',    type:'Steel', gen1:'Steel/Ground', gen:2, tier:3, role:'tank', hp:STLX[0], atk:STLX[1], spd:STLX[2], token:true,
                 move:M.wall('Iron Tail', 1.3, 2.1) },
   scizor:     { name:'Scizor',     type:'Bug', gen1:'Bug/Steel', gen:2, tier:4, role:'bruiser', hp:SCIZ[0], atk:SCIZ[1], spd:SCIZ[2], token:true,
@@ -1736,6 +1752,7 @@ const MOVE2 = {
   kingdra:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
   crobat:     on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
   blissey:    on('allyLow', M.shield('Light Screen', 0.15, 'team')),
+  porygon2:   on('low',   M.recover('Recover', 0.5)),
   steelix:    on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),
   scizor:     on('open',  M.grow('Swords Dance', 6), { free:true }),
   politoed:   on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
@@ -1754,6 +1771,7 @@ Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; })
 Object.assign(SPECIES.golbat,    { evo2:{ into:'crobat', by:'level' } });
 Object.assign(SPECIES.seadra,    { evo2:{ into:'kingdra', by:'stone', stone:'dragonscale' } });
 Object.assign(SPECIES.chansey,   { evo2:{ into:'blissey', by:'level' } });
+Object.assign(SPECIES.porygon,   { evo2:{ into:'porygon2', by:'level' } });
 Object.assign(SPECIES.onix,      { evo2:{ into:'steelix', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.scyther,   { evo2:{ into:'scizor', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.poliwhirl, { evo2:{ into:'politoed', by:'stone', stone:'kingsrock' } });
@@ -2763,9 +2781,10 @@ function opponentFor0(G){
   }
   if(st.kind === 'red'){
     // 4.1.0: priced on the curve like the Champion; the team is fixed, never rerolled
-    return generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'red', boss: RED,
-      lineup: RED.lineup.map(u => ({ ...u, exp: TUNING.red.exp })),
-      ratio: TUNING.red.ratio[cleanGens(G.gens).join('+')] || 1.1 });
+    const sb = secretOf(G), gk = cleanGens(G.gens).join('+');
+    return generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'red', boss: sb,
+      lineup: sb.lineup.map(u => ({ ...u, exp: TUNING.red.exp })),
+      ratio: (sb.id === 'oak' ? TUNING.red.oakRatio : TUNING.red.ratio)[gk] || 1.1 });
   }
   const boss = st.boss || null;
   const kind = st.kind;
@@ -3071,7 +3090,7 @@ function dailyMods(date){
        Golbat → Crobat…) are open that run; the Mart stocks stones for those.
    Single-gen runs and Gen 2-only runs are untouched: nothing here applies.
    =================================================================== */
-const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra'];   // species that carry an `evo2`
+const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon'];   // species that carry an `evo2`
 const EVO_POOL_SIZE = 4;
 const FOCUS_COUNT = 3;
 const FOCUS_CHANCE = 0.09;       // share of Daycare slots that show a focus line
@@ -3085,10 +3104,18 @@ function drawEvoPool(seed, gens){
   return a.slice(0, EVO_POOL_SIZE).sort((x, y) => CROSS_EVOS.indexOf(x) - CROSS_EVOS.indexOf(y));
 }
 /** 4.1.0: is Red on Mt. Silver this run? Seeded, so a daily is the same for everyone. Gen 2 runs only. */
-function drawRed(seed, gens){
-  if(!(gens || []).includes(2)) return false;
-  return makeRng(mix32((seed || 1) ^ 0x5ed0b11, 4242))() < TUNING.red.chance;
+function drawRed(seed, gens){ return drawSecret(seed, gens) === 'red'; }
+/** Which secret boss waits after the Champion this run: 'red' (Gen 2 only), 'oak' (Gen 1 only),
+    a seeded one of the two when both gens are on, or null. */
+function drawSecret(seed, gens){
+  gens = gens || [1];
+  const r = makeRng(mix32((seed || 1) ^ 0x5ed0b11, 4242));
+  if(!(r() < TUNING.red.chance)) return null;
+  const has1 = gens.includes(1), has2 = gens.includes(2);
+  return has1 && has2 ? (r() < 0.5 ? 'red' : 'oak') : has2 ? 'red' : 'oak';
 }
+/** The secret boss of this run (old saves stored `true`, which was always Red). */
+function secretOf(G){ const f = G && G.redFlag; return !f ? null : (typeof f === 'string' && SECRETS[f]) || RED; }
 function drawFocus(seed, gens){
   gens = cleanGens(gens);
   if(!isMixed(gens)) return null;
@@ -3112,7 +3139,7 @@ function newGame(seed, opts){
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
-    redFlag: drawRed(seed, gens), redOpen: false, redResult: null,   // 4.1.0
+    redFlag: drawSecret(seed, gens), redOpen: false, redResult: null,   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -4051,7 +4078,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, RED, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,

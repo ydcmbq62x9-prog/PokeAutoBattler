@@ -1985,6 +1985,14 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .rpika img{width:34px;height:34px;image-rendering:pixelated}
 .award.redwin{border-color:#d6342c}
 .speech.red{border-color:#d6342c}
+
+/* 4.2.0: battle pause */
+.pausebtn{flex:0 0 auto;min-width:42px;padding-inline:10px}
+.pausebtn.on{background:var(--info);color:#07121f;border-color:var(--info)}
+.stepbtn{flex:0 0 auto}
+.bstage.paused::after{content:'PAUSED';position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:30;pointer-events:none;
+  font-weight:900;font-size:11px;letter-spacing:2px;color:#07121f;background:rgba(255,255,255,.85);border-radius:20px;padding:2px 12px}
+@media(max-width:420px){ .shopbar .stepbtn{min-width:70px;padding-inline:6px;font-size:12px} .shopbar .btn[data-act="skip"]{min-width:78px;padding-inline:6px} }
 </style>
 </head>
 <body>

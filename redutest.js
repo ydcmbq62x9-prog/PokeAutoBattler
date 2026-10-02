@@ -8,7 +8,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
   await p.evaluate(() => { localStorage.clear(); });
   const a = await p.evaluate(() => {
-    G = newGame(11, { gens: [2] }); G.redFlag = true; rollShop(G, false);
+    G = newGame(11, { gens: [2] }); G.redFlag = 'red'; rollShop(G, false);
     G.stage = runPlan(G).findIndex(x => x.kind === 'champion'); G.badges = 8; phase = 'shop'; render();
     const before = document.querySelector('.dock') && document.querySelector('.dock').textContent;
     applyBattleResult(G, 'win', opponentFor0(G), null); nextTurn(G); render();
@@ -16,7 +16,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     return { before, dock: txt('.dock'), strip: txt('.redstrip'), art: !!document.querySelector('.dock .bossart img'), sprite: !!SPRITES.red };
   });
   check(a.sprite, 'Red has a sprite'); check(/Champion Blue|Champion Lance|Champion/.test(a.before), 'before: the Champion is next');
-  check(/Red is waiting on Mt\. Silver/.test(a.dock) && /one chance/.test(a.dock) && /Challenge Red/.test(a.dock), 'dock: Red is waiting, one chance');
+  check(/Red is waiting at Mt\. Silver/.test(a.dock) && /one chance/.test(a.dock) && /Challenge Red/.test(a.dock), 'dock: Red is waiting, one chance');
   check(/Mt\. Silver/.test(a.strip) && /one turn/.test(a.strip), 'shop strip tells you it is one turn to spend');
   check(a.art, 'Red’s portrait shows on the dock');
   /* lose */
@@ -29,8 +29,8 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   check(lose.lives === lose.now && !lose.rec, 'losing: no life lost and no badge recorded');
   /* win */
   const win = await p.evaluate(() => {
-    G = newGame(11, { gens: [2] }); G.redFlag = true; rollShop(G, false);
-    G.redOpen = true; G.redFlag = true; G.stage = runPlan(G).length - 1; G.badges = 8;
+    G = newGame(11, { gens: [2] }); G.redFlag = 'red'; rollShop(G, false);
+    G.redOpen = true; G.redFlag = 'red'; G.stage = runPlan(G).length - 1; G.badges = 8;
     const opp = opponentFor0(G); applyBattleResult(G, 'win', opp, null); noteRunEnd(); phase = 'over'; render();
     const first = { html: document.body.innerText, rec: records().red, isNew: G.redNew, badge: !!document.querySelector('.redend .rdb') };
     noteRunEnd(); const again = records().red.count;
@@ -46,7 +46,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   const mg = await p.evaluate(() => JSON.stringify(mergeHardcore({ count:1, first:'2026-10-01', last:'2026-10-01' }, { count:3, first:'2026-09-01', last:'2026-10-02' })));
   check(/"count":3/.test(mg) && /2026-09-01/.test(mg), 'badge records merge across devices');
   const hc = await p.evaluate(() => { G = newGame(3, { gens:[1] }); return { open: G.redOpen, flag: G.redFlag }; });
-  check(hc.flag === false, 'Gen 1 run has no Red');
+  check(hc.flag !== 'red', 'a Gen 1 run never has Red');
   check(!errs.length, 'no page errors ' + errs.slice(0, 2).join('; '));
   await p.screenshot({ path: 'shot-red.png' });
   await b.close(); console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);

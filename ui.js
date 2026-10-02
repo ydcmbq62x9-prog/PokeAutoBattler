@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.1.0', date:'Oct 2, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.2.0', date:'Oct 3, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1087,12 +1087,12 @@ function dockHtml(closed){
   const line = !b ? `${trainerName(G.turn)} wants to battle!`
     : n.kind === 'gym' ? `${b.name} wants to battle!`
     : n.kind === 'elite' ? `Elite Four ${b.name} wants to battle!`
-    : n.kind === 'red' ? `${b.name} is waiting on Mt. Silver.`
+    : n.kind === 'red' ? `${b.name} is waiting at ${b.place}.`
     : `Champion ${b.name} wants to battle!`;
   const sub = !b ? `Trainer battle · ${n.untilGym === 1 ? 'gym leader after this one' : `${n.untilGym} battles to the gym`}`
     : n.kind === 'gym' ? `${b.title} · ${b.badge} Badge`
     : n.kind === 'elite' ? `Elite Four · fight ${n.gauntlet ? n.gauntlet.at + 1 : 1} of ${n.gauntlet ? n.gauntlet.members.length : 5}`
-    : n.kind === 'red' ? 'Mt. Silver · one chance, nothing to lose'
+    : n.kind === 'red' ? `${b.place} · one chance, nothing to lose`
     : 'Champion · the last fight';
   const nobody = closed && !fightersOf(G).length;
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
@@ -1128,8 +1128,9 @@ function runNoteHtml(g){
     <div class="dim"><b>Open evolutions</b> ${poolLines(g).map(esc).join(' · ')}</div></div>`;
 }
 function redStripHtml(){
-  return `<div class="redstrip">${bossArt(RED, 'redart')}<div><b>Mt. Silver</b>
-    <span>Red is up here, and you are healed. This is your one turn to spend, and you only get one try: beat him for Red\u2019s Badge, lose and nothing is lost.</span></div></div>`;
+  const sb = secretBoss();
+  return `<div class="redstrip">${bossArt(sb, 'redart')}<div><b>${esc(sb.place)}</b>
+    <span>${esc(sb.name)} is here, and you are healed. This is your one turn to spend, and you only get one try: beat ${sb.id === 'oak' ? 'him' : 'him'} for ${esc(sb.name)}\u2019s Badge, lose and nothing is lost.</span></div></div>`;
 }
 function renderShop(){
   const maxTier = tierFor(G);
@@ -1378,7 +1379,7 @@ function renderBattle(){
   const bossTag = battle.boss ? `<div class="bosstag ${battle.kind}">${bossArt(battle.boss, 'tag')}
       ${battle.kind === 'gym' ? `${esc(battle.boss.title)} · ${esc(battle.boss.badge)} Badge`
         : battle.kind === 'rival' ? `<span class="ambush ${battle.i < 1 ? 'pop' : ''}">!</span> Your rival · ambush ${battle.opp.meeting + 1} of ${TUNING.rival.windows.length}`
-        : battle.kind === 'red' ? 'Mt. Silver · one chance'
+        : battle.kind === 'red' ? `${battle.boss.place} · one chance`
         : `${battle.kind === 'elite' ? 'Elite Four' : 'Champion'}${
           gn ? ` · fight ${gn.at + 1} of ${gn.members.length}` : ''}`}</div>` : '';
   // what winning or losing a gauntlet fight means, said on the result screen
@@ -1415,17 +1416,17 @@ function renderBattle(){
   const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''}"><span>
       ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
               : battle.kind === 'champion' ? 'CHAMPION!'
-              : battle.kind === 'red' ? 'RED BEATEN!'
+              : battle.kind === 'red' ? `${esc(battle.boss.name).toUpperCase()} BEATEN!`
               : battle.kind === 'elite' ? `${esc(battle.boss.name).toUpperCase()} FALLS`
               : battle.kind === 'rival' ? 'RIVAL BEATEN!' : 'VICTORY!')
         : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
   const redNote = !done ? '' : battle.kind === 'red'
-    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${redBadge('big')}
-        <div><b>Red\u2019s Badge</b><span>You beat the strongest trainer there is.</span></div></div>`
+    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge(battle.boss.id, 'big')}
+        <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
       : `<div class="award redlose">${bossArt(battle.boss, 'hero')}
-        <div><b>Red didn\u2019t flinch.</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
+        <div><b>${esc(battle.boss.name)} ${battle.boss.id === 'oak' ? 'smiles and shakes his head.' : 'didn\u2019t flinch.'}</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
     : battle.kind === 'champion' && won && G.redOpen
-    ? `<p class="gnote">A challenger is waiting on <b>Mt. Silver</b>. You are healed and the shops are open for one turn.</p>` : '';
+    ? `<p class="gnote">A challenger is waiting at <b>${esc(secretBoss().place)}</b>. You are healed and the shops are open for one turn.</p>` : '';
   const notes = done ? `${award}${rivalNote}${gnote}${redNote}` : '';
 
   return `
@@ -1452,6 +1453,8 @@ function renderBattle(){
              aria-pressed="${v === speed}">${v}×</button>`).join('')}
          </div>
          <span class="steps">${battle.i + 1}/${battle.steps.length}</span>
+         <button class="btn pausebtn ${battle.paused ? 'on' : ''}" data-act="pause" aria-pressed="${!!battle.paused}" aria-label="${battle.paused ? 'Resume' : 'Pause'}">${battle.paused ? '▶' : '⏸'}</button>
+         ${battle.paused ? '<button class="btn stepbtn" data-act="step" aria-label="Next step">Step ⏭</button>' : ''}
          <button class="btn" data-act="skip">Skip ⏩</button>`}
   </div>`;
 }
@@ -1813,8 +1816,9 @@ function animateStep(S, i){
     const stNew = n && n.st && n.st !== (w && w.st) ? n.st : null;
     const shUp = n && (n.shield || 0) > ((w && w.shield) || 0);
     const dAtk = n && w ? n.atk - w.atk : 0, dSpd = n && w ? n.spd - w.spd : 0;
-    const touched = fainted || dhp || stNew || shUp || dAtk || dSpd || kinds.has('hit') || kinds.has('crit') || kinds.has('buff');
-    if(touched) ev.push({ k, F, n, w, kinds, fainted, dhp, stNew, shUp, dAtk, dSpd });
+    const shDown = !!(n && w && (w.shield || 0) > 0 && !(n.shield > 0));
+    const touched = fainted || dhp || stNew || shUp || shDown || dAtk || dSpd || kinds.has('hit') || kinds.has('crit') || kinds.has('buff');
+    if(touched) ev.push({ k, F, n, w, kinds, fainted, dhp, stNew, shUp, shDown, dAtk, dSpd });
   }
   const foes = A ? ev.filter(e => e.F.side !== A.side && (e.dhp < 0 || e.fainted || e.stNew || e.kinds.has('hit') || e.kinds.has('crit'))) : [];
   const pals = A ? ev.filter(e => e.F !== A && e.F.side === A.side && (e.dhp > 0 || e.shUp || e.dAtk > 0 || e.dSpd > 0 || e.kinds.has('buff'))) : [];
@@ -1881,9 +1885,18 @@ function animateStep(S, i){
         glow(F, { brn:'#ff7a2e', psn:'#b05ad0', par:'#ffd93a', slp:'#9fb1d6', cnf:'#ff9bd0', fln:'#ffffff' }[e.stNew] || '#fff');
       }
       if(e.shUp){ floatText(S, F, 'Barrier', 'shield note', lift); lift += 20; }
+      if(e.shDown && !e.fainted){ floatText(S, F, 'Barrier broke', 'shield note', lift); lift += 20; F.el.querySelector('.fbarrier').classList.remove('on'); }
       if(e.dAtk) { floatText(S, F, e.dAtk > 0 ? 'ATK ▲' : 'ATK ▼', (e.dAtk > 0 ? 'up' : 'down') + ' note', lift); lift += 20; }
       if(e.dSpd) { floatText(S, F, e.dSpd > 0 ? 'SPD ▲' : 'SPD ▼', (e.dSpd > 0 ? 'up' : 'down') + ' note', lift); }
       if(e.fainted) setTimeout(() => { if(S.gen === gen) faintFx(S, F); }, quick ? 60 : 170);
+    }
+    /* 4.2.0: a fighter nothing "happened" to on this step can still have lost its barrier or a status
+       (a hit soaked whole, a status running out). It used to keep the old shell and chip until
+       something else touched it. Bring every living fighter up to the snapshot. */
+    for(const [k, F] of S.f){
+      if(F.down) continue;
+      const n = now.get(k);
+      if(n && (((n.shield || 0) !== F.shield) || n.st !== F.st)) paintFighter(F, n, false);
     }
   };
   if(impactAt) setTimeout(land, impactAt); else land();
@@ -1901,7 +1914,7 @@ function playIntro(S){
     : b.kind === 'red' ? `${b.boss.name} wants to battle!`
     : `${b.oppName} wants to battle!`;
   const sub = b.kind === 'gym' ? `${b.boss.title} · ${b.boss.badge} Badge`
-    : b.kind === 'rival' ? 'An ambush!' : b.kind === 'red' ? 'Mt. Silver · the summit' : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
+    : b.kind === 'rival' ? 'An ambush!' : b.kind === 'red' ? `${b.boss.place} · the secret battle` : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
   const n = (b.steps[0] && b.steps[0].e.length) || 0;
   const balls = Array.from({ length: TUNING.maxTeam }, (_, k) => `<i class="${k < n ? '' : 'out'}"></i>`).join('');
   const ban = document.createElement('div');
@@ -2077,7 +2090,7 @@ async function runImage(){
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
   const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
   x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
-  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? 'CHAMPION · RED DEFEATED' : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
+  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `CHAMPION · ${secretBoss().name.toUpperCase()} DEFEATED` : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
   x.font = font(16, 400); x.fillStyle = '#6b6f7a';
   x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
@@ -2104,7 +2117,7 @@ async function runImage(){
   if(G.redResult){
     const w = G.redResult === 'won', by = hasF ? 828 : 810;
     x.fillStyle = w ? '#f0b830' : '#ece4c8'; x.fillRect(60, by, W - 120, 38); x.strokeStyle = dark; x.lineWidth = 3; x.strokeRect(60, by, W - 120, 38);
-    x.fillStyle = dark; x.font = font(16); x.fillText(w ? '\u26A1 Red\u2019s Badge · Mt. Silver cleared' : 'Faced Red on Mt. Silver', W / 2, by + 25);
+    x.fillStyle = dark; x.font = font(16); x.fillText(w ? `\u26A1 ${secretBoss().name}\u2019s Badge · ${secretBoss().place} cleared` : `Faced ${secretBoss().name} in ${secretBoss().place}`, W / 2, by + 25);
   }
   x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
@@ -2128,21 +2141,21 @@ async function shareRunImage(){
 }
 
 function redOverHtml(){
-  const w = G.redResult === 'won';
-  return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(RED, 'redart')}
-    <div><b>${w ? `MT. SILVER${G.redNew ? ' <i class="newdot">NEW</i>' : ''}` : 'MT. SILVER'}</b>
-    <span>${w ? `You beat Red and his whole team: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise.${(() => { const h = redRec(); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
-      : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
-    ${w ? `<span class="rpika">${miniSprite('pikachu')}</span>${redBadge('big')}` : ''}</div>`;
+  const w = G.redResult === 'won', sb = secretBoss(), team = sb.lineup.map(u => SPECIES[u.id].name);
+  return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(sb, 'redart')}
+    <div><b>${esc(sb.place.toUpperCase())}${w && G.redNew ? ' <i class="newdot">NEW</i>' : ''}</b>
+    <span>${w ? `You beat ${esc(sb.name)} and his whole team: ${team.slice(0, -1).join(', ')} and ${team[team.length - 1]}.${(() => { const h = secretRec(sb.id); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
+      : sb.id === 'oak' ? 'The professor smiled and sent you home. Nothing was lost.' : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
+    ${w ? `<span class="rpika">${miniSprite(sb.id === 'oak' ? 'bulbasaur' : 'pikachu')}</span>${secretBadge(sb.id, 'big')}` : ''}</div>`;
 }
 function renderOver(){
   const won = G.over === 'won';
   return `<div class="panel" style="text-align:center;padding:26px 18px">
-    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? 'RED DEFEATED!' : won ? 'CHAMPION!' : 'RUN OVER'}</div>
+    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? `${esc(secretBoss().name.toUpperCase())} DEFEATED!` : won ? 'CHAMPION!' : 'RUN OVER'}</div>
     ${G.redResult ? redOverHtml() : ''}
     ${won ? '' : `<div class="badgerow">${badgeCase()}</div>`}
     <p style="color:var(--muted)">${won
-      ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ' and Red' : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
+      ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ` and ${esc(secretBoss().name)}` : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
     ${won && G.mods && G.mods.onelife ? (() => { const h = hardcoreRec(); return `<div class="hcaward">${hcBadge('big')}<div><b>HARDCORE BADGE${G.hcNew ? ' <i class="newdot">NEW</i>' : ''}</b><span>${G.hcNew ? 'You cleared a run on One Life.' : `Another One Life clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; })() : ''}
@@ -2415,7 +2428,7 @@ function openNewRun(onStart){
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
   const mods = dailyMods(date), gl = genLabel({ gens: dailyGens(date) }), label = [gl, Object.keys(mods).length ? modsLabel({ mods }) : (gl ? '' : 'no special rules')].filter(Boolean).join(' · ');
-  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.red ? ' · Beat Red' : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.secret ? ' · Beat ' + t.secret : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
   const text = dailyShareText(date || (G && G.daily) || localDate());
@@ -2497,6 +2510,11 @@ document.addEventListener('pointermove', trackPtr, true);
 document.addEventListener('pointerdown', trackPtr, true);
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ sel = null; hidePopup(); save(); render(); }
+  // 4.2.0: Space pauses and resumes a battle (not while typing in a box)
+  if(e.key === ' ' && phase === 'battle' && battle && battle.i < battle.steps.length - 1
+     && !/^(INPUT|TEXTAREA|BUTTON|SELECT)$/.test((document.activeElement || {}).tagName || '') && !document.querySelector('.modal')){
+    e.preventDefault(); handle('pause');
+  }
 });
 window.addEventListener('resize', hidePopup);
 
@@ -2707,6 +2725,22 @@ function handle(act, i, data){
       return;
     }
     case 'skip':    SFX.play('tap'); finishPlayback(); return;
+    case 'pause': {
+      if(!battle || battle.i >= battle.steps.length - 1) return;
+      battle.paused = !battle.paused; SFX.play('tap');
+      clearTimeout(battle.timer);
+      if(!battle.paused) playback();
+      render();
+      if(battle && battle.stage) battle.stage.el.classList.toggle('paused', !!battle.paused);
+      return;
+    }
+    case 'step': {
+      if(!battle || !battle.paused || battle.i >= battle.steps.length - 1) return;
+      SFX.play('tap'); battle.i++; advanceView();
+      if(battle && battle.i < battle.steps.length - 1) render();
+      if(battle && battle.stage) battle.stage.el.classList.toggle('paused', !!battle.paused);
+      return;
+    }
     case 'scoutcard': { const n = nextUp(G), u = n.scouted && n.scouted[i];
       if(u) openUnitCard(u, `Scouting report · ${esc(n.boss ? n.boss.name : '')}`); return; }
     case 'overcard': openUnitCard(G.team[i]); return;
@@ -2903,6 +2937,7 @@ function stepDelay(){
 
 function playback(){
   clearTimeout(battle.timer);
+  if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
   battle.timer = setTimeout(() => { battle.i++; advanceView(); playback(); }, stepDelay());
 }
@@ -2916,7 +2951,7 @@ function advanceView(){
   patchBattleChrome();
 }
 function finishPlayback(){
-  clearTimeout(battle.timer);
+  clearTimeout(battle.timer); battle.paused = false;
   battle.i = battle.steps.length - 1;
   render();
 }
@@ -3034,6 +3069,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.2.0', date:'Oct 3, 2026', title:'Minor gameplay changes', sub:'Professor Oak is a secret boss, Porygon2, battle pause, and a barrier fix', items:[
+    'A second secret boss. In about one Gen 1 run in six, beating the Champion sends you back to Pallet Town for a fight with Professor Oak: Pikachu, Snorlax, Dragonite, Venusaur, Charizard and Blastoise. Same rules as Red: one try, nothing lost if you fall, and Oak\u2019s Badge if you win.',
+    'Runs with both generations draw one secret boss between them, Red or Oak, and Gen 2-only runs still meet Red. Oak\u2019s Badge sits next to Red\u2019s on your Trainer Card and the title screen.',
+    'Porygon2 is here: Porygon evolves into it on a level up when Gen 2 is on. In Gen 2-only runs the Porygon line is in the Daycare. It is a Support, and one more cross-generation evolution for a mixed run\u2019s pool to open.',
+    'Battles have a Pause button. Pause holds the fight on its current beat, Step moves it on one action at a time, and Space does the same as Pause. Skip still jumps to the result.',
+    'Fixed a barrier that could stay on screen after it broke. A pokémon whose barrier or status ended on a turn nothing else happened to it kept its old shell until it was hit again. It now clears at once, with a \u201cBarrier broke\u201d note.' ] },
   { v:'4.1.0', date:'Oct 2, 2026', title:'Major gameplay update', sub:'Red waits on Mt. Silver', items:[
     'In a run with Gen 2 on, about one run in six hides a secret last boss. Beat the Champion and, if he is up there, Red steps out on Mt. Silver: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise, the team from the games. You will not know until the Champion falls.',
     'You get one try. Beat Red and you earn Red\u2019s Badge, which sits on your Trainer Card with a Mt. Silver ending and a Pikachu banner on the run summary. Lose and nothing is lost: it costs no life and no money, and the run ends as the Champion clear it already was.',
@@ -3342,19 +3383,24 @@ function hcBadge(cls = ''){
    Earned by beating Red on Mt. Silver. Kept in records as { count, first, last },
    merged across devices like the Hardcore Badge. Drop redbadge.png into the
    Sprites folder to replace the drawn badge. */
-const RED_HOW = 'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.';
-function redBadge(cls = ''){
-  return SPRITES.redbadge
-    ? `<img class="hcb rdb ${cls}" src="${SPRITES.redbadge}" alt="Red's Badge">`
-    : `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Red's Badge"><circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#2b1a22" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="#d6342c"/><path d="M1.5 16h29" stroke="#2b1a22" stroke-width="2"/><polygon points="17.5,4.5 10.5,17 15.2,17 13.6,27 21.5,13.5 16.6,13.5 19,4.5" fill="#ffd23a" stroke="#2b1a22" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+const secretBoss = () => secretOf(G) || RED;
+const SECRET_HOW = { red:'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.',
+                     oak:'Beat Professor Oak in Pallet Town. He turns up in about one Gen 1 run in six, after the Champion.' };
+function redBadge(cls = ''){ return secretBadge('red', cls); }
+function secretBadge(id, cls = ''){
+  const nm = id === 'oak' ? 'Oak\u2019s Badge' : 'Red\u2019s Badge', img = id === 'oak' ? SPRITES.oakbadge : SPRITES.redbadge;
+  if(img) return `<img class="hcb rdb ${cls}" src="${img}" alt="${nm}">`;
+  if(id === 'oak') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="${nm}"><circle cx="16" cy="16" r="14.5" fill="#f4f0e2" stroke="#2b1a22" stroke-width="2"/><circle cx="16" cy="16" r="10.5" fill="none" stroke="#3d9a4c" stroke-width="1.5"/><path d="M16 26c-1-6 0-11 2-14 2 1 6 3 6 8-3 0-5 1-6 3 0-4-2-7-4-9-1 3-1 8 2 12z" fill="#3d9a4c" stroke="#1d5a2a" stroke-width="1" stroke-linejoin="round"/><circle cx="16" cy="9" r="3.2" fill="#d6342c" stroke="#2b1a22" stroke-width="1"/></svg>`;
+  return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="${nm}"><circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#2b1a22" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="#d6342c"/><path d="M1.5 16h29" stroke="#2b1a22" stroke-width="2"/><polygon points="17.5,4.5 10.5,17 15.2,17 13.6,27 21.5,13.5 16.6,13.5 19,4.5" fill="#ffd23a" stroke="#2b1a22" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
 }
-function redRec(){ const h = records().red; return h && h.count > 0 ? h : null; }
+function secretRec(id){ const h = records()[id]; return h && h.count > 0 ? h : null; }
+function redRec(){ return secretRec('red'); }
 function awardRed(){
   if(!G || G.over !== 'won' || G.redResult !== 'won' || G.redDone) return;
-  const r = records(), h = r.red || { count:0, first:null, last:null };
+  const id = secretBoss().id, r = records(), h = r[id] || { count:0, first:null, last:null };
   G.redNew = !h.count; G.redDone = true;
   h.count++; h.first = h.first || localDate(); h.last = localDate();
-  r.red = h; saveRecords(r);
+  r[id] = h; saveRecords(r);
 }
 function hardcoreRec(){ const h = records().hardcore; return h && h.count > 0 ? h : null; }
 const hcLine = h => `${h.count > 1 ? `${h.count} clears` : '1 clear'}${h.first ? ` · first ${prettyDate(h.first)}` : ''}`;
@@ -3382,7 +3428,7 @@ function noteDaily(){
   all[G.daily] = { ...was, best: Math.max(was.best, reachedStage()), badges: Math.max(was.badges || 0, G.badges),
                    cleared: was.cleared || G.over === 'won', mods: modsLabel(G),
                    hardcore: !!(was.hardcore || (G.over === 'won' && G.mods && G.mods.onelife)),
-                   red: !!(was.red || G.redResult === 'won') };
+                   secret: (G.redResult === 'won' ? secretBoss().name : was.secret) || '' };
   try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
 }
 function recBucket(r){
@@ -3425,7 +3471,7 @@ function partnerOf(){
   return best ? { u: best, n: f[best.uid] } : null;
 }
 function openTrainerCard(fromTitle){
-  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null, RD = R.red && R.red.count ? R.red : null;
+  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null, RD = R.red && R.red.count ? R.red : null, OK = R.oak && R.oak.count ? R.oak : null;
   const live = !fromTitle || runInProgress();     // from the title with no run going, only who you are
   const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
@@ -3447,8 +3493,8 @@ function openTrainerCard(fromTitle){
     <h4>Badges</h4><div class="bcase">${cells}</div>
     <div class="hcrow ${HC ? 'on' : ''}" title="${HC ? 'Hardcore Badge' : esc(HC_HOW)}">${hcBadge(HC ? '' : 'locked')}
       <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
-    <div class="hcrow ${RD ? 'on red' : ''}" title="${RD ? 'Red\u2019s Badge' : esc(RED_HOW)}">${redBadge(RD ? '' : 'locked')}
-      <div><b>Red\u2019s Badge</b><span>${RD ? esc(hcLine(RD)) : `Not earned yet. ${esc(RED_HOW)}`}</span></div></div>
+    ${[['red', RD, 'Red'], ['oak', OK, 'Oak']].map(([id, rec, nm]) => `<div class="hcrow ${rec ? 'on red' : ''}" title="${rec ? nm + '\u2019s Badge' : esc(SECRET_HOW[id])}">${secretBadge(id, rec ? '' : 'locked')}
+      <div><b>${nm}\u2019s Badge</b><span>${rec ? esc(hcLine(rec)) : `Not earned yet. ${esc(SECRET_HOW[id])}`}</span></div></div>`).join('')}
     <h4>Records</h4><div class="recs">
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
@@ -3611,8 +3657,8 @@ function applyTransfer(data){
     if(!d) throw new Error('bad save');
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
-    const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red);
-    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}) });
+    const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
+    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -4085,7 +4131,7 @@ function showTitle(then){
     <div class="tfield"><i class="tcloud c1"></i><i class="tcloud c2"></i><i class="tcloud c3"></i>
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
-    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${redRec() ? `<span class="thc" title="Red\u2019s Badge · ${esc(hcLine(redRec()))}">${redBadge('sm')}</span>` : ''}${who}</div>
+    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${['red', 'oak'].map(id => secretRec(id) ? `<span class="thc" title="${id === 'oak' ? 'Oak' : 'Red'}\u2019s Badge · ${esc(hcLine(secretRec(id)))}">${secretBadge(id, 'sm')}</span>` : '').join('')}${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}

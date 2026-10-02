@@ -143,7 +143,7 @@ check(!!w, 'found a Lorelei win that fainted one pokémon and hurt another');
 
 // the Champion ends it
 {
-  const G = strongGame(3, 0); G.stage = START + 4; G.gauntlet = { hpFrac: {} };
+  const G = strongGame(3, 0); G.redFlag = null; G.stage = START + 4; G.gauntlet = { hpFrac: {} };
   E.applyBattleResult(G, 'win', E.opponentFor(G));
   check(G.over === 'won' && !E.inGauntlet(G), 'beating the Champion wins the run');
 }

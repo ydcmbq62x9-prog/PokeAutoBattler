@@ -31,7 +31,7 @@ ALIASES = {
     "farfetch'd": 'farfetchd', 'farfetch-d': 'farfetchd', 'farfetch_d': 'farfetchd', 'farfetchd': 'farfetchd',
     # 4.0.0 Gen 2 pack
     'sun-stone': 'sunstone', 'kings-rock': 'kingsrock', 'dragon-scale': 'dragonscale',
-    'ltsurge': 'surge', 'lt-surge': 'surge', 'blue-champion': 'blue', 'blue-rival': 'rival',
+    'ltsurge': 'surge', 'lt-surge': 'surge', 'blue-champion': 'blue', 'professor-oak': 'oak', 'blue-rival': 'rival',
 }
 
 def process(path):
