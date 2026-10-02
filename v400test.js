@@ -80,6 +80,6 @@ check(E.BUYABLE.length === E.buyableFor([1]).length && E.MONO_TYPES.join() === E
 
 /* the New Run screen */
 const ui = fs.readFileSync('ui.js', 'utf8');
-check(/class="gent" data-gen=/.test(ui) && /newRun\(\{ mods: pick, gens \}\)/.test(ui) && /monoTypesFor\(gens\)/.test(ui), 'New Run has a toggle per gen, passes them on, and shows only the Mono types those gens can field');
+check(/class="gent" data-gen=/.test(ui) && /newRun\(\{ mods, gens, secret \}\)/.test(ui) && /monoTypesFor\(gens\)/.test(ui), 'New Run has a toggle per gen, passes them on, and shows only the Mono types those gens can field');
 check(E.modsLabel({ gens:[1, 2], mods:{ nopc:true } }) === 'Gen 1+2 · No PC', 'a mixed run is labelled "Gen 1+2" beside its other rules');
 console.log(fails ? fails + ' FAILED' : 'v400 passed'); process.exit(fails ? 1 : 0);

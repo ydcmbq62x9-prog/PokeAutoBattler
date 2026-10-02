@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.2.0', date:'Oct 3, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.3.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -57,7 +57,7 @@ const HAPTIC = (() => {
 })();
 
 const SFX = (() => {
-  let ctx = null, master = null, noiseBuf = null;
+  let ctx = null, master = null, noiseBuf = null, held = false;
   const last = {};
   const log = [];
   const VOL = { low: 0.12, mid: 0.24, high: 0.4 };
@@ -75,7 +75,7 @@ const SFX = (() => {
         const d = noiseBuf.getChannelData(0);
         for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       }
-      if(ctx.state === 'suspended') ctx.resume();
+      if(ctx.state === 'suspended' && !held) ctx.resume();
       master.gain.value = VOL[PREF.get('volume', 'mid')] || VOL.mid;
     }catch(e){ return null; }
     return ctx;
@@ -151,7 +151,7 @@ const SFX = (() => {
 
   function play(name, arg){
     HAPTIC.buzz(name);                                      // 3.7.0: felt even with the sound off
-    if(!SOUNDS[name] || !on()) return;
+    if(!SOUNDS[name] || !on() || held) return;              // 4.3.0: a paused battle is silent
     const now = performance.now();
     if(last[name] && now - last[name] < 45) return;          // at 4× the same blip would pile up
     last[name] = now;
@@ -159,7 +159,9 @@ const SFX = (() => {
     if(!ensure()) return;
     try{ SOUNDS[name](arg); }catch(e){}
   }
-  return { play, log, names: Object.keys(SOUNDS), ensure };
+  /** 4.3.0: Pause freezes whatever is still ringing and keeps new sounds out until Resume. */
+  function hold(v){ held = !!v; try{ if(ctx) held ? ctx.suspend() : ctx.resume(); }catch(e){} }
+  return { play, log, names: Object.keys(SOUNDS), ensure, hold, get held(){ return held; } };
 })();
 
 
@@ -2366,7 +2368,7 @@ function applyPreset(p){
 function openNewRun(onStart){
   const cur = mainRun();
   const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
-  const pick = { mono: null, nopc: false, rich: false, onelife: false };
+  const pick = { mono: null, nopc: false, rich: false, onelife: false, ticket: null };
   const lastGens = cleanGens(PREF.get('gens', [1])).filter(n => GENS_READY.includes(n));
   let gens = lastGens.length ? lastGens : [1];   // 4.0.0: remembered from your last run
   const allTypes = Object.keys(TYPES);
@@ -2383,6 +2385,8 @@ function openNewRun(onStart){
       ${['nopc', 'rich', 'onelife'].map(k => `<button class="modt" data-mod="${k}"><b>${esc(MOD_INFO[k].name())}</b><span>${esc(MOD_INFO[k].text())}${k === 'onelife' ? ' Clear it for the Hardcore Badge.' : ''}</span></button>`).join('')}
     </div>
     <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
+    ${['red', 'oak'].some(id => ticketCount(id)) ? `<h4>Secret Boss Ticket <span class="dim">one try, this run only</span></h4><div class="mods">
+      ${['red', 'oak'].filter(id => ticketCount(id)).map(id => `<button class="modt" data-tkt="${id}"><b>\uD83C\uDFAB ${SECRETS[id].name} \u00d7${ticketCount(id)}</b><span>${SECRETS[id].name} waits at ${esc(SECRETS[id].place)} after the Champion. Needs ${esc(GENS[SECRETS[id].gen].name)} in the run.</span></button>`).join('')}</div>` : ''}
     <div class="btnrow"><button class="btn primary" data-n="go">Start run</button><button class="btn ghost" data-n="close">Cancel</button></div>`);
   d.classList.add('newrun');
   const types$ = d.querySelector('.monotypes'), go = d.querySelector('[data-n="go"]');
@@ -2394,16 +2398,23 @@ function openNewRun(onStart){
     d.querySelectorAll('.ntype').forEach(b => b.hidden = !types.includes(b.dataset.type));
     note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in. Each run also draws 3 Focus lines the Daycare shows more often, and 4 open cross-gen evolutions.`
       : `${GENS[gens[0]].region}: its own gym leaders, Elite Four and Champion.`;
-    d.querySelectorAll('.modt').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
+    if(pick.ticket && !gens.includes(SECRETS[pick.ticket].gen)) pick.ticket = null;
+    d.querySelectorAll('[data-tkt]').forEach(b => { const ok = gens.includes(SECRETS[b.dataset.tkt].gen); b.classList.toggle('on', pick.ticket === b.dataset.tkt); b.classList.toggle('off', !ok); b.setAttribute('aria-disabled', ok ? 'false' : 'true'); });
+    d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
     d.querySelectorAll('.ntype').forEach(b => b.classList.toggle('on', b.dataset.type === pick.mono));
     go.disabled = !types$.hidden && !pick.mono;
     go.textContent = go.disabled ? 'Pick a type' : 'Start run';
   };
-  d.querySelectorAll('.modt').forEach(b => b.onclick = () => {
+  d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.onclick = () => {
     const k = b.dataset.mod; SFX.play('tap');
     if(k === 'mono'){ if(types$.hidden){ types$.hidden = false; } else { types$.hidden = true; pick.mono = null; } }
     else pick[k] = !pick[k];
     sync();
+  });
+  d.querySelectorAll('[data-tkt]').forEach(b => b.onclick = () => {
+    const id = b.dataset.tkt; SFX.play('tap');
+    if(!gens.includes(SECRETS[id].gen)){ say(`${SECRETS[id].name} needs ${GENS[SECRETS[id].gen].name} in the run.`); return; }
+    pick.ticket = pick.ticket === id ? null : id; sync();
   });
   d.querySelectorAll('.ntype').forEach(b => b.onclick = () => { pick.mono = b.dataset.type; SFX.play('tap'); sync(); });
   d.querySelectorAll('.gent').forEach(b => b.onclick = () => {
@@ -2417,7 +2428,9 @@ function openNewRun(onStart){
     if(G && G.daily){ save(); const m = load(SAVE_KEY); G = m ? m.G : null; }   // the plain run is the one being replaced
     if(G && !G.daily) noteQuit();
     PREF.set('gens', gens);
-    newRun({ mods: pick, gens });
+    const secret = pick.ticket && gens.includes(SECRETS[pick.ticket].gen) && useTicket(pick.ticket) ? pick.ticket : null;
+    const { ticket: _t, ...mods } = pick;
+    newRun({ mods, gens, secret });
     undo = null; drawnPhase = null; render();
     if(onStart) onStart();
   };
@@ -2727,7 +2740,7 @@ function handle(act, i, data){
     case 'skip':    SFX.play('tap'); finishPlayback(); return;
     case 'pause': {
       if(!battle || battle.i >= battle.steps.length - 1) return;
-      battle.paused = !battle.paused; SFX.play('tap');
+      if(battle.paused) { battle.paused = false; SFX.hold(false); SFX.play('tap'); } else { SFX.play('tap'); battle.paused = true; SFX.hold(true); }
       clearTimeout(battle.timer);
       if(!battle.paused) playback();
       render();
@@ -2891,6 +2904,7 @@ async function startBattle(){
              prize: rv ? rivalPrize(G, opp.meeting) : null, bagFull: rv ? bagRoom(G) === 0 : false,
              gauntlet: nextUp(G).gauntlet,
              timer: null, exhibition: false };
+  if(opp.kind === 'red'){ const r = records(); r.met = { ...(r.met || {}), [opp.boss && opp.boss.id || secretBoss().id]: true }; saveRecords(r); }   // 4.3.0: Pokédex remembers him
   sessionBattles++;
   await wipe(() => { phase = 'battle'; render(); }, beginPlayback);   // v40: the intro starts as the circle opens
 }
@@ -2951,7 +2965,7 @@ function advanceView(){
   patchBattleChrome();
 }
 function finishPlayback(){
-  clearTimeout(battle.timer); battle.paused = false;
+  clearTimeout(battle.timer); battle.paused = false; SFX.hold(false);
   battle.i = battle.steps.length - 1;
   render();
 }
@@ -3069,6 +3083,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.3.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Secret Boss Tickets, secret bosses in the Pokédex, and sound that pauses with the fight', items:[
+    'Beating a secret boss now earns a Secret Boss Ticket for that boss (you can hold up to 3 of each). On the New Run screen, tap a ticket and that boss waits for you after the Champion in that run. It still takes one try, and the generation he belongs to has to be in the run: Red needs Gen 2, Oak needs Gen 1. Tickets are not earned or spent in the Daily Challenge, and they show on your Trainer Card and travel in a transfer code.',
+    'The Pokédex has a Secret bosses section under Trainers. Red and Oak stay a silhouette marked ??? until you have met them in a battle, then it shows their portrait, place, team, and whether you have their badge. The 1 in 6 chance stays pure luck, with no hints.',
+    'Pausing a battle now pauses its sound too, and Resume brings it back.',
+  ]},
   { v:'4.2.0', date:'Oct 3, 2026', title:'Minor gameplay changes', sub:'Professor Oak is a secret boss, Porygon2, battle pause, and a barrier fix', items:[
     'A second secret boss. In about one Gen 1 run in six, beating the Champion sends you back to Pallet Town for a fight with Professor Oak: Pikachu, Snorlax, Dragonite, Venusaur, Charizard and Blastoise. Same rules as Red: one try, nothing lost if you fall, and Oak\u2019s Badge if you win.',
     'Runs with both generations draw one secret boss between them, Red or Oak, and Gen 2-only runs still meet Red. Oak\u2019s Badge sits next to Red\u2019s on your Trainer Card and the title screen.',
@@ -3400,8 +3419,14 @@ function awardRed(){
   const id = secretBoss().id, r = records(), h = r[id] || { count:0, first:null, last:null };
   G.redNew = !h.count; G.redDone = true;
   h.count++; h.first = h.first || localDate(); h.last = localDate();
-  r[id] = h; saveRecords(r);
+  r[id] = h;
+  if(!G.daily){ r.tickets = { ...(r.tickets || {}), [id]: Math.min(TICKET_MAX, ((r.tickets || {})[id] || 0) + 1) }; G.ticketNew = true; }   // 4.3.0: a ticket for a rematch (not from a daily)
+  r.met = { ...(r.met || {}), [id]: true };
+  saveRecords(r);
 }
+const TICKET_MAX = 3;
+const ticketCount = id => (records().tickets || {})[id] || 0;
+const useTicket = id => { const r = records(); if(((r.tickets || {})[id] || 0) < 1) return false; r.tickets[id]--; saveRecords(r); return true; };
 function hardcoreRec(){ const h = records().hardcore; return h && h.count > 0 ? h : null; }
 const hcLine = h => `${h.count > 1 ? `${h.count} clears` : '1 clear'}${h.first ? ` · first ${prettyDate(h.first)}` : ''}`;
 /** Called once when a finished run is a One Life win. */
@@ -3494,7 +3519,7 @@ function openTrainerCard(fromTitle){
     <div class="hcrow ${HC ? 'on' : ''}" title="${HC ? 'Hardcore Badge' : esc(HC_HOW)}">${hcBadge(HC ? '' : 'locked')}
       <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
     ${[['red', RD, 'Red'], ['oak', OK, 'Oak']].map(([id, rec, nm]) => `<div class="hcrow ${rec ? 'on red' : ''}" title="${rec ? nm + '\u2019s Badge' : esc(SECRET_HOW[id])}">${secretBadge(id, rec ? '' : 'locked')}
-      <div><b>${nm}\u2019s Badge</b><span>${rec ? esc(hcLine(rec)) : `Not earned yet. ${esc(SECRET_HOW[id])}`}</span></div></div>`).join('')}
+      <div><b>${nm}\u2019s Badge</b><span>${rec ? esc(hcLine(rec)) : `Not earned yet. ${esc(SECRET_HOW[id])}`}${ticketCount(id) ? ` <em class="tkt">\uD83C\uDFAB ${ticketCount(id)} ticket${ticketCount(id) === 1 ? '' : 's'}</em>` : ''}</span></div></div>`).join('')}
     <h4>Records</h4><div class="recs">
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
@@ -3658,7 +3683,8 @@ function applyTransfer(data){
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
-    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) };
+    saveRecords({ ...a, tickets: tk, met: mt, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -4019,6 +4045,17 @@ function openDex(){
       ${b.theme ? b.theme.map(t => `<span class="ntype">${esc(t)}</span>`).join(' ') : '<span class="ntype">no theme</span>'}
       ${b.badge ? `<span class="dim">${esc(b.badge)} Badge</span>` : ''}
       <div class="abil">${esc(b.blurb)}</div></div></div>`;
+  /* 4.3.0: secret bosses stay a silhouette until you have met them */
+  const MET = records().met || {};
+  const secretRow = id => { const b = SECRETS[id], met = !!MET[id], won = !!secretRec(id);
+    return `<div class="dexrow secret${met ? '' : ' unmet'}" data-g${b.gen}="1">
+    ${met ? (bossArt(b, 'dex') || '<span class="lbadge champion"></span>') : (bossArt(b, 'dex silhouette') || '<span class="lbadge"></span>')}
+    <div><b>${met ? esc(b.name) : '???'}</b> <span class="tag">${met ? esc(b.title) : 'Secret'}</span>
+      ${met ? `<span class="dim">${esc(b.place)} \u00b7 ${esc(GENS[b.gen].name)}</span> ${won ? `<span class="dim">\u2714 ${esc(b.name)}\u2019s Badge earned</span>` : '<span class="dim">badge not earned</span>'}`
+            : `<span class="dim">${esc(GENS[b.gen].name)}</span>`}
+      <div class="abil">${met ? esc(b.blurb) : `Turns up after the Champion in about one ${esc(GENS[b.gen].name)} run in six. Meet him to fill this in.`}</div>
+      ${met ? `<div class="secteam">${b.lineup.map(m => miniSprite(m.id)).join('')}</div>` : ''}</div></div>`; };
+  const secrets = ['red', 'oak'].filter(id => GENS_READY.includes(SECRETS[id].gen)).map(secretRow).join('');
   /* 4.0.0: one block per gen that can be played */
   const leaders = GENS_READY.map(n => { const g = GEN_BOSSES[n];
     return `<div class="dexgen" data-g${n}="1">` + (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')
@@ -4043,7 +4080,8 @@ function openDex(){
     <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon <span class="dim">— tap one for its card</span></h3>
       <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${rows}</section>
     <section data-sec="gym"><h3 class="dexh" id="dex-gym">Trainers <span class="dim">— gym leaders, the Elite Four, Champions and rivals</span></h3>
-    <div>${leaders}</div></section>
+    <div>${leaders}</div>
+    <h3 class="dexh" id="dex-secret">Secret bosses <span class="dim">\u2014 found after a Champion</span></h3><div>${secrets}</div></section>
     <section data-sec="items"><h3 class="dexh" id="dex-held">Held items <span class="dim">— one each, swap any time</span></h3>
     <div>${held}</div>
     <h3 class="dexh" id="dex-mart">PokéMart <span class="dim">— used right away</span></h3><div>${items}</div>

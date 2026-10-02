@@ -3135,11 +3135,13 @@ function newGame(seed, opts){
   seed = seed || Math.floor(Math.random() * 1e9);
   const evoPool = drawEvoPool(seed, gens);
   ACTIVE_POOL = evoPool;
+  /* 4.3.0: a Secret Boss Ticket forces that boss to wait after the Champion (the boss must belong to a gen in the run) */
+  const want = opts && opts.secret, ticket = want && SECRETS[want] && gens.includes(SECRETS[want].gen) ? want : null;
   return {
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
-    redFlag: drawSecret(seed, gens), redOpen: false, redResult: null,   // 4.1.0
+    redFlag: ticket || drawSecret(seed, gens), ticketUsed: ticket, redOpen: false, redResult: null,   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
