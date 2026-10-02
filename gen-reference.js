@@ -288,6 +288,10 @@ const gensHtml = () => {
   <b>3 Focus lines</b> (one Gen 1, one Gen 2, one either; tier ${3} or lower) that fill about ${Math.round(E.FOCUS_CHANCE * 100)}% of Daycare slots between them, and
   an <b>Evolution Pool</b> of 4 of the ${E.CROSS_EVOS.length} cross-gen evolutions (${E.CROSS_EVOS.map(k => esc(E.SPECIES[k].name)).join(', ')}); the Mart only stocks stones for the open ones.
   Single-gen and Gen 2-only runs are untouched. The Daily Challenge rotates generations by date (Gen 1 half the time, Gen 1+2 three days in ten, Gen 2 otherwise).</p>
+  <h3 style="margin-top:18px">Red on Mt. Silver <span class="dim" style="font-size:13px;font-weight:400">— new in 4.1.0, Gen 2 runs only</span></h3>
+  <p class="note">A seeded <b>${Math.round(E.TUNING.red.chance * 100 * 10) / 10}%</b> of runs with Gen 2 on (about one in six) hide a secret last boss. Beat the Champion and Red is next: <b>${E.RED.lineup.map(u => esc(E.SPECIES[u.id].name)).join(', ')}</b>, all level 3, each holding an item.
+  Between the two fights you are healed and the shops reopen for one turn. It is <b>one fight, one chance</b>: losing costs no life and no money and the run ends as the Champion clear it was. Winning earns Red's Badge, a trophy with no effect in a run.
+  He is priced on the same curve as the Champion at <b>×${E.TUNING.red.ratio['2']}</b> (Gen 2 only) or <b>×${E.TUNING.red.ratio['1+2']}</b> (Gen 1 + 2), against the Champion's ×${E.TUNING.bossRatio.champion}. The reference bot beats him about 1 time in 3 among runs that reach him (<code>node redwin.js</code>).</p>
   <h3 style="margin-top:18px">Gen 2 roster by tier and role <span class="dim" style="font-size:13px;font-weight:400">— buyable lines</span></h3>
   <div class="scroller"><table><thead><tr><th></th>${roles.map(r => `<th class="n">${E.ROLES[r].icon} ${E.ROLES[r].name}</th>`).join('')}</tr></thead><tbody>${roleRows}</tbody></table></div>
   ${GD['2'] ? `<h3 style="margin-top:18px">Johto bosses, Gen 2-only run</h3>

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.0.1', date:'Oct 2, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.1.0', date:'Oct 2, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1075,6 +1075,8 @@ function dockHtml(closed){
   let road = '';
   if(n.gauntlet){
     road = n.gauntlet.members.map((m, i) => `<i class="${i < n.gauntlet.at ? 'done' : i === n.gauntlet.at ? 'now' : ''}"></i>`).join('');
+  } else if(n.kind === 'red'){
+    road = '<i class="now"></i>';
   } else {
     let prev = at - 1; while(prev >= 0 && plan[prev].kind === 'trainer') prev--;
     let nx = at; while(nx < plan.length && plan[nx].kind === 'trainer') nx++;
@@ -1085,10 +1087,12 @@ function dockHtml(closed){
   const line = !b ? `${trainerName(G.turn)} wants to battle!`
     : n.kind === 'gym' ? `${b.name} wants to battle!`
     : n.kind === 'elite' ? `Elite Four ${b.name} wants to battle!`
+    : n.kind === 'red' ? `${b.name} is waiting on Mt. Silver.`
     : `Champion ${b.name} wants to battle!`;
   const sub = !b ? `Trainer battle · ${n.untilGym === 1 ? 'gym leader after this one' : `${n.untilGym} battles to the gym`}`
     : n.kind === 'gym' ? `${b.title} · ${b.badge} Badge`
     : n.kind === 'elite' ? `Elite Four · fight ${n.gauntlet ? n.gauntlet.at + 1 : 1} of ${n.gauntlet ? n.gauntlet.members.length : 5}`
+    : n.kind === 'red' ? 'Mt. Silver · one chance, nothing to lose'
     : 'Champion · the last fight';
   const nobody = closed && !fightersOf(G).length;
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
@@ -1122,6 +1126,10 @@ function runNoteHtml(g){
   if(!g || (!(g.focus && g.focus.length) && !(g.evoPool && g.evoPool.length))) return '';
   return `<div class="runnote"><div><b>★ Focus</b> ${(g.focus || []).map(k => `${miniSprite(k)}${esc(SPECIES[k].name)}`).join(' · ')}</div>
     <div class="dim"><b>Open evolutions</b> ${poolLines(g).map(esc).join(' · ')}</div></div>`;
+}
+function redStripHtml(){
+  return `<div class="redstrip">${bossArt(RED, 'redart')}<div><b>Mt. Silver</b>
+    <span>Red is up here, and you are healed. This is your one turn to spend, and you only get one try: beat him for Red\u2019s Badge, lose and nothing is lost.</span></div></div>`;
 }
 function renderShop(){
   const maxTier = tierFor(G);
@@ -1351,7 +1359,7 @@ function renderShop(){
   </div>
 
   ${ctx}
-  ${closed ? '' : nextUpHtml()}
+  ${closed ? '' : G.redOpen && stageOf(G).kind === 'red' ? redStripHtml() : nextUpHtml()}
   ${dockHtml(closed)}`;
 }
 
@@ -1370,6 +1378,7 @@ function renderBattle(){
   const bossTag = battle.boss ? `<div class="bosstag ${battle.kind}">${bossArt(battle.boss, 'tag')}
       ${battle.kind === 'gym' ? `${esc(battle.boss.title)} · ${esc(battle.boss.badge)} Badge`
         : battle.kind === 'rival' ? `<span class="ambush ${battle.i < 1 ? 'pop' : ''}">!</span> Your rival · ambush ${battle.opp.meeting + 1} of ${TUNING.rival.windows.length}`
+        : battle.kind === 'red' ? 'Mt. Silver · one chance'
         : `${battle.kind === 'elite' ? 'Elite Four' : 'Champion'}${
           gn ? ` · fight ${gn.at + 1} of ${gn.members.length}` : ''}`}</div>` : '';
   // what winning or losing a gauntlet fight means, said on the result screen
@@ -1406,10 +1415,18 @@ function renderBattle(){
   const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''}"><span>
       ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
               : battle.kind === 'champion' ? 'CHAMPION!'
+              : battle.kind === 'red' ? 'RED BEATEN!'
               : battle.kind === 'elite' ? `${esc(battle.boss.name).toUpperCase()} FALLS`
               : battle.kind === 'rival' ? 'RIVAL BEATEN!' : 'VICTORY!')
-        : r === 'lose' ? (battle.boss && battle.kind !== 'rival' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
-  const notes = done ? `${award}${rivalNote}${gnote}` : '';
+        : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
+  const redNote = !done ? '' : battle.kind === 'red'
+    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${redBadge('big')}
+        <div><b>Red\u2019s Badge</b><span>You beat the strongest trainer there is.</span></div></div>`
+      : `<div class="award redlose">${bossArt(battle.boss, 'hero')}
+        <div><b>Red didn\u2019t flinch.</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
+    : battle.kind === 'champion' && won && G.redOpen
+    ? `<p class="gnote">A challenger is waiting on <b>Mt. Silver</b>. You are healed and the shops are open for one turn.</p>` : '';
+  const notes = done ? `${award}${rivalNote}${gnote}${redNote}` : '';
 
   return `
   <div class="topbar gb">
@@ -1881,9 +1898,10 @@ function playIntro(S){
     : b.kind === 'elite' ? `Elite Four ${b.boss.name} wants to battle!`
     : b.kind === 'champion' ? `Champion ${b.boss.name} wants to battle!`
     : b.kind === 'rival' ? `Your rival ${rivalOf(G).name} blocks the way!`
+    : b.kind === 'red' ? `${b.boss.name} wants to battle!`
     : `${b.oppName} wants to battle!`;
   const sub = b.kind === 'gym' ? `${b.boss.title} · ${b.boss.badge} Badge`
-    : b.kind === 'rival' ? 'An ambush!' : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
+    : b.kind === 'rival' ? 'An ambush!' : b.kind === 'red' ? 'Mt. Silver · the summit' : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
   const n = (b.steps[0] && b.steps[0].e.length) || 0;
   const balls = Array.from({ length: TUNING.maxTeam }, (_, k) => `<i class="${k < n ? '' : 'out'}"></i>`).join('');
   const ban = document.createElement('div');
@@ -2059,7 +2077,7 @@ async function runImage(){
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
   const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
   x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
-  x.fillStyle = cream; x.font = font(22, 400); x.fillText(won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
+  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? 'CHAMPION · RED DEFEATED' : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
   x.font = font(16, 400); x.fillStyle = '#6b6f7a';
   x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
@@ -2075,10 +2093,18 @@ async function runImage(){
   }
   const mvp = runTop(1)[0];
   if(mvp){ x.fillStyle = dark; x.font = font(16); x.fillText(`MVP: ${SPECIES[mvp.id].name} — ${mvp.dealt} damage, ${mvp.kos} KOs`, W / 2, 790); }
-  if(G.focus && G.focus.length){
+  const hasF = G.focus && G.focus.length;
+  if(hasF){
     x.font = font(14, 400); x.fillStyle = '#6b6f7a';
-    x.fillText('\u2605 Focus: ' + G.focus.map(k => SPECIES[k].name).join(' \u00b7 '), W / 2, 822);
-    const pl = poolLines(G); x.fillText('Open evolutions: ' + pl.slice(0, 2).join(' \u00b7 '), W / 2, 844); if(pl.length > 2) x.fillText(pl.slice(2).join(' \u00b7 '), W / 2, 864);
+    x.fillText('\u2605 Focus: ' + G.focus.map(k => SPECIES[k].name).join(' \u00b7 '), W / 2, G.redResult ? 812 : 822);
+    if(!G.redResult){
+      const pl = poolLines(G); x.fillText('Open evolutions: ' + pl.slice(0, 2).join(' \u00b7 '), W / 2, 844); if(pl.length > 2) x.fillText(pl.slice(2).join(' \u00b7 '), W / 2, 864);
+    }
+  }
+  if(G.redResult){
+    const w = G.redResult === 'won', by = hasF ? 828 : 810;
+    x.fillStyle = w ? '#f0b830' : '#ece4c8'; x.fillRect(60, by, W - 120, 38); x.strokeStyle = dark; x.lineWidth = 3; x.strokeRect(60, by, W - 120, 38);
+    x.fillStyle = dark; x.font = font(16); x.fillText(w ? '\u26A1 Red\u2019s Badge · Mt. Silver cleared' : 'Faced Red on Mt. Silver', W / 2, by + 25);
   }
   x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
@@ -2101,13 +2127,22 @@ async function shareRunImage(){
   }catch(e){ if(e && e.name === 'AbortError') return; say('Couldn’t make the image on this device.'); }
 }
 
+function redOverHtml(){
+  const w = G.redResult === 'won';
+  return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(RED, 'redart')}
+    <div><b>${w ? `MT. SILVER${G.redNew ? ' <i class="newdot">NEW</i>' : ''}` : 'MT. SILVER'}</b>
+    <span>${w ? `You beat Red and his whole team: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise.${(() => { const h = redRec(); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
+      : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
+    ${w ? `<span class="rpika">${miniSprite('pikachu')}</span>${redBadge('big')}` : ''}</div>`;
+}
 function renderOver(){
   const won = G.over === 'won';
   return `<div class="panel" style="text-align:center;padding:26px 18px">
-    <div class="big ${won ? 'win':'lose'}">${won ? 'CHAMPION!' : 'RUN OVER'}</div>
+    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? 'RED DEFEATED!' : won ? 'CHAMPION!' : 'RUN OVER'}</div>
+    ${G.redResult ? redOverHtml() : ''}
     ${won ? '' : `<div class="badgerow">${badgeCase()}</div>`}
     <p style="color:var(--muted)">${won
-      ? `All ${G.badges} badges, the Elite Four and the Champion, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
+      ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ' and Red' : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
     ${won && G.mods && G.mods.onelife ? (() => { const h = hardcoreRec(); return `<div class="hcaward">${hcBadge('big')}<div><b>HARDCORE BADGE${G.hcNew ? ' <i class="newdot">NEW</i>' : ''}</b><span>${G.hcNew ? 'You cleared a run on One Life.' : `Another One Life clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; })() : ''}
@@ -2380,7 +2415,7 @@ function openNewRun(onStart){
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
   const mods = dailyMods(date), gl = genLabel({ gens: dailyGens(date) }), label = [gl, Object.keys(mods).length ? modsLabel({ mods }) : (gl ? '' : 'no special rules')].filter(Boolean).join(' · ');
-  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.red ? ' · Beat Red' : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
   const text = dailyShareText(date || (G && G.daily) || localDate());
@@ -2999,6 +3034,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.1.0', date:'Oct 2, 2026', title:'Major gameplay update', sub:'Red waits on Mt. Silver', items:[
+    'In a run with Gen 2 on, about one run in six hides a secret last boss. Beat the Champion and, if he is up there, Red steps out on Mt. Silver: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise, the team from the games. You will not know until the Champion falls.',
+    'You get one try. Beat Red and you earn Red\u2019s Badge, which sits on your Trainer Card with a Mt. Silver ending and a Pikachu banner on the run summary. Lose and nothing is lost: it costs no life and no money, and the run ends as the Champion clear it already was.',
+    'Between the Champion and Red your party is healed and the shops reopen for one turn, so you can spend before the climb. Red is built a good deal stronger than the Champion; a good team wins roughly one fight in three.',
+    'Red\u2019s Badge is a trophy only. It has no effect in a run, and it travels with your transfer code like the Hardcore Badge.' ] },
   { v:'4.0.1', date:'Oct 2, 2026', title:'Visual bug fixes', sub:'Tyrogue, Gloom and Poliwhirl cards open again, and the Pokédex opens fast', items:[
     'Tapping Tyrogue (or Gloom or Poliwhirl) in a run with Gen 2 on no longer breaks. Their cards now say how they evolve: by level, by a stone, or by their highest stat.',
     'The Pokédex opens about ten times faster, which was most of the lag in runs with both generations on. A pokémon\u2019s card is built when you tap it.' ] },
@@ -3298,6 +3338,24 @@ function hcBadge(cls = ''){
     ? `<img class="hcb ${cls}" src="${SPRITES.hardcore}" alt="Hardcore badge">`
     : `<svg class="hcb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Hardcore badge"><polygon points="10,1.5 22,1.5 30.5,10 30.5,22 22,30.5 10,30.5 1.5,22 1.5,10" fill="#2b1a22" stroke="#e0a526" stroke-width="2"/><polygon points="10.6,5 21.4,5 27,10.6 27,21.4 21.4,27 10.6,27 5,21.4 5,10.6" fill="none" stroke="#7a1f2b" stroke-width="1"/><path d="M16 25.5C7 19.5 5.8 12.2 10.4 9.4c2.6-1.4 4.8-.3 5.6 1.4.8-1.7 3-2.8 5.6-1.4 4.6 2.8 3.4 10.1-5.6 16.1z" fill="#e8462a" stroke="#ffd36b" stroke-width="1"/><text x="16" y="19.4" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" font-family="monospace,sans-serif">1</text></svg>`;
 }
+/* ---- 4.1.0 · RED'S BADGE ----------------------------------------------
+   Earned by beating Red on Mt. Silver. Kept in records as { count, first, last },
+   merged across devices like the Hardcore Badge. Drop redbadge.png into the
+   Sprites folder to replace the drawn badge. */
+const RED_HOW = 'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.';
+function redBadge(cls = ''){
+  return SPRITES.redbadge
+    ? `<img class="hcb rdb ${cls}" src="${SPRITES.redbadge}" alt="Red's Badge">`
+    : `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Red's Badge"><circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#2b1a22" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="#d6342c"/><path d="M1.5 16h29" stroke="#2b1a22" stroke-width="2"/><polygon points="17.5,4.5 10.5,17 15.2,17 13.6,27 21.5,13.5 16.6,13.5 19,4.5" fill="#ffd23a" stroke="#2b1a22" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+}
+function redRec(){ const h = records().red; return h && h.count > 0 ? h : null; }
+function awardRed(){
+  if(!G || G.over !== 'won' || G.redResult !== 'won' || G.redDone) return;
+  const r = records(), h = r.red || { count:0, first:null, last:null };
+  G.redNew = !h.count; G.redDone = true;
+  h.count++; h.first = h.first || localDate(); h.last = localDate();
+  r.red = h; saveRecords(r);
+}
 function hardcoreRec(){ const h = records().hardcore; return h && h.count > 0 ? h : null; }
 const hcLine = h => `${h.count > 1 ? `${h.count} clears` : '1 clear'}${h.first ? ` · first ${prettyDate(h.first)}` : ''}`;
 /** Called once when a finished run is a One Life win. */
@@ -3314,7 +3372,7 @@ const mergeHardcore = (a, b) => {
   const firsts = [a.first, b.first].filter(Boolean).sort();
   return { count: Math.max(a.count || 0, b.count || 0), first: firsts[0] || null, last: [a.last, b.last].filter(Boolean).sort().pop() || null };
 };
-const reachedStage = () => G.over === 'won' ? runPlan(G).length : (G.stage || 0);
+const reachedStage = () => G.over === 'won' ? runPlan(G).length - (G.redOpen && G.redResult !== 'won' ? 1 : 0) : (G.stage || 0);   // Red is a bonus, not part of 'Champion'
 /* 2.0.0: a daily run keeps its own result per day, and a run with rules keeps
    its own record per rule set — neither muddies your plain-run records. */
 const DAILY_REC = 'pkb_daily';
@@ -3323,7 +3381,8 @@ function noteDaily(){
   const all = dailyResults(), was = all[G.daily] || { best:-1, cleared:false, tries:0 };
   all[G.daily] = { ...was, best: Math.max(was.best, reachedStage()), badges: Math.max(was.badges || 0, G.badges),
                    cleared: was.cleared || G.over === 'won', mods: modsLabel(G),
-                   hardcore: !!(was.hardcore || (G.over === 'won' && G.mods && G.mods.onelife)) };
+                   hardcore: !!(was.hardcore || (G.over === 'won' && G.mods && G.mods.onelife)),
+                   red: !!(was.red || G.redResult === 'won') };
   try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
 }
 function recBucket(r){
@@ -3332,7 +3391,7 @@ function recBucket(r){
   return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
 }
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ awardHardcore(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ awardHardcore(); awardRed(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
 function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
@@ -3354,7 +3413,7 @@ function noteBattle(b){
 function bestRunLabel(stage){
   if(stage < 0) return '—';
   const plan = runPlan(G);
-  if(stage >= plan.length) return 'Champion!';
+  if(stage >= plan.length - (G.redOpen ? 1 : 0)) return 'Champion!';
   if(plan[stage].boss) return `Reached ${plan[stage].boss.name}`;
   let k = stage; while(k < plan.length && !plan[k].boss) k++;
   return plan[k] ? `On the way to ${plan[k].boss.name}` : '—';
@@ -3366,7 +3425,7 @@ function partnerOf(){
   return best ? { u: best, n: f[best.uid] } : null;
 }
 function openTrainerCard(fromTitle){
-  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null;
+  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null, RD = R.red && R.red.count ? R.red : null;
   const live = !fromTitle || runInProgress();     // from the title with no run going, only who you are
   const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
@@ -3388,6 +3447,8 @@ function openTrainerCard(fromTitle){
     <h4>Badges</h4><div class="bcase">${cells}</div>
     <div class="hcrow ${HC ? 'on' : ''}" title="${HC ? 'Hardcore Badge' : esc(HC_HOW)}">${hcBadge(HC ? '' : 'locked')}
       <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
+    <div class="hcrow ${RD ? 'on red' : ''}" title="${RD ? 'Red\u2019s Badge' : esc(RED_HOW)}">${redBadge(RD ? '' : 'locked')}
+      <div><b>Red\u2019s Badge</b><span>${RD ? esc(hcLine(RD)) : `Not earned yet. ${esc(RED_HOW)}`}</span></div></div>
     <h4>Records</h4><div class="recs">
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
@@ -3550,8 +3611,8 @@ function applyTransfer(data){
     if(!d) throw new Error('bad save');
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
-    const hc = mergeHardcore(a.hardcore, b.hardcore);
-    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}) });
+    const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red);
+    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -4024,7 +4085,7 @@ function showTitle(then){
     <div class="tfield"><i class="tcloud c1"></i><i class="tcloud c2"></i><i class="tcloud c3"></i>
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
-    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${who}</div>
+    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${redRec() ? `<span class="thc" title="Red\u2019s Badge · ${esc(hcLine(redRec()))}">${redBadge('sm')}</span>` : ''}${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}

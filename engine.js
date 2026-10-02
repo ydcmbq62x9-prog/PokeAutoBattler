@@ -130,6 +130,9 @@ const TUNING = {
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
   eggCap:       10,
+  /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
+     Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
+  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
   rival: {
     windows:    [[0, 1], [3, 4], [6, 7]],
     size:       [3, 5, 6],
@@ -328,6 +331,7 @@ function runPlan(G){
   for(let i = 0; i < TUNING.eliteFourCount; i++)
     plan.push({ kind:'elite', boss:bp.elite[i % bp.elite.length] });
   plan.push({ kind:'champion', boss:bp.champion });
+  if(G && G.redOpen) plan.push({ kind:'red', boss:RED });   // 4.1.0: Mt. Silver
   return plan;
 }
 const RUN_LENGTH = () =>
@@ -450,6 +454,20 @@ const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
   blurb:'One of everything, all of it evolved. There is no counter-pick here.'  , calib:1.257 };
 
 /* Your rival. Not on the schedule: he ambushes a trainer battle (see rivalStages). */
+/* 4.1.0 — RED. Not on the schedule and never in the boss plan: the run decides
+   from its seed whether he is up there (G.redFlag), and he only appears once the
+   Champion has fallen. His team is the Mt. Silver team from Gold, Silver and
+   Crystal, exactly, each at level 3 and holding something that suits it. */
+const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', gen:2, theme:null, special:true,
+  lineup:[
+    { id:'pikachu',  exp:5, held:'claw' },
+    { id:'espeon',   exp:5, held:'focus' },
+    { id:'snorlax',  exp:5, held:'lefto' },
+    { id:'venusaur', exp:5, held:'sitrus' },
+    { id:'charizard',exp:5, held:'band' },
+    { id:'blastoise',exp:5, held:'coat' },
+  ],
+  blurb:'He has not said a word in years. One chance, no rematch: if you fall here, the run simply ends as it would have.' };
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
   blurb:'He turns up three times a run, always when you least expect it. His starter beats yours, and his team grows every time you meet.' };
 const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (balance tools and tests read this)
@@ -2743,6 +2761,12 @@ function opponentFor0(G){
     opp.meeting = m;
     return opp;
   }
+  if(st.kind === 'red'){
+    // 4.1.0: priced on the curve like the Champion; the team is fixed, never rerolled
+    return generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'red', boss: RED,
+      lineup: RED.lineup.map(u => ({ ...u, exp: TUNING.red.exp })),
+      ratio: TUNING.red.ratio[cleanGens(G.gens).join('+')] || 1.1 });
+  }
   const boss = st.boss || null;
   const kind = st.kind;
   const seen = boss && G.scouted ? G.scouted[boss.id] : null;
@@ -3060,6 +3084,11 @@ function drawEvoPool(seed, gens){
   for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a.slice(0, EVO_POOL_SIZE).sort((x, y) => CROSS_EVOS.indexOf(x) - CROSS_EVOS.indexOf(y));
 }
+/** 4.1.0: is Red on Mt. Silver this run? Seeded, so a daily is the same for everyone. Gen 2 runs only. */
+function drawRed(seed, gens){
+  if(!(gens || []).includes(2)) return false;
+  return makeRng(mix32((seed || 1) ^ 0x5ed0b11, 4242))() < TUNING.red.chance;
+}
 function drawFocus(seed, gens){
   gens = cleanGens(gens);
   if(!isMixed(gens)) return null;
@@ -3083,6 +3112,7 @@ function newGame(seed, opts){
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
+    redFlag: drawRed(seed, gens), redOpen: false, redResult: null,   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -3857,6 +3887,15 @@ function applyBattleResult(G, result, opp, sim){
   G.lastResult = result;
   G.blackout = 0;
 
+  if(st.kind === 'red'){
+    /* 4.1.0: one chance. Win or lose (a draw is a loss — he simply walks away),
+       the run ends as a clear; only the badge differs. */
+    G.redResult = result === 'win' ? 'won' : 'lost';
+    G.lastResult = result;
+    G.stage = (G.stage || 0) + 1;
+    G.over = 'won'; G.gauntlet = null;
+    return G.over;
+  }
   if(result === 'draw'){
     // nobody advances and nobody pays; the streak is left alone
     return G.over;
@@ -3891,7 +3930,11 @@ function applyBattleResult(G, result, opp, sim){
     // you will face them again if you fall further in, so remember what they fielded
     if(gauntlet && boss && opp) scout(G, boss, opp);
     G.stage = (G.stage || 0) + 1;
-    if(st.kind === 'champion'){ G.over = 'won'; G.gauntlet = null; }
+    if(st.kind === 'champion'){
+      G.gauntlet = null;
+      if(G.redFlag && !G.redOpen){ G.redOpen = true; G.attempt = 0; }   // 4.1.0: he was waiting up on Mt. Silver
+      else G.over = 'won';
+    }
   } else {
     G.streak = G.streak < 0 ? G.streak - 1 : -1;
     if(isBoss(st)){
@@ -4008,7 +4051,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, RED, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
