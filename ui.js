@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.0.0', date:'Oct 1, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.0.1', date:'Oct 2, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -865,7 +865,11 @@ function matchupHtml(type){
 /** The pokémon's whole evolution line, with the current stage marked. */
 /** How `child` is reached from its parent: { by, stone } (1.3.0: branch-aware). */
 const evoStep = child => { const p = evoParent(child); return p ? evoNext(p).find(n => n.into === child) : null; };
-const stageArrow = step => `<span class="arr">${step.by === 'stone' ? itemGlyph(step.stone, ITEMS[step.stone].icon) : '→'}</span>`;
+const STAT_WORD = { atk:'Attack', hp:'HP', spd:'Speed' };
+/* one way a pokémon can evolve: a stone's icon, the stat that decides it, or a plain level up */
+const optGlyph = n => n.by === 'stone' && ITEMS[n.stone] ? itemGlyph(n.stone, ITEMS[n.stone].icon) : n.stat ? `<small>${STAT_WORD[n.stat]}</small>` : '↑';
+const optWords = n => n.by === 'stone' && ITEMS[n.stone] ? `a ${ITEMS[n.stone].name}` : n.stat ? `a level up with ${STAT_WORD[n.stat]} as its highest stat` : 'a level up';
+const stageArrow = step => `<span class="arr">${step.by === 'stone' && ITEMS[step.stone] ? itemGlyph(step.stone, ITEMS[step.stone].icon) : '→'}</span>`;
 function evoLineHtml(id){
   const line = evoLine(id), nx = evoNext(id);
   if(line.length < 2 && !nx.length) return '<span class="mu">does not evolve — levels up into bigger stats</span>';
@@ -873,11 +877,13 @@ function evoLineHtml(id){
     const step = i > 0 ? evoStep(k) : null;
     return (step ? stageArrow(step) : '') + `<span class="stage ${k === id ? 'now' : ''}">${esc(SPECIES[k].name)}</span>`;
   }).join('');
-  // a branching line (Eevee): every way it can go, each with its stone
+  // a branching line (Eevee, Tyrogue, Gloom with a Sun Stone): every way it can go, and what decides it
   const branches = nx.length > 1 ? `<span class="arr">→</span>` + nx.map(n =>
-    `<span class="stage branch">${itemGlyph(n.stone, ITEMS[n.stone].icon)} ${esc(SPECIES[n.into].name)}</span>`).join('<span class="arr">/</span>') : '';
+    `<span class="stage branch">${optGlyph(n)} ${esc(SPECIES[n.into].name)}</span>`).join('<span class="arr">/</span>') : '';
+  const allStone = nx.length > 1 && nx.every(n => n.by === 'stone');
   const how = !nx.length ? 'final form'
-    : nx.length > 1 ? `a ${nx.map(n => ITEMS[n.stone].name.replace(' Stone', '')).join(', ').replace(/, ([^,]*)$/, ' or $1')} Stone decides what it becomes`
+    : allStone ? `a ${nx.map(n => ITEMS[n.stone].name.replace(' Stone', '')).join(', ').replace(/, ([^,]*)$/, ' or $1')} Stone decides what it becomes`
+    : nx.length > 1 ? nx.map(n => `${esc(SPECIES[n.into].name)} by ${optWords(n)}`).join(' · ')
     : nx[0].by === 'stone' ? `needs a ${ITEMS[nx[0].stone].name}`
     : 'evolves on its next level up';
   return `<div class="line">${parts}${branches}</div><span class="mu">${how}</span>`;
@@ -2993,6 +2999,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.0.1', date:'Oct 2, 2026', title:'Visual bug fixes', sub:'Tyrogue, Gloom and Poliwhirl cards open again, and the Pokédex opens fast', items:[
+    'Tapping Tyrogue (or Gloom or Poliwhirl) in a run with Gen 2 on no longer breaks. Their cards now say how they evolve: by level, by a stone, or by their highest stat.',
+    'The Pokédex opens about ten times faster, which was most of the lag in runs with both generations on. A pokémon\u2019s card is built when you tap it.' ] },
   { v:'4.0.0', date:'Oct 1, 2026', title:'Major gameplay update', sub:'The Gen 2 pack: Johto, 68 new pokémon, and runs that mix both generations', items:[
     'New Run now has a toggle for each generation. Gen 1 plays exactly as before. Gen 2 is Johto: Falkner to Clair, then Will, Koga, Bruno and Karen, Lance as Champion, and Silver as your rival.',
     'Pick both and 8 of the 16 gym leaders and 4 of the Elite Four are drawn and shuffled, and the Champion is Blue or Lance. Every boss is scaled to the slot they land in — Brock as the eighth gym brings Golem, Rhydon and Onix — and nobody shows up twice.',
@@ -3831,7 +3840,12 @@ function openDex(){
   const viaOf = (k, i) => { const from = i > 0 ? evoStep(k) : null; if(!from) return '';
     return from.by === 'stone' ? `${itemGlyph(from.stone, ITEMS[from.stone].icon)} ${esc(ITEMS[from.stone].name)}`
       : from.stat ? `level up · ${({ atk:'Attack', hp:'HP', spd:'Speed' })[from.stat]} highest` : 'level up'; };
-  const bossesOf = k => { const out = []; EVERY_BOSS.forEach(b => { if(b.theme && (themePool(b).includes(k) || (b.bossOnly || []).includes(k))) out.push(b.name); }); return out; };
+  /* who fields each pokémon: one pass over the bosses, only when a card is first opened */
+  let bossUse = null;
+  const bossesOf = k => {
+    if(!bossUse){ bossUse = {}; EVERY_BOSS.forEach(b => { if(!b.theme) return;
+      new Set([...themePool(b), ...(b.bossOnly || [])]).forEach(id => (bossUse[id] = bossUse[id] || []).push(b.name)); }); }
+    return bossUse[k] || []; };
   const barRow = (label, v, max, cls) => `<div class="cbar"><span>${label}</span><i><u class="${cls}" style="width:${Math.max(4, Math.round(100 * v / max))}%"></u></i><b>${v}</b></div>`;
   const cardHtml = k => {
     const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type];
@@ -3850,7 +3864,9 @@ function openDex(){
       <h4>Matchups</h4><div class="cmu">${t.weak.length ? `<span class="mu bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}${t.resist.length ? `<span class="mu good">resists ${t.resist.join(', ')} ×½</span>` : ''}</div>
       ${bs.length ? `<h4>Trainers who use it</h4><div class="dim">${bs.slice(0, 6).map(esc).join(' · ')}${bs.length > 6 ? ` · +${bs.length - 6} more` : ''}</div>` : ''}
     </div>`; };
-  const cards = {}; allMons.forEach(k => { cards[k] = cardHtml(k); });
+  /* 4.1.1: a card is built when you tap its tile, not for all 186 up front (that made the Pokédex take seconds to open on a phone) */
+  const cards = {};
+  const cardFor = k => { if(!cards[k]){ const before = ACTIVE_GENS.slice(); setActiveGens(GENS_READY); try{ cards[k] = cardHtml(k); } finally { setActiveGens(before); if(G) useGens(G); } } return cards[k]; };
   const tileHtml = k => { const s = SPECIES[k];
     return `<button class="dextile ${seenSet.has(k) ? 'seen' : ''}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}">
       ${spriteHtml(k, 'tile')}<b>${esc(s.name)}</b>
@@ -3950,7 +3966,7 @@ function openDex(){
   });
   const showCard = k => {
     SFX.play('tap');
-    const c = modal(cards[k]); c.classList.add('dexcardm');
+    const c = modal(cardFor(k)); c.classList.add('dexcardm');
     c.querySelector('.boxscroll').insertAdjacentHTML('beforeend', '<div class="btnrow"><button class="btn ghost" data-m="x">Back</button></div>');
     c.querySelector('[data-m="x"]').onclick = () => c.remove();
     c.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { if(b.dataset.jump !== k){ c.remove(); showCard(b.dataset.jump); } });
