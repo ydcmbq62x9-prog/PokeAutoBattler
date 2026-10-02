@@ -1995,6 +1995,14 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .rpika img{width:34px;height:34px;image-rendering:pixelated}
 .award.redwin{border-color:#d6342c}
 .speech.red{border-color:#d6342c}
+
+/* 4.2.0: battle pause */
+.pausebtn{flex:0 0 auto;min-width:42px;padding-inline:10px}
+.pausebtn.on{background:var(--info);color:#07121f;border-color:var(--info)}
+.stepbtn{flex:0 0 auto}
+.bstage.paused::after{content:'PAUSED';position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:30;pointer-events:none;
+  font-weight:900;font-size:11px;letter-spacing:2px;color:#07121f;background:rgba(255,255,255,.85);border-radius:20px;padding:2px 12px}
+@media(max-width:420px){ .shopbar .stepbtn{min-width:70px;padding-inline:6px;font-size:12px} .shopbar .btn[data-act="skip"]{min-width:78px;padding-inline:6px} }
 </style>
 </head>
 <body>
@@ -2136,7 +2144,7 @@ const TUNING = {
   eggCap:       10,
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
      Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
-  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
+  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, oakRatio: { '1': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
   rival: {
     windows:    [[0, 1], [3, 4], [6, 7]],
     size:       [3, 5, 6],
@@ -2335,7 +2343,7 @@ function runPlan(G){
   for(let i = 0; i < TUNING.eliteFourCount; i++)
     plan.push({ kind:'elite', boss:bp.elite[i % bp.elite.length] });
   plan.push({ kind:'champion', boss:bp.champion });
-  if(G && G.redOpen) plan.push({ kind:'red', boss:RED });   // 4.1.0: Mt. Silver
+  if(G && G.redOpen) plan.push({ kind:'red', boss: secretOf(G) });   // 4.1.0: Mt. Silver
   return plan;
 }
 const RUN_LENGTH = () =>
@@ -2462,7 +2470,7 @@ const CHAMPION = { id:'blue', name:'Blue', title:'Champion', theme:null,
    from its seed whether he is up there (G.redFlag), and he only appears once the
    Champion has fallen. His team is the Mt. Silver team from Gold, Silver and
    Crystal, exactly, each at level 3 and holding something that suits it. */
-const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', gen:2, theme:null, special:true,
+const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', place:'Mt. Silver', gen:2, theme:null, special:true,
   lineup:[
     { id:'pikachu',  exp:5, held:'claw' },
     { id:'espeon',   exp:5, held:'focus' },
@@ -2472,6 +2480,19 @@ const RED = { id:'red', person:'red', name:'Red', title:'Mt. Silver', gen:2, the
     { id:'blastoise',exp:5, held:'coat' },
   ],
   blurb:'He has not said a word in years. One chance, no rematch: if you fall here, the run simply ends as it would have.' };
+/* 4.2.0 — PROFESSOR OAK, the Gen 1 secret boss. Gen 1 never has him battle, so his
+   team is the professor's best: the three starters and three Kanto classics. */
+const OAK = { id:'oak', person:'oak', name:'Oak', title:'Professor', place:'Pallet Town', gen:1, theme:null, special:true,
+  lineup:[
+    { id:'pikachu',   exp:5, held:'claw' },
+    { id:'snorlax',   exp:5, held:'coat' },
+    { id:'dragonite', exp:5, held:'band' },
+    { id:'venusaur',  exp:5, held:'lefto' },
+    { id:'charizard', exp:5, held:'char' },
+    { id:'blastoise', exp:5, held:'sitrus' },
+  ],
+  blurb:'The professor has watched every trainer who ever left his lab, and he brought his best. One chance, no rematch.' };
+const SECRETS = { red: RED, oak: OAK };
 const RIVAL = { id:'rival', name:'Blue', title:'Rival', theme:null,
   blurb:'He turns up three times a run, always when you least expect it. His starter beats yours, and his team grows every time you meet.' };
 const ALL_BOSSES = [...GYMS, ...ELITE_FOUR, CHAMPION];   // the Gen 1 bosses (balance tools and tests read this)
@@ -3005,6 +3026,7 @@ const MAGM = [30, 34, 62];
 const HORS = { b:[14, 20, 46], m:[36, 42, 60], e:[42, 44, 58] };
 const CROB = [56, 46, 78];
 const BLIS = [76, 14, 44];
+const PORY2 = [58, 50, 56];
 const STLX = [54, 36, 30];
 const SCIZ = [48, 60, 54];
 const POLT = [52, 42, 46];
@@ -3458,6 +3480,8 @@ const SPECIES = {
                 move:M.drain('Leech Life', 1.6, 0.6) },
   blissey:    { name:'Blissey',    type:'Normal', gen1:'Normal', gen:2, tier:5, role:'tank', hp:BLIS[0], atk:BLIS[1], spd:BLIS[2], token:true,
                 move:M.mend('Softboiled', 0.7, 0.3) },
+  porygon2:   { name:'Porygon2',   type:'Normal', gen1:'Normal', gen:2, tier:5, role:'support', hp:PORY2[0], atk:PORY2[1], spd:PORY2[2], token:true,
+                move:M.rally('Download', 1.6, 0.09) },
   steelix:    { name:'Steelix',    type:'Steel', gen1:'Steel/Ground', gen:2, tier:3, role:'tank', hp:STLX[0], atk:STLX[1], spd:STLX[2], token:true,
                 move:M.wall('Iron Tail', 1.3, 2.1) },
   scizor:     { name:'Scizor',     type:'Bug', gen1:'Bug/Steel', gen:2, tier:4, role:'bruiser', hp:SCIZ[0], atk:SCIZ[1], spd:SCIZ[2], token:true,
@@ -3740,6 +3764,7 @@ const MOVE2 = {
   kingdra:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
   crobat:     on('every', M.afflict('Confuse Ray', 0, 'cnf', 1, 'random'), { n:3 }),
   blissey:    on('allyLow', M.shield('Light Screen', 0.15, 'team')),
+  porygon2:   on('low',   M.recover('Recover', 0.5)),
   steelix:    on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),
   scizor:     on('open',  M.grow('Swords Dance', 6), { free:true }),
   politoed:   on('every', M.afflict('Hypnosis', 0, 'slp', 0.8, 'front'), { n:3 }),
@@ -3758,6 +3783,7 @@ Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; })
 Object.assign(SPECIES.golbat,    { evo2:{ into:'crobat', by:'level' } });
 Object.assign(SPECIES.seadra,    { evo2:{ into:'kingdra', by:'stone', stone:'dragonscale' } });
 Object.assign(SPECIES.chansey,   { evo2:{ into:'blissey', by:'level' } });
+Object.assign(SPECIES.porygon,   { evo2:{ into:'porygon2', by:'level' } });
 Object.assign(SPECIES.onix,      { evo2:{ into:'steelix', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.scyther,   { evo2:{ into:'scizor', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.poliwhirl, { evo2:{ into:'politoed', by:'stone', stone:'kingsrock' } });
@@ -4767,9 +4793,10 @@ function opponentFor0(G){
   }
   if(st.kind === 'red'){
     // 4.1.0: priced on the curve like the Champion; the team is fixed, never rerolled
-    return generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'red', boss: RED,
-      lineup: RED.lineup.map(u => ({ ...u, exp: TUNING.red.exp })),
-      ratio: TUNING.red.ratio[cleanGens(G.gens).join('+')] || 1.1 });
+    const sb = secretOf(G), gk = cleanGens(G.gens).join('+');
+    return generateAiTeam({ turn: G.turn, seed: G.seed, badges: G.badges || 0, kind:'red', boss: sb,
+      lineup: sb.lineup.map(u => ({ ...u, exp: TUNING.red.exp })),
+      ratio: (sb.id === 'oak' ? TUNING.red.oakRatio : TUNING.red.ratio)[gk] || 1.1 });
   }
   const boss = st.boss || null;
   const kind = st.kind;
@@ -5075,7 +5102,7 @@ function dailyMods(date){
        Golbat → Crobat…) are open that run; the Mart stocks stones for those.
    Single-gen runs and Gen 2-only runs are untouched: nothing here applies.
    =================================================================== */
-const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra'];   // species that carry an `evo2`
+const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon'];   // species that carry an `evo2`
 const EVO_POOL_SIZE = 4;
 const FOCUS_COUNT = 3;
 const FOCUS_CHANCE = 0.09;       // share of Daycare slots that show a focus line
@@ -5089,10 +5116,18 @@ function drawEvoPool(seed, gens){
   return a.slice(0, EVO_POOL_SIZE).sort((x, y) => CROSS_EVOS.indexOf(x) - CROSS_EVOS.indexOf(y));
 }
 /** 4.1.0: is Red on Mt. Silver this run? Seeded, so a daily is the same for everyone. Gen 2 runs only. */
-function drawRed(seed, gens){
-  if(!(gens || []).includes(2)) return false;
-  return makeRng(mix32((seed || 1) ^ 0x5ed0b11, 4242))() < TUNING.red.chance;
+function drawRed(seed, gens){ return drawSecret(seed, gens) === 'red'; }
+/** Which secret boss waits after the Champion this run: 'red' (Gen 2 only), 'oak' (Gen 1 only),
+    a seeded one of the two when both gens are on, or null. */
+function drawSecret(seed, gens){
+  gens = gens || [1];
+  const r = makeRng(mix32((seed || 1) ^ 0x5ed0b11, 4242));
+  if(!(r() < TUNING.red.chance)) return null;
+  const has1 = gens.includes(1), has2 = gens.includes(2);
+  return has1 && has2 ? (r() < 0.5 ? 'red' : 'oak') : has2 ? 'red' : 'oak';
 }
+/** The secret boss of this run (old saves stored `true`, which was always Red). */
+function secretOf(G){ const f = G && G.redFlag; return !f ? null : (typeof f === 'string' && SECRETS[f]) || RED; }
 function drawFocus(seed, gens){
   gens = cleanGens(gens);
   if(!isMixed(gens)) return null;
@@ -5116,7 +5151,7 @@ function newGame(seed, opts){
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
-    redFlag: drawRed(seed, gens), redOpen: false, redResult: null,   // 4.1.0
+    redFlag: drawSecret(seed, gens), redOpen: false, redResult: null,   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
     turn: 1,
     credits: TUNING.creditsPerTurn,
@@ -6055,7 +6090,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, RED, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
@@ -6243,6 +6278,7 @@ const SPRITES = {
   "nidorino": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAAB3klEQVR42u2YL4+DQBDFH5cKPkIl8uRJJBKJ7EeoRCJPIpH9CEhkJbKy8iSy8iSOEzAJO7fLDm1zl047SdMAy5/85u3bB4Cshun37/WGB6tAQBaHfQUA2B9y6XmSjq15jsclvPnj+w0AcCobAEBcZKvJ6yY80/JwJy1LyesjbLjDFbM/WCJIxbdnZIOXS3g0KNJ43tcAgCrc6V3pNksrILnBWi1z0lyrRHYbReOOyytL2AlTtnDNdh/ZS9eN4z5rcaZQ5xJWLddfJrnzROqDNOlwg63juOo8vJHk1SRJDLJlOuXi6Z8IS4u0S/4bo/atlHpcwuqbUq02pxYAkMWJdSXj2+QmNDe6y3j9sqn05OFgScNFNmo02kaLZF3FO8Jzrs/fVRO2atqlYSLHO+Ir0iyN59s20rp8mLsFEeCaPB7Hce2hNcaTb+/e7e9ovBOn77O3Q7rfOMhfm7M5u5MkHTvQdCLNEkkizztB455vpeP+younOE6Ma5PGt62pfZoTaZopdYniWJmpzEHWRZQf911nRnBwkdWZJXge/tWJIudag+Q86sQ135t1ZgnKCFSzvCrqFE9lt3zJ17nSrSC66Odr3/2eQsPX1gAAfd8bO8MwvPm+L8JLfn6P+z0c4R9Ibe7Lo5ghzAAAAABJRU5ErkJggg==",
   "ninetales": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACa0lEQVR42u1ZIVjzMBS88k0gJ5GVk5XIyMlK5OQkEolETiInJysrK5GTyMnKybr+ojv+5UiassLHt5TnkqZJd/fevfcy4Mot+YY92h/Yc7DdXDsDs7GIHw8vAIB5+vQrP+BmSjHQAkDTNACApt4o8snI2Llon6gZcPo67QvIO5HebpYAgDw3l+4brwq154jnq3JUflCki6JyIk/bVw8AgMzsBuWXePMAkSq2S+e8A6lkCPKh83pirnUxERUDLQAYY5w+ejjsO8SzOQDg8bl2+jzf57oP1Sm6/LF5vutFXs/lczK6eiwtJuKLAfV5Ik8j8lyXr7r5VX5rIe17X+eVGc7v90cnM+a0vqqqNk4GfIgRESIfUpWxRmY+qeBpPE+r+FQoOdd1Rj1NVUURYcZmLDBWVHVC5lA3i3H9jngzMaOeMbG43wIA6jzrkHjKepkYirSPIVWlD08wO0SVBxJfFap2XHcMvJ3GC2EgTe2xMkFEFXn1eWWE6kffj5KBXuRDGVkRIxOqGiGk9TnVzId8VD2xVUX6fFBrnKH6rj7sQ9zHSFVVcXdkyYB7GmfPeinyoczrq4ajjYHZwDuiTwxRbYiQjkNqRYZ8+UDPOR4yZ288qdtpq1olIkQyTT2+X9S99f4ms1WIGZxjzfDTuRcKmdb/vk5Ofd7n4/+tHNQhTpqB5PxWADCWr6uqkKFQr6t2+94x1iwir4VmYzfw3Qcp4rTXh259XXY1zt3SWDHF574O7C8GILfPRFh9nVXk+6vt6+tdI1Vmaa1brMu+ei3uavRLDNC0j3DU8aGzR/3TP0kGehn55r3jZ+Dq7R+tt09bWSNgOAAAAABJRU5ErkJggg==",
   "noctowl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAXCAYAAADgKtSgAAAB0ElEQVR42q1VIXDCMBR94XbH5oYrUzscOOo21+KK29wqmUM2cnKylXMgqZpNHcVNBlccN7XiKtlUJuj+tYyWlu3d9ZL83H///5ffBMhDZUaFP6KRJd5+jAFASTHCf6Cxb0gDHELtqhpFG4ZhZImoqpLgv3B2yBiGMwA3EO4DAMAV8bGqqmcu5A2CWY9IS6qqTM4url4AAMGsR0ZXxLm1ZUfgw3b9bhFCwLIjMni8Q8Qv3jS3l0pWmj3Lkiul4PV0CO2SSFfLTzjumoLFqy05DLm/z3Fc80H7C5YdwbIjhFyCc44W26DbPz/5QBljDE4kMR6/pl0T7nS2LOhaK+e4lO/1u+V+sJNjanswTRNOJBEEwS/HJ/+tVJKiTbWeSIxmTnqgKwCA4/YR+gl10GKxOIl81znpD7QPV8QYtL8qZX9Wh3incxNyk+BPd8vPgWUPbh43KWtda+HO7Jb2eqOM+Bj2O6gKOXvy39DXr7GU7zQegapKrtYTWXhpyU0CXWtBbhLS/vnh9mCAg7J0HnVMbQ/zuIkh9zGPm3BFDI93cgESpdG6KEBRmfStJ1K5zrnafoyVFCMFQN2ZXRp/5qc8hRTAMAyaV3n2WI0AWR9Vxf8br43q32bDX/IAAAAASUVORK5CYII=",
+  "oak": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD8AAAA/CAYAAABXXxDfAAAFe0lEQVR42t1bLXSzOhh+uGeishIZGYmMrEQikUgkEomsjEQikUhkJbIyMrKyEpcraLJAoe22AuV7z9npDmMdz8/7RxmwQuR5qPI8VFg5nDWAU0IBAEIKc1zK9u7c47Fy/gnweR4qDZCQHTQBwxgjZC4SFgN/qjM1BXZIhE2AJmEOAr6WAv8M5BDwErEY+M7CHQFCCkSHBIz4AIBG1gCAwGXYU4araDpChIDYX0HIDkHAVFU1b1X/v6XynZCdUThw2Z0DNHAA5pVSOut1LQI+jkunruXkz6NDYgCPxVRx3Iztb5ZVvk8QFyWAEgnzwIKod15TFeDNGQCQMA/Uo9vPeU2A2+5VHofgzakD2SQojxwAEKbJze4uEnboXJN3JG0evI49Zcj8GLvdDpeKf9eGKIQbJGjbFtc6/7Y9paDXyzZz3o7wQMz3RVr0cn1PGYq06J3v+935/t7dPvjv3ndGGN3ncxhRQJ6/Vb/uAQCHNN8++EOaO7qPvxLlScINklmm0VWUF6I/zQ3JaKpieN62Z/u7Wf8YKxZEBmh5kqYm6OFmLsVXBw8Ase8rAMhiv3f8BhpJ0r1yzme5zlVa3TEvlM8YzmUDSimyPDOqlydpKr4XMhRFDgBqDqG+lgYNAEkUQgjZm911C2Re2OX9uYQXMkRRDJd6uIiz4py/1a1fS4PWoVUXQhjg8jo930dRrFPgbS74bwngSRQatbsqLtGcS6OwLnj6ewAgQUdU3TTwGTMEHPNCp8Hng78Ia2ChBLwoQSkxrYx5IcqTBPNCMC80BPiM9YBrIpIoRNu2byFgdvAu9YzivCiN9ePbMqPznlIKSimiMLsjQBNnh+4EmxhyhJA9Fe3QRW5o+SEBvXQ6Hv+s/qzgkyRRGnDdNHfq2arf3cCg5O78IZmbXWzO5Wvzvc7ziWK6fKs7HWOll5Rn+f4b1YZgeVGOnuczhvQPA9DXb4DrW08nQFmrpvPI8hr0IyuPkWQTYbfKVVpdeZJIkgxX0Q0pl4rjdIx18VEauB5KbDXHCtczyw/rgA2cUvIn6/8YfF7XoxZrRYO2W02VS73RAveO0O+r3/vmLrWo7ZuqMFXaXk2tCwIvyl57s6e8R3u+B+/O8qtvdTbw8iQRmj28BucZdoN772M92p7ahjc1xhR+VhN01U/jaF7bH9LcSZIM5UmC8+/X8ECwo+wtU9crYIWQPQf91vp/2Y7U2Lg5LHRaaVvFMisf7wMEo1V+6Bw7vO7DDWfWnJ8gTu/aPQI8j5pq/Js2N3e8a583RHDO9c6tj6shIL242DO9vc5exHVyD3jQEp0lbf9yepzPYsyimDoeBAxZVkwCHRLzG8svAn5s4CnL9OaEy2CIcc3xKfA2AXXT6CrvrGn7p7acsjGlLoS4GOCPJjwdaRwhfYOAs4PXqj8jYCrGfid9k2tnXWn1jcvnlf2CNWJW8Pb9uzeT+vngn4XO97ViNfD6ASUAqKqfrbq/meM/TnlCdubhg1cL4KaVn2pf2v6E7HquePX3Pw4859zxPHrX5sbAVVUzerxuGvM11fo+ts//5ILrWvbS4MH2thnwjudRFQTfQMbyfLgEZVl0VxCt93A2o7wuYoTsRp+rt0FqYvT5Q7J+2hlWL3hBwCaLWByXo0oSssOjR1Y33+rGrG8DnrvlfRr4nq3nVn9x8C+Ms0b9sfpgF85/Tvmh+kPr34qf2gz4qmqcOC4hZftyHtuqz2X9pZRXaRr0wEjZTlb6pWKxPt9vdT9bZSl1IWX7cOb/6Jyva/kT+zrHY/VPKN99bH37bwlen0Gp+1Lua3fomx5CvLf3z51vKvb9u4N5Xb/y9xUA/dm/iamHIT4RvAER+/6roB8SZ5G3CfB/Jm6u6/4fAHXbuqVSjfUAAAAASUVORK5CYII=",
   "oddish": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABiklEQVR42uWYrZKDMBSFT3ZW8AiVyJVIJBJZiVyJRPIISGTlykokEomsXInsI9SlInN2SCYQSrszDVzDZHJzh3xz7g8IrDdprMVCP5c/AOADb2riATJivE7LBADQVh1s+7RTn1qD5nE7+w5eEpMA8H1SN/7J1Q1Jinbr1bPrOo1Qf9GD8fwmNSZtNx/ONwBAEOuksirQDtM/jpZpyTtin0sdSeZcKnJhNk+KliQJNfhQPfOX2HVQhBAF1v2mUfvHo75PstRkGuvZPKp/26n8Wh0jOWYjSRxCnRSz12Wse1Pv4n9WuswkxSw2O8BfD61Ss3dqPdn/6cLUGrVlrk0z65pluvBLY86sLOt2vs4FtVVjlqzb+HRBUnlbqCxK60UBqyJdNU14SUwCQFYoMmH4NXtwiuQw/KpeWRdPkfOv8vPmJEftUHtTpF5l/miME+chOj4VeBcaE+PZPFtJ7Hpp9qOx2b80rG8uQqMeKXZDTNoIjbJM+158NantaMzi6yIrdkdsqcl/iPm+xO6zTZwhHM7B2gAAAABJRU5ErkJggg==",
   "onix": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSCAYAAADHLIObAAADdUlEQVR42u2bMbKiQBCGh60NPIKhxzA0NDR8oeEewZDQI2xouKEhoaHHMPQIZvOS11XQO033DDCM+HeVZYkO4PDxd/8NODdd+J/XR8QvhxglqolIdLfbzTnn3G63m3JbIBITicBEYiIxkZhIBCYSE4mJRGAiMZEf57UpIjy3z7CPILLU+F3APnQIDJCsEepnPPtA5NsRyQnTCJTG03td10njW+MqEAmNdG6/3zvnnDudTklEU9anz+fzOXU9k5AJIgsi0ofI47HdbjskxZLJg8ZL6wtcM5qUTBBZAJE+pFlEhqRtnCROmJaFE6qEYNR1PWo2B5EzEunbRzSVIK5pVqK55sVq5eXfBc5mKUT6PgLv93twuTVLS2QNJYqP26w3wfq2aZpBXScQWZqz0bJxavbViKJ4Pp69xErjDJ6+ApEZwzLbfoz6Lrb+I81db9a9RNHvyDlZg8ZpVQJVJ9pcgcjSNDI1SFMlojRtiw1OurVehUaWTmTqkePjJRJpuaaBTdN03luaFqxv+Xoez8co9SqIzJ21eYc7Vlt4fXm9XjvL+Xqkbo3hP3jLOCKRNJg+U1z+XqIcDojMqJFVyItyrSEtIrKINNKu1+uV6yyqQmRqMbQ6AJFzZW3uqYlAvpw0cLVaBddzOByCXlzLsrHkkmfu0djOdukMcuj+lJu1O9mQH1npKp1W/0njerL10Kt9nepDqltTtwcic9eRvF9nJUpzPpxg7ljGIlHTSKojj19Hvt+oI9/Ca2sRSyLX0haRg0ik7Wgd9p5egqlTDiJzE2nVxlRNnCBLJwWRS1qJrF2q1yaHEHvtRroWM1b9FquNUteHayf6kW/gbIIOweqFM5DY2b/jn2NvlpZI5N9b+5IgckYiO0eeQvKwkqfNkKV7HY1EZOD3cDbv4mwq5kRMnjZ3vWi9E2Po/oDIAjTSpJ2Zt/2fNvJrSDzG6jKByIKJnCuCJJLD0epGaOQCsnaRId35MdXTDCASRPaHdu+5ppUgEll7nHqVsi6/q2ys7g6IXKBGeuWsiPpeujPX2h+FRn6wRnY61jxIo6SuUeu56l6tI8K0u9lS+40gculE0rOD9LwL1y4ijX4nPY1g8M5Z/jOIfKOsXf1oYTArc1I5idQv5OTS94bsm6VWBpELcjbeuI/eUj/Ode8QiPxgr+1L/E8gcqT4BuwgEnW1Iz7/AAAAAElFTkSuQmCC",
   "orb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA9klEQVR42q2TIZKEMBBFH9QKcMjFBbsSicwx5gzruAI2bs7AMSKRyLGMw7bLuFmVVGB6ze58Q+VT/3Un6RQoMsY8Nf9+vxdnr9CC/nrT8tjvrxdQkYdjsHKiAh5jk0ARUuThzxpqWxN8QCZhkz2Fu6Y9gCKkzCvUtk7fPAywyf7iAZSxeuWE4AMAwQe6pmWwM4OdD9XjFv31hjHmeehAJmHpV2QS2t6x+AuLv9D2LkHOXZTnNoEUjooQTSX/lArY15HBzmk92Jl9HVXAh2ZussM6MliXgHF75wM9zEHlRL2qXF3T/j4HWoXc1/69Z5Tf8pj++px/AG2ri+OP2R+yAAAAAElFTkSuQmCC",
@@ -6261,6 +6297,7 @@ const SPRITES = {
   "poliwhirl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAsCAYAAAAehFoBAAAB8klEQVR42u2YIZCDMBBFf28qkJUnKysrkUgksrISWYlERlYiK08ikZGVlScrKytxOZHuld0JB2U6N0Pgu0Aa6MvPzwZg1iymxYDfmDeO9bI+fCZsAGB/vDtvng6rfyHtJWEDAOH+CADQRQoASIu6L+m3en50hJd9O+a7DQAgjmMAQFVVAIAoLYZ63gwh7q+HiSgRbiMnVaQBa0vvf19OAIDz6dDrnfzN4SiKDACsk5KR2Wz3f5JVKrNrILcpU9e1k3TfHPcyJRjZpydTPgOPtJDEiexkd7plVzVGaSA9KaULxdq7vGKebUuJV2uQURNmeauUcpINw5hSgw0kyX/lipFefUbTrdYY2Scx9SC5dZKVRLPM9tda253rXLHrXaT9z2EimmUZI0WEJdk24kSUCEtdywTNXJ/UiaOtPjXNPJUkpeR9OSOFtuPcz0cn6S4vjzqHF64djzxKniZSVBeT5393PH159NOiHfeqm4vUzkAQBMb1Xl7UwwYAksx663a72n98LZ1E21JGtsm7JPKwzH+pIAjYu/pTDxNZUr1OmHcbJ5FBZGlNdInSiTzt1Zmu7xcb4yK+Cg9dZJ05L797UH+67vXXy15nP0qXNpUqcRKWa4HUWDOLmXCTFNUI95vu8vBLa2bShLtIveWZoyM8a5bQD7Y78voX1q1OAAAAAElFTkSuQmCC",
   "poliwrath": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABSCAYAAADHLIObAAADoElEQVR42u3cIXfqQBAF4OGdCmR/QuWTyMjISGQlshKJjIxEViKfRCIjkZGVlZXIOJ5YBrLDzu4SEkpy7jU9JNAE+JidXdISIQiCIAiCIAiCDD2TJzqX4wDOUc0fWBqPyCMR0WpXWxurfUlERLs8G4RMiByBSKdEGYfM0HM4/sZzhsgBi7TEJPMlERGlH4UlUMssSa3bRTa1bmvC+665EDl0kVm+s4SVnysiInqdZVES26YvmRA5QJHHZk38zBempm1/vDJjJfLjZLTaW5dme1mWnbwWEPmEIr39G9fEQ2V+lv+MiOl0ao3enFiRLJHlhaRqNdjRp04gciAinfLS1MhJVjvnKMnRRFZVRUREH/nGKywkcV/YsnY7c7z0PU6mQ+gEIp9EpFNeXfvnxllmv9PT1D2aSpksRkrRaqQc3eUorJ2ndpx7ZUJkjyKPMfLylXln86KIEqrJvDdaze1KZKxMiOxBZJTEUE3kUfJy29Ss9dqIqV9nXhFc66Rglicfx9vPqz+L7HReaScSY2VC5LOIZHEclrdcrpzbZV8XEqIJDdVMGTm6y65CEy+7h8b6J0T2JdIrURudYyVqImXt0tK2pkl5Wg2XNb5+m5vjvv319rE8gyrLcgKRjxSpvXNaDQzVxrP0Yh3oU5dRYrUaKI/Xtgvh8BqCXDvgURwi+xYpa6BW8xorzEREtN3aEubzzJppSIks71apmiT+RMg+8tYZGd8vSTPr+cruASL77iM1WVKYZ75+VPabKyvywitLFaJI5d8jRV6kptb+W2tnSCZEdpwXTdZ8nrW9XnESU+NCtfDq/kotfQ+M6prUeyPn3BDZQ418VKJqZagmyq5iszl9S3moovpcrp1cAy/H9c/gGmME5tqjEqn1laH+8qv6sbYvFtlNM6zQ3Pt6f+mVCJEjEOmUGaqNyWzmrIkhmTJan9lWIkSOSKQlk6/UkGJC8ni/tl0bxa/7TXN8/hby1tcIIkck0imT83r61vFWiXI71zptdere1wQiRyjSkpkszOg9/d5aO3n9k2VpNdSxXmqtQnX9GkDk2Ebtc7+4cPeR+80yJIuaNZa/DXQ8rpdA5NDn2iGBHolRtfWO3wORv5mXR0vkv27gHL6/Ov107TdL53H6DkQOsEZaM5er6x9PMhu1rO05ev8OXLuaDCIxand+TlH/kaAvmRA54rk2PUJk1zIhEiLvk9m44hYiIfI5ugOM2giCIAiCIAiCIEgf+Q9GzOkamPg4mAAAAABJRU5ErkJggg==",
   "porygon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAC/UlEQVR42uWYXUgUURTHf2tbLEbblrGmmbUQlBaU7oO0RKhFlG5m35T2mFQiJEU9lD5ZUBZCEhYFBqUQGUKYGIJWkEumK0GwCYFC2SpFmgQtYk4PZ/bh+rG62sOOnZc7M/dj5vzm/M89MxChZprFHO0frjWlRRmZmAZg00+qL5wCYN/2baqH7vy5ktMMT0wD+Hr6OABxezLVziiLupDuoikrbHIawKU2AXbFZYpsYuapPBhreBRSil9GpP1cXwtAjCUagI8nDwGw4V6dNg05DcBd+hiAwK/fxlClebYTV+/PU9qgdRccDmud9elH5GDUgMSUd16yXDwpG6rRPZKm7aHElCtbSCUnJQNQd6scgFex62akwqJnAwDYzEKqJDNaUbMh8pgGcK5FxGRR0xRZFdmivjWJEhvlVQA0NTUBkLjgDwA7drkB6J+oRg0g43an8gY2ORIAqMyJNQ4xPfOOKR0W3WF/nx8Aj9cLwP3em7IT2OKU8Xk+GVeTJNfjq2qV/jO7MwDw7b0x6YO0FjoNTmywrx+ArnYhFdD1mzPkAeC1r00ZHyT1djgAQJpVDdKyHr9yHiQ3npShqgsNYGtxg8TYimUA9NRdBsCxVAYlHC2VvXLUOmnJWfNBYvD98LDSvTneDkBBaxcADR1dISsdQ2R+E4Cnwi0Vqx4iKSVv5KBZyC3ZmA5A6neJGW+ff9KF06yLAMj3DQqBbp1Ur39G9ZrxKtiVFom5mC07Aci93hyyLhnUVepokhhr/CakXFdbAOjQ1R20F2edIZ/BUMQ0gAN3ZU/rrr4IgP3YNdkjHQ4AFo9IvrLES/7q0fe+lMqDAAwVP1UWDehtS/1zmaeP91S4jatKNWZ0j+wnhBRPzgNw52UrSpUwICqz/vwEwIMf4mvuhK8EAWJfJYRHFs7DL/Hp/lFoajUiVtiu13Oj6vTG+kaFmGFVaZ7Dfw3TONVpAN53kq9cKanKYNtanVShc55m/jmY1PaVnWqFWuQM657/FbGpVB3WvSKWWMTaX8Le27rDkWhPAAAAAElFTkSuQmCC",
+  "porygon2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAEJUlEQVR42u2aT2wUdRTHP0tLpBwI3RTcBDFZNNge/EOJNSlU3OXWHojAgVA5KAjRqAeTRg82thYTCJErwWqNQepBMPHQHmxoga5taG0rEUMTwE3QpIgV0ChdEXY8vPmRvsnM7uy27KEz7zL7m/nNb377PvN9v/d7uxHmbpbPfhFKaItYoBaZK6Hbrx3yddPSIy0lJRgSM6QMoYqNcXVxJpWWD9ncrqu4ax87hWDmAZELNLGcpJw2czbt6rrRHycA+P2hMgC2rXlKJtDZ8kA0t2CJlefrsMR8eCautOSpMYerhi8JqeTgcXW+v6E5XMfmW2OiraMnAPhmbBiALWUxXwMbTVXvfwuAlZuec+1nyG1OdRerNcvtOwVXY7cSNQBMjZyRE2WODnnWrcV1Qurd99oAOLC/zV3DRWZAn4xrYHtqI1awiRm78N33ADTFLqjzPU805rzv4Idt9rHdlVj/9NU5kWp8XE72Xg7wOmYBbGraDkDz3jfk2D0EQL2jc9PbSU1wtbRPZf8A4OFlTwOw3L6eTuvMpHUy5TcaCqmJrAqGvVfc7w4EMQvg1FUdZdLT7jcOjd0EIL7rpCZ4aAMADdFHATjT1ycEx8dUv+ONYeZRdObhuh4Ym7o2owlOZXT72DbVTv72T8684K59on1ytDBtmflFHANaEbN+BSfziMxesfPZcluVq9ZvAWDHn3873gF3AK2TI2HNo9Q1j5xZ9fvVz8or4CDWenFkrs+yAF759AYANXGdXbYkl7qOH+aK+Wi3T45aAB01dSWZuBepkFihds/SG7SO6joTFa0CtWYBJF7/Uu3c8pEKo6Jfz5qo+ELVGskRp6/YG27xXbLqEQA2pL72Oxc7Gt4GoGtf1E5dMr7mHGrMy8yq8uSqavHUv/cASFStlZKI7bo7dr+B53fqkoktyc2pbmv2gB0vSuU5TcaQCjOPQjXmmktar+rfx2bsd8DUFbN5XJd1VLmGVq+TWsjFb4XwD31FxYPgVoJNNr/16A21/+qpsatT2dwPGP1pQhMq0JWJs90hsXzEVDZt7NzHLwuB2o0OkfhznV/NOe309UuF7riDs44JqU4hVb+uUqLUhFSjVlb8JRr7RdcFWx7bodon7pwrNLtUrQ8WXdeXYytEazHR9MDpXl85Z/AyD1M39Prq76wVUltfalDntx/7T8hlxpW2vMxJqPlwv2qbfOPX84MAxHd9Ibnj7qgVyP1YJF+G4YyOw3Z0TOz9TDxqR8X69ZXKwyc/F61VLlsMwJsDHwHwVfktNV7t4R7V9vr15P6bNH5Ttbv2RINV8/D9P4/72bxDlTuPaKJLynUl+NrPWkOxwVYha2sFB3FPrXvMOCRW7A7aS5NO69odzd3P8jdDM04YFeebYI5nupP2IDaLkK+5h8RKYNZ8znXBEvsfslpQykKQLvkAAAAASUVORK5CYII=",
   "primeape": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAClElEQVR42u2aK3erQBSFd++qqIysREZWIpFIZCUSWclPQFZGIiuRyJGRkUhkZGUcV8BJMufOgyFpV285WxUYJl3zzT6PSQCRSCT6Qj04ng0BY3+s/qyJoEbso0y1ga9V+1+SXAXBAQCq/AUAED0/O19wkBwCCQ/fsSN+PcFH+sNHzkfis68BAJso52SM1wHjheAsgv3x6CS525+cE3X1HiYy+6YEAMRZpZEj2Z4byApBG8EHACjrgxZNSW2/WTQxz6P8ujt0AIDyXSdv2wmOqO3Mz+vxICeZJIk2UCkFVzSklbcpLV7v9T8PlkrLSHpVtahxpYhkGn1iIozr+02du6Pr5LXty1a7n+W1/j6P0vGT9n6cVUYv+yotIWiLqj5ywSKCEzlOumD3haAhigbJ5q3FYoRo/rmiSoxig1JqWL0HjdHU5j0b0aWkOUGqeLgXiRyvuChviweJMu3p7hCPK9f3Y37M0kUebZtWr3SyNChKXiqtjXQTQX6lvo36OE7i7I2JMBGkfEbeOJ3GvNfs8lnRs3obd058qYmN4jWzEPRp1xzZnSN7PpJr25F0mqazoqZiO4NOGnhtTNGTrtXaPBhy3qF5j/ISrVyRFjqRbuw6VL/XVrrI9DOfKIqcH+rLf+dxU5cj/WBwZePp1IlkqTotGgaXqlM/eI6qrMtZLcHHUHKXlRu9l+0+NJJ0XSVbzYO+iiN019HZkW83igd9HT7v9G2a6z3Kf8lUm155b9EJtxC0kSTx81MbKSJx9V0EXHn1n3xoiZJC8IZ3BwB4S3VPvrcH32cZvw/kO4HXmoaTdSF4K0GjJxfMre2Ew2nj7O8kit67H8SdfyVBxIiounG+X0/wJ2lgfh4c/haCIpFI9C36CyaiO/gxYKmJAAAAAElFTkSuQmCC",
   "protein": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABVklEQVR42rWVrXLDMBCE15mSFBlaRRE0PCooaBhqGmbYvEELG+hHCA00q6CoYaGMKrMapWEtSDPN1PqJ08kR3eikb1arGylBIBaLxVeo3nVd4qslIehWSpCUznqrFEqlvPCZD1px7oUCAEmJinPvqWaho7ZKXVUDgDtEIgbwxcx3KbUx0c21MdM9XgsG/QP3jWvBvB4nPmguBkgqUNc6qvxF25Hy4OWptkEuBuRiGNVcc1FwVj0CACQVkFSMQOf5ae1FXcEYA6dX6N5A2J0T+EFPoILBWju93YgTbMaRk1uV6c31fZzO02OyvT+O5R7D53BdH4/iBP2b/wvsAKW7h+i2qBUo96OpS6xwgq214Bn3KwYwLN+ng/t6A/PMQJyCiq216OvNNCsOzQpzKqDZ8lf9WZsdmhV6nU73+E2nABpIAKppJj+bSeivWwsWfXx8f19yq8/0G+Y+lI3j8CEsAAAAAElFTkSuQmCC",
   "pryce": "data:image/png;base64,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",
@@ -6340,7 +6377,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.1.0', date:'Oct 2, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.2.0', date:'Oct 3, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7411,12 +7448,12 @@ function dockHtml(closed){
   const line = !b ? `${trainerName(G.turn)} wants to battle!`
     : n.kind === 'gym' ? `${b.name} wants to battle!`
     : n.kind === 'elite' ? `Elite Four ${b.name} wants to battle!`
-    : n.kind === 'red' ? `${b.name} is waiting on Mt. Silver.`
+    : n.kind === 'red' ? `${b.name} is waiting at ${b.place}.`
     : `Champion ${b.name} wants to battle!`;
   const sub = !b ? `Trainer battle · ${n.untilGym === 1 ? 'gym leader after this one' : `${n.untilGym} battles to the gym`}`
     : n.kind === 'gym' ? `${b.title} · ${b.badge} Badge`
     : n.kind === 'elite' ? `Elite Four · fight ${n.gauntlet ? n.gauntlet.at + 1 : 1} of ${n.gauntlet ? n.gauntlet.members.length : 5}`
-    : n.kind === 'red' ? 'Mt. Silver · one chance, nothing to lose'
+    : n.kind === 'red' ? `${b.place} · one chance, nothing to lose`
     : 'Champion · the last fight';
   const nobody = closed && !fightersOf(G).length;
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
@@ -7452,8 +7489,9 @@ function runNoteHtml(g){
     <div class="dim"><b>Open evolutions</b> ${poolLines(g).map(esc).join(' · ')}</div></div>`;
 }
 function redStripHtml(){
-  return `<div class="redstrip">${bossArt(RED, 'redart')}<div><b>Mt. Silver</b>
-    <span>Red is up here, and you are healed. This is your one turn to spend, and you only get one try: beat him for Red\u2019s Badge, lose and nothing is lost.</span></div></div>`;
+  const sb = secretBoss();
+  return `<div class="redstrip">${bossArt(sb, 'redart')}<div><b>${esc(sb.place)}</b>
+    <span>${esc(sb.name)} is here, and you are healed. This is your one turn to spend, and you only get one try: beat ${sb.id === 'oak' ? 'him' : 'him'} for ${esc(sb.name)}\u2019s Badge, lose and nothing is lost.</span></div></div>`;
 }
 function renderShop(){
   const maxTier = tierFor(G);
@@ -7702,7 +7740,7 @@ function renderBattle(){
   const bossTag = battle.boss ? `<div class="bosstag ${battle.kind}">${bossArt(battle.boss, 'tag')}
       ${battle.kind === 'gym' ? `${esc(battle.boss.title)} · ${esc(battle.boss.badge)} Badge`
         : battle.kind === 'rival' ? `<span class="ambush ${battle.i < 1 ? 'pop' : ''}">!</span> Your rival · ambush ${battle.opp.meeting + 1} of ${TUNING.rival.windows.length}`
-        : battle.kind === 'red' ? 'Mt. Silver · one chance'
+        : battle.kind === 'red' ? `${battle.boss.place} · one chance`
         : `${battle.kind === 'elite' ? 'Elite Four' : 'Champion'}${
           gn ? ` · fight ${gn.at + 1} of ${gn.members.length}` : ''}`}</div>` : '';
   // what winning or losing a gauntlet fight means, said on the result screen
@@ -7739,17 +7777,17 @@ function renderBattle(){
   const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''}"><span>
       ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
               : battle.kind === 'champion' ? 'CHAMPION!'
-              : battle.kind === 'red' ? 'RED BEATEN!'
+              : battle.kind === 'red' ? `${esc(battle.boss.name).toUpperCase()} BEATEN!`
               : battle.kind === 'elite' ? `${esc(battle.boss.name).toUpperCase()} FALLS`
               : battle.kind === 'rival' ? 'RIVAL BEATEN!' : 'VICTORY!')
         : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
   const redNote = !done ? '' : battle.kind === 'red'
-    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${redBadge('big')}
-        <div><b>Red\u2019s Badge</b><span>You beat the strongest trainer there is.</span></div></div>`
+    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge(battle.boss.id, 'big')}
+        <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
       : `<div class="award redlose">${bossArt(battle.boss, 'hero')}
-        <div><b>Red didn\u2019t flinch.</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
+        <div><b>${esc(battle.boss.name)} ${battle.boss.id === 'oak' ? 'smiles and shakes his head.' : 'didn\u2019t flinch.'}</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
     : battle.kind === 'champion' && won && G.redOpen
-    ? `<p class="gnote">A challenger is waiting on <b>Mt. Silver</b>. You are healed and the shops are open for one turn.</p>` : '';
+    ? `<p class="gnote">A challenger is waiting at <b>${esc(secretBoss().place)}</b>. You are healed and the shops are open for one turn.</p>` : '';
   const notes = done ? `${award}${rivalNote}${gnote}${redNote}` : '';
 
   return `
@@ -7776,6 +7814,8 @@ function renderBattle(){
              aria-pressed="${v === speed}">${v}×</button>`).join('')}
          </div>
          <span class="steps">${battle.i + 1}/${battle.steps.length}</span>
+         <button class="btn pausebtn ${battle.paused ? 'on' : ''}" data-act="pause" aria-pressed="${!!battle.paused}" aria-label="${battle.paused ? 'Resume' : 'Pause'}">${battle.paused ? '▶' : '⏸'}</button>
+         ${battle.paused ? '<button class="btn stepbtn" data-act="step" aria-label="Next step">Step ⏭</button>' : ''}
          <button class="btn" data-act="skip">Skip ⏩</button>`}
   </div>`;
 }
@@ -8137,8 +8177,9 @@ function animateStep(S, i){
     const stNew = n && n.st && n.st !== (w && w.st) ? n.st : null;
     const shUp = n && (n.shield || 0) > ((w && w.shield) || 0);
     const dAtk = n && w ? n.atk - w.atk : 0, dSpd = n && w ? n.spd - w.spd : 0;
-    const touched = fainted || dhp || stNew || shUp || dAtk || dSpd || kinds.has('hit') || kinds.has('crit') || kinds.has('buff');
-    if(touched) ev.push({ k, F, n, w, kinds, fainted, dhp, stNew, shUp, dAtk, dSpd });
+    const shDown = !!(n && w && (w.shield || 0) > 0 && !(n.shield > 0));
+    const touched = fainted || dhp || stNew || shUp || shDown || dAtk || dSpd || kinds.has('hit') || kinds.has('crit') || kinds.has('buff');
+    if(touched) ev.push({ k, F, n, w, kinds, fainted, dhp, stNew, shUp, shDown, dAtk, dSpd });
   }
   const foes = A ? ev.filter(e => e.F.side !== A.side && (e.dhp < 0 || e.fainted || e.stNew || e.kinds.has('hit') || e.kinds.has('crit'))) : [];
   const pals = A ? ev.filter(e => e.F !== A && e.F.side === A.side && (e.dhp > 0 || e.shUp || e.dAtk > 0 || e.dSpd > 0 || e.kinds.has('buff'))) : [];
@@ -8205,9 +8246,18 @@ function animateStep(S, i){
         glow(F, { brn:'#ff7a2e', psn:'#b05ad0', par:'#ffd93a', slp:'#9fb1d6', cnf:'#ff9bd0', fln:'#ffffff' }[e.stNew] || '#fff');
       }
       if(e.shUp){ floatText(S, F, 'Barrier', 'shield note', lift); lift += 20; }
+      if(e.shDown && !e.fainted){ floatText(S, F, 'Barrier broke', 'shield note', lift); lift += 20; F.el.querySelector('.fbarrier').classList.remove('on'); }
       if(e.dAtk) { floatText(S, F, e.dAtk > 0 ? 'ATK ▲' : 'ATK ▼', (e.dAtk > 0 ? 'up' : 'down') + ' note', lift); lift += 20; }
       if(e.dSpd) { floatText(S, F, e.dSpd > 0 ? 'SPD ▲' : 'SPD ▼', (e.dSpd > 0 ? 'up' : 'down') + ' note', lift); }
       if(e.fainted) setTimeout(() => { if(S.gen === gen) faintFx(S, F); }, quick ? 60 : 170);
+    }
+    /* 4.2.0: a fighter nothing "happened" to on this step can still have lost its barrier or a status
+       (a hit soaked whole, a status running out). It used to keep the old shell and chip until
+       something else touched it. Bring every living fighter up to the snapshot. */
+    for(const [k, F] of S.f){
+      if(F.down) continue;
+      const n = now.get(k);
+      if(n && (((n.shield || 0) !== F.shield) || n.st !== F.st)) paintFighter(F, n, false);
     }
   };
   if(impactAt) setTimeout(land, impactAt); else land();
@@ -8225,7 +8275,7 @@ function playIntro(S){
     : b.kind === 'red' ? `${b.boss.name} wants to battle!`
     : `${b.oppName} wants to battle!`;
   const sub = b.kind === 'gym' ? `${b.boss.title} · ${b.boss.badge} Badge`
-    : b.kind === 'rival' ? 'An ambush!' : b.kind === 'red' ? 'Mt. Silver · the summit' : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
+    : b.kind === 'rival' ? 'An ambush!' : b.kind === 'red' ? `${b.boss.place} · the secret battle` : b.exhibition ? 'Exhibition match' : b.kind === 'trainer' ? 'Trainer battle' : b.boss ? b.boss.title : '';
   const n = (b.steps[0] && b.steps[0].e.length) || 0;
   const balls = Array.from({ length: TUNING.maxTeam }, (_, k) => `<i class="${k < n ? '' : 'out'}"></i>`).join('');
   const ban = document.createElement('div');
@@ -8401,7 +8451,7 @@ async function runImage(){
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
   const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
   x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
-  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? 'CHAMPION · RED DEFEATED' : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
+  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `CHAMPION · ${secretBoss().name.toUpperCase()} DEFEATED` : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
   x.font = font(16, 400); x.fillStyle = '#6b6f7a';
   x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
@@ -8428,7 +8478,7 @@ async function runImage(){
   if(G.redResult){
     const w = G.redResult === 'won', by = hasF ? 828 : 810;
     x.fillStyle = w ? '#f0b830' : '#ece4c8'; x.fillRect(60, by, W - 120, 38); x.strokeStyle = dark; x.lineWidth = 3; x.strokeRect(60, by, W - 120, 38);
-    x.fillStyle = dark; x.font = font(16); x.fillText(w ? '\u26A1 Red\u2019s Badge · Mt. Silver cleared' : 'Faced Red on Mt. Silver', W / 2, by + 25);
+    x.fillStyle = dark; x.font = font(16); x.fillText(w ? `\u26A1 ${secretBoss().name}\u2019s Badge · ${secretBoss().place} cleared` : `Faced ${secretBoss().name} in ${secretBoss().place}`, W / 2, by + 25);
   }
   x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
@@ -8452,21 +8502,21 @@ async function shareRunImage(){
 }
 
 function redOverHtml(){
-  const w = G.redResult === 'won';
-  return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(RED, 'redart')}
-    <div><b>${w ? `MT. SILVER${G.redNew ? ' <i class="newdot">NEW</i>' : ''}` : 'MT. SILVER'}</b>
-    <span>${w ? `You beat Red and his whole team: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise.${(() => { const h = redRec(); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
-      : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
-    ${w ? `<span class="rpika">${miniSprite('pikachu')}</span>${redBadge('big')}` : ''}</div>`;
+  const w = G.redResult === 'won', sb = secretBoss(), team = sb.lineup.map(u => SPECIES[u.id].name);
+  return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(sb, 'redart')}
+    <div><b>${esc(sb.place.toUpperCase())}${w && G.redNew ? ' <i class="newdot">NEW</i>' : ''}</b>
+    <span>${w ? `You beat ${esc(sb.name)} and his whole team: ${team.slice(0, -1).join(', ')} and ${team[team.length - 1]}.${(() => { const h = secretRec(sb.id); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
+      : sb.id === 'oak' ? 'The professor smiled and sent you home. Nothing was lost.' : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
+    ${w ? `<span class="rpika">${miniSprite(sb.id === 'oak' ? 'bulbasaur' : 'pikachu')}</span>${secretBadge(sb.id, 'big')}` : ''}</div>`;
 }
 function renderOver(){
   const won = G.over === 'won';
   return `<div class="panel" style="text-align:center;padding:26px 18px">
-    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? 'RED DEFEATED!' : won ? 'CHAMPION!' : 'RUN OVER'}</div>
+    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? `${esc(secretBoss().name.toUpperCase())} DEFEATED!` : won ? 'CHAMPION!' : 'RUN OVER'}</div>
     ${G.redResult ? redOverHtml() : ''}
     ${won ? '' : `<div class="badgerow">${badgeCase()}</div>`}
     <p style="color:var(--muted)">${won
-      ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ' and Red' : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
+      ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ` and ${esc(secretBoss().name)}` : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
     ${won && G.mods && G.mods.onelife ? (() => { const h = hardcoreRec(); return `<div class="hcaward">${hcBadge('big')}<div><b>HARDCORE BADGE${G.hcNew ? ' <i class="newdot">NEW</i>' : ''}</b><span>${G.hcNew ? 'You cleared a run on One Life.' : `Another One Life clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; })() : ''}
@@ -8739,7 +8789,7 @@ function openNewRun(onStart){
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
   const mods = dailyMods(date), gl = genLabel({ gens: dailyGens(date) }), label = [gl, Object.keys(mods).length ? modsLabel({ mods }) : (gl ? '' : 'no special rules')].filter(Boolean).join(' · ');
-  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.red ? ' · Beat Red' : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.secret ? ' · Beat ' + t.secret : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
   const text = dailyShareText(date || (G && G.daily) || localDate());
@@ -8821,6 +8871,11 @@ document.addEventListener('pointermove', trackPtr, true);
 document.addEventListener('pointerdown', trackPtr, true);
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ sel = null; hidePopup(); save(); render(); }
+  // 4.2.0: Space pauses and resumes a battle (not while typing in a box)
+  if(e.key === ' ' && phase === 'battle' && battle && battle.i < battle.steps.length - 1
+     && !/^(INPUT|TEXTAREA|BUTTON|SELECT)$/.test((document.activeElement || {}).tagName || '') && !document.querySelector('.modal')){
+    e.preventDefault(); handle('pause');
+  }
 });
 window.addEventListener('resize', hidePopup);
 
@@ -9031,6 +9086,22 @@ function handle(act, i, data){
       return;
     }
     case 'skip':    SFX.play('tap'); finishPlayback(); return;
+    case 'pause': {
+      if(!battle || battle.i >= battle.steps.length - 1) return;
+      battle.paused = !battle.paused; SFX.play('tap');
+      clearTimeout(battle.timer);
+      if(!battle.paused) playback();
+      render();
+      if(battle && battle.stage) battle.stage.el.classList.toggle('paused', !!battle.paused);
+      return;
+    }
+    case 'step': {
+      if(!battle || !battle.paused || battle.i >= battle.steps.length - 1) return;
+      SFX.play('tap'); battle.i++; advanceView();
+      if(battle && battle.i < battle.steps.length - 1) render();
+      if(battle && battle.stage) battle.stage.el.classList.toggle('paused', !!battle.paused);
+      return;
+    }
     case 'scoutcard': { const n = nextUp(G), u = n.scouted && n.scouted[i];
       if(u) openUnitCard(u, `Scouting report · ${esc(n.boss ? n.boss.name : '')}`); return; }
     case 'overcard': openUnitCard(G.team[i]); return;
@@ -9227,6 +9298,7 @@ function stepDelay(){
 
 function playback(){
   clearTimeout(battle.timer);
+  if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
   battle.timer = setTimeout(() => { battle.i++; advanceView(); playback(); }, stepDelay());
 }
@@ -9240,7 +9312,7 @@ function advanceView(){
   patchBattleChrome();
 }
 function finishPlayback(){
-  clearTimeout(battle.timer);
+  clearTimeout(battle.timer); battle.paused = false;
   battle.i = battle.steps.length - 1;
   render();
 }
@@ -9358,6 +9430,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.2.0', date:'Oct 3, 2026', title:'Minor gameplay changes', sub:'Professor Oak is a secret boss, Porygon2, battle pause, and a barrier fix', items:[
+    'A second secret boss. In about one Gen 1 run in six, beating the Champion sends you back to Pallet Town for a fight with Professor Oak: Pikachu, Snorlax, Dragonite, Venusaur, Charizard and Blastoise. Same rules as Red: one try, nothing lost if you fall, and Oak\u2019s Badge if you win.',
+    'Runs with both generations draw one secret boss between them, Red or Oak, and Gen 2-only runs still meet Red. Oak\u2019s Badge sits next to Red\u2019s on your Trainer Card and the title screen.',
+    'Porygon2 is here: Porygon evolves into it on a level up when Gen 2 is on. In Gen 2-only runs the Porygon line is in the Daycare. It is a Support, and one more cross-generation evolution for a mixed run\u2019s pool to open.',
+    'Battles have a Pause button. Pause holds the fight on its current beat, Step moves it on one action at a time, and Space does the same as Pause. Skip still jumps to the result.',
+    'Fixed a barrier that could stay on screen after it broke. A pokémon whose barrier or status ended on a turn nothing else happened to it kept its old shell until it was hit again. It now clears at once, with a \u201cBarrier broke\u201d note.' ] },
   { v:'4.1.0', date:'Oct 2, 2026', title:'Major gameplay update', sub:'Red waits on Mt. Silver', items:[
     'In a run with Gen 2 on, about one run in six hides a secret last boss. Beat the Champion and, if he is up there, Red steps out on Mt. Silver: Pikachu, Espeon, Snorlax, Venusaur, Charizard and Blastoise, the team from the games. You will not know until the Champion falls.',
     'You get one try. Beat Red and you earn Red\u2019s Badge, which sits on your Trainer Card with a Mt. Silver ending and a Pikachu banner on the run summary. Lose and nothing is lost: it costs no life and no money, and the run ends as the Champion clear it already was.',
@@ -9666,19 +9744,24 @@ function hcBadge(cls = ''){
    Earned by beating Red on Mt. Silver. Kept in records as { count, first, last },
    merged across devices like the Hardcore Badge. Drop redbadge.png into the
    Sprites folder to replace the drawn badge. */
-const RED_HOW = 'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.';
-function redBadge(cls = ''){
-  return SPRITES.redbadge
-    ? `<img class="hcb rdb ${cls}" src="${SPRITES.redbadge}" alt="Red's Badge">`
-    : `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Red's Badge"><circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#2b1a22" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="#d6342c"/><path d="M1.5 16h29" stroke="#2b1a22" stroke-width="2"/><polygon points="17.5,4.5 10.5,17 15.2,17 13.6,27 21.5,13.5 16.6,13.5 19,4.5" fill="#ffd23a" stroke="#2b1a22" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+const secretBoss = () => secretOf(G) || RED;
+const SECRET_HOW = { red:'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.',
+                     oak:'Beat Professor Oak in Pallet Town. He turns up in about one Gen 1 run in six, after the Champion.' };
+function redBadge(cls = ''){ return secretBadge('red', cls); }
+function secretBadge(id, cls = ''){
+  const nm = id === 'oak' ? 'Oak\u2019s Badge' : 'Red\u2019s Badge', img = id === 'oak' ? SPRITES.oakbadge : SPRITES.redbadge;
+  if(img) return `<img class="hcb rdb ${cls}" src="${img}" alt="${nm}">`;
+  if(id === 'oak') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="${nm}"><circle cx="16" cy="16" r="14.5" fill="#f4f0e2" stroke="#2b1a22" stroke-width="2"/><circle cx="16" cy="16" r="10.5" fill="none" stroke="#3d9a4c" stroke-width="1.5"/><path d="M16 26c-1-6 0-11 2-14 2 1 6 3 6 8-3 0-5 1-6 3 0-4-2-7-4-9-1 3-1 8 2 12z" fill="#3d9a4c" stroke="#1d5a2a" stroke-width="1" stroke-linejoin="round"/><circle cx="16" cy="9" r="3.2" fill="#d6342c" stroke="#2b1a22" stroke-width="1"/></svg>`;
+  return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="${nm}"><circle cx="16" cy="16" r="14.5" fill="#fff" stroke="#2b1a22" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 29 0z" fill="#d6342c"/><path d="M1.5 16h29" stroke="#2b1a22" stroke-width="2"/><polygon points="17.5,4.5 10.5,17 15.2,17 13.6,27 21.5,13.5 16.6,13.5 19,4.5" fill="#ffd23a" stroke="#2b1a22" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
 }
-function redRec(){ const h = records().red; return h && h.count > 0 ? h : null; }
+function secretRec(id){ const h = records()[id]; return h && h.count > 0 ? h : null; }
+function redRec(){ return secretRec('red'); }
 function awardRed(){
   if(!G || G.over !== 'won' || G.redResult !== 'won' || G.redDone) return;
-  const r = records(), h = r.red || { count:0, first:null, last:null };
+  const id = secretBoss().id, r = records(), h = r[id] || { count:0, first:null, last:null };
   G.redNew = !h.count; G.redDone = true;
   h.count++; h.first = h.first || localDate(); h.last = localDate();
-  r.red = h; saveRecords(r);
+  r[id] = h; saveRecords(r);
 }
 function hardcoreRec(){ const h = records().hardcore; return h && h.count > 0 ? h : null; }
 const hcLine = h => `${h.count > 1 ? `${h.count} clears` : '1 clear'}${h.first ? ` · first ${prettyDate(h.first)}` : ''}`;
@@ -9706,7 +9789,7 @@ function noteDaily(){
   all[G.daily] = { ...was, best: Math.max(was.best, reachedStage()), badges: Math.max(was.badges || 0, G.badges),
                    cleared: was.cleared || G.over === 'won', mods: modsLabel(G),
                    hardcore: !!(was.hardcore || (G.over === 'won' && G.mods && G.mods.onelife)),
-                   red: !!(was.red || G.redResult === 'won') };
+                   secret: (G.redResult === 'won' ? secretBoss().name : was.secret) || '' };
   try{ localStorage.setItem(DAILY_REC, JSON.stringify(all)); }catch(e){}
 }
 function recBucket(r){
@@ -9749,7 +9832,7 @@ function partnerOf(){
   return best ? { u: best, n: f[best.uid] } : null;
 }
 function openTrainerCard(fromTitle){
-  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null, RD = R.red && R.red.count ? R.red : null;
+  const R = records(), P = partnerOf(), hit = G.rec && G.rec.hit, HC = R.hardcore && R.hardcore.count ? R.hardcore : null, RD = R.red && R.red.count ? R.red : null, OK = R.oak && R.oak.count ? R.oak : null;
   const live = !fromTitle || runInProgress();     // from the title with no run going, only who you are
   const face = P ? P.u.id : PREF.get('partner', '');
   const streak = !G.streak ? '—' : G.streak > 0 ? `${G.streak}W` : `${-G.streak}L`;
@@ -9771,8 +9854,8 @@ function openTrainerCard(fromTitle){
     <h4>Badges</h4><div class="bcase">${cells}</div>
     <div class="hcrow ${HC ? 'on' : ''}" title="${HC ? 'Hardcore Badge' : esc(HC_HOW)}">${hcBadge(HC ? '' : 'locked')}
       <div><b>Hardcore Badge</b><span>${HC ? esc(hcLine(HC)) : `Not earned yet. ${esc(HC_HOW)}`}</span></div></div>
-    <div class="hcrow ${RD ? 'on red' : ''}" title="${RD ? 'Red\u2019s Badge' : esc(RED_HOW)}">${redBadge(RD ? '' : 'locked')}
-      <div><b>Red\u2019s Badge</b><span>${RD ? esc(hcLine(RD)) : `Not earned yet. ${esc(RED_HOW)}`}</span></div></div>
+    ${[['red', RD, 'Red'], ['oak', OK, 'Oak']].map(([id, rec, nm]) => `<div class="hcrow ${rec ? 'on red' : ''}" title="${rec ? nm + '\u2019s Badge' : esc(SECRET_HOW[id])}">${secretBadge(id, rec ? '' : 'locked')}
+      <div><b>${nm}\u2019s Badge</b><span>${rec ? esc(hcLine(rec)) : `Not earned yet. ${esc(SECRET_HOW[id])}`}</span></div></div>`).join('')}
     <h4>Records</h4><div class="recs">
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
       <div><span>Runs cleared</span><b>${R.cleared} of ${R.runs}</b></div>
@@ -9935,8 +10018,8 @@ function applyTransfer(data){
     if(!d) throw new Error('bad save');
     // records: keep the best of both devices
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
-    const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red);
-    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}) });
+    const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
+    saveRecords({ ...a, runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -10409,7 +10492,7 @@ function showTitle(then){
     <div class="tfield"><i class="tcloud c1"></i><i class="tcloud c2"></i><i class="tcloud c3"></i>
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
-    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${redRec() ? `<span class="thc" title="Red\u2019s Badge · ${esc(hcLine(redRec()))}">${redBadge('sm')}</span>` : ''}${who}</div>
+    <div class="twho">${HC0 ? `<span class="thc" title="Hardcore Badge · ${esc(hcLine(HC0))}">${hcBadge('sm')}</span>` : ''}${['red', 'oak'].map(id => secretRec(id) ? `<span class="thc" title="${id === 'oak' ? 'Oak' : 'Red'}\u2019s Badge · ${esc(hcLine(secretRec(id)))}">${secretBadge(id, 'sm')}</span>` : '').join('')}${who}</div>
     <button class="tpress" data-t="start">PRESS START</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
