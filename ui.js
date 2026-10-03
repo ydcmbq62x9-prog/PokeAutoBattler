@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.6.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.7.0', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3092,6 +3092,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.7.0', date:'Oct 8, 2026', title:'Balance patch', sub:'Eviolite is stronger and counts every evolution', items:[
+    'Eviolite now gives +50% HP while a pokémon can still evolve, up from +25%. In testing it ranked near the bottom of the 5\u20bd held items for what it gave back, and it is switched off whenever its holder is fully evolved, so it needed the lift.',
+    'Eviolite now counts every Gen 2 evolution whenever Gen 2 is on. Before, in a Gen 1 + 2 run it only counted the four evolutions open in that run\u2019s Evolution Pool, so Scyther or Chansey could show no effect even though Scizor and Blissey exist in the game. Now they get the boost, pool or not. A Gen 1-only run still has no Scizor or Blissey, so Scyther and Chansey stay switched off there.',
+  ]},
   { v:'4.6.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Dual-type pokémon join the Mono pool of each of their types', items:[
     'In a Mono-type run the Daycare now sells every pokémon that has that type, not just the ones whose main type it is. Geodude is Rock and Ground, Pidgey is Normal and Flying, Jynx is Ice and Psychic, and so on. Mono legends follow the same rule. Gym leaders and the Elite Four already drew on both of a pokémon\u2019s types.',
     'Because the pools are bigger, Mono Ground, Flying, Poison and Psychic are now available in Gen 2-only runs, and Mono Ice and Dark are tuned for the new pools. Every Mono type was re-measured so each is still about as hard as the others.',

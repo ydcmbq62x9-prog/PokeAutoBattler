@@ -1884,6 +1884,9 @@ function evoNext(id){
   if(sp.evo2 && ACTIVE_GENS.includes(2) && (!ACTIVE_POOL || ACTIVE_POOL.includes(id))) out.push(...evoOpts(sp.evo2).map(n => ({ ...n, gen2:true })));
   return out.filter(n => SPECIES[n.into]);
 }
+/** 4.7.0 (Sean): can this species still evolve into something that exists in this run? Unlike evoNext
+    it counts a Gen 2 evolution whenever Gen 2 is on, even if a mixed run has not opened it in its Evolution Pool. */
+const canStillEvolve = id => { const sp = SPECIES[id]; return !!sp && (evoNext(id).length > 0 || (!!sp.evo2 && ACTIVE_GENS.includes(2) && evoOpts(sp.evo2).some(n => SPECIES[n.into]))); };
 /** What a species evolved from, or null. */
 const evoParent = id => Object.keys(SPECIES).find(k => inGens(k) && evoNext(k).some(n => n.into === id)) || null;
 /** Which of several level-up evolutions a pokémon takes: the one matching its highest stat. */
@@ -2031,8 +2034,8 @@ const HELD_ITEMS = {
   claw:   { name:'Quick Claw',   icon:'🪝', tier:2, cost:4, kind:'stat', rarity:'common',
             text:'+20% Speed while held.', pct:{ spd:0.20 } },
   evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat', rarity:'uncommon',
-            text:'+25% HP, but only while it can still evolve.',
-            pct:{ hp:0.25 }, when:u => evoNext(u.id).length > 0,
+            text:'+50% HP, but only while it can still evolve.',   // 4.7.0: was +25%; and every Gen 2 evolution counts when Gen 2 is on, open in this run\u2019s pool or not
+            pct:{ hp:0.50 }, when:u => canStillEvolve(u.id),
             offText:'No effect — this one has nowhere left to evolve.' },
   coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
             text:'Takes 15% less damage from every hit.', cutPct:0.15 },
@@ -4170,7 +4173,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
