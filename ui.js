@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.7.0', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.8.0', date:'Oct 9, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3092,6 +3092,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.8.0', date:'Oct 9, 2026', title:'Balance patch', sub:'Expert Belt and Leftovers are stronger, and Slowpoke can become Slowking', items:[
+    'Expert Belt now gives +20% Attack on top of never being resisted. On its own the resist-ignoring effect barely moved results in testing.',
+    'Leftovers now heals 22% of max HP on its beat, up from 12%. It was weaker than the other 5\u20bd items for what it gave back.',
+    'Slowpoke can now become Slowking in Gen 2 runs: use a King\u2019s Rock on it instead of letting it level up into Slowbro. Slowking is a Support with a healing attack that confuses an enemy now and then, where Slowbro is a Tank. Slowpoke joins the cross-generation evolutions, so mixed runs draw four from ten. Slowking shows a letter placeholder until its sprite is added.',
+    'Heart Scale was checked too and left alone: on a Support it already gains about as much as the other 5\u20136\u20bd items.',
+  ]},
   { v:'4.7.0', date:'Oct 8, 2026', title:'Balance patch', sub:'Eviolite is stronger and counts every evolution', items:[
     'Eviolite now gives +50% HP while a pokémon can still evolve, up from +25%. In testing it ranked near the bottom of the 5\u20bd held items for what it gave back, and it is switched off whenever its holder is fully evolved, so it needed the lift.',
     'Eviolite now counts every Gen 2 evolution whenever Gen 2 is on. Before, in a Gen 1 + 2 run it only counted the four evolutions open in that run\u2019s Evolution Pool, so Scyther or Chansey could show no effect even though Scizor and Blissey exist in the game. Now they get the boost, pool or not. A Gen 1-only run still has no Scizor or Blissey, so Scyther and Chansey stay switched off there.',

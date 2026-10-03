@@ -794,6 +794,7 @@ try{
     const d = E.makeUnit(defId, 0); d.hp = 400;
     return dmgTo(E.SPECIES[defId].name, allLines(fight([a], [d], seed)))[0];
   };
+  const keepBeltAtk = E.HELD_ITEMS.char.pct; delete E.HELD_ITEMS.char.pct;   // 4.8.0: test the resist-ignoring effect on its own, without the +20% Attack
   const superOff = charTest(pair[0], pair[1], false, 777);
   const superOn  = charTest(pair[0], pair[1], true,  777);
   const neutral = charTest(dud[0], dud[1], false, 777);
@@ -802,6 +803,7 @@ try{
         'and changes nothing on a neutral hit');
   check(charTest(sup[0], sup[1], true, 777) === charTest(sup[0], sup[1], false, 777),
         'or on a super-effective one');
+  E.HELD_ITEMS.char.pct = keepBeltAtk;
 
   /* --- economy items --- */
   const G2 = E.newGame(88);

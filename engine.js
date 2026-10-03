@@ -1027,14 +1027,15 @@ const OMAN = { b:[18, 24, 20], e:[56, 66, 36] };
 const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
+const SLOWK = [68, 36, 30];
 const MIME = [34, 34, 50];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
 const CUBO = { b:[20, 20, 26], e:[48, 50, 34] };
 const SUNK = { b:[20, 12, 26], e:[48, 52, 34] };
-const GLIG = [36, 38, 50];
+const GLIG = [40, 44, 54];
 const SLUG = { b:[24, 18, 14], e:[52, 44, 22] };
 const WOBB = [70, 10, 34];
-const QWIL = [40, 46, 46];
+const QWIL = [46, 54, 50];
 const CHIN = { b:[26, 18, 24], e:[62, 40, 38] };
 const TOGE = { b:[20, 10, 28], e:[48, 28, 40] };
 const SPECIES = {
@@ -1525,6 +1526,8 @@ const SPECIES = {
                 evo:{into:'slowbro', by:'level'},     move:M.wall('Headbutt', 0.8, 1.5) },
   slowbro:    { name:'Slowbro',    type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.e[0], atk:SLOW.e[1], spd:SLOW.e[2], token:true,
                 move:M.wall('Headbutt', 1.1, 1.9) },
+  slowking:   { name:'Slowking',   type:'Water', gen1:'Water/Psychic', gen:2, tier:3, role:'support', hp:SLOWK[0], atk:SLOWK[1], spd:SLOWK[2], token:true,
+                move:M.mend('Heal Pulse', 1.2, 0.10) },
   'mr-mime':  { name:'Mr. Mime',   type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:MIME[0], atk:MIME[1], spd:MIME[2],
                 move:M.mend('Meditate', 1.0, 0.08) },
   ponyta:     { name:'Ponyta',     type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.b[0], atk:PONY.b[1], spd:PONY.b[2],
@@ -1836,6 +1839,7 @@ const MOVE2 = {
   aerodactyl: on('open',  M.hit('Quick Attack', 0.8), { priority:true }),
   slowpoke:   on('low',   M.recover('Slack Off', 0.4)),
   slowbro:    on('low',   M.recover('Slack Off', 0.5)),
+  slowking:   on('every', M.afflict('Confuse Ray', 0, 'cnf', 0.8, 'random'), { n:3 }),
   'mr-mime':  on('allyLow', M.shield('Reflect', 0.12, 'team')),
   ponyta:     on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.6, 'front'), { n:3 }),
   rapidash:   on('every', M.afflict('Fire Spin', 0.7, 'brn', 0.7, 'front'), { n:3 }),
@@ -1863,6 +1867,7 @@ Object.assign(SPECIES.porygon,   { evo2:{ into:'porygon2', by:'level' } });
 Object.assign(SPECIES.onix,      { evo2:{ into:'steelix', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.scyther,   { evo2:{ into:'scizor', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.poliwhirl, { evo2:{ into:'politoed', by:'stone', stone:'kingsrock' } });
+Object.assign(SPECIES.slowpoke,  { evo2:{ into:'slowking', by:'stone', stone:'kingsrock' } });   // 4.8.0: Slowpoke chooses: Slowbro on a level up, Slowking with a King's Rock
 Object.assign(SPECIES.gloom,     { evo2:{ into:'bellossom', by:'stone', stone:'sunstone' } });
 Object.assign(SPECIES.eevee,     { evo2:{ branches:{ sunstone:'espeon', moonstone:'umbreon' } } });
 
@@ -1966,7 +1971,7 @@ const ITEMS = {
   /* 4.0.0 — Gen 2 evolution items. Nobody can use them in a Gen 1 run, so the Mart never stocks them there. */
   sunstone:     { name:'Sun Stone', icon:'☀️', tier:2, cost:4, rarity:'common', text:'Evolves Gloom into Bellossom, or Eevee into Espeon.',
                   eligible:u => stonesFor(u.id).includes('sunstone'), apply:(u,G)=>G.evolve(u, 'sunstone') },
-  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed.',
+  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
                   eligible:u => stonesFor(u.id).includes('kingsrock'), apply:(u,G)=>G.evolve(u, 'kingsrock') },
   dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'common', text:'Evolves Seadra into Kingdra.',
                   eligible:u => stonesFor(u.id).includes('dragonscale'), apply:(u,G)=>G.evolve(u, 'dragonscale') },
@@ -2040,9 +2045,9 @@ const HELD_ITEMS = {
   coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
             text:'Takes 15% less damage from every hit.', cutPct:0.15 },
   char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
-            text:'Its hits are never resisted: a “not very effective” hit deals full damage instead.', unresist:true },
+            text:'+20% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.20 }, unresist:true },   // 4.8.0: was the unresist alone
   lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
-            text:'Heals 12% of its max HP on a steady beat, all fight long.', endRoundPct:0.12 },
+            text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
   focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
@@ -3182,7 +3187,7 @@ function dailyMods(date){
        Golbat → Crobat…) are open that run; the Mart stocks stones for those.
    Single-gen runs and Gen 2-only runs are untouched: nothing here applies.
    =================================================================== */
-const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon'];   // species that carry an `evo2`
+const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon', 'slowpoke'];   // species that carry an `evo2`
 const EVO_POOL_SIZE = 4;
 const FOCUS_COUNT = 3;
 const FOCUS_CHANCE = 0.09;       // share of Daycare slots that show a focus line
