@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.5.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.6.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3092,6 +3092,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.6.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Dual-type pokémon join the Mono pool of each of their types', items:[
+    'In a Mono-type run the Daycare now sells every pokémon that has that type, not just the ones whose main type it is. Geodude is Rock and Ground, Pidgey is Normal and Flying, Jynx is Ice and Psychic, and so on. Mono legends follow the same rule. Gym leaders and the Elite Four already drew on both of a pokémon\u2019s types.',
+    'Because the pools are bigger, Mono Ground, Flying, Poison and Psychic are now available in Gen 2-only runs, and Mono Ice and Dark are tuned for the new pools. Every Mono type was re-measured so each is still about as hard as the others.',
+    'The 23 pokémon added in 4.5.0 now have their pixel art instead of letter placeholders.',
+  ]},
   { v:'4.5.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'23 new pokémon fill the gaps in the pool, and opponents are re-tuned', items:[
     'Gen 1 gains Omanyte and Omastar, Kabuto and Kabutops, Aerodactyl, Slowpoke and Slowbro, Mr. Mime, Ponyta and Rapidash, and Cubone and Marowak. Rock and Psychic now have enough pokémon to be Mono-type runs in Gen 1, and Fire and Ground each get another bruiser.',
     'Gen 2 gains Sunkern and Sunflora, Gligar, Slugma and Magcargo, Wobbuffet, Qwilfish, Chinchou and Lanturn, and Togepi and Togetic. Gen 2-only runs now have a Grass attacker, a second Ground option, a Fire tank, a Psychic tank and a Flying support. Sunkern evolves with a Sun Stone. Slowpoke, Qwilfish, Chinchou and their evolutions count as Water, the way the games type them, and Togepi counts as Flying from the start so its line keeps one type.',

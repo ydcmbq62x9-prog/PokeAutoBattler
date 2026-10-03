@@ -194,10 +194,10 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.015, Fire:0.95, Water:0.921, Electric:0.906, Grass:0.735, Fighting:0.955, Ground:1.012, Flying:1.021, Poison:0.887, Psychic:1.126, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.06, Fire:0.95, Water:0.921, Electric:0.906, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.155, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.081, Fire:0.786, Water:0.955, Electric:0.923, Grass:0.943, Ice:0.964, Fighting:1.019, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.101, Fire:0.991, Water:1, Electric:0.933, Grass:0.889, Ice:1.05, Fighting:0.998, Ground:1.075, Flying:1.03, Poison:0.988, Psychic:1.065, Bug:1.061, Rock:0.865, Dark:0.898 } },
+            '2':   { Normal:1.024, Fire:0.786, Water:0.955, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:1, Psychic:1.019, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.101, Fire:0.991, Water:1, Electric:0.95, Grass:0.946, Ice:1.207, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.898 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
@@ -1612,7 +1612,9 @@ const buyableFor = gens => Object.keys(SPECIES).filter(k => !SPECIES[k].token &&
 const BUYABLE = buyableFor([1]);
 /** 3.0.0: the types a Mono run can pick — only those with enough buyable lines for the Daycare to be worth visiting. */
 const MONO_MIN_LINES = 3;   // 3.0.0: a Mono run needs at least three buyable lines (Fighting, Psychic and Rock have two)
-const monoTypesFor = gens => { const b = buyableFor(cleanGens(gens)); return Object.keys(TYPES).filter(t => b.filter(k => SPECIES[k].type === t).length >= MONO_MIN_LINES); };
+/* 4.6.0 (Sean): a dual-type pokémon belongs to the pool of each of its types (Geodude is Rock and Ground), for Mono runs and Mono legends. */
+const inTypePool = (k, t) => { const sp = SPECIES[k]; return !!sp && (sp.type === t || String(sp.gen1 || '').split('/').includes(t)); };
+const monoTypesFor = gens => { const b = buyableFor(cleanGens(gens)); return Object.keys(TYPES).filter(t => b.filter(k => inTypePool(k, t)).length >= MONO_MIN_LINES); };
 const MONO_TYPES = monoTypesFor([1]);
 function setActiveGens(gens){
   ACTIVE_GENS = cleanGens(gens);
@@ -3025,7 +3027,7 @@ function rollEncounter(G){
   if(G.badges < TUNING.legend.fromBadge) return null;
   const met = G.legendsMet || [];
   const mono = G.mods && G.mods.mono;
-  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || SPECIES[k].type === mono));
+  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || inTypePool(k, mono)));
   const r = makeRng(mix32(((G.seed || 1) ^ 0x6a09e667) >>> 0, 40 + G.badges));
   const pity = G.badges === TUNING.legend.pityBadge && !met.length;   // 2.2.0: never a run without one
   if(!pool.length || (r() >= TUNING.legend.chance && !pity)) return null;
@@ -3463,8 +3465,8 @@ function rollDaycare(G, payCost){
   // 2.0.0: legendaries only come as encounters; Mono-type sells one type
   const mono = G.mods && G.mods.mono;
   // (one tier ahead for Mono-type, or tier 1 would offer a single line)
-  let pool = BUYABLE.filter(k => SPECIES[k].tier <= maxTier + (mono ? 1 : 0) && !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
-  if(!pool.length) pool = BUYABLE.filter(k => !SPECIES[k].legendary && (!mono || SPECIES[k].type === mono));
+  let pool = BUYABLE.filter(k => SPECIES[k].tier <= maxTier + (mono ? 1 : 0) && !SPECIES[k].legendary && (!mono || inTypePool(k, mono)));
+  if(!pool.length) pool = BUYABLE.filter(k => !SPECIES[k].legendary && (!mono || inTypePool(k, mono)));
   const n = daycareSlotsFor(tierFor(G));
   // Nothing is held here — if you want to keep a pokémon, buy it and park it
   // in the PC. That is what the PC is for.
@@ -4168,7 +4170,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
