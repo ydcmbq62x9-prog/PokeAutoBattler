@@ -132,7 +132,7 @@ const TUNING = {
   eggCap:       10,
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
      Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
-  red: { chance: 1/6, ratio: { '2': 1.10, '1+2': 1.16 }, oakRatio: { '1': 1.10, '1+2': 1.16 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
+  red: { chance: 1/6, ratio: { '2': 1.12, '1+2': 1.185 }, oakRatio: { '1': 1.10, '1+2': 1.19 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
   rival: {
     windows:    [[0, 1], [3, 4], [6, 7]],
     size:       [3, 5, 6],
@@ -194,15 +194,15 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.041, Fire:0.914, Water:0.888, Electric:0.944, Grass:0.754, Bug:0.902, Fighting:0.955, Flying:1.045, Poison:0.92, Ground:1.024 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.015, Fire:0.95, Water:0.921, Electric:0.906, Grass:0.735, Fighting:0.955, Ground:1.012, Flying:1.021, Poison:0.887, Psychic:1.126, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.074, Fire:0.79, Water:0.943, Electric:0.906, Ice:0.945, Fighting:1.021, Bug:0.984, Dark:0.844 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.12, Fire:0.946, Water:1, Electric:0.933, Grass:0.889, Ice:1.102, Fighting:0.998, Ground:1.092, Flying:1.09, Poison:1, Psychic:1.096, Bug:1.078, Rock:0.865, Dark:0.898 } },
+            '2':   { Normal:1.081, Fire:0.786, Water:0.955, Electric:0.923, Grass:0.943, Ice:0.964, Fighting:1.019, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.101, Fire:0.991, Water:1, Electric:0.933, Grass:0.889, Ice:1.05, Fighting:0.998, Ground:1.075, Flying:1.03, Poison:0.988, Psychic:1.065, Bug:1.061, Rock:0.865, Dark:0.898 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
-  gensFoes: { '1': 0.99, '2': 1.004, '1+2': 0.913 },
+  gensFoes: { '1': 0.98, '2': 0.982, '1+2': 0.888 },   // 4.5.0: re-tuned after the 23 fill-in pokémon thinned the Daycare
   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
@@ -1022,6 +1022,21 @@ const BELO = [52, 40, 48];
 const ESPE = [26, 42, 68];
 const UMBR = [66, 34, 46];
 const JOLT_TB = 0.5; const JOLT_N = 3;   // Jolteon's Thunderbolt: the front rank's share; the ranks behind take half (M.all)
+/* 4.5.0 — the pool fill-ins: [hp, atk, spd] per stage. */
+const OMAN = { b:[18, 24, 20], e:[56, 66, 36] };
+const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
+const AERO = [34, 44, 66];
+const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
+const MIME = [34, 34, 50];
+const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
+const CUBO = { b:[20, 20, 26], e:[48, 50, 34] };
+const SUNK = { b:[20, 12, 26], e:[48, 52, 34] };
+const GLIG = [36, 38, 50];
+const SLUG = { b:[24, 18, 14], e:[52, 44, 22] };
+const WOBB = [70, 10, 34];
+const QWIL = [40, 46, 46];
+const CHIN = { b:[26, 18, 24], e:[62, 40, 38] };
+const TOGE = { b:[20, 10, 28], e:[48, 28, 40] };
 const SPECIES = {
 
   /* ============ TIER 1 — starters and early routes ============ */
@@ -1494,6 +1509,54 @@ const SPECIES = {
                 move:M.wall('Aeroblast', 1.3, 2.0) },
   'ho-oh':    { name:'Ho-Oh',      type:'Fire', gen1:'Fire/Flying', gen:2, role:'bruiser', hp:82, atk:76, spd:90, legendary:true,
                 move:M.afflict('Sacred Fire', 1.6, 'brn', 0.5, 'front') },
+
+  /* ============ 4.5.0 — POOL FILL-INS ============ */
+  omanyte:    { name:'Omanyte',    type:'Rock', gen1:'Rock/Water', tier:3, role:'cannon', hp:OMAN.b[0], atk:OMAN.b[1], spd:OMAN.b[2],
+                evo:{into:'omastar', by:'level'},     move:M.hit('Constrict', 1.25) },
+  omastar:    { name:'Omastar',    type:'Rock', gen1:'Rock/Water', tier:3, role:'cannon', hp:OMAN.e[0], atk:OMAN.e[1], spd:OMAN.e[2], token:true,
+                move:M.charge('Skull Bash', 2.2, 'Constrict', 1.1) },
+  kabuto:     { name:'Kabuto',     type:'Rock', gen1:'Rock/Water', tier:3, role:'bruiser', hp:KABU.b[0], atk:KABU.b[1], spd:KABU.b[2],
+                evo:{into:'kabutops', by:'level'},    move:M.hit('Aqua Jet', 1.2) },
+  kabutops:   { name:'Kabutops',   type:'Rock', gen1:'Rock/Water', tier:3, role:'bruiser', hp:KABU.e[0], atk:KABU.e[1], spd:KABU.e[2], token:true,
+                move:M.multi('Aqua Slash', 0.95, 2) },
+  aerodactyl: { name:'Aerodactyl', type:'Rock', gen1:'Rock/Flying', tier:5, role:'bruiser', hp:AERO[0], atk:AERO[1], spd:AERO[2],
+                move:M.fast('Ancient Power', 1.3) },
+  slowpoke:   { name:'Slowpoke',   type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.b[0], atk:SLOW.b[1], spd:SLOW.b[2],
+                evo:{into:'slowbro', by:'level'},     move:M.wall('Headbutt', 0.8, 1.5) },
+  slowbro:    { name:'Slowbro',    type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.e[0], atk:SLOW.e[1], spd:SLOW.e[2], token:true,
+                move:M.wall('Headbutt', 1.1, 1.9) },
+  'mr-mime':  { name:'Mr. Mime',   type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:MIME[0], atk:MIME[1], spd:MIME[2],
+                move:M.mend('Meditate', 1.0, 0.08) },
+  ponyta:     { name:'Ponyta',     type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.b[0], atk:PONY.b[1], spd:PONY.b[2],
+                evo:{into:'rapidash', by:'level'},    move:M.hit('Flame Charge', 1.3) },
+  rapidash:   { name:'Rapidash',   type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.e[0], atk:PONY.e[1], spd:PONY.e[2], token:true,
+                move:M.recoil('Flare Blitz', 2.2, 4) },
+  cubone:     { name:'Cubone',     type:'Ground', gen1:'Ground', tier:3, role:'bruiser', hp:CUBO.b[0], atk:CUBO.b[1], spd:CUBO.b[2],
+                evo:{into:'marowak', by:'level'},     move:M.hit('Bone Club', 1.2) },
+  marowak:    { name:'Marowak',    type:'Ground', gen1:'Ground', tier:3, role:'bruiser', hp:CUBO.e[0], atk:CUBO.e[1], spd:CUBO.e[2], token:true,
+                move:M.multi('Bonemerang', 0.85, 2) },
+  sunkern:    { name:'Sunkern',    type:'Grass', gen1:'Grass', gen:2, tier:2, role:'cannon', hp:SUNK.b[0], atk:SUNK.b[1], spd:SUNK.b[2],
+                evo:{into:'sunflora', by:'stone', stone:'sunstone'}, move:M.hit('Seed Bomb', 1.2) },
+  sunflora:   { name:'Sunflora',   type:'Grass', gen1:'Grass', gen:2, tier:2, role:'cannon', hp:SUNK.e[0], atk:SUNK.e[1], spd:SUNK.e[2], token:true,
+                move:M.hit('Seed Bomb', 1.8) },
+  gligar:     { name:'Gligar',     type:'Ground', gen1:'Ground/Flying', gen:2, tier:3, role:'bruiser', hp:GLIG[0], atk:GLIG[1], spd:GLIG[2],
+                move:M.hit('X-Scissor', 1.7) },
+  slugma:     { name:'Slugma',     type:'Fire', gen1:'Fire', gen:2, tier:3, role:'tank', hp:SLUG.b[0], atk:SLUG.b[1], spd:SLUG.b[2],
+                evo:{into:'magcargo', by:'level'},    move:M.wall('Lava Plume', 0.9, 1.5) },
+  magcargo:   { name:'Magcargo',   type:'Fire', gen1:'Fire/Rock', gen:2, tier:3, role:'tank', hp:SLUG.e[0], atk:SLUG.e[1], spd:SLUG.e[2], token:true,
+                move:M.wall('Lava Plume', 1.2, 2.0) },
+  wobbuffet:  { name:'Wobbuffet',  type:'Psychic', gen1:'Psychic', gen:2, tier:4, role:'tank', hp:WOBB[0], atk:WOBB[1], spd:WOBB[2],
+                move:M.wall('Counter', 0.6, 1.4) },
+  qwilfish:   { name:'Qwilfish',   type:'Water', gen1:'Water/Poison', gen:2, tier:3, role:'bruiser', hp:QWIL[0], atk:QWIL[1], spd:QWIL[2],
+                move:M.afflict('Poison Sting', 1.0, 'psn', 0.6, 'random') },
+  chinchou:   { name:'Chinchou',   type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.b[0], atk:CHIN.b[1], spd:CHIN.b[2],
+                evo:{into:'lanturn', by:'level'},     move:M.mend('Aqua Ring', 0.9, 0.07) },
+  lanturn:    { name:'Lanturn',    type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.e[0], atk:CHIN.e[1], spd:CHIN.e[2], token:true,
+                move:M.mend('Aqua Ring', 1.2, 0.10) },
+  togepi:     { name:'Togepi',     type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.b[0], atk:TOGE.b[1], spd:TOGE.b[2],
+                evo:{into:'togetic', by:'level'},     move:M.mend('Sweet Kiss', 0.8, 0.06) },
+  togetic:    { name:'Togetic',    type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.e[0], atk:TOGE.e[1], spd:TOGE.e[2], token:true,
+                move:M.mend('Sweet Kiss', 1.1, 0.09) },
 };
 
 /* ===================================================================
@@ -1764,6 +1827,29 @@ const MOVE2 = {
   suicune:    on('every', M.haze('Haze', 1.0), { n:3 }),
   lugia:      on('low',   M.recover('Recover', 0.5)),
   'ho-oh':    on('low',   M.recover('Recover', 0.5)),
+  omanyte:    on('every', M.slow('Bubble', 0.5, 6), { n:3 }),
+  omastar:    on('every', M.slow('Bubble', 0.65, 8), { n:3 }),
+  kabuto:     on('open',  M.grow('Swords Dance', 3), { free:true }),
+  kabutops:   on('open',  M.grow('Swords Dance', 5), { free:true }),
+  aerodactyl: on('open',  M.hit('Quick Attack', 0.8), { priority:true }),
+  slowpoke:   on('low',   M.recover('Slack Off', 0.4)),
+  slowbro:    on('low',   M.recover('Slack Off', 0.5)),
+  'mr-mime':  on('allyLow', M.shield('Reflect', 0.12, 'team')),
+  ponyta:     on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.6, 'front'), { n:3 }),
+  rapidash:   on('every', M.afflict('Fire Spin', 0.7, 'brn', 0.7, 'front'), { n:3 }),
+  cubone:     on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  marowak:    on('open',  M.focus('Focus Energy', 0.4), { free:true }),
+  sunkern:    on('open',  M.grow('Growth', 2), { free:true }),
+  sunflora:   on('open',  M.grow('Growth', 4), { free:true }),
+  gligar:     on('every', M.afflict('Sand Attack', 0, 'cnf', 0.6, 'front'), { n:3 }),
+  slugma:     on('every', M.afflict('Will-O-Wisp', 0, 'brn', 0.7, 'front'), { n:3 }),
+  magcargo:   on('every', M.afflict('Will-O-Wisp', 0, 'brn', 0.9, 'front'), { n:3 }),
+  wobbuffet:  on('open',  M.shield('Safeguard', 0.35, 'self'), { free:true }),
+  qwilfish:   on('open',  M.all('Spikes', 0.12), { free:true }),
+  chinchou:   on('every', M.slow('Electroweb', 0.5, 6), { n:3 }),
+  lanturn:    on('every', M.slow('Electroweb', 0.65, 8), { n:3 }),
+  togepi:     on('allyLow', M.shield('Wish', 0.08, 'team')),
+  togetic:    on('allyLow', M.shield('Wish', 0.12, 'team')),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
 /* 4.0.0: Gen 2 evolutions of Gen 1 pokémon. They only exist in runs with Gen 2 on

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.4.0', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.5.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3092,6 +3092,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.5.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'23 new pokémon fill the gaps in the pool, and opponents are re-tuned', items:[
+    'Gen 1 gains Omanyte and Omastar, Kabuto and Kabutops, Aerodactyl, Slowpoke and Slowbro, Mr. Mime, Ponyta and Rapidash, and Cubone and Marowak. Rock and Psychic now have enough pokémon to be Mono-type runs in Gen 1, and Fire and Ground each get another bruiser.',
+    'Gen 2 gains Sunkern and Sunflora, Gligar, Slugma and Magcargo, Wobbuffet, Qwilfish, Chinchou and Lanturn, and Togepi and Togetic. Gen 2-only runs now have a Grass attacker, a second Ground option, a Fire tank, a Psychic tank and a Flying support. Sunkern evolves with a Sun Stone. Slowpoke, Qwilfish, Chinchou and their evolutions count as Water, the way the games type them, and Togepi counts as Flying from the start so its line keeps one type.',
+    'The new pokémon are among the weaker picks in the Daycare, which made runs a little harder, so every generation mix has its opponents eased slightly to keep clear rates near where they were. Red and Oak are a touch stronger to stay a one-in-three fight. The new pokémon show letter placeholders until their sprites are drawn.',
+  ]},
   { v:'4.4.0', date:'Oct 5, 2026', title:'Minor gameplay changes', sub:'The Secret Gauntlet, a secret-boss streak, and a Gauntlet Badge', items:[
     'A new rule on the New Run screen: Secret Gauntlet. Red and Professor Oak both wait after the Champion, back to back, one try each. It needs Gen 1 and Gen 2 turned on and costs one Red ticket and one Oak ticket. You are healed and the shops open for one turn between them. Win a fight and you still earn that boss\u2019s badge and a ticket back, even if the other one beats you.',
     'Beat both in one Secret Gauntlet run and you earn the Gauntlet Badge, shown on your Trainer Card under the other secret badges.',

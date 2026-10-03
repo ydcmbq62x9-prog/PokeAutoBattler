@@ -9,9 +9,9 @@ check(E.singleTypeOf('Normal/Flying') === 'Flying' && E.singleTypeOf('Water/Ice'
 const dblWeak = Object.keys(E.TYPES).filter(t => E.TYPES[t].weak.length > 1);
 check(dblWeak.length >= 8, `most types are now weak to several types (${dblWeak.length})`);
 check(Object.keys(E.TYPES).every(t => E.TYPES[t].weak.every(w => E.typeMult(w, t) === 2)), 'every listed weakness hits ×2');
-check(E.MONO_TYPES.join() === 'Normal,Fire,Water,Electric,Grass,Fighting,Ground,Flying,Poison,Bug', `Mono runs: ${E.MONO_TYPES.join(', ')}`);
+check(E.MONO_TYPES.join() === 'Normal,Fire,Water,Electric,Grass,Fighting,Ground,Flying,Poison,Psychic,Bug,Rock', `Mono runs: ${E.MONO_TYPES.join(', ')}`);
 check(E.MONO_TYPES.every(t => E.BUYABLE.filter(k => S[k].type === t).length >= 3), 'every Mono type has at least three buyable lines');
-check(E.cleanMods({ mono:'Psychic' }).mono === undefined && E.cleanMods({ mono:'Lightning' }).mono === undefined && E.cleanMods({ mono:'Bug' }).mono === 'Bug', 'old or too-small Mono types are dropped, Bug is kept');
+check(E.cleanMods({ mono:'Ghost' }).mono === undefined && E.cleanMods({ mono:'Lightning' }).mono === undefined && E.cleanMods({ mono:'Bug' }).mono === 'Bug', 'old or too-small Mono types are dropped, Bug is kept');
 for(let s = 1; s < 60; s++){ const m = E.dailyMods(s); if(m.mono) check(E.monoTypesFor(E.dailyGens(s)).includes(m.mono), 'daily Mono type is valid'); }
 /* re-measured factors */
 check(T.gauntletRatio.length === 5, 'Elite Four and Champion ratios exist (values pinned in v320test)');
