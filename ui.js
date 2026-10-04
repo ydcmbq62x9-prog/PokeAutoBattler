@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.8.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.9.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2920,6 +2920,7 @@ async function startBattle(){
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
 function beginPlayback(){
+  if(!battle) return;                                         // 4.9.0: the run was replaced while the wipe was still playing
   /* 3.7.0: Options → Trainer battles → Skip to result. Only plain trainers —
      a leader, the Elite Four, the Champion or an ambush is always shown. */
   if(battle && battle.kind === 'trainer' && !battle.exhibition && PREF.get('autoskip', 'off') === 'on'){
@@ -2959,6 +2960,7 @@ function stepDelay(){
 }
 
 function playback(){
+  if(!battle) return;
   clearTimeout(battle.timer);
   if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
@@ -2974,12 +2976,14 @@ function advanceView(){
   patchBattleChrome();
 }
 function finishPlayback(){
+  if(!battle) return;
   clearTimeout(battle.timer); battle.paused = false; SFX.hold(false);
   battle.i = battle.steps.length - 1;
   render();
 }
 
 async function afterBattle(){
+  if(!battle) return;
   clearTimeout(battle.timer);
   if(battle.exhibition){ battle = null; phase = 'shop'; render(); return; }
   const result = battle.result;
@@ -3092,6 +3096,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.9.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Run history, Pokédex type tags and a bigger Badges tap area', items:[
+    'Run history: your last 30 runs are on the Trainer Card, each with its team, how far it got, the rules and any secret boss you beat. It travels in a transfer code.',
+    'The Pokédex now shows a pok\u00e9mon\u2019s second type (Geodude also shows Ground), and the stone and item list says who evolves with each one.',
+    'The little row of badges at the top is easier to tap on a phone.',
+  ]},
   { v:'4.8.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Slowking has its pixel art', items:[
     'Slowking now has its pixel art instead of a two-letter placeholder. All the pokémon added in 4.5.0 and 4.8.0 are drawn.',
   ]},
@@ -3521,10 +3530,20 @@ function recBucket(r){
   r.modes = r.modes || {}; const k = modsLabel(G);
   return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
 }
+/* 4.9.0 · RUN HISTORY: the last 30 finished runs on this device, newest first. */
+const HIST_MAX = 30;
+function logRun(){
+  if(!G || G.histLogged) return; G.histLogged = true;
+  const r = records(), gl = G.gens ? [].concat(G.gens).join('+') : '1';
+  const sec = G.secWon || (G.redResult === 'won' ? [secretBoss().id] : []);
+  const team = G.team.concat(G.pc || []).slice().sort((a, b) => (b.lvl || 0) - (a.lvl || 0)).slice(0, 6).map(u => u.id);
+  r.history = [{ at: Date.now(), won: G.over === 'won', stage: reachedStage(), label: bestRunLabel(reachedStage()), team, mods: modsLabel(G), gens: gl, daily: G.daily || '', sec, turn: G.turn || 1, badges: G.badges || 0 }].concat(r.history || []).slice(0, HIST_MAX);
+  saveRecords(r);
+}
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ awardHardcore(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ logRun(); awardHardcore(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
-function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
+function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ logRun(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
   if(!b || b.exhibition || !b.steps || !b.steps.length) return;
   const rec = G.rec || (G.rec = { fought:{}, hit:null });
@@ -3592,9 +3611,21 @@ function openTrainerCard(fromTitle){
       ${(() => { const t = dailyResults()[localDate()]; return t ? `<div><span>Today’s daily</span><b>${esc(t.cleared ? 'Champion!' : bestRunLabel(t.best))}${t.hardcore ? ' · Hardcore' : ''}</b></div>` : ''; })()}
     </div>
   </div>
-  <div class="btnrow"><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
+  <div class="btnrow"><button class="btn" data-m="history">Run history</button><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
   d.classList.add('trainer');
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); });
+  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); if(b.dataset.m === 'history') openHistory(fromTitle); });
+}
+
+function openHistory(fromTitle){
+  const H = records().history || [], ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'just now' : m < 90 ? m + ' min ago' : m < 2160 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago'; };
+  const row = h => `<div class="hrow ${h.won ? 'won' : ''}"><div class="hteam">${(h.team || []).map(id => SPECIES[id] ? spriteHtml(id, 'sm') : '').join('')}</div>
+    <div class="hinfo"><b>${h.won ? 'Champion!' : esc(h.label || '—')}</b>${(h.sec || []).length ? ' <span class="tag">' + h.sec.map(x => x === 'oak' ? 'Oak' : 'Red').join(' + ') + ' beaten</span>' : ''}
+      <span class="dim">${[h.gens ? 'Gen ' + esc(h.gens) : '', esc(h.mods || ''), h.daily ? 'Daily ' + esc(h.daily) : '', ago(h.at)].filter(Boolean).join(' · ')}</span></div></div>`;
+  const d = modal(`<h3>Run history</h3><p class="dim">Your last ${HIST_MAX} runs on this device. Transfer codes carry it along.</p>
+    <div class="hlist">${H.length ? H.map(row).join('') : '<p class="dim">No finished runs yet. They show up here once you win, lose or start a new run.</p>'}</div>
+    <div class="btnrow"><button class="btn ghost" data-m="close">Back</button></div>`);
+  d.classList.add('trainer', 'history');
+  d.querySelector('[data-m="close"]').onclick = () => { d.remove(); openTrainerCard(fromTitle); };
 }
 
 /* ---- OPTIONS (v37) ------------------------------------------------ */
@@ -3747,7 +3778,8 @@ function applyTransfer(data){
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
     const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) }, ga = mergeHardcore(a.gauntlet, b.gauntlet), st = { cur: Math.max((a.secStreak || {}).cur || 0, (b.secStreak || {}).cur || 0), best: Math.max((a.secStreak || {}).best || 0, (b.secStreak || {}).best || 0) };
-    saveRecords({ ...a, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    const hist = [...(a.history || []), ...(b.history || [])].filter((x, i, arr) => x && arr.findIndex(y => y && y.at === x.at) === i).sort((p, q) => q.at - p.at).slice(0, HIST_MAX);
+    saveRecords({ ...a, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -4013,6 +4045,10 @@ function openHelp(){
   d.querySelector('[data-m]').onclick = () => d.remove();
 }
 
+/** 4.9.0: the types a pokémon also has in the games (its label), beyond the one it plays as. */
+const secondTypes = k => String(SPECIES[k].gen1 || '').split('/').map(x => x.trim()).filter(t => t && t !== SPECIES[k].type && TYPES[t]);
+/** 4.9.0: who evolves with a given stone / item, for the Pokédex item list. */
+const stoneUsers = item => { const out = []; Object.keys(SPECIES).forEach(k => [SPECIES[k].evo, SPECIES[k].evo2].forEach(e => [].concat(e || []).forEach(o => { if(o && o.by === 'stone' && o.stone === item) out.push(`${SPECIES[k].name} → ${SPECIES[o.into].name}`); }))); return out; };
 function openDex(){
   // 4.0.0: the dex shows every gen you can play, so read the families with all of them on
   const gensBefore = ACTIVE_GENS.slice(); setActiveGens(GENS_READY);
@@ -4051,7 +4087,7 @@ function openDex(){
     return `<div class="dcard">
       <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
         <div><h3>${esc(s.name)}</h3>
-          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span> ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
+          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
           <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
       <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
@@ -4077,7 +4113,7 @@ function openDex(){
     const g2only = ['sunstone', 'kingsrock', 'metalcoat'].includes(k);   // 4.0.0: only useful with Gen 2 on
     return `<div class="dexrow" data-g1="${g2only ? 0 : 1}" data-g2="1">${itemSpriteHtml(k, it.icon, 'sm')}
       <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent</span>
-      <div class="abil">${esc(it.text)}</div></div></div>`; }).join('');
+      <div class="abil">${esc(it.text)}</div>${stoneUsers(k).length ? `<div class="dim evof">Evolves: ${stoneUsers(k).map(esc).join(' · ')}</div>` : ''}</div></div>`; }).join('');
 
   // held items, grouped so the three flavours read as three groups
   const KINDS = [

@@ -22,7 +22,7 @@ const audit = () => {
     if(e.children.length === 0 && e.textContent.trim() && /(hidden|clip)/.test(cs.overflowX) && cs.textOverflow !== 'ellipsis' && e.scrollWidth > e.clientWidth + 2 && e.clientWidth > 0){ const k = 'cut:' + desc(e); if(!seen.has(k)){ seen.add(k); out.push(`text cut off (${e.scrollWidth}>${e.clientWidth}): ${desc(e)}`); } }
     // tiny tap targets
     if(/^(button|a)$/i.test(e.tagName) || e.matches('[data-act]:not(.slot):not(.drow):not(.martrow):not(.cell):not(.bcell)')){
-      if((r.height < 28 || r.width < 28) && !e.closest('.pfield,.pcgrid,.bagrow,.held,.speech') && !e.matches('.held,.hbadge,.cready,.cdel,.roleb')){ const k = 'tap:' + desc(e); if(!seen.has(k)){ seen.add(k); if(window.__tap) window.__tap.add(`${Math.round(r.width)}×${Math.round(r.height)} ${desc(e)}`); if(0) out.push(`small tap target ${Math.round(r.width)}×${Math.round(r.height)}: ${desc(e)}`); } } }
+      if((r.height < 28 || r.width < 28) && !e.closest('.pfield,.pcgrid,.bagrow,.held,.speech') && !e.matches('.held,.hbadge,.cready,.cdel,.roleb,.stat.badges')){ const k = 'tap:' + desc(e); if(!seen.has(k)){ seen.add(k); if(window.__tap) window.__tap.add(`${Math.round(r.width)}×${Math.round(r.height)} ${desc(e)}`); if(1) out.push(`small tap target ${Math.round(r.width)}×${Math.round(r.height)}: ${desc(e)}`); } } }
   }
   // dialogs must fit or scroll
   for(const m of document.querySelectorAll('.modal .box')){ const r = m.getBoundingClientRect(); if(r.bottom > vh + 1 || r.top < -1 || r.right > vw + 1 || r.left < -1) out.push(`dialog leaves the screen (${Math.round(r.left)},${Math.round(r.top)} → ${Math.round(r.right)},${Math.round(r.bottom)} of ${vw}×${vh})`);
@@ -59,6 +59,7 @@ const SCREENS = {
   transfer: async p => { await p.evaluate(() => openTransfer()); },
   export: async p => { await p.evaluate(() => openExport()); },
   'trainer card': async p => { await p.evaluate(() => openTrainerCard()); },
+  'run history': async p => { await p.evaluate(() => { const r = records(); r.history = Array.from({length:12}, (_, i) => ({ at: Date.now() - i * 3600000, won: i % 3 === 0, stage: 10, label: 'Reached Lance', team: ['charizard','blastoise','machamp','alakazam','snorlax','gyarados'], mods: i % 2 ? 'Mono-Water · One Life' : '', gens: '1+2', daily: '', sec: i % 4 === 0 ? ['red','oak'] : [] })); saveRecords(r); openHistory(); }); },
   versus: async p => { await p.evaluate(() => openVersus()); },
   'badge info': async p => { await p.evaluate(() => openBadgeInfo()); },
   'badge reward picker': async p => { await p.evaluate(() => { G.pendingRewards = [4]; openRewardPicker(); }); },
