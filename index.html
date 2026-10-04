@@ -765,7 +765,8 @@ body.carrying{cursor:grabbing}
 kbd{background:var(--panel2);border:1px solid var(--line2);border-radius:5px;padding:1px 5px;font-size:11px}
 
 /* ---------- badge rewards ---------- */
-.stat.badges{cursor:pointer}
+.stat.badges{cursor:pointer;position:relative}
+.stat.badges::after{content:'';position:absolute;inset:-14px -8px}   /* 4.9.0: a thumb-sized tap area around the little badge row */
 .stat.badges:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .modal.reward .box{max-width:560px}
 .rhead{display:flex;align-items:center;gap:16px;margin-bottom:12px}
@@ -2007,6 +2008,15 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .tkt{font-style:normal;color:var(--gold,#e0a526);font-weight:800;margin-left:4px}
 .bossart.silhouette img{filter:brightness(0) contrast(1);opacity:.55}
 .secteam{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px}
+/* 4.9.0 run history */
+.hlist{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
+.hrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:2px solid var(--line);border-radius:10px;background:var(--panel2)}
+.hrow.won{border-color:var(--gold)}
+.hrow .hteam{display:flex;flex:0 0 auto;max-width:58%;overflow:hidden;zoom:.8}
+.hrow .hteam .spr,.hrow .hteam img,.hrow .hteam svg{width:26px;height:26px}
+.hrow .hinfo{display:flex;flex-direction:column;min-width:0;font-size:13px}
+.hrow .hinfo .dim{font-size:11.5px}
+.evof{margin-top:2px;font-size:11.5px}
 </style>
 </head>
 <body>
@@ -2210,10 +2220,10 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.06, Fire:0.95, Water:0.921, Electric:0.906, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.155, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.138, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.024, Fire:0.786, Water:0.955, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:1, Psychic:1.019, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.101, Fire:0.991, Water:1, Electric:0.95, Grass:0.946, Ice:1.207, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.898 } },
+            '2':   { Normal:1.038, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.991, Psychic:1.03, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.101, Fire:0.981, Water:1, Electric:0.962, Grass:0.96, Ice:1.225, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.88 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
@@ -3043,14 +3053,15 @@ const OMAN = { b:[18, 24, 20], e:[56, 66, 36] };
 const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
+const SLOWK = [68, 36, 30];
 const MIME = [34, 34, 50];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
 const CUBO = { b:[20, 20, 26], e:[48, 50, 34] };
 const SUNK = { b:[20, 12, 26], e:[48, 52, 34] };
-const GLIG = [36, 38, 50];
+const GLIG = [40, 44, 54];
 const SLUG = { b:[24, 18, 14], e:[52, 44, 22] };
 const WOBB = [70, 10, 34];
-const QWIL = [40, 46, 46];
+const QWIL = [46, 54, 50];
 const CHIN = { b:[26, 18, 24], e:[62, 40, 38] };
 const TOGE = { b:[20, 10, 28], e:[48, 28, 40] };
 const SPECIES = {
@@ -3541,6 +3552,8 @@ const SPECIES = {
                 evo:{into:'slowbro', by:'level'},     move:M.wall('Headbutt', 0.8, 1.5) },
   slowbro:    { name:'Slowbro',    type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.e[0], atk:SLOW.e[1], spd:SLOW.e[2], token:true,
                 move:M.wall('Headbutt', 1.1, 1.9) },
+  slowking:   { name:'Slowking',   type:'Water', gen1:'Water/Psychic', gen:2, tier:3, role:'support', hp:SLOWK[0], atk:SLOWK[1], spd:SLOWK[2], token:true,
+                move:M.mend('Heal Pulse', 1.2, 0.10) },
   'mr-mime':  { name:'Mr. Mime',   type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:MIME[0], atk:MIME[1], spd:MIME[2],
                 move:M.mend('Meditate', 1.0, 0.08) },
   ponyta:     { name:'Ponyta',     type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.b[0], atk:PONY.b[1], spd:PONY.b[2],
@@ -3852,6 +3865,7 @@ const MOVE2 = {
   aerodactyl: on('open',  M.hit('Quick Attack', 0.8), { priority:true }),
   slowpoke:   on('low',   M.recover('Slack Off', 0.4)),
   slowbro:    on('low',   M.recover('Slack Off', 0.5)),
+  slowking:   on('every', M.afflict('Confuse Ray', 0, 'cnf', 0.8, 'random'), { n:3 }),
   'mr-mime':  on('allyLow', M.shield('Reflect', 0.12, 'team')),
   ponyta:     on('every', M.afflict('Fire Spin', 0.6, 'brn', 0.6, 'front'), { n:3 }),
   rapidash:   on('every', M.afflict('Fire Spin', 0.7, 'brn', 0.7, 'front'), { n:3 }),
@@ -3879,6 +3893,7 @@ Object.assign(SPECIES.porygon,   { evo2:{ into:'porygon2', by:'level' } });
 Object.assign(SPECIES.onix,      { evo2:{ into:'steelix', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.scyther,   { evo2:{ into:'scizor', by:'stone', stone:'metalcoat' } });
 Object.assign(SPECIES.poliwhirl, { evo2:{ into:'politoed', by:'stone', stone:'kingsrock' } });
+Object.assign(SPECIES.slowpoke,  { evo2:{ into:'slowking', by:'stone', stone:'kingsrock' } });   // 4.8.0: Slowpoke chooses: Slowbro on a level up, Slowking with a King's Rock
 Object.assign(SPECIES.gloom,     { evo2:{ into:'bellossom', by:'stone', stone:'sunstone' } });
 Object.assign(SPECIES.eevee,     { evo2:{ branches:{ sunstone:'espeon', moonstone:'umbreon' } } });
 
@@ -3900,6 +3915,9 @@ function evoNext(id){
   if(sp.evo2 && ACTIVE_GENS.includes(2) && (!ACTIVE_POOL || ACTIVE_POOL.includes(id))) out.push(...evoOpts(sp.evo2).map(n => ({ ...n, gen2:true })));
   return out.filter(n => SPECIES[n.into]);
 }
+/** 4.7.0 (Sean): can this species still evolve into something that exists in this run? Unlike evoNext
+    it counts a Gen 2 evolution whenever Gen 2 is on, even if a mixed run has not opened it in its Evolution Pool. */
+const canStillEvolve = id => { const sp = SPECIES[id]; return !!sp && (evoNext(id).length > 0 || (!!sp.evo2 && ACTIVE_GENS.includes(2) && evoOpts(sp.evo2).some(n => SPECIES[n.into]))); };
 /** What a species evolved from, or null. */
 const evoParent = id => Object.keys(SPECIES).find(k => inGens(k) && evoNext(k).some(n => n.into === id)) || null;
 /** Which of several level-up evolutions a pokémon takes: the one matching its highest stat. */
@@ -3979,7 +3997,7 @@ const ITEMS = {
   /* 4.0.0 — Gen 2 evolution items. Nobody can use them in a Gen 1 run, so the Mart never stocks them there. */
   sunstone:     { name:'Sun Stone', icon:'☀️', tier:2, cost:4, rarity:'common', text:'Evolves Gloom into Bellossom, or Eevee into Espeon.',
                   eligible:u => stonesFor(u.id).includes('sunstone'), apply:(u,G)=>G.evolve(u, 'sunstone') },
-  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed.',
+  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
                   eligible:u => stonesFor(u.id).includes('kingsrock'), apply:(u,G)=>G.evolve(u, 'kingsrock') },
   dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'common', text:'Evolves Seadra into Kingdra.',
                   eligible:u => stonesFor(u.id).includes('dragonscale'), apply:(u,G)=>G.evolve(u, 'dragonscale') },
@@ -4047,15 +4065,15 @@ const HELD_ITEMS = {
   claw:   { name:'Quick Claw',   icon:'🪝', tier:2, cost:4, kind:'stat', rarity:'common',
             text:'+20% Speed while held.', pct:{ spd:0.20 } },
   evio:   { name:'Eviolite',     icon:'💠', tier:3, cost:5, kind:'stat', rarity:'uncommon',
-            text:'+25% HP, but only while it can still evolve.',
-            pct:{ hp:0.25 }, when:u => evoNext(u.id).length > 0,
+            text:'+50% HP, but only while it can still evolve.',   // 4.7.0: was +25%; and every Gen 2 evolution counts when Gen 2 is on, open in this run\u2019s pool or not
+            pct:{ hp:0.50 }, when:u => canStillEvolve(u.id),
             offText:'No effect — this one has nowhere left to evolve.' },
   coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
             text:'Takes 15% less damage from every hit.', cutPct:0.15 },
   char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
-            text:'Its hits are never resisted: a “not very effective” hit deals full damage instead.', unresist:true },
+            text:'+20% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.20 }, unresist:true },   // 4.8.0: was the unresist alone
   lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
-            text:'Heals 12% of its max HP on a steady beat, all fight long.', endRoundPct:0.12 },
+            text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
   focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
@@ -5195,7 +5213,7 @@ function dailyMods(date){
        Golbat → Crobat…) are open that run; the Mart stocks stones for those.
    Single-gen runs and Gen 2-only runs are untouched: nothing here applies.
    =================================================================== */
-const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon'];   // species that carry an `evo2`
+const CROSS_EVOS = ['poliwhirl', 'onix', 'scyther', 'gloom', 'chansey', 'eevee', 'golbat', 'seadra', 'porygon', 'slowpoke'];   // species that carry an `evo2`
 const EVO_POOL_SIZE = 4;
 const FOCUS_COUNT = 3;
 const FOCUS_CHANCE = 0.09;       // share of Daycare slots that show a focus line
@@ -6186,7 +6204,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
@@ -6441,6 +6459,7 @@ const SPRITES = {
   "sitrus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABkUlEQVR42p2UoW7DMBRFb7KADVRKQaUFTHJhwhoYFpqy9RMGW1hW0o9Y4T6hYw0tMyyZlMCYpSwFA6s0KQPVcx3PsbY+lDwl1+de+xm4sRhjLWOs1fveLUIAEL9El8YbWiGE8y9BlSTbJTi+n/D47AMAYkQdUe8vQtUhk71xnF+FDOXYxEio5iUAIEhCKZrtEgBAPuWwWiaq+SzoJa8OmSS1EjLG2vkswHI1QcEFooRZsy24QL5vsNnWktLVLS5XEwBAlDAUXHQEyLpaWTrsvLv6BzUv5Y86IWUIAE19MlK7+gbY7HUWri6C+b4xH+yalwiSsEOh9omWctMtb7aXs+jYCNXM9IXINpFOFwWEEI5rE9HF1HxV2+W+7p9llcREZdqUMA2AbXPdFCGEM47z3p1TFwiSsGNVrzt68H1/7Z2/4XtneB7wMLiXNgdPI0lVfRzxefqSVkfjgczPOCm716iXkLIK0+tY6pPimGZ5Pgt+TYAaPAlOFwUoMut9SGJ03rJ02KEyCVmvL9PVrpZJiOoHCtDTKz2MVnkAAAAASUVORK5CYII=",
   "skarmory": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAACCElEQVR42sVWq5biQBC9zcGMHIfGNY7+g2TdyqyMZBxxsZGxuMQFGZnIuIQ/aBztZi0O/qDX0E3ltdNzZs5uGULT3FuPW1UB/qNpxzsu97CY+rPW+iMiLS83Z7LF3A+e51EACqLTNLNfCNmsLaeiOKv7CEBsXjUABgA/gxBSScjLDU1d0ojYpyI55DUlwBwAABRV61wTnaYZzuoOqaQ9jPfBqBZSSQguIJXEinO8/fox5YRNsyHRRdXaNAguLEEYJbMeXpWaVV2wK8Y12QU+zupuCZq6/CuBsUEUFrw+vtnzpYnCqkVJXJVCHOcom2wyFVelIGd66/ZeDs/YgkZhCJIksrcenmnqhCFq26pfq8sNh7xG13XQWsP0W09dZZZixTmKqsXLi0LT/IbYCkvkeR7KLKXgMODGgXgfwPd9+L4PxhgAMEYV80iNMWZyLLYCbRXjkNc2kjJLEUaJVVmZpQCAfN0X2ebYPQs/I0OIrYA8PysguLCqM88UfP/+HA6n0wkA2BIAo908MJZEQnue12vOYQ/la2bBe5GsfWyOnWYu07aoWittCh5GyShNm2M3ctSZxKSKqgsAVpwPFcmcZ9dQdVS+xlac9z4/PSBpB7+uQ0tkjPbSnGictuNje+lHyvTEftHBrnDekC7rdQ7sQyKGr1lv2tKh+G0vGzSd5Pnb32hc0vlv7A9SfDgPWLqrAgAAAABJRU5ErkJggg==",
   "slowbro": "data:image/png;base64,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",
+  "slowking": "data:image/png;base64,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",
   "slowpoke": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAACsUlEQVR42u2YMWgTURjHfxdTSOoiFsQ6CGcFTTPVQbAitEUd7CK1WxShCRbaIC4qNI0dmk5uNS0ITUWkFYvNIhFRWpBoRBS7mFbBWuziZl2MGaLn8O7Ed1ySq7TKXfNt37139y6//N//+94pbH5oVcYVOw/x4JBQ/hXRQnrCcrC+K2LrnWpEq2n1N+GfJsLdEct3qxG1rd37E5Zi/EO7iqOIev/3v1nfHZFcobhWrPnohvqsmejOcJSaRtdDMp8YBmBl8bM7ar13s0hVi/zI8Dpmu2TXazbnWtfwKtE5OiXl104eA2CXVgdAMBZ3T2XSJA3pEYzFLdVkJmgmZUTmYsgy95dE3jEu7kue6HCfRjWA5zrRHSaOanNjRXL9TSoApzpbAZjJvgHg9qslQfJSyBKV4aPBwbiz+1FvOcqpuXkNIBkN2dKcQdgg+TCTA+B8xyGJqDmqVSTnE92ta/R0b1g/08jdTNHjk3KfPp6Jyrt4cnkFgMA+VV7JU5nkzdA5AHqn7miO9FHFvNs1rQDAg5k0AMe3yUS/vhekGgdi+hU/AN9nUyLTT5XZD6sADD3Oyv5YprYvfRTPbT0QAGDP1csuqUxjibNSPl0QmlT3N4gKMjAqfnmL8NPcgtCa/4zQ9OJIAoAG6uy9wQ9d+77tAKyVis7f9aISpfsAaGlTpQn+otBg6obwxcErFySS5cLQnLl2G9cNN4g+mZfmmbsmR9Z6cQr8ct3eHYZPJp+J2h69BcCndy8B+JZ9XbGr9eucHuXfAtA3fc9Wj+xcHzWTnRx7AUBP/xEAFnKrcq2eWwZg78HDwjfvPq3omwbR5iGhxWJpC3xxlhgYbmCOo13jUt7e1i40q8quEWhSLVcst7tdfQqtdk5XrOZpmpg+2xO2JFqug99SRDf6S8lfrekYor8AGcLkjQ9nN+wAAAAASUVORK5CYII=",
   "slugma": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAABjUlEQVR42pWVoZLCMBRFb3Z2phYcfEKRyLpGguu68gmV8Bng6C/giGNlcEhk8wmtA7eDeivaZkOatN2YztB5J/fe9/oAhg/hn+djAEZ0Of4b/OkD0j4BQg4oOcYBG4LWQABQEupeOWGNA0BJsJ0gE+xUqu4VwuUMALA43UwlHQdsJzpKXZmyxekGda8gZIXzKtL5xnGs1bWXj82UiDhwmCAEwC8PFGmklffBfEqJiINz0sVyPfUCrWj6R0qupwBQw7ZPYLupn83JysALtKFUpBFwmPz9sn1q1abKfP4abz9czurOmqolA5C/XzZwmK3UzM/VlKwMcL1evdZdLyiO44499QSOPwHy+as3S2+j5HqKrAyQlYFW1gIBoPnaqG8f2FDGdqK1h3CT6kkw46B9giKNvPA+G3oH8MsD+fwF1UxVaPXMjsQHpSKNdAQtMOF1E4Ws3sDhcva2A1xQOq8iXWSqs5W2kyJkha/vWz+U9gmErEepVWePlqGu45qN/QvRO7YtdKy8MY0aushb+wuUfLzgkcsdSAAAAABJRU5ErkJggg==",
   "smoochum": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABgUlEQVR42p2VLXSCUBTH/2/Hc7aobYvY3ho0XIKIzShR29akWbemzSi22bBJlEaUNpq2GbVxlu4CgvLhG+ymy+Xy4368ex/DbaErnaGiiByJaBI7MSvxpb++vxP97AzCGUy77QBEk+S5doQAQJqmYdj9gapzSDLPR1yQhqh++UiW0xXm6/vaNSRRSgCwD0K0FbtSDTMw12xmIIlIMsduO0BJk4pNWU5XKUx65ilUknn6TgTNA5lp+SksL/1RLwOt3JRrWBzlJV0oF7WsjqxQw7GDQxDi1NEAAHzcAWMMRATXtAEAJ2UBAFB1XoAWangIQgTNRzR9DwDw8mEVIld1DlXn1Y/Nt/EeR9LRAK0VW70j9l8hTsoC/VHvapyyh5yJJsR6MjPGyeET9rQtnJibwChyYBizjNF131Kb53m1thAAkDN7pShyKIqcgr7uz6nsYDdExAdfxsY/QrdbMAY6XHuT2v+1D6PIgWtvSgHd5bB2yslY0blJabplqdZe7VWvhF9Gc7DXrBwITwAAAABJRU5ErkJggg==",
@@ -6501,7 +6520,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.6.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.9.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -9405,6 +9424,7 @@ async function startBattle(){
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
 function beginPlayback(){
+  if(!battle) return;                                         // 4.9.0: the run was replaced while the wipe was still playing
   /* 3.7.0: Options → Trainer battles → Skip to result. Only plain trainers —
      a leader, the Elite Four, the Champion or an ambush is always shown. */
   if(battle && battle.kind === 'trainer' && !battle.exhibition && PREF.get('autoskip', 'off') === 'on'){
@@ -9444,6 +9464,7 @@ function stepDelay(){
 }
 
 function playback(){
+  if(!battle) return;
   clearTimeout(battle.timer);
   if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
@@ -9459,12 +9480,14 @@ function advanceView(){
   patchBattleChrome();
 }
 function finishPlayback(){
+  if(!battle) return;
   clearTimeout(battle.timer); battle.paused = false; SFX.hold(false);
   battle.i = battle.steps.length - 1;
   render();
 }
 
 async function afterBattle(){
+  if(!battle) return;
   clearTimeout(battle.timer);
   if(battle.exhibition){ battle = null; phase = 'shop'; render(); return; }
   const result = battle.result;
@@ -9577,6 +9600,26 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.9.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Run history, Pokédex type tags and a bigger Badges tap area', items:[
+    'Run history: your last 30 runs are on the Trainer Card, each with its team, how far it got, the rules and any secret boss you beat. It travels in a transfer code.',
+    'The Pokédex now shows a pok\u00e9mon\u2019s second type (Geodude also shows Ground), and the stone and item list says who evolves with each one.',
+    'The little row of badges at the top is easier to tap on a phone.',
+    'Mono runs were re-measured: Water and Poison in Gen 2, Psychic, Fire and Electric in Gen 1, and Dark, Ice, Grass and Electric in Gen 1 + 2 were a few points off the others, so their opponents are nudged. Every Mono type now clears about 74\u201379% of the time in bot runs.',
+    'Fixed a rare crash if a run was replaced while a battle intro was still playing.',
+  ]},
+  { v:'4.8.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Slowking has its pixel art', items:[
+    'Slowking now has its pixel art instead of a two-letter placeholder. All the pokémon added in 4.5.0 and 4.8.0 are drawn.',
+  ]},
+  { v:'4.8.0', date:'Oct 9, 2026', title:'Balance patch', sub:'Expert Belt and Leftovers are stronger, and Slowpoke can become Slowking', items:[
+    'Expert Belt now gives +20% Attack on top of never being resisted. On its own the resist-ignoring effect barely moved results in testing.',
+    'Leftovers now heals 22% of max HP on its beat, up from 12%. It was weaker than the other 5\u20bd items for what it gave back.',
+    'Slowpoke can now become Slowking in Gen 2 runs: use a King\u2019s Rock on it instead of letting it level up into Slowbro. Slowking is a Support with a healing attack that confuses an enemy now and then, where Slowbro is a Tank. Slowpoke joins the cross-generation evolutions, so mixed runs draw four from ten. Slowking shows a letter placeholder until its sprite is added.',
+    'Heart Scale was checked too and left alone: on a Support it already gains about as much as the other 5\u20136\u20bd items.',
+  ]},
+  { v:'4.7.0', date:'Oct 8, 2026', title:'Balance patch', sub:'Eviolite is stronger and counts every evolution', items:[
+    'Eviolite now gives +50% HP while a pokémon can still evolve, up from +25%. In testing it ranked near the bottom of the 5\u20bd held items for what it gave back, and it is switched off whenever its holder is fully evolved, so it needed the lift.',
+    'Eviolite now counts every Gen 2 evolution whenever Gen 2 is on. Before, in a Gen 1 + 2 run it only counted the four evolutions open in that run\u2019s Evolution Pool, so Scyther or Chansey could show no effect even though Scizor and Blissey exist in the game. Now they get the boost, pool or not. A Gen 1-only run still has no Scizor or Blissey, so Scyther and Chansey stay switched off there.',
+  ]},
   { v:'4.6.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Dual-type pokémon join the Mono pool of each of their types', items:[
     'In a Mono-type run the Daycare now sells every pokémon that has that type, not just the ones whose main type it is. Geodude is Rock and Ground, Pidgey is Normal and Flying, Jynx is Ice and Psychic, and so on. Mono legends follow the same rule. Gym leaders and the Elite Four already drew on both of a pokémon\u2019s types.',
     'Because the pools are bigger, Mono Ground, Flying, Poison and Psychic are now available in Gen 2-only runs, and Mono Ice and Dark are tuned for the new pools. Every Mono type was re-measured so each is still about as hard as the others.',
@@ -9993,10 +10036,20 @@ function recBucket(r){
   r.modes = r.modes || {}; const k = modsLabel(G);
   return r.modes[k] || (r.modes[k] = { runs:0, cleared:0, best:-1 });
 }
+/* 4.9.0 · RUN HISTORY: the last 30 finished runs on this device, newest first. */
+const HIST_MAX = 30;
+function logRun(){
+  if(!G || G.histLogged) return; G.histLogged = true;
+  const r = records(), gl = G.gens ? [].concat(G.gens).join('+') : '1';
+  const sec = G.secWon || (G.redResult === 'won' ? [secretBoss().id] : []);
+  const team = G.team.concat(G.pc || []).slice().sort((a, b) => (b.lvl || 0) - (a.lvl || 0)).slice(0, 6).map(u => u.id);
+  r.history = [{ at: Date.now(), won: G.over === 'won', stage: reachedStage(), label: bestRunLabel(reachedStage()), team, mods: modsLabel(G), gens: gl, daily: G.daily || '', sec, turn: G.turn || 1, badges: G.badges || 0 }].concat(r.history || []).slice(0, HIST_MAX);
+  saveRecords(r);
+}
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ awardHardcore(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ logRun(); awardHardcore(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
-function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
+function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ logRun(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
   if(!b || b.exhibition || !b.steps || !b.steps.length) return;
   const rec = G.rec || (G.rec = { fought:{}, hit:null });
@@ -10064,9 +10117,21 @@ function openTrainerCard(fromTitle){
       ${(() => { const t = dailyResults()[localDate()]; return t ? `<div><span>Today’s daily</span><b>${esc(t.cleared ? 'Champion!' : bestRunLabel(t.best))}${t.hardcore ? ' · Hardcore' : ''}</b></div>` : ''; })()}
     </div>
   </div>
-  <div class="btnrow"><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
+  <div class="btnrow"><button class="btn" data-m="history">Run history</button><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
   d.classList.add('trainer');
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); });
+  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); if(b.dataset.m === 'history') openHistory(fromTitle); });
+}
+
+function openHistory(fromTitle){
+  const H = records().history || [], ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'just now' : m < 90 ? m + ' min ago' : m < 2160 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago'; };
+  const row = h => `<div class="hrow ${h.won ? 'won' : ''}"><div class="hteam">${(h.team || []).map(id => SPECIES[id] ? spriteHtml(id, 'sm') : '').join('')}</div>
+    <div class="hinfo"><b>${h.won ? 'Champion!' : esc(h.label || '—')}</b>${(h.sec || []).length ? ' <span class="tag">' + h.sec.map(x => x === 'oak' ? 'Oak' : 'Red').join(' + ') + ' beaten</span>' : ''}
+      <span class="dim">${[h.gens ? 'Gen ' + esc(h.gens) : '', esc(h.mods || ''), h.daily ? 'Daily ' + esc(h.daily) : '', ago(h.at)].filter(Boolean).join(' · ')}</span></div></div>`;
+  const d = modal(`<h3>Run history</h3><p class="dim">Your last ${HIST_MAX} runs on this device. Transfer codes carry it along.</p>
+    <div class="hlist">${H.length ? H.map(row).join('') : '<p class="dim">No finished runs yet. They show up here once you win, lose or start a new run.</p>'}</div>
+    <div class="btnrow"><button class="btn ghost" data-m="close">Back</button></div>`);
+  d.classList.add('trainer', 'history');
+  d.querySelector('[data-m="close"]').onclick = () => { d.remove(); openTrainerCard(fromTitle); };
 }
 
 /* ---- OPTIONS (v37) ------------------------------------------------ */
@@ -10219,7 +10284,8 @@ function applyTransfer(data){
     const a = records(), b = Object.assign({ runs:0, cleared:0, best:-1 }, data.rec || {});
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
     const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) }, ga = mergeHardcore(a.gauntlet, b.gauntlet), st = { cur: Math.max((a.secStreak || {}).cur || 0, (b.secStreak || {}).cur || 0), best: Math.max((a.secStreak || {}).best || 0, (b.secStreak || {}).best || 0) };
-    saveRecords({ ...a, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    const hist = [...(a.history || []), ...(b.history || [])].filter((x, i, arr) => x && arr.findIndex(y => y && y.at === x.at) === i).sort((p, q) => q.at - p.at).slice(0, HIST_MAX);
+    saveRecords({ ...a, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -10485,6 +10551,10 @@ function openHelp(){
   d.querySelector('[data-m]').onclick = () => d.remove();
 }
 
+/** 4.9.0: the types a pokémon also has in the games (its label), beyond the one it plays as. */
+const secondTypes = k => String(SPECIES[k].gen1 || '').split('/').map(x => x.trim()).filter(t => t && t !== SPECIES[k].type && TYPES[t]);
+/** 4.9.0: who evolves with a given stone / item, for the Pokédex item list. */
+const stoneUsers = item => { const out = []; Object.keys(SPECIES).forEach(k => [SPECIES[k].evo, SPECIES[k].evo2].forEach(e => [].concat(e || []).forEach(o => { if(o && o.by === 'stone' && o.stone === item) out.push(`${SPECIES[k].name} → ${SPECIES[o.into].name}`); }))); return out; };
 function openDex(){
   // 4.0.0: the dex shows every gen you can play, so read the families with all of them on
   const gensBefore = ACTIVE_GENS.slice(); setActiveGens(GENS_READY);
@@ -10523,7 +10593,7 @@ function openDex(){
     return `<div class="dcard">
       <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
         <div><h3>${esc(s.name)}</h3>
-          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span> ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
+          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
           <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
       <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
@@ -10549,7 +10619,7 @@ function openDex(){
     const g2only = ['sunstone', 'kingsrock', 'metalcoat'].includes(k);   // 4.0.0: only useful with Gen 2 on
     return `<div class="dexrow" data-g1="${g2only ? 0 : 1}" data-g2="1">${itemSpriteHtml(k, it.icon, 'sm')}
       <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent</span>
-      <div class="abil">${esc(it.text)}</div></div></div>`; }).join('');
+      <div class="abil">${esc(it.text)}</div>${stoneUsers(k).length ? `<div class="dim evof">Evolves: ${stoneUsers(k).map(esc).join(' · ')}</div>` : ''}</div></div>`; }).join('');
 
   // held items, grouped so the three flavours read as three groups
   const KINDS = [
