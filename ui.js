@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.8.0', date:'Oct 9, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.8.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3092,6 +3092,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.8.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Slowking has its pixel art', items:[
+    'Slowking now has its pixel art instead of a two-letter placeholder. All the pokémon added in 4.5.0 and 4.8.0 are drawn.',
+  ]},
   { v:'4.8.0', date:'Oct 9, 2026', title:'Balance patch', sub:'Expert Belt and Leftovers are stronger, and Slowpoke can become Slowking', items:[
     'Expert Belt now gives +20% Attack on top of never being resisted. On its own the resist-ignoring effect barely moved results in testing.',
     'Leftovers now heals 22% of max HP on its beat, up from 12%. It was weaker than the other 5\u20bd items for what it gave back.',
