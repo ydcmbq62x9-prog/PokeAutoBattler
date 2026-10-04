@@ -3100,6 +3100,8 @@ const CHANGELOG = [
     'Run history: your last 30 runs are on the Trainer Card, each with its team, how far it got, the rules and any secret boss you beat. It travels in a transfer code.',
     'The Pokédex now shows a pok\u00e9mon\u2019s second type (Geodude also shows Ground), and the stone and item list says who evolves with each one.',
     'The little row of badges at the top is easier to tap on a phone.',
+    'Mono runs were re-measured: Water and Poison in Gen 2, Psychic, Fire and Electric in Gen 1, and Dark, Ice, Grass and Electric in Gen 1 + 2 were a few points off the others, so their opponents are nudged. Every Mono type now clears about 74\u201379% of the time in bot runs.',
+    'Fixed a rare crash if a run was replaced while a battle intro was still playing.',
   ]},
   { v:'4.8.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Slowking has its pixel art', items:[
     'Slowking now has its pixel art instead of a two-letter placeholder. All the pokémon added in 4.5.0 and 4.8.0 are drawn.',

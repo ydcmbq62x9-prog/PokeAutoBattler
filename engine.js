@@ -194,10 +194,10 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.06, Fire:0.95, Water:0.921, Electric:0.906, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.155, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.138, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.024, Fire:0.786, Water:0.955, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:1, Psychic:1.019, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.101, Fire:0.991, Water:1, Electric:0.95, Grass:0.946, Ice:1.207, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.898 } },
+            '2':   { Normal:1.038, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.991, Psychic:1.03, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.101, Fire:0.981, Water:1, Electric:0.962, Grass:0.96, Ice:1.225, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.88 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
