@@ -194,10 +194,10 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.138, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.154, Bug:0.878, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.038, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.991, Psychic:1.03, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.101, Fire:0.981, Water:1, Electric:0.962, Grass:0.96, Ice:1.225, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.88 } },
+            '2':   { Normal:1.052, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.957, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.983, Psychic:1.018, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.121, Fire:0.981, Water:1, Electric:0.978, Grass:0.984, Ice:1.225, Fighting:0.998, Ground:1.067, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.857, Dark:0.88 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
@@ -1012,9 +1012,9 @@ const HERA = [38, 52, 52];
 const LARV = { b:[20, 22, 30], m:[36, 28, 24], e:[60, 62, 46] };
 const MAGM = [30, 34, 62];
 const HORS = { b:[14, 20, 46], m:[36, 42, 60], e:[42, 44, 58] };
-const CROB = [56, 46, 78];
+const CROB = [53, 43, 74];
 const BLIS = [76, 14, 44];
-const PORY2 = [58, 50, 56];
+const PORY2 = [50, 42, 48];
 const STLX = [54, 36, 30];
 const SCIZ = [48, 60, 54];
 const POLT = [52, 42, 46];
@@ -1028,8 +1028,8 @@ const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
 const CELE = [68, 46, 86];   // 4.10.0: Celebi, a Support legendary (hp, atk, spd)
-const SLOWK = [68, 36, 30];
-const MIME = [34, 34, 50];
+const SLOWK = [66, 42, 46];
+const MIME = [38, 42, 58];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
 const CUBO = { b:[20, 20, 26], e:[48, 50, 34] };
 const SUNK = { b:[20, 12, 26], e:[48, 52, 34] };
@@ -1037,8 +1037,8 @@ const GLIG = [40, 44, 54];
 const SLUG = { b:[24, 18, 14], e:[52, 44, 22] };
 const WOBB = [70, 10, 34];
 const QWIL = [46, 54, 50];
-const CHIN = { b:[26, 18, 24], e:[62, 40, 38] };
-const TOGE = { b:[20, 10, 28], e:[48, 28, 40] };
+const CHIN = { b:[26, 19, 28], e:[60, 42, 50] };
+const TOGE = { b:[20, 11, 30], e:[50, 32, 52] };
 const SPECIES = {
 
   /* ============ TIER 1 — starters and early routes ============ */
@@ -1210,7 +1210,7 @@ const SPECIES = {
 
   clefairy:   { name:'Clefairy',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
                 evo:{into:'clefable', by:'stone', stone:'moonstone'}, move:M.rally('Metronome', 0.8, 0.05) },
-  clefable:   { name:'Clefable',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:40, atk:33, spd:50, token:true,
+  clefable:   { name:'Clefable',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:42, atk:36, spd:52, token:true,
                 move:M.rally('Metronome', 1.0, 0.07) },
 
   shellder:   { name:'Shellder',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:26, atk:18, spd:33,
@@ -1298,7 +1298,7 @@ const SPECIES = {
                 evo:{into:'weezing', by:'level'},      move:M.afflict('Smog', 0.7, 'psn', 0.5, 'front') },
   weezing:    { name:'Weezing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.e[0], atk:KOFF.e[1], spd:KOFF.e[2], token:true,
                 move:M.afflict('Sludge', 1.0, 'psn', 0.6, 'front') },
-  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:50, atk:47, spd:58,
+  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:52, atk:50, spd:58,
                 move:M.hit('Ice Punch', 1.9) },
 
   /* ============ 3.8.0 — nineteen more Gen 1 pokémon (Sean) ============
@@ -1486,7 +1486,7 @@ const SPECIES = {
   blissey:    { name:'Blissey',    type:'Normal', gen1:'Normal', gen:2, tier:5, role:'tank', hp:BLIS[0], atk:BLIS[1], spd:BLIS[2], token:true,
                 move:M.mend('Softboiled', 0.7, 0.3) },
   porygon2:   { name:'Porygon2',   type:'Normal', gen1:'Normal', gen:2, tier:5, role:'support', hp:PORY2[0], atk:PORY2[1], spd:PORY2[2], token:true,
-                move:M.rally('Download', 1.6, 0.09) },
+                move:M.rally('Download', 1.5, 0.08) },
   steelix:    { name:'Steelix',    type:'Steel', gen1:'Steel/Ground', gen:2, tier:3, role:'tank', hp:STLX[0], atk:STLX[1], spd:STLX[2], token:true,
                 move:M.wall('Iron Tail', 1.3, 2.1) },
   scizor:     { name:'Scizor',     type:'Bug', gen1:'Bug/Steel', gen:2, tier:4, role:'bruiser', hp:SCIZ[0], atk:SCIZ[1], spd:SCIZ[2], token:true,
@@ -1531,9 +1531,9 @@ const SPECIES = {
   slowbro:    { name:'Slowbro',    type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.e[0], atk:SLOW.e[1], spd:SLOW.e[2], token:true,
                 move:M.wall('Headbutt', 1.1, 1.9) },
   slowking:   { name:'Slowking',   type:'Water', gen1:'Water/Psychic', gen:2, tier:3, role:'support', hp:SLOWK[0], atk:SLOWK[1], spd:SLOWK[2], token:true,
-                move:M.mend('Heal Pulse', 1.2, 0.10) },
+                move:M.mend('Heal Pulse', 1.2, 0.12) },
   'mr-mime':  { name:'Mr. Mime',   type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:MIME[0], atk:MIME[1], spd:MIME[2],
-                move:M.mend('Meditate', 1.0, 0.08) },
+                move:M.mend('Meditate', 1.1, 0.12) },
   ponyta:     { name:'Ponyta',     type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.b[0], atk:PONY.b[1], spd:PONY.b[2],
                 evo:{into:'rapidash', by:'level'},    move:M.hit('Flame Charge', 1.3) },
   rapidash:   { name:'Rapidash',   type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.e[0], atk:PONY.e[1], spd:PONY.e[2], token:true,
@@ -1559,11 +1559,11 @@ const SPECIES = {
   chinchou:   { name:'Chinchou',   type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.b[0], atk:CHIN.b[1], spd:CHIN.b[2],
                 evo:{into:'lanturn', by:'level'},     move:M.mend('Aqua Ring', 0.9, 0.07) },
   lanturn:    { name:'Lanturn',    type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.e[0], atk:CHIN.e[1], spd:CHIN.e[2], token:true,
-                move:M.mend('Aqua Ring', 1.2, 0.10) },
+                move:M.mend('Aqua Ring', 1.2, 0.12) },
   togepi:     { name:'Togepi',     type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.b[0], atk:TOGE.b[1], spd:TOGE.b[2],
                 evo:{into:'togetic', by:'level'},     move:M.mend('Sweet Kiss', 0.8, 0.06) },
   togetic:    { name:'Togetic',    type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.e[0], atk:TOGE.e[1], spd:TOGE.e[2], token:true,
-                move:M.mend('Sweet Kiss', 1.1, 0.09) },
+                move:M.mend('Sweet Kiss', 1.1, 0.12) },
 };
 
 /* ===================================================================
@@ -1693,7 +1693,7 @@ const MOVE2 = {
   starmie:    on('every', M.haze('Haze', 1.0), { n:3 }),   // 3.4.0: wipes buffs
   onix:       on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),   // 3.3.0: a rock wall from the first turn
   clefairy:   on('allyLow', M.shield('Light Screen', 0.1, 'team')),
-  clefable:   on('allyLow', M.shield('Light Screen', 0.14, 'team')),
+  clefable:   on('allyLow', M.shield('Light Screen', 0.16, 'team')),
   shellder:   on('every', M.afflict('Supersonic', 0, 'cnf', 0.8, 'front'), { n:3 }),
   cloyster:   on('open',  M.shield('Iron Defense', 0.28, 'self'), { free:true }),   // 3.3.0: shuts its shell first
   // ---- tier 4
@@ -1860,7 +1860,7 @@ const MOVE2 = {
   chinchou:   on('every', M.slow('Electroweb', 0.5, 6), { n:3 }),
   lanturn:    on('every', M.slow('Electroweb', 0.65, 8), { n:3 }),
   togepi:     on('allyLow', M.shield('Wish', 0.08, 'team')),
-  togetic:    on('allyLow', M.shield('Wish', 0.12, 'team')),
+  togetic:    on('allyLow', M.shield('Wish', 0.14, 'team')),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
 /* 4.0.0: Gen 2 evolutions of Gen 1 pokémon. They only exist in runs with Gen 2 on

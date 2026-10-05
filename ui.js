@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.10.0', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.11.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3113,6 +3113,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.11.0', date:'Oct 6, 2026', title:'Balance patch', sub:'Supports pass: healers are faster and heal more, Porygon2 and Crobat are cut down', items:[
+    'Healers that were far behind get more Speed and bigger heals: Lanturn, Togetic, Slowking and Mr. Mime now heal 12% of the most-hurt pok\u00e9mon\u2019s HP (up from 9\u201310% or 8%), and each one is quicker, so they actually get to heal. Clefable and Jynx get small boosts too, and Togetic\u2019s Wish and Clefable\u2019s Light Screen are a bit bigger.',
+    'Porygon2 was far above everything else at its tier, so its stats and Download are lower. Crobat is trimmed a little.',
+    'Chinchou and Togepi are slightly faster so they are not left behind by their evolutions.',
+    'Mono runs were re-measured after the Supports got stronger, and a few types\u2019 opponents are nudged so each still clears about 75% of the time in bot runs.',
+  ]},
   { v:'4.10.0', date:'Oct 5, 2026', title:'Minor gameplay changes', sub:'A first-run tutorial and Celebi, the first Support legendary', items:[
     'A short tutorial of five cards plays the first time you open the game. Skip it any time, and replay it from START \u2192 How to play.',
     'Celebi joins the legendaries in Gen 2 runs: a Psychic Support that heals your most-hurt pok\u00e9mon every time it acts and cures and heals the team once when a teammate drops below half HP. It is also a Grass pok\u00e9mon for Mono Grass runs. Recruit it for 12\u20bd after the 5th gym like the others.',

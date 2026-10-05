@@ -1,6 +1,7 @@
 /* Generates the balance-reference page straight from engine.js, so the
    numbers on the page are always exactly the numbers in the game. */
 const E = require('./engine.js');
+const OLD = require('./engine.pre491.js');
 const fs = require('fs');
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -296,9 +297,18 @@ const gensHtml = () => {
   <p class="note">The Gen 1 twin of Red: about <b>1 run in 6</b> with Gen 1 on hides him (a run with both gens draws one secret boss, Red or Oak, at random), and he appears after the Champion. Team: <b>${E.OAK.lineup.map(u => esc(E.SPECIES[u.id].name)).join(', ')}</b>, level 3, each holding an item. One fight, no retry, nothing lost on a loss; Oak's Badge is a trophy.
   Priced at <b>×${E.TUNING.red.oakRatio['1']}</b> (Gen 1) or <b>×${E.TUNING.red.oakRatio['1+2']}</b> (Gen 1 + 2); the reference bot beats him about 1 time in 3 among runs that reach him (<code>node redwin.js 250 '[1]' oak</code>).
   <b>Porygon2</b> (Normal, Support, Tier 5, ${E.SPECIES.porygon2.hp}/${E.SPECIES.porygon2.atk}/${E.SPECIES.porygon2.spd}) is Porygon's level-up evolution when Gen 2 is on; Porygon is now the ninth cross-gen evolution in the Evolution Pool.</p>
-  <h3 style="margin-top:18px">Celebi <span class="dim" style="font-size:13px;font-weight:400">— new in 4.10.0, this update only</span></h3>
-  <p class="note">The first <b>Support legendary</b>. Psychic (also Grass: it counts for Mono Grass), Gen 2, an encounter like the other legendaries: after the 5th gym, recruit it for ${E.TUNING.legend.cost}\u20bd. Stats <b>${E.SPECIES.celebi.hp} ♥ / ${E.SPECIES.celebi.atk} ◆ / ${E.SPECIES.celebi.spd} »</b>. <b>${esc(E.SPECIES.celebi.move.name)}</b>: ${esc(E.SPECIES.celebi.move.text(1))} <b>${esc(E.SPECIES.celebi.move2.name)}</b> (${esc(E.SPECIES.celebi.move2.when())}): ${esc(E.SPECIES.celebi.move2.text(1))}
-  Measured by forcing a legendary into every run (<code>node legonly.js '[2]' celebi</code>, 400 runs each, Gen 2): Celebi <b>79.5%</b> clear, against Raikou 83.8%, Ho-Oh 79.8%, Lugia 76.3%, Entei 74.0% and Suicune 69.5%. First tries at 78/52/96 with a 16% heal reached 87.8%, so the stats and heals were cut. In a Gen 1 + 2 run it clears about 73%.</p>
+  <h3 style="margin-top:18px">Supports pass <span class="dim" style="font-size:13px;font-weight:400">— 4.11.0, this update only</span></h3>
+  <p class="note">Every Support finished pokémon was measured as the one added to a random mixed five against a random mixed six (<code>node svall.js</code>, 400 battles each, Gen 1 + 2, everyone at the same level). Supports as a role averaged 47% against 48–49% for the others, but the healers sat well under their tiers: Slowking 37%, Mr. Mime 38%, Togetic 38%, Lanturn 39% (a tier averages about 48%). Healers act on their Speed, so slow ones barely healed anything: the fix was Speed and heal size together. Porygon2 was far above the curve at 67% (the T5 average is 50%).</p>
+  <div class="scroller"><table><thead><tr><th>Pokémon</th><th class="n">Tier</th><th>Stats before → after (HP / Atk / Spd)</th><th>Move before → after</th><th class="n">Win% before</th><th class="n">after</th></tr></thead><tbody>${
+    [['lanturn',39,46],['togetic',38,48],['slowking',37,47],['mr-mime',38,48],['clefable',43,48],['jynx',45,45],['crobat',56,51],['porygon2',67,53]].map(([k, b0, a0]) => {
+      const o = OLD.SPECIES[k], n = E.SPECIES[k];
+      const mv = m => esc(m.name) + ' · ' + esc(m.text(1)).replace(/^Deals /, '').slice(0, 90);
+      const f = v => `${v.hp} / ${v.atk} / ${v.spd}`;
+      const m2 = (a, b) => { const x = OLD.SPECIES[k].move2 && OLD.SPECIES[k].move2.text(1), y = E.SPECIES[k].move2 && E.SPECIES[k].move2.text(1); return x !== y ? `<br><span class="dim">${esc(y.replace(/^No damage\. /, ''))}</span>` : ''; };
+      return `<tr><td class="nm">${esc(n.name)}</td><td class="n">${n.tier}</td><td>${f(o)} → <b>${f(n)}</b></td><td>${o.move.text(1) !== n.move.text(1) ? esc(o.move.text(1).replace(/^Deals /, '')).slice(0, 80) + ' → <b>' + esc(n.move.text(1).replace(/^Deals /, '')).slice(0, 80) + '</b>' : 'unchanged'}${m2()}</td><td class="n">${b0}%</td><td class="n"><b>${a0}%</b></td></tr>`; }).join('')}</tbody></table></div>
+  <p class="note">Also: Chinchou's and Togepi's Speed rose by 4 and 2 so they are not left behind by their evolutions; Jynx got +2 HP and +3 Attack (still a little under its tier). Because Supports got stronger on the whole, Mono Psychic, Grass, Normal, Bug, Poison, Electric, Ground and Rock opponents were nudged to keep every Mono type near 75%. Gen 1 76.0%, Gen 2 77.8%, Gen 1 + 2 75.0% after the pass.</p>
+  <h3 style="margin-top:18px">Celebi <span class="dim" style="font-size:13px;font-weight:400">— 4.10.0</span></h3>
+  <p class="note">Support legendary, ${E.SPECIES.celebi.hp} ♥ / ${E.SPECIES.celebi.atk} ◆ / ${E.SPECIES.celebi.spd} »: ${esc(E.SPECIES.celebi.move.name)} (${esc(E.SPECIES.celebi.move.text(1))}) and ${esc(E.SPECIES.celebi.move2.name)}. Forced into every Gen 2 run it clears 79.5% against 69.5–83.8% for the other legendaries.</p>
   <h3 style="margin-top:18px">Gen 2 roster by tier and role <span class="dim" style="font-size:13px;font-weight:400">— buyable lines</span></h3>
   <div class="scroller"><table><thead><tr><th></th>${roles.map(r => `<th class="n">${E.ROLES[r].icon} ${E.ROLES[r].name}</th>`).join('')}</tr></thead><tbody>${roleRows}</tbody></table></div>
   ${GD['2'] ? `<h3 style="margin-top:18px">Johto bosses, Gen 2-only run</h3>
