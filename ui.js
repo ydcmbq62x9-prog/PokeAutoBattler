@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.14.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.15.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -129,6 +129,7 @@ const SFX = (() => {
     hit:     () => { noise(0, 0.08, { cut: 1600, v: 0.7 }); tone(170, 0, 0.07, { to: 60, v: 0.8 }); },
     crit:    () => { noise(0, 0.12, { cut: 3500, v: 0.9 }); tone(260, 0, 0.1, { to: 70 }); tone(1500, 0.02, 0.05, { v: 0.4 }); },
     weak:    () => noise(0, 0.05, { cut: 900, v: 0.4 }),
+    cheer:   () => { noise(0, 1.1, { cut: 2800, v: 0.22, rate: 0.7 }); noise(0.12, 0.9, { cut: 1500, v: 0.18, rate: 0.5 }); noise(0.3, 0.7, { cut: 4200, v: 0.1, rate: 1.3 }); },   // 4.15.0: the crowd
     faint:   () => tone(820, 0, 0.5, { to: 90, v: 0.8 }),
     heal:    () => seq([79, 83, 86], 0.05, { type: 'triangle', v: 0.9 }),
     status:  () => [0, 1, 2].forEach(k => { tone(520, k * 0.07, 0.03); tone(700, k * 0.07 + 0.035, 0.03); }),
@@ -1564,10 +1565,10 @@ function fighterHtml(u){
 function buildStage(){
   const b = battle, st0 = b.steps[0] || { p:[], e:[] };
   const el = document.createElement('div');
-  el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)}`;   // 4.13.0 board; 4.14.0 a tilted stadium table
+  el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)} look-${['stadium', 'mini', 'paper'].includes(PREF.get('look', 'stadium')) ? PREF.get('look', 'stadium') : 'stadium'}`;   // 4.15.0: Options → Battle look   // 4.13.0 board; 4.14.0 a tilted stadium table
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
-  el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i></div>
+  el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i><i class="bulbs"></i></div>
     <div class="tview"><div class="table"><div class="pitch"></div><div class="midline"></div>
     ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
       `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
@@ -1752,6 +1753,49 @@ function lunge(F, towardsFoe, dur){
     : [{ transform: 'scale(1)' }, { transform: 'scale(1.06)', offset: .4 }, { transform: 'scale(1)' }],
     { duration: dur, easing: 'ease-out' });
 }
+/** 4.15.0: the crowd reacts to a big moment — the stands flash with camera bulbs, and they cheer (not too often). */
+let lastCheer = 0;
+function crowdReact(S, loud){
+  const now = performance.now();
+  if(loud && now - lastCheer > 1600){ lastCheer = now; setTimeout(() => SFX.play('cheer'), 90); }
+  if(motionOff()) return;
+  const st = S.el.querySelector('.stands'), bulbs = S.el.querySelector('.bulbs');
+  if(st) anim(st, [{ filter: 'brightness(1)', transform: 'translateY(0)' }, { filter: 'brightness(1.7)', transform: 'translateY(-2px)', offset: .25 },
+                   { filter: 'brightness(1.15)', transform: 'translateY(0)', offset: .6 }, { filter: 'brightness(1)', transform: 'translateY(0)' }], { duration: 700, easing: 'ease-out' });
+  if(!bulbs || !st || getComputedStyle(st).display === 'none') return;
+  const h = st.getBoundingClientRect().height;
+  for(let k = 0; k < (loud ? 9 : 5); k++){
+    const b = document.createElement('i'); b.className = 'bulb';
+    b.style.left = (6 + Math.random() * 88) + '%'; b.style.top = (h * (0.15 + Math.random() * 0.7)) + 'px';
+    bulbs.appendChild(b);
+    anim(b, [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1.2)', offset: .2 }, { opacity: 0, transform: 'scale(.8)' }],
+      { duration: 380, delay: k * 70 + Math.random() * 90, fill: 'backwards', remove: true });
+  }
+}
+/** 4.15.0: winning a big fight — the camera sweeps along your team, front to back, then settles; confetti falls. */
+function victorySweep(S){
+  if(motionOff() || !S.table) return;
+  const view = S.el.querySelector('.tview'), vr = view.getBoundingClientRect();
+  const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down)
+    .sort((a, b) => [...a.el.classList].find(c => /^r\d/.test(c)).localeCompare([...b.el.classList].find(c => /^r\d/.test(c))));
+  if(!mine.length) return;
+  const at = F => { const t = F.el.getBoundingClientRect(); return `${((t.left + t.width / 2 - vr.left) / vr.width * 100).toFixed(1)}% ${((t.top + t.height / 2 - vr.top) / vr.height * 100).toFixed(1)}%`; };
+  const frames = [{ transform: 'scale(1)', transformOrigin: at(mine[0]), offset: 0 }];
+  mine.forEach((F, k) => frames.push({ transform: 'scale(1.22)', transformOrigin: at(F), offset: 0.1 + 0.75 * k / Math.max(1, mine.length - 1 || 1) }));
+  frames.push({ transform: 'scale(1)', transformOrigin: at(mine[mine.length - 1]), offset: 1 });
+  frames.forEach((f, k) => { if(k && f.offset <= frames[k - 1].offset) f.offset = Math.min(1, frames[k - 1].offset + 0.01); });
+  anim(view, frames, { duration: Math.min(3600, 900 + mine.length * 520), easing: 'ease-in-out' });
+  crowdReact(S, true);
+  const cols = ['#ffd23a', '#e0473f', '#3fa8e0', '#5ad17a', '#f06090', '#fff'];
+  const W = S.el.clientWidth, H = S.el.clientHeight;
+  for(let k = 0; k < 36; k++){
+    const c = fxEl(S, 'confetti', Math.random() * W, -10); c.style.background = cols[k % cols.length];
+    const dx = (Math.random() - 0.5) * 80, rot = (Math.random() - 0.5) * 720;
+    anim(c, [{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 }, { transform: `translate(${dx}px,${H * (0.7 + Math.random() * 0.4)}px) rotate(${rot}deg)`, opacity: 0.9, offset: .85 },
+             { transform: `translate(${dx}px,${H + 20}px) rotate(${rot}deg)`, opacity: 0 }],
+      { duration: 1800 + Math.random() * 1400, delay: Math.random() * 700, easing: 'cubic-bezier(.3,.6,.6,1)', fill: 'backwards', remove: true });
+  }
+}
 /** 4.14.0: on a big hit the camera leans in towards whoever took it, then settles back. */
 function camLean(S, F){
   if(motionOff() || !S.table) return;
@@ -1896,6 +1940,7 @@ function animateStep(S, i){
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
     const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
     if(bigHit && !quick) camLean(S, bigHit.F);
+    if(bigHit) crowdReact(S, bigHit.F.side === 'e' || bigHit.fainted);
     if(!motionOff() && bigHit)
       anim(S.el, [{ transform: 'translate(0,0)' }, { transform: 'translate(-5px,3px)' }, { transform: 'translate(5px,-3px)' }, { transform: 'translate(-3px,0)' }, { transform: 'translate(0,0)' }], { duration: 280 });
     if(extra) setTimeout(() => SFX.play(extra), hurt ? 70 : 0);
@@ -1990,10 +2035,14 @@ function stageOutro(S){
   let k = 0;
   for(const F of S.f.values()){
     if(F.down || F.side !== side) continue;
-    anim(F.el.querySelector('.fmove'), [{ transform: 'translateY(0)' }, { transform: 'translateY(-14px)', offset: .25 },
+    const el = S.table ? F.el.querySelector('.fart') : F.el.querySelector('.fmove');   // 4.15.0: on the stadium the pokémon itself hops up
+    anim(el, S.table ? [{ translate: '0 0' }, { translate: '0 -14px', offset: .25 }, { translate: '0 0', offset: .5 }, { translate: '0 -9px', offset: .72 }, { translate: '0 0' }]
+      : [{ transform: 'translateY(0)' }, { transform: 'translateY(-14px)', offset: .25 },
       { transform: 'translateY(0)', offset: .5 }, { transform: 'translateY(-9px)', offset: .72 }, { transform: 'translateY(0)' }],
       { duration: 900, delay: k++ * 90, easing: 'ease-out' });
   }
+  if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)) victorySweep(S);
+  else if(r === 'win') crowdReact(S, true);
 }
 
 /* ---------------- the chrome around the field, patched per step ---------- */
@@ -3157,6 +3206,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.15.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The crowd reacts, big wins get a victory moment, and you can pick a battle look', items:[
+    'The crowd reacts: camera bulbs flash in the stands on super-effective hits and knockouts, and the crowd cheers (not every time, so it doesn\u2019t get noisy).',
+    'Beat a gym leader, an Elite Four member, the Champion or a secret boss and the camera sweeps along your team from front to back while confetti falls.',
+    'Your pok\u00e9mon now hop on the spot when they win, instead of sliding across the table.',
+    'Options \u2192 Battle look: Stadium (squares on the floor), Miniatures (figures on round bases, with a wooden rim on the table) or Paper (pok\u00e9mon printed on white standees). The floor still follows the battle in every look.',
+  ]},
   { v:'4.14.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The battle board becomes a stadium, with a floor for every battle type', items:[
     'Battles now play on a tilted stadium table. Every pok\u00e9mon stands up off its square, with a gentle bob, and the crowd and floodlights sit behind.',
     'The floor follows the battle: a striped pitch for trainers, a dusk stadium for your rival, the League hall for the Champion and a snowy summit for Red.',
@@ -3859,10 +3914,12 @@ function openOptions(){
     <div class="optrow"><span>Trainer battles</span>${seg('autoskip', PREF.get('autoskip', 'off'), [['off', 'Watch'], ['on', 'Skip to result']])}</div>
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
+    <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Auto'], ['full', 'Full'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
+      Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
       Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
   d.classList.add('options');

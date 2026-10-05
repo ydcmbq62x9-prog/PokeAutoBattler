@@ -2258,6 +2258,42 @@ body.calm .bstage.board.stadium .fart img{animation:none}
 @media (max-width:700px) and (orientation:portrait){
   #app:has(.arena) .bstage.board.stadium.vert{min-height:calc(100vw * 1.15);max-height:calc(100vw * 1.7)}
 }
+
+/* ===== 4.15.0 · crowd bulbs, confetti, and the three battle looks ===== */
+.bstage.board.stadium .bulbs{position:absolute;inset:0;pointer-events:none}
+.bstage.board.stadium .bulb{position:absolute;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:radial-gradient(circle,#fff 0 35%,rgba(255,255,230,.6) 55%,transparent 72%);box-shadow:0 0 8px 3px rgba(255,255,230,.7)}
+.fx.confetti{width:7px;height:11px;border-radius:2px;z-index:8}
+
+/* Miniatures: no squares — each pokémon is a figure on a round base, on a table with a wooden rim */
+.bstage.board.stadium.look-mini .table{box-shadow:0 0 0 6px #7a4a2a,0 0 0 9px #a86c3c,0 18px 26px rgba(0,0,0,.5)}
+.bstage.board.stadium.look-mini .slotmark{border:none}
+.bstage.board.stadium.look-mini .slotmark::before{content:'';position:absolute;border:2px dashed rgba(255,255,255,.25);border-radius:50%}
+.bstage.board.stadium.look-mini .ftr,.bstage.board.stadium.look-mini .ftr.acting,.bstage.board.stadium.look-mini .ftr.down,
+.bstage.board.stadium.look-mini:is(.fl-Ice,.fl-summit,.fl-Normal,.fl-Flying,.fl-Ground,.fl-Rock,.fl-Steel,.fl-Electric) .ftr:not(.down){background:transparent;border-color:transparent;box-shadow:none}
+.bstage.board.stadium.look-mini .ftr::before{display:block;background:radial-gradient(closest-side,#3a3f4c,#14161d);box-shadow:0 0 0 3px rgb(var(--t)),0 4px 0 #0b0d12,0 6px 8px rgba(0,0,0,.45)}
+.bstage.board.stadium.look-mini .ftr.acting::before{background:radial-gradient(closest-side,#4a4f5c,#14161d);box-shadow:0 0 0 3px #ffd23a,0 4px 0 #0b0d12,0 0 16px #ffd23a}
+.bstage.board.stadium.look-mini .ftr.down::before{opacity:.5;box-shadow:0 0 0 3px rgba(255,255,255,.3),0 4px 0 #0b0d12}
+.bstage.board.stadium.look-mini:not(.vert) .ftr::before{left:20%;right:20%;bottom:26%;height:16%}
+.bstage.board.stadium.look-mini.vert .ftr::before{left:2%;width:30%;bottom:8%;height:36%}
+.bstage.board.stadium.look-mini:not(.vert) .slotmark::before{left:20%;right:20%;bottom:26%;height:16%}
+.bstage.board.stadium.look-mini.vert .slotmark::before{left:2%;width:30%;bottom:8%;height:36%}
+
+/* Paper: each pokémon is printed on a white standee in your colour or theirs */
+.bstage.board.stadium.look-paper .table{box-shadow:0 0 0 4px #f4ecd8,0 0 0 6px rgba(0,0,0,.15),0 18px 26px rgba(0,0,0,.4)}
+.bstage.board.stadium.look-paper .slotmark{border:2px dashed rgba(255,255,255,.22)}
+.bstage.board.stadium.look-paper .ftr,.bstage.board.stadium.look-paper .ftr.acting,.bstage.board.stadium.look-paper .ftr.down,
+.bstage.board.stadium.look-paper:is(.fl-Ice,.fl-summit,.fl-Normal,.fl-Flying,.fl-Ground,.fl-Rock,.fl-Steel,.fl-Electric) .ftr:not(.down){background:transparent;border-color:transparent;box-shadow:none}
+.bstage.board.stadium.look-paper .ftr::before{display:block;border-radius:3px;background:rgb(var(--t));opacity:.85}
+.bstage.board.stadium.look-paper:not(.vert) .ftr::before{left:26%;right:26%;bottom:22%;height:7%}
+.bstage.board.stadium.look-paper.vert .ftr::before{left:4%;width:26%;bottom:4%;height:14%}
+.bstage.board.stadium.look-paper .ftr .fart{background:#fff;border-radius:6px;padding:3px;box-sizing:border-box;box-shadow:0 0 0 2px rgb(var(--t)),3px 3px 0 rgba(0,0,0,.22);filter:none}
+.bstage.board.stadium.look-paper .ftr.acting .fart{box-shadow:0 0 0 3px #ffd23a,0 0 14px #ffd23a,3px 3px 0 rgba(0,0,0,.22)}
+.bstage.board.stadium.look-paper .ftr.acting::before{background:#ffd23a}
+.bstage.board.stadium.look-paper:not(.vert) .ftr .fart{height:96%}
+.bstage.board.stadium.look-paper.vert .ftr .fart{height:112%}
+/* without a square behind them, names and bars get their own dark label */
+.bstage.board.stadium:is(.look-mini,.look-paper) .ftr .fhead{background:rgba(16,20,32,.55);border-radius:6px;padding:2px 5px;align-self:center}
+.bstage.board.stadium:is(.look-mini,.look-paper) .ftr.down .fhead{background:rgba(16,20,32,.3)}
 </style>
 </head>
 <body>
