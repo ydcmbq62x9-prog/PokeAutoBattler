@@ -2380,6 +2380,31 @@ body.calm .bstage .stfx i,body.calm .bstage .fbarrier::after{animation:none;opac
 /* 4.16.0: miniature bases follow the pokémon to the middle of its spot */
 .bstage.board.stadium.look-mini:not(.vert) .ftr::before,.bstage.board.stadium.look-mini:not(.vert) .slotmark::before{left:22%;right:22%;width:auto;bottom:calc(var(--amb) - 7%);height:17%}
 .bstage.board.stadium.look-mini.vert .ftr::before,.bstage.board.stadium.look-mini.vert .slotmark::before{left:30%;right:30%;width:auto;bottom:-2%;height:36%}
+
+/* 4.17.0: no band behind the plate — only the lettering and the bar carry a shadow; pokémon a little smaller */
+.bstage.board.stadium{--ah:54%;--amb:15%}
+.bstage.board.stadium.vert{--ah:92%;--amb:7%}
+.bstage.board.stadium .ftr .fhead::before,.bstage.board.stadium.vert .ftr .fhead::before{display:none}
+.bstage.board.stadium .ftr .fhead,.bstage.board.stadium:is(.look-mini,.look-paper) .ftr .fhead{padding:0 6px 2px}
+.bstage.board.stadium .ftr .fname,.bstage.board.stadium.vert .ftr .fname{text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000,0 2px 3px rgba(0,0,0,.7)}
+.bstage.board.stadium .ftr .fname i{text-shadow:inherit}
+.bstage.board.stadium .ftr .fhp{box-shadow:0 0 0 1.5px rgba(0,0,0,.75),0 2px 3px rgba(0,0,0,.45)}
+.bstage.board.stadium .fchip{box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+
+/* 4.17.0 · hit particles by type */
+.fx.pt{position:absolute;pointer-events:none;z-index:7;background:var(--c)}
+.fx.pt.ember{width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#fff 0 20%,var(--c) 45%,transparent 72%);box-shadow:0 0 6px var(--c)}
+.fx.pt.drop{width:7px;height:10px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;box-shadow:inset -1px -2px 0 rgba(0,0,0,.15),0 0 2px rgba(255,255,255,.6)}
+.fx.pt.leaf{width:10px;height:6px;border-radius:0 100% 0 100%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.fx.pt.spark{width:9px;height:14px;clip-path:polygon(55% 0,20% 55%,48% 55%,30% 100%,82% 40%,54% 40%,72% 0);filter:drop-shadow(0 0 3px #fff6a0)}
+.fx.pt.ishard{width:6px;height:12px;clip-path:polygon(50% 0,100% 30%,70% 100%,20% 85%,0 30%);filter:drop-shadow(0 0 2px #fff)}
+.fx.pt.chunk{width:8px;height:7px;border-radius:2px;clip-path:polygon(15% 0,85% 10%,100% 70%,60% 100%,0 80%);box-shadow:inset -2px -2px 0 rgba(0,0,0,.25)}
+.fx.pt.dust{width:18px;height:12px;border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent);opacity:.8}
+.fx.pt.glint{width:10px;height:10px;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 3px var(--c))}
+.fx.pt.wisp{width:12px;height:12px;border-radius:50%;background:radial-gradient(closest-side,var(--c),transparent);filter:blur(.5px)}
+.fx.pt.bubble{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,var(--c) 55%,transparent 72%);box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+.fx.pt.star{width:10px;height:10px;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 2px rgba(0,0,0,.5))}
+.fx.pt.feather{width:5px;height:13px;border-radius:50% 50% 50% 50%/80% 80% 20% 20%;box-shadow:inset 1px 0 0 rgba(0,0,0,.12)}
 </style>
 </head>
 <body>

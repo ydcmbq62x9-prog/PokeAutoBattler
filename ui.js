@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.16.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.17.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1823,6 +1823,47 @@ function camLean(S, F){
   anim(S.el.querySelector('.tview'), [{ transform: 'scale(1)', transformOrigin: o }, { transform: 'scale(1.1)', transformOrigin: o, offset: .3 }, { transform: 'scale(1)', transformOrigin: o }],
     { duration: 820, easing: 'ease-out' });
 }
+/** 4.17.0: a lobbed path — up and over, landing on the target. */
+function arcFrames(dx, dy, jig){
+  const lift = Math.max(26, Math.hypot(dx, dy) * 0.38) + Math.abs(jig || 0), fr = [];
+  for(let k = 0; k <= 8; k++){ const t = k / 8, ease = t * t * (3 - 2 * t) * 0.25 + t * 0.75;
+    fr.push({ transform: `translate(calc(-50% + ${dx * ease + (jig || 0) * Math.sin(Math.PI * t)}px), calc(-50% + ${dy * ease - Math.sin(Math.PI * t) * lift}px)) scale(${(0.6 + 0.5 * Math.sin(Math.PI * t)).toFixed(2)}) rotate(${Math.round(360 * t)}deg)` }); }
+  return fr;
+}
+/* 4.17.0: what a hit leaves behind, by the attacker's type — embers, splashes, leaves, sparks, shards… */
+const HIT_FX = {
+  Fire:     { sh:'ember',   c:['#fff3a0','#ff9a2a','#e0401a'], up:true },
+  Water:    { sh:'drop',    c:['#d8f0ff','#6fb8f0','#3a86d8'], fall:true },
+  Grass:    { sh:'leaf',    c:['#9be07a','#5cb84a','#3e8e34'], spin:true },
+  Electric: { sh:'spark',   c:['#fff6a0','#ffe14a'] },
+  Ice:      { sh:'ishard',  c:['#ffffff','#bfe8f8','#8cc8e0'], fall:true },
+  Rock:     { sh:'chunk',   c:['#b8a888','#8e7e62','#6e604a'], fall:true },
+  Ground:   { sh:'dust',    c:['#e0c080','#c4a060'], slow:true },
+  Psychic:  { sh:'glint',   c:['#ffd0f0','#f85888'], spin:true },
+  Ghost:    { sh:'wisp',    c:['#b49af0','#7a5ac8'], up:true, slow:true },
+  Poison:   { sh:'bubble',  c:['#e0a8ff','#b05ad0'], up:true },
+  Fighting: { sh:'star',    c:['#ffe07a','#ff8a4c'] },
+  Normal:   { sh:'star',    c:['#ffffff','#e8e0c8'] },
+  Dragon:   { sh:'ember',   c:['#c8b0ff','#7a50f0','#4a30b0'], up:true },
+  Flying:   { sh:'feather', c:['#ffffff','#dfe8f5'], spin:true, slow:true },
+  Bug:      { sh:'leaf',    c:['#c8d860','#94a830'], spin:true },
+  Steel:    { sh:'spark',   c:['#ffffff','#c8d0dc'] },
+  Dark:     { sh:'wisp',    c:['#6a4a6a','#2a1a2a'], up:true, slow:true },
+};
+function hitBurst(S, F, type){
+  if(motionOff()) return;
+  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = d.sh === 'dust' ? 5 : 8;
+  for(let k = 0; k < n; k++){
+    const e = fxEl(S, 'pt ' + d.sh, c.x, c.y); e.style.setProperty('--c', d.c[k % d.c.length]);
+    const a = (k / n) * Math.PI * 2 + Math.random() * 0.6, r = c.w * (0.35 + Math.random() * 0.45);
+    const x = Math.cos(a) * r, y = Math.sin(a) * r * 0.75, g = d.fall ? c.w * 0.55 : d.up ? -c.w * 0.6 : 0;
+    const rot = d.spin ? (Math.random() - 0.5) * 540 : d.sh === 'spark' ? (Math.random() * 360) : 0;
+    anim(e, [{ transform: `translate(-50%,-50%) rotate(0deg) scale(.4)`, opacity: 1 },
+             { transform: `translate(calc(-50% + ${x * 0.7}px), calc(-50% + ${y * 0.7}px)) rotate(${rot * 0.6}deg) scale(1)`, opacity: 1, offset: .35 },
+             { transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y + g}px)) rotate(${rot}deg) scale(${d.sh === 'dust' ? 1.6 : 0.7})`, opacity: 0 }],
+      { duration: (d.slow ? 820 : 560) + Math.random() * 160, easing: d.fall ? 'cubic-bezier(.3,.4,.7,1)' : 'ease-out', remove: true });
+  }
+}
 /** What an attack looks like on its way over. Resolves when it lands. */
 function projectile(S, A, T, kind, dur){
   const a = artCentre(S, A), b = artCentre(S, T), col = typeColor(A.id);
@@ -1851,10 +1892,8 @@ function projectile(S, A, T, kind, dur){
     const jig = kind === 'water' ? (k % 2 ? 7 : -7) : kind === 'grass' ? (k - 1) * 10 : 0;
     const frames = kind === 'elec'
       ? [0, .2, .4, .6, .8, 1].map((f, j) => ({ transform: `translate(calc(-50% + ${dx * f}px), calc(-50% + ${dy * f + (f > 0 && f < 1 ? (j % 2 ? -12 : 12) : 0)}px))` }))
-      : [{ transform: 'translate(-50%,-50%) scale(.6) rotate(0deg)' },
-         { transform: `translate(calc(-50% + ${dx / 2}px), calc(-50% + ${dy / 2 + jig - 12}px)) scale(1) rotate(180deg)`, offset: .5 },
-         { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.1) rotate(360deg)` }];
-    shots.push(anim(e, frames, { duration: dur, delay: k * dur * 0.14, easing: kind === 'elec' ? 'steps(5, end)' : 'ease-in',
+      : arcFrames(dx, dy, jig);   // 4.17.0: shots lob up and over in an arc
+    shots.push(anim(e, frames, { duration: dur, delay: k * dur * 0.14, easing: kind === 'elec' ? 'steps(5, end)' : 'linear',
       fill: 'both', remove: true }).finished.catch(() => {}));
   }
   return Promise.all(shots).then(() => {
@@ -1954,7 +1993,8 @@ function animateStep(S, i){
     if(hurt) SFX.play(hurt);
     /* 4.13.0: a type-coloured flash where each blow lands, and the field shakes on a super-effective hit or a knockout */
     if(!quick && A){ const col = typeColor(A.id);
-      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
+      const aType = SPECIES[A.id] ? SPECIES[A.id].type : 'Normal';
+      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
     const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
     if(bigHit && !quick) camLean(S, bigHit.F);
@@ -3224,6 +3264,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.17.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Cleaner nameplates, smaller pok\u00e9mon, hit effects for every type and attacks that arc', items:[
+    'Nameplates lose their dark band: only the name and the HP bar carry a shadow now, so nothing boxes in the pok\u00e9mon.',
+    'Pok\u00e9mon stand a little smaller on the field, so the rows breathe.',
+    'Every type has its own hit effect: embers for Fire, splashes for Water, leaves for Grass and Bug, sparks for Electric and Steel, ice shards, rock chunks, dust clouds, psychic glints, ghostly wisps, poison bubbles, stars for Normal and Fighting, purple flames for Dragon and feathers for Flying.',
+    'Shots now lob up and over in an arc onto their target. Electric bolts still zigzag straight across.',
+  ]},
   { v:'4.16.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Pok\u00e9mon stand free in battle, with new nameplates, HP bars, status effects and barriers', items:[
     'No more card squares: on the Stadium look each pok\u00e9mon stands free on its spot, over a soft glow, with faint rings marking empty spots.',
     'A soft nameplate floats over each pok\u00e9mon\u2019s head: its name, level and status, on a dark band that fades into the field.',
