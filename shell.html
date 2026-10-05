@@ -2435,6 +2435,10 @@ body.calm .bstage .stfx i,body.calm .bstage .fbarrier::after{animation:none;opac
 /* 4.17.2: a fainted pokémon keeps only its grey silhouette and its name — no cross, no HP bar */
 .bstage.board .ftr.down::after{display:none}
 .bstage.board.stadium .ftr.down .fhp{display:none}
+
+/* 4.17.3: no team-coloured spots under the pokémon — a soft neutral shadow instead (Miniatures keep their bases) */
+.bstage.board.stadium:is(.look-stadium,.look-paper) .ftr::before,.bstage.board.stadium:is(.look-stadium,.look-paper) .ftr.acting::before{background:radial-gradient(closest-side,rgba(0,0,0,.32),transparent);box-shadow:none;opacity:1}
+.bstage.board.stadium.look-paper .ftr::before{border-radius:50%}
 </style>
 </head>
 <body>

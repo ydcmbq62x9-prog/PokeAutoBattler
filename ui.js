@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.17.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.17.3', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -75,15 +75,19 @@ const SFX = (() => {
         const d = noiseBuf.getChannelData(0);
         for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
       }
-      if(ctx.state === 'suspended' && !held) ctx.resume();
+      if(ctx.state !== 'running' && !held) ctx.resume();   // 4.17.3: iPhones also leave it 'interrupted' after a call or an app switch
       master.gain.value = VOL[PREF.get('volume', 'mid')] || VOL.mid;
     }catch(e){ return null; }
     return ctx;
   }
-  // phones unlock audio only inside a user gesture
-  const unlock = () => { if(on()) ensure(); };
-  document.addEventListener('pointerdown', unlock, true);
-  document.addEventListener('keydown', unlock, true);
+  // phones unlock audio only inside a user gesture. 4.17.3: also on touchend/click (some iPhones only count those),
+  // and the first unlock plays one silent sample, which is what actually opens audio on iOS
+  let primed = false;
+  const unlock = () => { if(!on()) return; const c = ensure(); if(!c || primed) return;
+    try{ const b = c.createBuffer(1, 1, c.sampleRate), src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start(0); primed = true; }catch(e){} };
+  for(const ev of ['pointerdown', 'touchend', 'click', 'keydown']) document.addEventListener(ev, unlock, true);
+  // coming back to the tab: wake the audio up again
+  document.addEventListener('visibilitychange', () => { if(!document.hidden && ctx && ctx.state !== 'running' && !held) try{ ctx.resume(); }catch(e){} });
 
   /* one note: f in Hz, t0 seconds from now, d seconds long; o.to slides the pitch */
   function tone(f, t0, d, o){
@@ -2374,6 +2378,7 @@ let drawnPhase = null;
 function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cls); void el.offsetWidth; } el.classList.add(cls); }
 
 function render(){
+  if(SFX.held && !(battle && battle.paused)) SFX.hold(false);   // 4.17.3: nothing is paused, so nothing should be held
   if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
@@ -3156,6 +3161,7 @@ function finishPlayback(){
 async function afterBattle(){
   if(!battle) return;
   clearTimeout(battle.timer);
+  if(SFX.held) SFX.hold(false);   // 4.17.3: a battle finished (or left) while paused no longer leaves the game silent
   if(battle.exhibition){ battle = null; phase = 'shop'; render(); return; }
   const result = battle.result;
   await Net.reportResult(G, result);
@@ -3267,6 +3273,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.17.3', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'No coloured spots under pok\u00e9mon, and the sound fixed', items:[
+    'The blue and red spots under the pok\u00e9mon in battle are gone; each one just casts a soft shadow.',
+    'Sound fix: pausing a battle and then stepping to the end, or leaving it while paused, used to mute the game until you reloaded. It doesn\u2019t any more.',
+    'Sound fix: on iPhones the sound now comes back after a phone call or switching apps, and it starts more reliably on the first tap.',
+  ]},
   { v:'4.17.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Fainted pok\u00e9mon lose the cross and the HP bar', items:[
     'A fainted pok\u00e9mon now shows only its grey silhouette and its name: the red cross and the empty HP bar are gone.',
   ]},
