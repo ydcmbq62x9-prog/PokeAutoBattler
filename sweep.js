@@ -1,25 +1,19 @@
 const { chromium } = require('playwright');
-(async()=>{
-  const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
-  const p = await b.newPage({viewport:{width:420,height:860}});
-  const errs=[]; p.on('pageerror',e=>errs.push('PAGEERR '+String(e))); 
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(800);
-  const res = await p.evaluate(()=>{
-    const bad=[]; let n=0;
-    for(const gens of [[1],[2],[1,2]]){
-      G=newGame(5,{gens}); rollShop(G,false); phase='shop';
-      for(const id of Object.keys(SPECIES)){
-        if(!inGens(id,gens) && !SPECIES[id].legendary) continue;
-        try{
-          const u=makeUnit(id,0); u.pos=0; G.team=[u]; G.daycare[0]={unit:makeUnit(id,0),bought:false};
-          render(); popupHtml(u); n++;
-          // also the dex-ish helper
-          evoLineHtml(id);
-        }catch(e){ bad.push(gens.join('+')+':'+id+' '+e.message); }
-      }
-    }
-    return {n,bad};
-  });
-  console.log(JSON.stringify(res)); console.log('pageerrors',errs.slice(0,5));
+(async () => {
+  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  const sizes = [[390,844,'ph'],[360,640,'sm'],[844,390,'land'],[768,1024,'tab'],[1250,850,'pc']];
+  for(const [w,h,tag] of sizes){
+    const p = await b.newPage({ viewport:{ width:w, height:h } });
+    const errs=[]; p.on('pageerror', e => errs.push(String(e)));
+    await p.addInitScript(() => { window.PKB_TITLE = false; });
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+    await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1,2] }); G.turn = 14;
+      const ids = ['snorlax','lapras','charizard','mew','pikachu','farfetchd']; G.team = ids.map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); fixSlots(G); render(); startBattle(); });
+    await p.waitForTimeout(3600); await p.screenshot({ path:`sw_${tag}_a.png` });
+    await p.evaluate(() => { const s = [...document.querySelectorAll('button')].find(b => /Skip/.test(b.textContent)); s && s.click(); });
+    await p.waitForTimeout(1800); await p.screenshot({ path:`sw_${tag}_b.png` });
+    console.log(tag, errs.join(' | '));
+    await p.close();
+  }
   await b.close();
 })();

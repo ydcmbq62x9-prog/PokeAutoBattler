@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.17.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.17.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1646,7 +1646,9 @@ function syncStage(S, i){
   for(const [k, F] of S.f){
     const u = live.get(k);
     if(u){ F.down = false; F.el.classList.remove('down'); paintFighter(F, u, false); }
-    else { F.down = true; F.el.classList.add('down'); }
+    else { F.down = true; F.el.classList.add('down');   // 4.17.1: an empty bar after a skip, not the HP it last showed
+      const bar = F.el.querySelector('.fhp i'), tr = F.el.querySelector('.fhp b'), sh = F.el.querySelector('.fhp em');
+      if(bar){ bar.style.width = '0%'; bar.className = 'low'; } if(tr) tr.style.width = '0%'; if(sh) sh.style.width = '0%'; F.el.querySelector('.fbarrier').classList.remove('on'); }
   }
   markActing(S, st);
   S.at = i;
@@ -1715,7 +1717,8 @@ function floatText(S, F, text, cls, lift){
   while(y < 100 && F.floats.some(f => Math.abs(f.y - y) < 18)) y += 20;
   F.floats.push({ y, until: now + hold });
   const W = S.el.clientWidth, pad = /note/.test(cls || '') ? Math.min(64, W / 6) : 18;   // 4.13.0: keep words inside the board's edges
-  const e = fxEl(S, 'num ' + (cls || ''), Math.max(pad, Math.min(W - pad, c.x)), Math.max(14, c.y - c.w * 0.35 - y), esc(text));
+  const top0 = c.y - c.w * 0.35 - y;   // 4.17.1: near the top edge, further notes stack downward instead of piling up
+  const e = fxEl(S, 'num ' + (cls || ''), Math.max(pad, Math.min(W - pad, c.x)), top0 < 14 ? 14 + y : top0, esc(text));
   const still = motionOff();
   anim(e, still ? [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .75 }, { opacity: 0 }]
     : [{ opacity: 0, transform: 'translate(-50%,-30%) scale(.6)' },
@@ -3264,6 +3267,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.17.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Smaller pok\u00e9mon in battle and a clean-up of the battle screen', items:[
+    'Pok\u00e9mon stand a little smaller again on the battle field.',
+    'Fainted pok\u00e9mon are now clear grey silhouettes with a cross, instead of faint shapes that all looked alike.',
+    'After Skip, fainted pok\u00e9mon show an empty HP bar and lose their barrier shell.',
+    'VICTORY and DEFEAT now appear in the middle of the field instead of covering the top row\u2019s names.',
+    'When several notes land near the top edge at once, they stack downward instead of piling on top of each other.',
+    'Phones on their side: names fit better on the battle field, and the START menu goes two columns with bigger rows to tap.',
+  ]},
   { v:'4.17.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Cleaner nameplates, smaller pok\u00e9mon, hit effects for every type and attacks that arc', items:[
     'Nameplates lose their dark band: only the name and the HP bar carry a shadow now, so nothing boxes in the pok\u00e9mon.',
     'Pok\u00e9mon stand a little smaller on the field, so the rows breathe.',

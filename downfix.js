@@ -10,9 +10,9 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     await p.click('[data-act="endturn"]');
     await p.waitForFunction(() => document.querySelector('.ftr.down'), null, { timeout: 30000 }).catch(() => {});
     await p.waitForTimeout(1200);
-    const r = await p.evaluate(() => { const d = [...document.querySelectorAll('.ftr.down')]; return { n: d.length, ops: d.map(e => getComputedStyle(e.querySelector('.fmove')).opacity), x: d.map(e => getComputedStyle(e, '::after').content) }; });
+    const r = await p.evaluate(() => { const d = [...document.querySelectorAll('.ftr.down')]; return { n: d.length, ops: d.map(e => getComputedStyle(e.querySelector('.fart img')).filter), x: d.map(e => getComputedStyle(e, '::after').content) }; });
     check(r.n > 0, `${tag}: someone fainted in the fight (${r.n})`);
-    check(r.ops.every(o => parseFloat(o) <= 0.35) && r.x.every(c => /\u2715|✕/.test(c)), `${tag}: 4.13.0 board: every fainted tile stays, greyed out with a cross (opacity ${r.ops.join(',')})`);
+    check(r.ops.every(o => /grayscale\(1\)/.test(o)) && r.x.every(c => /\u2715|✕/.test(c)), `${tag}: 4.17.1: every fainted pokémon stays as a grey silhouette with a cross (${r.ops[0]})`);
     const alive = await p.evaluate(() => [...document.querySelectorAll('.ftr:not(.down)')].map(e => parseFloat(getComputedStyle(e.querySelector('.fshadow')).opacity)));
     check(alive.length === 0 || alive.every(o => o > 0.9), `${tag}: fighters still standing keep theirs`);
     check(!errs.length, `${tag}: no errors ${errs.join(';')}`);
