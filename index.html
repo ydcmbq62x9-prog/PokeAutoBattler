@@ -2017,6 +2017,45 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .hrow .hinfo{display:flex;flex-direction:column;min-width:0;font-size:13px}
 .hrow .hinfo .dim{font-size:11.5px}
 .evof{margin-top:2px;font-size:11.5px}
+
+/* 4.9.1 — phone and desktop layout fixes */
+.ghostb,.ghostq{visibility:hidden;pointer-events:none}
+.speechflow{display:none}
+.dock .fopp,.legdock{display:none}
+.dock .btn.fight small{font-size:.62em;opacity:.85;letter-spacing:0;text-transform:none;font-weight:600}
+@media (max-width:700px){
+  .dock .speech{display:none}
+  .speechflow{display:block}
+  .dock .fopp{display:inline}
+  .dock{display:flex;flex-direction:column;align-items:stretch}
+  .dock .btn.fight,.dock .btn.undo{grid-column:auto;grid-row:auto;width:100%;min-width:0}
+  .dock .btn.undo{width:auto;align-self:center;margin-bottom:0}
+  .dock .btn.fight{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dock{gap:5px;padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  .legdock{display:flex;align-items:center;gap:6px;padding:5px 8px;border:2px solid var(--gold);border-radius:10px;background:var(--panel);box-shadow:var(--gbbox)}
+  .legdock span{flex:1;min-width:0;font-size:13px;line-height:1.2}
+  .legdock .btn{min-height:34px;padding:4px 10px;font-size:13px;flex:none;width:auto}
+}
+@media (max-width:700px) and (orientation:portrait){
+  #app:has(.arena){min-height:100vh;min-height:100dvh}
+  #app:has(.arena) .panel.arena{flex:1 1 auto;display:flex;flex-direction:column}
+  #app:has(.arena) .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  #app:has(.arena) #stageslot{flex:1 1 auto;display:flex;flex-direction:column}
+  #app:has(.arena) .bstage{aspect-ratio:auto;flex:1 1 auto;min-height:calc(100vw * .8);max-height:calc(100vw * 1.3)}
+}
+
+/* 4.10.0 tutorial */
+.modal.tutorial .box{max-width:min(420px,calc(100vw - 28px))}
+.tutpg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+.tutpg h3{margin:2px 0 0}
+.tutpg p{margin:0;font-size:14.5px;line-height:1.45;color:var(--muted)}
+.tutart{display:flex;gap:6px;justify-content:center;align-items:flex-end;min-height:84px}
+.tutdots{display:flex;gap:6px;margin:4px 0}
+.tutdots i{width:8px;height:8px;border-radius:50%;background:var(--line2)}
+.tutdots i.on{background:var(--gold);width:20px;border-radius:6px}
+.tutpg .btnrow{width:100%}
+.tutskip{font-size:12.5px;min-height:34px}
+.btn.replay{display:block;margin:0 0 8px auto;font-size:12.5px;padding:5px 10px;min-height:34px}
 </style>
 </head>
 <body>
@@ -2220,10 +2259,10 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.138, Bug:0.888, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.154, Bug:0.878, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
-            '2':   { Normal:1.038, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.943, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.991, Psychic:1.03, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
-            '1+2': { Normal:1.101, Fire:0.981, Water:1, Electric:0.962, Grass:0.96, Ice:1.225, Fighting:0.998, Ground:1.075, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.865, Dark:0.88 } },
+            '2':   { Normal:1.052, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.957, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.983, Psychic:1.018, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '1+2': { Normal:1.121, Fire:0.981, Water:1, Electric:0.978, Grass:0.984, Ice:1.225, Fighting:0.998, Ground:1.067, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.857, Dark:0.88 } },
           byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
@@ -3038,9 +3077,9 @@ const HERA = [38, 52, 52];
 const LARV = { b:[20, 22, 30], m:[36, 28, 24], e:[60, 62, 46] };
 const MAGM = [30, 34, 62];
 const HORS = { b:[14, 20, 46], m:[36, 42, 60], e:[42, 44, 58] };
-const CROB = [56, 46, 78];
+const CROB = [53, 43, 74];
 const BLIS = [76, 14, 44];
-const PORY2 = [58, 50, 56];
+const PORY2 = [50, 42, 48];
 const STLX = [54, 36, 30];
 const SCIZ = [48, 60, 54];
 const POLT = [52, 42, 46];
@@ -3053,8 +3092,9 @@ const OMAN = { b:[18, 24, 20], e:[56, 66, 36] };
 const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
-const SLOWK = [68, 36, 30];
-const MIME = [34, 34, 50];
+const CELE = [68, 46, 86];   // 4.10.0: Celebi, a Support legendary (hp, atk, spd)
+const SLOWK = [66, 42, 46];
+const MIME = [38, 42, 58];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
 const CUBO = { b:[20, 20, 26], e:[48, 50, 34] };
 const SUNK = { b:[20, 12, 26], e:[48, 52, 34] };
@@ -3062,8 +3102,8 @@ const GLIG = [40, 44, 54];
 const SLUG = { b:[24, 18, 14], e:[52, 44, 22] };
 const WOBB = [70, 10, 34];
 const QWIL = [46, 54, 50];
-const CHIN = { b:[26, 18, 24], e:[62, 40, 38] };
-const TOGE = { b:[20, 10, 28], e:[48, 28, 40] };
+const CHIN = { b:[26, 19, 28], e:[60, 42, 50] };
+const TOGE = { b:[20, 11, 30], e:[50, 32, 52] };
 const SPECIES = {
 
   /* ============ TIER 1 — starters and early routes ============ */
@@ -3235,7 +3275,7 @@ const SPECIES = {
 
   clefairy:   { name:'Clefairy',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:24, atk:18, spd:35,
                 evo:{into:'clefable', by:'stone', stone:'moonstone'}, move:M.rally('Metronome', 0.8, 0.05) },
-  clefable:   { name:'Clefable',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:40, atk:33, spd:50, token:true,
+  clefable:   { name:'Clefable',   type:'Normal', gen1:'Normal', tier:3, role:'support', hp:42, atk:36, spd:52, token:true,
                 move:M.rally('Metronome', 1.0, 0.07) },
 
   shellder:   { name:'Shellder',   type:'Water', gen1:'Water', tier:3, role:'tank', hp:26, atk:18, spd:33,
@@ -3323,7 +3363,7 @@ const SPECIES = {
                 evo:{into:'weezing', by:'level'},      move:M.afflict('Smog', 0.7, 'psn', 0.5, 'front') },
   weezing:    { name:'Weezing',    type:'Poison', gen1:'Poison', tier:3, role:'tank', hp:KOFF.e[0], atk:KOFF.e[1], spd:KOFF.e[2], token:true,
                 move:M.afflict('Sludge', 1.0, 'psn', 0.6, 'front') },
-  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:50, atk:47, spd:58,
+  jynx:       { name:'Jynx',       type:'Ice', gen1:'Ice/Psychic', tier:4, role:'support', hp:52, atk:50, spd:58,
                 move:M.hit('Ice Punch', 1.9) },
 
   /* ============ 3.8.0 — nineteen more Gen 1 pokémon (Sean) ============
@@ -3511,7 +3551,7 @@ const SPECIES = {
   blissey:    { name:'Blissey',    type:'Normal', gen1:'Normal', gen:2, tier:5, role:'tank', hp:BLIS[0], atk:BLIS[1], spd:BLIS[2], token:true,
                 move:M.mend('Softboiled', 0.7, 0.3) },
   porygon2:   { name:'Porygon2',   type:'Normal', gen1:'Normal', gen:2, tier:5, role:'support', hp:PORY2[0], atk:PORY2[1], spd:PORY2[2], token:true,
-                move:M.rally('Download', 1.6, 0.09) },
+                move:M.rally('Download', 1.5, 0.08) },
   steelix:    { name:'Steelix',    type:'Steel', gen1:'Steel/Ground', gen:2, tier:3, role:'tank', hp:STLX[0], atk:STLX[1], spd:STLX[2], token:true,
                 move:M.wall('Iron Tail', 1.3, 2.1) },
   scizor:     { name:'Scizor',     type:'Bug', gen1:'Bug/Steel', gen:2, tier:4, role:'bruiser', hp:SCIZ[0], atk:SCIZ[1], spd:SCIZ[2], token:true,
@@ -3536,6 +3576,9 @@ const SPECIES = {
                 move:M.wall('Aeroblast', 1.3, 2.0) },
   'ho-oh':    { name:'Ho-Oh',      type:'Fire', gen1:'Fire/Flying', gen:2, role:'bruiser', hp:82, atk:76, spd:90, legendary:true,
                 move:M.afflict('Sacred Fire', 1.6, 'brn', 0.5, 'front') },
+  /* 4.10.0: the first healer legendary */
+  celebi:     { name:'Celebi',     type:'Psychic', gen1:'Psychic/Grass', gen:2, role:'support', hp:CELE[0], atk:CELE[1], spd:CELE[2], legendary:true,
+                move:M.mend('Life Dew', 1.0, 0.10) },
 
   /* ============ 4.5.0 — POOL FILL-INS ============ */
   omanyte:    { name:'Omanyte',    type:'Rock', gen1:'Rock/Water', tier:3, role:'cannon', hp:OMAN.b[0], atk:OMAN.b[1], spd:OMAN.b[2],
@@ -3553,9 +3596,9 @@ const SPECIES = {
   slowbro:    { name:'Slowbro',    type:'Water', gen1:'Water/Psychic', tier:3, role:'tank', hp:SLOW.e[0], atk:SLOW.e[1], spd:SLOW.e[2], token:true,
                 move:M.wall('Headbutt', 1.1, 1.9) },
   slowking:   { name:'Slowking',   type:'Water', gen1:'Water/Psychic', gen:2, tier:3, role:'support', hp:SLOWK[0], atk:SLOWK[1], spd:SLOWK[2], token:true,
-                move:M.mend('Heal Pulse', 1.2, 0.10) },
+                move:M.mend('Heal Pulse', 1.2, 0.12) },
   'mr-mime':  { name:'Mr. Mime',   type:'Psychic', gen1:'Psychic', tier:4, role:'support', hp:MIME[0], atk:MIME[1], spd:MIME[2],
-                move:M.mend('Meditate', 1.0, 0.08) },
+                move:M.mend('Meditate', 1.1, 0.12) },
   ponyta:     { name:'Ponyta',     type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.b[0], atk:PONY.b[1], spd:PONY.b[2],
                 evo:{into:'rapidash', by:'level'},    move:M.hit('Flame Charge', 1.3) },
   rapidash:   { name:'Rapidash',   type:'Fire', gen1:'Fire', tier:2, role:'bruiser', hp:PONY.e[0], atk:PONY.e[1], spd:PONY.e[2], token:true,
@@ -3581,11 +3624,11 @@ const SPECIES = {
   chinchou:   { name:'Chinchou',   type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.b[0], atk:CHIN.b[1], spd:CHIN.b[2],
                 evo:{into:'lanturn', by:'level'},     move:M.mend('Aqua Ring', 0.9, 0.07) },
   lanturn:    { name:'Lanturn',    type:'Water', gen1:'Water/Electric', gen:2, tier:2, role:'support', hp:CHIN.e[0], atk:CHIN.e[1], spd:CHIN.e[2], token:true,
-                move:M.mend('Aqua Ring', 1.2, 0.10) },
+                move:M.mend('Aqua Ring', 1.2, 0.12) },
   togepi:     { name:'Togepi',     type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.b[0], atk:TOGE.b[1], spd:TOGE.b[2],
                 evo:{into:'togetic', by:'level'},     move:M.mend('Sweet Kiss', 0.8, 0.06) },
   togetic:    { name:'Togetic',    type:'Flying', gen1:'Normal/Flying', gen:2, tier:2, role:'support', hp:TOGE.e[0], atk:TOGE.e[1], spd:TOGE.e[2], token:true,
-                move:M.mend('Sweet Kiss', 1.1, 0.09) },
+                move:M.mend('Sweet Kiss', 1.1, 0.12) },
 };
 
 /* ===================================================================
@@ -3715,7 +3758,7 @@ const MOVE2 = {
   starmie:    on('every', M.haze('Haze', 1.0), { n:3 }),   // 3.4.0: wipes buffs
   onix:       on('open',  M.shield('Iron Defense', 0.55, 'self'), { free:true }),   // 3.3.0: a rock wall from the first turn
   clefairy:   on('allyLow', M.shield('Light Screen', 0.1, 'team')),
-  clefable:   on('allyLow', M.shield('Light Screen', 0.14, 'team')),
+  clefable:   on('allyLow', M.shield('Light Screen', 0.16, 'team')),
   shellder:   on('every', M.afflict('Supersonic', 0, 'cnf', 0.8, 'front'), { n:3 }),
   cloyster:   on('open',  M.shield('Iron Defense', 0.28, 'self'), { free:true }),   // 3.3.0: shuts its shell first
   // ---- tier 4
@@ -3858,6 +3901,7 @@ const MOVE2 = {
   suicune:    on('every', M.haze('Haze', 1.0), { n:3 }),
   lugia:      on('low',   M.recover('Recover', 0.5)),
   'ho-oh':    on('low',   M.recover('Recover', 0.5)),
+  celebi:     on('allyLow', M.cleanse('Aromatherapy', 0.08)),
   omanyte:    on('every', M.slow('Bubble', 0.5, 6), { n:3 }),
   omastar:    on('every', M.slow('Bubble', 0.65, 8), { n:3 }),
   kabuto:     on('open',  M.grow('Swords Dance', 3), { free:true }),
@@ -3881,7 +3925,7 @@ const MOVE2 = {
   chinchou:   on('every', M.slow('Electroweb', 0.5, 6), { n:3 }),
   lanturn:    on('every', M.slow('Electroweb', 0.65, 8), { n:3 }),
   togepi:     on('allyLow', M.shield('Wish', 0.08, 'team')),
-  togetic:    on('allyLow', M.shield('Wish', 0.12, 'team')),
+  togetic:    on('allyLow', M.shield('Wish', 0.14, 'team')),
 };
 Object.keys(MOVE2).forEach(k => { if(SPECIES[k]) SPECIES[k].move2 = MOVE2[k]; });
 /* 4.0.0: Gen 2 evolutions of Gen 1 pokémon. They only exist in runs with Gen 2 on
@@ -6266,6 +6310,7 @@ const SPRITES = {
   "candy": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAABr0lEQVR42q2VoXbiQBSGP3pi6ho5bkaCA5dIJDjqGlcegbpGsq59g0UGteCoW2TismoZmbjIxFVmBZ0cQiBw2F6TyczJl//e+88M/EdIKUspZcl3hZSy/Pm7LJ9nfxvgu1uBg2GA0wehRGP97lalI88FQHVt7oVfK4V1rbLD98EwqMaJzpnNp8CU8GPHdjUurWtg3kvcWHv3F0y8CTrWqK5LovOqFFYb0HuJUV27Nh9+7ACYeBPWwZrZfEqicwCyJAOg0wb1FwlO/0vZjx1CCVTXriAmdKwBiLceaZp2rDaVVaoHQNMcA14Haz6zee37i42K/uyfT092NT6Mz2xOmqadqy2V6Jx3f4FQogY0Kk3aV/vUFP3Uj9rWq0Yd+3D4uKHIC7TWOK7T2DVZklHkRdWYY6glpSzvhf9l4L1lhBK4ox7a1xR50VByaq6m1EBNGLjTh+UyJ3gb1HaQsQ5wUmUt/eHjZt/tMOLXZspyed4y52A16CE4CiMc19mrfu0xHqiLkNbum1pFYYQ76t181nZOnZMAWuuz5r4UVqNWW680x9uD/cB2Bd96Xdx6//wDf7bV75+Yj58AAAAASUVORK5CYII=",
   "carbos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABW0lEQVR42rWVoXPCMBTGv3IzuMrGNbIyN9XIzkVikeAq1/9gk0NGIrHIOJCtgsnJ4l7d4oZjYseOo01K2e2Zpvna37335V1eAE/EcXzy6YfDIXBpDz6oXC6h0rRTN1UFzGYnF3zkgvI8d0IBQKUpeJ47qxr5SjVVdZfmteJWgCtGrkOpte79udYagz0uJAPt9wDgfBaSOT0OXNBEWmRCQeuyN/O3klqZew9v+26QSItE2pbWtdcLjvJnAEAmFDKhWqDL9fnbm7qCMQYuNiibGpLWncBP8QKhGIhoeLsJLkARRyK6s6qb+v4+DschAOBx9fO+mwL2y97Xx9dxhl6v/wTuAj2tw15wrxW7aXvvFis6wUQEHnFP6SE2Ezsc3OgF6lcGwYU3YyJCoxfDrDiaOcZCoWST3+wv2+xo5mjKcLjHH2UIwCADsDVm8LUZ+GZdIVnv5eOafcF/DdNvKSiVEMnYEqoAAAAASUVORK5CYII=",
   "caterpie": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAB90lEQVR42t2XPUhbURSAv1ciJGYwRVqMLYLYTloE6xIXMUILrQ7ipMHJgqO4dOkmFaVkcbAi6KhLyBRih5KAUMxSFZFa0KHgX6iiEURfwJTrcJ7IfT7USot5XnjwOOfc8zjfvefnwfVLWc9/WQ+442VcEznJ0AsA3mZW7HvULXwWHwHPLfYogOybekdlcHZZ/Q2J4idwWuoFIPuq3nHHaEUZABsrhfuTBQpgcrENgJn+EwCmffsARArlmnHFUV7kI37JltavuPsOeD1y5r7AQxGUnGiRd0dLNftIcN96OxZSsQaRd61KNhTyhmvugAIYGGvRDGpDfseNkeCmkAoua3JTvRZ5yRyuIHDpDtgj3vghZ1tVK3LvodwJqp0d/lxS7qoDlwjMx3cAaOqs1CL/FvsNwJO6xwB8zD4FYDWlR5xI7V3ZQ+z1oXgrYe+Hl5rFr3mp+aFun6OjzIwJQDqd1nyHw2EFMB19Lt2yYULTF2U3NACmhhaUFYFjpPZ1TuYCwD2YiAzrTGUCWuzTlEm2tZ7x/cuWpQkA0Nz+TAH8MXclW3I17puKnWdBG4lPmTUAxvszALz/3AHAXGJdSDQ+AmBwWPTkDw3XEtBInGeH6ZUC1xmWeSEXMG9UH1xNQP9zivfovSR3AMDQu+SNvuVqAvyLf8Q7J3AG5RiQ2FYdRS8AAAAASUVORK5CYII=",
+  "celebi": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAACUElEQVR42t2YP2gTcRTHPycRGoeSLoUQ/3A6iH8QdRGjQhtd7DUoCaK0ioK0FlKnxsnEwbbQlmbSQYoKWluQqlAw2iXnYM1iS0W04NSxBQerCHEQz+H1N/xC0qanQ+/e9u7e+3G/D+/3fe93BmubU+YbNcYbuLBNbDAz1tppW/4HAONWfbUcjeDdUisA3cGXuCG14QgFqpEZLsoOM9HKZEIBiWuZFIJLubPaIjfzxwDot96tq6Y8QUiz/bHjAMzY01qtKDJzQ5cBSE1t+S8f5AlCBkA62uoAxBNNACyW3gDQbvUCkIvNip/7DkCSrJwyOwPADnMrAD3FfRIf/VxTLXlPhxSZclOkxvLZKunLAHxZ/gRAUziLbwitSqZWm194BcBeswWAcLDZm4QC/7qAqiVlqqYUGUXKV91eunyqTfRjuKNiYiz5GIBi/qH0tpXn1nkLgOdPrwMQ3HxaXvz2ay+rVjPFQgGAB2OTosjtZ7S4F8/eupo8vafUhfkbcmr2HBYS6VEAfjZclNIwZUKMvL8CwIXOXTIHdUuvS90f1RZN7oz4h5BGaurDgPZw5M5HzU/1yM4z12YASD96si4yniakkUqcOwHA1cGDukKPz2r+kl2n+bZt+1eHHICS81r0ZUL0pa9LpoFkh5wq85AAWJhzKs5J4aDtPx1aVWmPxHcDcCDeCEBj5I8WPH3vGwC3Rk6KjoUSZcQqz0eeJqRZHSG54S6eAmDi0lcAth8VUuY2ufHe7iysZPzC9zVUU22pO3041uDqL4gvCbmaezxD6C8d8qNKg0aWPwAAAABJRU5ErkJggg==",
   "chansey": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAABsElEQVR42t2YoZKDMBCGf24qeAQk8iSyEhmJPIlEIiuRSGQl8iQSiaxEVlbyCDhO0GVISmiguRmSNQzJJst8/NldcKDHhjfzzt6Nv3Bwc3SQ6pt6dZEbst1xjSfIEQvDEABQZ5ePgs6IOtYR5Ig9ioKb9IJvrcFVSB6e4GlO7nFJuMm2bQEALP4ZB86jBnFrPgpal7/c6XdDNshImqlB2WklzbzkvTdkiRi9CZblAIAyikaH7g4A8PPry3MZmweHJVJde188zSJZVWLxbbyWZ36/OUkzNUgkZMS6uuLzI4u4+63EaLxpGvM1uKg9UVOqNpGUECMj0n6amkfwpJK3RCJifiT/ye+5jvxo3eT/HCeN29fNiPlsInMd8xNjY95LfX+XNmXkjNTgeiXp++XamiSr5GQa3kLODoLUH3pZsUpStCAINj3EjKBlGhQ7bNGm2hpFu4JTx+55Pt9e5pm53YwSSd3kZsQsqcUyrYndh6rFVSX2e8pv0liCAwBUcayat7D0D4eManajrn3zCToAEJXlsCd/EjEdZvwp3vVvOfBc6XeudQSdf9p30BXn8AT/AMY6vHGebdOAAAAAAElFTkSuQmCC",
   "char": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABRUlEQVR42r2Vsa3EIBBE14gifBmklEBIGxe6LkK3QegSLoXs3AWX3KA1BvOtL91GFvI+D8MOJqVUpm/x5//WBGBKaQI4pTSNGmsRdY/kLy7Phfzq/wRcnsth3a8+c7gA0GhDMcYh1GhDRpsioNdTrHDWlcWwhdPWAEW94ougHHDeJ+BP2MJQKYcCEGMkrfWpR9QLWmty1hUvr6Colh2n7TrrigK/egIUWwcUH5wfc9M+WY9MoJBpo5OXvRHc33v/8O4ULBrZczsIzrqDSg5F0C7BdRDqA8IUtaBKqSx70DpZ9TjyreMgU0rlA7IHxXwiYaP7Y37MB9uaijl0BOR3DAQFCln0Gkb3Rm1ZgX7nWdyZzZ5lrTtG9vza3zs56yhQyPVBYexgGVd6OceINpQjfXyOeZRbhzvdSRivUdRvJ6/3K/pZfQD80xJV10EvdQAAAABJRU5ErkJggg==",
   "charizard": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABYCAYAAABxlTA0AAAE+klEQVR42u2bIXTiQBCGh3snIiuRlZFIJDKyEhmJrEQikZXISGQlMhKJRFYiK+NyIvk5dm5nd7NAE7j53+P1QYGE5dt//5kNRCqVSqVSqVRMdXtz6peO03010iGIIpeqfEpEREmxd46lEnxn6QBfqSqfgmarJ+sA31m/dQjivFctQlPEc5CrKUJTxINpNm5ugRWeDvADeHDd8b3qB1kH7N67Tpq/y8rqxVXx1tzPP5Xgoefgmohov1gQEdF0s/GRXBMRbWaZ8eCi3D0G0SB399I+cPqnoiMiouxbF7lnreRGl8SCZAfRo0APvy/558TwHfU8JXiAKcLwXmi62VAIeVhls6L5pueUWJ+8KHf8/YzXQ4f9OPT4cSniNLP/F17MPDcZl8Z5KMFDJ7gruZCP4K4knwlq8+ePkcyPrwQPN0VYvddR0TnJLcvmm56zFBE665L800gjeZ7wSqq+w+wNJldTxAA92CB4Mj05PbDDam+t8AK8OOi8cFwI/7/w6tAxMWck0kObJiTvV4IHQLBz1Q72KP/qHkuyQfDyeDTjav5iJdo3A0NJ9j1fCe4xRdyEXMixugetAyAXhKNnIaWaarJsU8uaEe0m2XKe1vPj3i5JCe7Bg29Kru+bR6qYzWbWys7nuRC8F+RCr6lJ6GlbGN4c4cmdejFK8IAquU5kSkRwSST6ehQ+cqGv49ggeTzPW29uSF6n4yCS+azHDo6jslWC+87BQV5cFM3uar5rvWo7DyI8lEyQDC8O9V5xxnxkzpQjkezzYvXgoRPMv1mQC7KqyrxO4PD+7iRznabOE8Nx0H2D8DofuRKpoRUa/7yxaUIJ7iFFBHkvyJ1viiByIfSBp+1faRUGQai8oKwwew3JYW2QfEHuKGY2o4Lj58UrPOR2reQG5MFB5IKsw/GrSQ/tToIvJTj27px5MjRP33AvzunF0pogfV4l+AcIvqr3wMnl/Vi+6sODIXTHtlQ5iYgg+VqirSSHpiAluO9exLlCyxMnuZzYVdU8fky+ra/bdN9FtgpeyHcs+JVDZVnWkSQbqQLvu6a0E8lK8E+nCL6aw/ssu8J0mQc5uZP01dpT4DkarwcJSCeQNIM4yRAn+gYpo3b1LCSS1YN78GCjz/nXNFnXqe05JElikBsqvkMBjzy0hOeF2Vso8rWTaE6s5M2YKR082TqjUUmeK8wjaS9iaCnC+c0mSVJfkryf5UHe67gyx0qu9DiI9nmzJMtvSjqlHXgtSNYUMaAU0WlV5av/5OPD8GYQkK6WxLpP1l5E9VV2OgmQjArQ58kSaaF7gJiZSDm47+u1KMEDJNiaDy3v6buCx3pN2a5YhVVy+cqan7k381Qh9U4kgiVycd+3tijBffUibkD/qEu+jJXUl5a6b7wy5d0+TjInd/w2acjNwn7VpAQP2IOv8m6JYJBULJvrK8Zs9T+x7l2+3jYeu2u8MMsy+32hR8F7Cjgu12u2iBo7Jfh/I1gi2aczyS2pUk+Ck8uPx3dcrh0rJfgJCY4i+VzBCURzgr3pQ7hO+dZjogQ/McEGyehd8BpfIlrySun3cthjDO0hKMH/QSV3Fw/me3LQRc3v7G1IHjtJ+/mQSvCz5mDsiPDKi1+dGeGRUb0OTRFKcBzJdzzHTiQrwUrwYGR4fJG9sTShOVgJfiSSsZst9YuxC64EK8HDJrmvMVCCVSqVSqVSxekPDEvHsbHTqkUAAAAASUVORK5CYII=",
@@ -6520,7 +6565,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.9.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.11.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7575,7 +7620,7 @@ function livesHtml(){
    stepping out to challenge you, with the Battle button under it. The dots are
    the road to the next badge: its trainer battles, then the gym (or the five
    fights of the Elite Four). A rival ambush still looks like a trainer here. */
-function dockHtml(closed){
+function dockHtml(closed, flowOnly){
   const n = nextUp(G), st = stageOf(G), plan = runPlan(G), at = G.stage || 0;
   const b = isBoss(st) ? st.boss : null;
   let road = '';
@@ -7603,14 +7648,20 @@ function dockHtml(closed){
   const nobody = closed && !fightersOf(G).length;
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
     : b ? `Challenge ${esc(b.name)}` : 'Battle';
-  return `<div class="dock">
-    ${undoHtml(closed)}
-    <div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
+  const speech = `<div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
       <span class="who">${b ? bossArt(b, 'dockart') : '<i class="pball"></i>'}</span>
       <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
       <span class="nstage">${n.stage}/${n.total}</span>
-    </div>
-    <button class="btn fight big-cta ${b ? 'boss' : ''}" data-act="endturn" ${nobody ? 'disabled' : ''}>${label}</button>
+    </div>`;
+  if(flowOnly) return speech;
+  /* 4.9.1: on a phone the dock is only the Battle button (who is next sits in the page above the Daycare), so it stops covering the shop */
+  const opp = b ? b.name : trainerName(G.turn);
+  return `<div class="dock">
+    ${undoHtml(closed)}
+    ${!closed && encounterOpen(G) ? (() => { const e = G.encounter; return `<div class="legdock"><span>\u2726 <b>${esc(SPECIES[e.id].name)}</b> appeared!</span>
+      <button class="btn primary" data-act="legend" ${G.credits >= e.cost ? '' : 'disabled'}>Recruit ${e.cost}\u20bd</button><button class="btn ghost" data-act="legendpass">Let it go</button></div>`; })() : ''}
+    ${speech}
+    <button class="btn fight big-cta ${b ? 'boss' : ''}" data-act="endturn" ${nobody ? 'disabled' : ''}>${label}${nobody ? '' : `<small class="fopp"> · ${esc(opp)} ${n.stage}/${n.total}</small>`}</button>
   </div>`;
 }
 
@@ -7666,7 +7717,7 @@ function renderShop(){
      own clock, so it cannot disagree with the fight it is predicting. */
   const partyQueue = (() => {
     const team = fightersOf(G);
-    if(team.length < 2) return '';
+    if(team.length < 2) return '<div class="queue shopq ghostq" aria-hidden="true"><span class="qlbl">Order</span><span class="qmon p"></span></div>';   // 4.9.1: keeps the panel the same height with 0 or 1 pok\u00e9mon
     const cells = previewOrder(team, 8).map((u, n) =>
       `<span class="qmon p ${n === 0 ? 'now' : ''}" data-pop="team:${u.pos}"
         title="${esc(u.nm)} \u00b7 ${effSpd(u)} speed">
@@ -7831,12 +7882,13 @@ function renderShop(){
   ${TIPS.html(G)}
   <div class="panel party">
     <h2>Your Party <span class="sub">the front rank takes the hits · speed decides how often you act</span>
-      ${G.team.length > 1 ? '<button class="btn arrange" data-act="arrange" title="Tanks to the front, Cannons to the back">Line up by role</button>' : ''}
-      ${G.team.length ? '<button class="btn arrange" data-act="presets" title="Save a formation and snap back to it">Formations</button>' : ''}</h2>
+      <button class="btn arrange${G.team.length > 1 ? '' : ' ghostb'}" data-act="arrange" ${G.team.length > 1 ? '' : 'tabindex="-1" aria-hidden="true"'} title="Tanks to the front, Cannons to the back">Line up by role</button>
+      <button class="btn arrange${G.team.length ? '' : ' ghostb'}" data-act="presets" ${G.team.length ? '' : 'tabindex="-1" aria-hidden="true"'} title="Save a formation and snap back to it">Formations</button></h2>
     ${partyGrid}
     ${partyQueue}
   </div>
 
+  <div class="speechflow">${dockHtml(closed, true)}</div>
   ${closed ? nextUpHtml() : ''}
   <div id="inspect">${inspectHtml()}</div>
 
@@ -8729,8 +8781,18 @@ function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
+  /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
+     tap) shoved the whole page down. Remember the first thing on screen and put it back where it was. */
+  const anchor = phase === 'shop' && drawnPhase === 'shop' && window.scrollY > 0 ? (() => {
+    for(const e of app.querySelectorAll('[data-act][data-i], .panel > h2')){
+      const r = e.getBoundingClientRect(); if(r.top >= 0 && r.top < innerHeight - 100 && r.height > 0 && !e.closest('.dock,.speech'))
+        return { sel: e.matches('h2') ? null : `[data-act="${e.dataset.act}"][data-i="${e.dataset.i}"]`, h: e.matches('h2') ? e.textContent.trim().slice(0, 12) : null, top: r.top }; }
+    return null; })() : null;
   if(phase === 'shop' && drawnPhase === 'shop' && app.firstChild) morphInto(app, html);   // v49
   else app.innerHTML = html;
+  if(anchor){
+    const e = anchor.sel ? app.querySelector(anchor.sel) : [...app.querySelectorAll('.panel > h2')].find(x => x.textContent.trim().slice(0, 12) === anchor.h);
+    if(e){ const d = e.getBoundingClientRect().top - anchor.top; if(Math.abs(d) > 1) window.scrollBy(0, d); } }
   drawnPhase = phase;
   const lg = $('#blog'); if(lg) lg.scrollTop = lg.scrollHeight;
   if(phase === 'battle') mountStage();       // v36: the kept arena goes back in
@@ -9600,6 +9662,24 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.11.0', date:'Oct 6, 2026', title:'Balance patch', sub:'Supports pass: healers are faster and heal more, Porygon2 and Crobat are cut down', items:[
+    'Healers that were far behind get more Speed and bigger heals: Lanturn, Togetic, Slowking and Mr. Mime now heal 12% of the most-hurt pok\u00e9mon\u2019s HP (up from 9\u201310% or 8%), and each one is quicker, so they actually get to heal. Clefable and Jynx get small boosts too, and Togetic\u2019s Wish and Clefable\u2019s Light Screen are a bit bigger.',
+    'Porygon2 was far above everything else at its tier, so its stats and Download are lower. Crobat is trimmed a little.',
+    'Chinchou and Togepi are slightly faster so they are not left behind by their evolutions.',
+    'Mono runs were re-measured after the Supports got stronger, and a few types\u2019 opponents are nudged so each still clears about 75% of the time in bot runs.',
+  ]},
+  { v:'4.10.0', date:'Oct 5, 2026', title:'Minor gameplay changes', sub:'A first-run tutorial and Celebi, the first Support legendary', items:[
+    'A short tutorial of five cards plays the first time you open the game. Skip it any time, and replay it from START \u2192 How to play.',
+    'Celebi joins the legendaries in Gen 2 runs: a Psychic Support that heals your most-hurt pok\u00e9mon every time it acts and cures and heals the team once when a teammate drops below half HP. It is also a Grass pok\u00e9mon for Mono Grass runs. Recruit it for 12\u20bd after the 5th gym like the others.',
+  ]},
+  { v:'4.9.1', date:'Oct 5, 2026', title:'Visual bug fixes', sub:'Phone fixes: slimmer Battle bar, steadier screen, fuller battle scene, Mute and a visible legendary', items:[
+    'On phones the Battle bar at the bottom is now just the button, with the next opponent\u2019s name on it. Their card with the road to the badge sits in the page below your party instead of covering the shop.',
+    'Tapping things in the shop no longer shoves the page around on iPhone. Whatever you were looking at stays where it was when the message box opens.',
+    'The battle scene now grows to fill a tall phone screen instead of leaving an empty strip at the bottom.',
+    'When a legendary appears, a small Recruit / Let it go bar shows above the Battle button on phones so you can\u2019t miss it.',
+    'Mute is now part of the Volume setting (Mute, Low, Mid, High) and the separate Sound row is gone.',
+    'On desktop the Your Party panel keeps the same height with no pok\u00e9mon, one pok\u00e9mon or six, so the page below stops jumping.',
+  ]},
   { v:'4.9.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Run history, Pokédex type tags and a bigger Badges tap area', items:[
     'Run history: your last 30 runs are on the Trainer Card, each with its team, how far it got, the rules and any secret boss you beat. It travels in a transfer code.',
     'The Pokédex now shows a pok\u00e9mon\u2019s second type (Geodude also shows Ground), and the stone and item list says who evolves with each one.',
@@ -10146,11 +10226,10 @@ function openOptions(){
     <div class="optrow"><span>Text</span>${seg('text', PREF.get('text', 'type'), [['type', 'Type out'], ['instant', 'Instant']])}</div>
     <div class="optrow"><span>Motion</span>${seg('motion', PREF.get('motion', 'device'), [['device', 'Normal'], ['reduced', 'Reduced']])}</div>
     <div class="optrow"><span>Title screen</span>${seg('title', PREF.get('title', 'on'), [['on', 'Show'], ['off', 'Skip']])}</div>
-    <div class="optrow"><span>Sound</span>${seg('sound', PREF.get('sound', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Haptics</span>${seg('haptics', PREF.get('haptics', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Trainer battles</span>${seg('autoskip', PREF.get('autoskip', 'off'), [['off', 'Watch'], ['on', 'Skip to result']])}</div>
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
-    <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('volume', 'mid'), [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
+    <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Auto'], ['full', 'Full'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
@@ -10165,11 +10244,12 @@ function openOptions(){
     const k = b.dataset.o, v = b.dataset.v;
     if(k === 'speed') setSpeed(+v);
     else if(k === 'tips' && v === 'reset'){ TIPS.reset(); PREF.set('tips', 'on'); }
+    else if(k === 'volume'){ if(v === 'off') PREF.set('sound', 'off'); else { PREF.set('sound', 'on'); PREF.set('volume', v); } }   // 4.9.1: Mute lives in the Volume row
     else PREF.set(k, v);
     if(k === 'haptics' && v === 'on') HAPTIC.buzz('select');
     if(k === 'motion') applyMotion();
     if(k === 'theme') applyTheme();
-    if(k === 'sound' || k === 'volume') setTimeout(() => SFX.play('select'), 30);   // hear the new level
+    if((k === 'sound' || k === 'volume') && v !== 'off') setTimeout(() => SFX.play('select'), 30);   // hear the new level
     d.querySelectorAll(`[data-o="${k}"]`).forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
   });
   d.querySelector('[data-m="close"]').onclick = () => { d.remove(); render(); };
@@ -10375,9 +10455,52 @@ function typeRingHtml(){
     <div><i class="bad">weak to</i> ${chips(TYPES[t].weak)}</div><div><i class="good">resists</i> ${chips(TYPES[t].resist)}</div></div>`).join('') + `</div>`;
 }
 
+/* 4.10.0 · FIRST-RUN TUTORIAL — five short cards the first time the game opens (and from How to Play → Replay the tutorial). */
+function openTutorial(){
+  const T = TUNING;
+  const pages = [
+    { ids:['bulbasaur','charmander','squirtle'], title:'Welcome to PokéBattler',
+      text:`Build a team of up to ${T.maxTeam} pokémon and beat ${T.badgesToWin} gym leaders, the Elite Four and the Champion. Battles play out on their own: your job is the team you bring to each one.` },
+    { ids:['onix','pikachu'], title:'Buy, then place',
+      text:'Tap a pokémon in the Daycare, then tap an empty spot in your party. Where they stand matters: the front rank takes the hits and the back rank deals damage safely. The little badge on each is its role, and “Line up by role” sorts your party for you.' },
+    { ids:['charmander','charmeleon','charizard'], title:'Level up and evolve',
+      text:'Three copies of the same pokémon make it level 2, six make level 3, and levelling up evolves it. You earn ₽ after every battle to spend in the Daycare and the PokéMart on stones, held items and next-battle boosts.' },
+    { ids:['snorlax','zapdos'], title:'Fights have stakes',
+      text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
+    { ids:['eevee','pikachu','mew'], title:'Make it yours',
+      text:'START opens the menu: your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations and rules like Mono type or One Life. The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+  ];
+  let i = 0;
+  const d = modal('', true); d.classList.add('tutorial');
+  const finish = () => { PREF.set('tutorial', 'done'); TIPS.dismiss('shop'); d.remove(); SFX.play('back'); render(); };
+  const draw = () => {
+    const p = pages[i], last = i === pages.length - 1;
+    d.querySelector('.boxscroll').innerHTML = `<div class="tutpg">
+      <div class="tutart">${p.ids.filter(k => SPECIES[k]).map(k => spriteHtml(k, 'lg')).join('')}</div>
+      <h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>
+      <div class="tutdots" aria-hidden="true">${pages.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="btnrow">${i > 0 ? '<button class="btn" data-t="back">Back</button>' : '<button class="btn ghost" data-t="skip">Skip</button>'}
+        <button class="btn primary" data-t="next">${last ? 'Let’s go!' : 'Next'}</button></div>
+      ${i > 0 && !last ? '<button class="btn ghost tutskip" data-t="skip">Skip the tutorial</button>' : ''}</div>`;
+    d.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+      const a = b.dataset.t;
+      if(a === 'skip') return finish();
+      if(a === 'back'){ i--; SFX.play('back'); return draw(); }
+      if(last) return finish();
+      i++; SFX.play('select'); draw(); });
+  };
+  draw(); SFX.play('open');
+}
+/** First time only: a fresh install with nothing played yet. Test browsers skip it like the tips. */
+function maybeTutorial(){
+  if(PREF.get('tutorial', '') === 'done' || (navigator.webdriver && !window.PKB_TIPS)) return;
+  if(!G || G.daily || (records().runs || 0) > 0 || (G.turn || 1) > 1 || (G.stage || 0) > 0) { PREF.set('tutorial', 'done'); return; }   // someone already playing doesn't need it
+  openTutorial();
+}
 function openHelp(){
   const T = TUNING;
   const d = modal(`<h3>How to Play</h3>
+    <button class="btn replay" data-m="tutorial">Replay the tutorial</button>
     <p class="legend"><span style="color:var(--atk)">◆ Attack</span>
        <span style="color:var(--hp)">♥ HP</span>
        <span style="color:var(--spd)">» Speed</span></p>
@@ -10548,7 +10671,8 @@ function openHelp(){
     roster too, more slowly — that is what lets a stuck trainer out-grow a wall instead of retrying into it
     forever.</p>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
-  d.querySelector('[data-m]').onclick = () => d.remove();
+  d.querySelector('[data-m="close"]').onclick = () => d.remove();
+  d.querySelector('[data-m="tutorial"]').onclick = () => { d.remove(); openTutorial(); };
 }
 
 /** 4.9.0: the types a pokémon also has in the games (its label), beyond the one it plays as. */
@@ -10842,7 +10966,7 @@ function newRun(opts){
   phase = 'shop'; sel = null; inspect = null; battle = null;
   save();
 }
-const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); };   // a reward left unchosen
+const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); else maybeTutorial(); };   // a reward left unchosen
 
 (function boot(){
   applyMotion();
