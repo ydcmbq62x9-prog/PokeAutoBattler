@@ -33,11 +33,13 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
       const st = battle.steps[0], stage = document.querySelector('.bstage'), r = stage.getBoundingClientRect();
       const mid = r.left + r.width / 2;
       const f = [...document.querySelectorAll('.ftr')].map(e => ({ side: e.classList.contains('p') ? 'p' : 'e', x: e.getBoundingClientRect().left + e.getBoundingClientRect().width / 2 }));
-      return { n: f.length, want: st.p.length + st.e.length, left: f.filter(x => x.side === 'p').every(x => x.x < mid), right: f.filter(x => x.side === 'e').every(x => x.x > mid),
+      return { n: f.length, want: st.p.length + st.e.length, vert: !!document.querySelector('.bstage.vert'), ys: [...document.querySelectorAll('.ftr')].map(e => ({ side: e.classList.contains('p') ? 'p' : 'e', y: e.getBoundingClientRect().top + e.getBoundingClientRect().height / 2, mid: r.top + r.height / 2 })),
+               left: f.filter(x => x.side === 'p').every(x => x.x < mid), right: f.filter(x => x.side === 'e').every(x => x.x > mid),
                intro: !!document.querySelector('.introban'), introTxt: (document.querySelector('.introban') || {}).textContent || '' };
     });
     check(start.n === start.want, `${w}px: every pokémon stands on the field (${start.n} of ${start.want})`);
-    check(start.left && start.right, `${w}px: your side on the left, theirs on the right`);
+    if(start.vert) check(start.ys.every(o => o.side === 'p' ? o.y > o.mid : o.y < o.mid), `${w}px: phone board: theirs on top, yours below`);   // 4.13.0
+    else check(start.left && start.right, `${w}px: your side on the left, theirs on the right`);
     check(start.intro && /wants to battle|blocks the way/.test(start.introTxt), `${w}px: the intro says "${start.introTxt.replace(/\s+/g, ' ').trim().slice(0, 40)}"`);
     await page.waitForTimeout(2200);
     check(await page.evaluate(() => !document.querySelector('.introban')), `${w}px: the intro clears before the fight`);

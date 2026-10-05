@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.12.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.13.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1560,12 +1560,12 @@ function fighterHtml(u){
 function buildStage(){
   const b = battle, st0 = b.steps[0] || { p:[], e:[] };
   const el = document.createElement('div');
-  el.className = `bstage bg-${backdropOf(b)}`;
+  el.className = `bstage board bg-${backdropOf(b)}`;   // 4.13.0: the board — both formations as tiles
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
   el.innerHTML = `<div class="ground"></div><div class="midline"></div>
-    ${['p', 'e'].map(s => RANKS.map((r, k) =>
-      `<span class="rklbl" style="left:${ARENA_X[s][k]}%">${esc(r)}</span>`).join('')).join('')}
+    ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
+      `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
     <div class="fxl"></div>`;
   const S = { el, fx: el.querySelector('.fxl'), f: new Map(), at: 0, gen: 0 };
   for(const side of ['p', 'e']) (st0[side] || []).forEach((u, i) => addFighter(S, u, side, i));
@@ -1576,10 +1576,7 @@ function addFighter(S, u, side, i){
   const pos = Number.isInteger(u.pos) ? u.pos : i;
   const rank = Math.min(2, Math.floor(pos / RANK_W)), file = pos % RANK_W;
   const d = document.createElement('div');
-  d.className = `ftr ${side}`;
-  d.style.left = ARENA_X[side][rank] + '%';
-  d.style.top = ARENA_Y[file] + '%';
-  d.style.zIndex = String(2 + file);
+  d.className = `ftr ${side} r${rank} f${file}`;   // 4.13.0: the board places it by rank and file (CSS)
   d.innerHTML = fighterHtml(u);
   S.el.insertBefore(d, S.fx);
   const F = { el: d, side, uid: u.uid, nm: u.nm, id: u.id, hp: u.hp, maxHp: u.maxHp,
@@ -1644,12 +1641,18 @@ function syncStage(S, i){
 
 /* Put the kept field into the page the render just drew, and bring it up to
    date: animated if it is exactly one step behind, snapped otherwise. */
+/* 4.13.0: a narrow field (phones) stacks the two teams top and bottom; a wide one sets them side by side */
+const BOARD_VERT_BELOW = 620;
+function fitBoard(S){ const w = S.el.parentNode ? S.el.parentNode.clientWidth : 0; if(w) S.el.classList.toggle('vert', w < BOARD_VERT_BELOW); }
+const isVert = el => !!(el && el.closest && el.closest('.bstage.vert'));
+window.addEventListener('resize', () => { if(battle && battle.stage) fitBoard(battle.stage); });
 function mountStage(){
   const slot = document.getElementById('stageslot');
   if(!slot || !battle) return;
   if(!battle.stage) battle.stage = buildStage();
   const S = battle.stage;
   if(S.el.parentNode !== slot) slot.appendChild(S.el);
+  fitBoard(S);
   if(S.at === battle.i - 1) animateStep(S, battle.i);
   else if(S.at !== battle.i) syncStage(S, battle.i);
   if(battle.i >= battle.steps.length - 1 && !battle.outroPlayed){
@@ -1679,8 +1682,15 @@ const anim = (el, frames, opts) => {
   return a;
 };
 /** A number or word that rises off a pokémon and fades. */
+/* 4.13.0: where a tile's sprite sits at rest (offsets ignore the lunge and intro transforms), so stacked numbers line up */
+function restCentre(F){
+  const art = F.el.querySelector('.fart'), body = F.el.querySelector('.fbody');
+  if(!art || !body) return null;
+  return { x: F.el.offsetLeft + body.offsetLeft + art.offsetLeft + art.offsetWidth / 2,
+           y: F.el.offsetTop + body.offsetTop + art.offsetTop + art.offsetHeight / 2, w: art.offsetWidth };
+}
 function floatText(S, F, text, cls, lift){
-  const c = artCentre(S, F);
+  const c = (S.el.classList.contains('board') && restCentre(F)) || artCentre(S, F);
   /* v42 iron-out: two hits close together used to print the second number on
      top of the first (a faint "-8" behind "-31"). Each pokémon keeps the
      heights its recent numbers are still rising from; a new one takes the next
@@ -1690,7 +1700,8 @@ function floatText(S, F, text, cls, lift){
   let y = lift || 0;
   while(y < 100 && F.floats.some(f => Math.abs(f.y - y) < 18)) y += 20;
   F.floats.push({ y, until: now + hold });
-  const e = fxEl(S, 'num ' + (cls || ''), c.x, c.y - c.w * 0.35 - y, esc(text));
+  const W = S.el.clientWidth, pad = /note/.test(cls || '') ? Math.min(64, W / 6) : 18;   // 4.13.0: keep words inside the board's edges
+  const e = fxEl(S, 'num ' + (cls || ''), Math.max(pad, Math.min(W - pad, c.x)), Math.max(14, c.y - c.w * 0.35 - y), esc(text));
   const still = motionOff();
   anim(e, still ? [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .75 }, { opacity: 0 }]
     : [{ opacity: 0, transform: 'translate(-50%,-30%) scale(.6)' },
@@ -1727,11 +1738,12 @@ function glow(F, colour){
 }
 function lunge(F, towardsFoe, dur){
   if(motionOff()) return;
-  const dir = F.side === 'p' ? 1 : -1;
+  const dir = F.side === 'p' ? 1 : -1, v = isVert(F.el);
   const mv = F.el.querySelector('.fmove');
+  const to = v ? `translate(0,${-dir * 12}px)` : `translate(${dir * 14}px,0)`;   // 4.13.0: towards the other team, whichever way it sits
   anim(mv, towardsFoe
-    ? [{ transform: 'translate(0,0)' }, { transform: `translate(${dir * 18}px,-6px)`, offset: .45 }, { transform: 'translate(0,0)' }]
-    : [{ transform: 'translate(0,0)' }, { transform: 'translate(0,-10px)', offset: .4 }, { transform: 'translate(0,0)' }],
+    ? [{ transform: 'translate(0,0)' }, { transform: to, offset: .45 }, { transform: 'translate(0,0)' }]
+    : [{ transform: 'scale(1)' }, { transform: 'scale(1.06)', offset: .4 }, { transform: 'scale(1)' }],
     { duration: dur, easing: 'ease-out' });
 }
 /** What an attack looks like on its way over. Resolves when it lands. */
@@ -1789,10 +1801,11 @@ function faintFx(S, F){
   F.down = true;
   F.el.classList.remove('acting');
   if(motionOff()){ F.el.classList.add('down'); return; }
+  /* 4.13.0: on the board a fallen tile stays where it stood, greyed out with a cross */
   anim(mv, [{ transform: 'translate(0,0)', opacity: 1, filter: 'none' },
-            { transform: 'translate(0,6px) scaleY(.92)', opacity: .9, filter: 'grayscale(1) brightness(1.6)', offset: .25 },
-            { transform: 'translate(0,26px) scaleY(.15)', opacity: 0, filter: 'grayscale(1)' }],
-    { duration: 620, easing: 'ease-in' }).finished.then(() => F.el.classList.add('down'), () => {});
+            { transform: 'translate(0,2px) scale(.97)', opacity: 1, filter: 'grayscale(1) brightness(1.8)', offset: .25 },
+            { transform: 'translate(0,0) scale(1)', opacity: .3, filter: 'grayscale(1)' }],
+    { duration: 520, easing: 'ease-in' }).finished.then(() => F.el.classList.add('down'), () => {});
 }
 
 /* ---------------- one step, animated ---------------- */
@@ -1862,6 +1875,12 @@ function animateStep(S, i){
     const extra = ev.some(e => e.stNew) ? 'status' : ev.some(e => e.shUp) ? 'shield' : ev.some(e => e.dhp > 0) ? 'heal'
       : ev.some(e => e.dAtk > 0 || e.dSpd > 0) ? 'up' : ev.some(e => e.dAtk < 0 || e.dSpd < 0) ? 'down' : null;
     if(hurt) SFX.play(hurt);
+    /* 4.13.0: a type-coloured flash where each blow lands, and the field shakes on a super-effective hit or a knockout */
+    if(!quick && A){ const col = typeColor(A.id);
+      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
+        anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
+    if(!motionOff() && ev.some(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted)))
+      anim(S.el, [{ transform: 'translate(0,0)' }, { transform: 'translate(-5px,3px)' }, { transform: 'translate(5px,-3px)' }, { transform: 'translate(-3px,0)' }, { transform: 'translate(0,0)' }], { duration: 280 });
     if(extra) setTimeout(() => SFX.play(extra), hurt ? 70 : 0);
     if(ev.some(e => e.fainted)) setTimeout(() => { if(S.gen === gen) SFX.play('faint'); }, quick ? 60 : 170);
     for(const e of ev){
@@ -1939,8 +1958,8 @@ function playIntro(S){
     { duration: hold, fill: 'forwards', remove: true });
   let k = 0;
   for(const F of S.f.values()){
-    const from = F.side === 'p' ? '-60vw' : '60vw';
-    anim(F.el.querySelector('.fmove'), [{ transform: `translateX(${from})`, opacity: 0 }, { transform: 'translateX(0)', opacity: 1 }],
+    const v = isVert(F.el), from = v ? (F.side === 'p' ? 'translateY(40vh)' : 'translateY(-40vh)') : (F.side === 'p' ? 'translateX(-60vw)' : 'translateX(60vw)');
+    anim(F.el.querySelector('.fmove'), [{ transform: from, opacity: 0 }, { transform: 'translate(0,0)', opacity: 1 }],
       { duration: introMs * 0.3, delay: hold * 0.5 + (k++ % 6) * introMs * 0.035, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' });
     anim(F.el.querySelector('.fshadow'), [{ opacity: 0 }, { opacity: 1 }], { duration: introMs * 0.3, delay: hold * 0.5, fill: 'backwards' });
   }
@@ -3121,6 +3140,13 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.13.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'A new battle screen: both teams on a board in their real formation', items:[
+    'Battles now play out on a board. Every pok\u00e9mon sits on a tile in its rank (front, middle, back), with its name, HP bar and status on the tile, so you can follow the whole fight and see why positioning matters.',
+    'On a phone the enemy team sits on top and yours below. On a wider screen the two teams face each other side by side, with the front ranks nearest the middle.',
+    'Hits land with a flash in the attacker\u2019s type colour, and the board shakes on super-effective hits and knockouts.',
+    'A fainted pok\u00e9mon stays on its tile, greyed out with a cross, so you can see who is left at a glance.',
+    'Each battle type keeps its own floor: grass for trainers, dusk for your rival, the leader\u2019s colour in a gym, and the League hall.',
+  ]},
   { v:'4.12.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Mew joins as a protector legendary, plus challenge rules that each earn a badge', items:[
     'Mew: a new Support legendary for Gen 1 runs. Barrier Aura hits the enemy front, then shields your two lowest-HP pokémon. Once per battle, when a teammate faints, Transform copies that teammate\u2019s move and uses it for 3 actions.',
     'Challenges on New Run: No Held Items, No Legendaries, Hard Gyms (gym leaders, the Elite Four and the Champion 4% stronger) and Tight Budget (1\u20bd less income a turn). Unlike the other rules, opponents are not eased to make up for them.',

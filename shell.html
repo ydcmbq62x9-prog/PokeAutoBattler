@@ -2089,6 +2089,77 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .chone .hcb{width:40px;height:40px}
 .chone span{font-size:11px;font-weight:700;color:var(--ink)}
 .chone .newdot{font-size:9px}
+
+/* =====================================================================
+   4.13.0 · THE BOARD — both teams as tiles in their real formation.
+   Wide: yours on the left, ranks as columns (front nearest the middle).
+   .vert (a field under 620px, set from JS): the enemy on top, yours below.
+   The effects layer is unchanged: it reads where each tile's sprite is.
+   ===================================================================== */
+.bstage.board{aspect-ratio:16/9;--tp:63,140,224;--te:224,71,63}
+.bstage.board.vert{aspect-ratio:4/5}
+.bstage.board .rklbl{display:none}
+/* surfaces: a field, dusk, the gym floor in its leader's colour, the League hall */
+.bstage.board.bg-route .ground{background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.045) 0 4cqw,transparent 4cqw 8cqw),
+  radial-gradient(70% 60% at 50% 50%,#5e9e4e,#3f7a37 70%,#2f622b)}
+.bstage.board.bg-route::after{display:none}
+.bstage.board.bg-dusk .ground{background:
+  radial-gradient(60% 50% at 50% 50%,rgba(240,154,106,.35),transparent 70%),
+  linear-gradient(135deg,#3a2a5e,#6e3d6e 45%,#4a5a3e)}
+.bstage.board.bg-gym .ground{background:
+  repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 8cqw),
+  repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 8cqw),
+  radial-gradient(70% 60% at 50% 50%,color-mix(in srgb,var(--gymc) 55%,#5a5446),color-mix(in srgb,var(--gymc) 30%,#262a36))}
+.bstage.board.bg-league .ground{background:
+  repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 10cqw),
+  radial-gradient(60% 50% at 50% 50%,rgba(160,120,255,.35),transparent 70%),
+  linear-gradient(160deg,#15122c,#2a2152 50%,#1d1840)}
+.bstage.board .midline{left:50%;top:4%;bottom:4%;width:3px;transform:translateX(-50%);opacity:.6;
+  background:repeating-linear-gradient(180deg,#ffd23a 0 10px,transparent 10px 18px)}
+.bstage.board.vert .midline{left:4%;right:4%;top:50%;bottom:auto;width:auto;height:3px;transform:translateY(-50%);
+  background:repeating-linear-gradient(90deg,#ffd23a 0 10px,transparent 10px 18px)}
+
+/* slots and tiles share one grid of positions */
+.bstage.board .slotmark,.bstage.board .ftr{position:absolute;width:14.5%;height:39%;border-radius:10px;transform:none}
+.bstage.board .slotmark{border:2px dashed rgba(255,255,255,.14);z-index:1}
+.bstage.board .f0{top:9%} .bstage.board .f1{top:55%}
+.bstage.board .p.r0{left:33.5%} .bstage.board .p.r1{left:18%} .bstage.board .p.r2{left:2.5%}
+.bstage.board .e.r0{left:52%}   .bstage.board .e.r1{left:67.5%} .bstage.board .e.r2{left:83%}
+.bstage.board.vert .slotmark,.bstage.board.vert .ftr{width:47%;height:14.6%}
+.bstage.board.vert .f0{left:2%} .bstage.board.vert .f1{left:51%}
+.bstage.board.vert .e.r2{top:1.5%} .bstage.board.vert .e.r1{top:16.8%} .bstage.board.vert .e.r0{top:32.1%}
+.bstage.board.vert .p.r0{top:53.3%} .bstage.board.vert .p.r1{top:68.6%} .bstage.board.vert .p.r2{top:83.9%}
+
+.bstage.board .ftr{z-index:3;pointer-events:auto;display:block;
+  background:linear-gradient(160deg,rgba(var(--t),.34),rgba(16,20,32,.62));border:2px solid rgba(var(--t),.75);
+  box-shadow:0 2px 0 rgba(0,0,0,.25);transition:box-shadow .2s,border-color .2s}
+.bstage.board .ftr.p{--t:var(--tp)} .bstage.board .ftr.e{--t:var(--te)}
+.bstage.board .ftr .fmove{width:100%;height:100%;display:grid;grid-template-areas:"art" "head";grid-template-rows:minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);
+  align-items:stretch;justify-items:stretch;padding:4px 6px 5px;box-sizing:border-box;gap:2px}
+.bstage.board .ftr .fbody{grid-area:art;min-height:0;display:flex;justify-content:center;pointer-events:auto}
+.bstage.board .ftr .fart{width:auto;height:100%;max-width:100%;max-height:100%;aspect-ratio:1}
+.bstage.board .ftr .fhead{grid-area:head;align-items:stretch;margin:0;gap:2px;min-width:0}
+.bstage.board .ftr .fname{display:block;font-size:max(10px,1.25cqw);text-align:center;overflow:hidden;text-overflow:ellipsis;color:#eef2fb}
+.bstage.board .ftr .fhp{width:100%;height:6px}
+.bstage.board .ftr .fchips{justify-content:center;min-height:13px}
+.bstage.board.vert .ftr .fmove{grid-template-areas:"art head";grid-template-columns:auto minmax(0,1fr);grid-template-rows:minmax(0,1fr);padding:3px 7px 3px 3px;gap:6px}
+.bstage.board.vert .ftr .fhead{justify-content:center}
+.bstage.board.vert .ftr .fname{font-size:max(11px,3.5cqw);text-align:left}
+.bstage.board.vert .ftr .fchips{justify-content:flex-start}
+.bstage.board .fshadow{display:none}
+.bstage.board .ftr.acting{border-color:#ffd23a;box-shadow:0 0 0 2px #ffd23a,0 0 14px rgba(255,210,58,.55)}
+.bstage.board .ftr.down{border-color:rgba(255,255,255,.18);background:rgba(16,20,32,.45)}
+.bstage.board .ftr.down .fmove{visibility:visible;opacity:.3;filter:grayscale(1)}
+.bstage.board .ftr.down::after{content:'\2715';position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+  font-size:min(40px,9cqw);font-weight:bold;color:rgba(224,71,63,.85);text-shadow:0 1px 2px #000}
+.bstage.board.vert .ftr.down::after{font-size:min(40px,10cqw)}
+.bstage.board .fbarrier{inset:-4% -10% -2%}
+.fx.impact{position:absolute;width:clamp(44px,10cqw,90px);aspect-ratio:1;border-radius:50%;pointer-events:none;z-index:6;
+  background:radial-gradient(circle,#fff 0 22%,var(--c) 44%,transparent 70%);mix-blend-mode:screen}
+@media (max-width:700px) and (orientation:portrait){
+  #app:has(.arena) .bstage.board.vert{min-height:calc(100vw * 1.05);max-height:calc(100vw * 1.6)}
+}
 </style>
 </head>
 <body>

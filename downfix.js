@@ -10,9 +10,9 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     await p.click('[data-act="endturn"]');
     await p.waitForFunction(() => document.querySelector('.ftr.down'), null, { timeout: 30000 }).catch(() => {});
     await p.waitForTimeout(1200);
-    const r = await p.evaluate(() => { const d = [...document.querySelectorAll('.ftr.down')]; return { n: d.length, ops: d.map(e => getComputedStyle(e.querySelector('.fshadow')).opacity), vis: d.map(e => getComputedStyle(e.querySelector('.fmove')).visibility) }; });
+    const r = await p.evaluate(() => { const d = [...document.querySelectorAll('.ftr.down')]; return { n: d.length, ops: d.map(e => getComputedStyle(e.querySelector('.fmove')).opacity), x: d.map(e => getComputedStyle(e, '::after').content) }; });
     check(r.n > 0, `${tag}: someone fainted in the fight (${r.n})`);
-    check(r.ops.every(o => parseFloat(o) === 0) && r.vis.every(v => v === 'hidden'), `${tag}: every fainted fighter's shadow and body are gone (shadow opacity ${r.ops.join(',')})`);
+    check(r.ops.every(o => parseFloat(o) <= 0.35) && r.x.every(c => /\u2715|✕/.test(c)), `${tag}: 4.13.0 board: every fainted tile stays, greyed out with a cross (opacity ${r.ops.join(',')})`);
     const alive = await p.evaluate(() => [...document.querySelectorAll('.ftr:not(.down)')].map(e => parseFloat(getComputedStyle(e.querySelector('.fshadow')).opacity)));
     check(alive.length === 0 || alive.every(o => o > 0.9), `${tag}: fighters still standing keep theirs`);
     check(!errs.length, `${tag}: no errors ${errs.join(';')}`);
