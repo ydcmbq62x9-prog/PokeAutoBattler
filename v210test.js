@@ -1,14 +1,15 @@
 /* 2.1.0: Articuno and Moltres; legendaries have no tier, never level, have a higher BST and grow faster. */
 const E = require('./engine.js'); const T = E.TUNING, S = E.SPECIES;
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const LEG = ['zapdos','mewtwo','articuno','moltres'];
-check(JSON.stringify(E.LEGENDS().sort()) === JSON.stringify([...LEG].sort()), 'the four legendaries are Zapdos, Mewtwo, Articuno and Moltres');
+const LEG = ['zapdos','mewtwo','articuno','moltres','mew'];   // 4.12.0: Mew
+check(JSON.stringify(E.LEGENDS().sort()) === JSON.stringify([...LEG].sort()), 'the Gen 1 legendaries are Zapdos, Mewtwo, Articuno, Moltres and Mew');
 check(S.articuno.type === 'Ice' && S.articuno.role === 'tank' && S.moltres.type === 'Fire' && S.moltres.role === 'bruiser', 'Articuno is an Ice Tank, Moltres a Fire Bruiser');
 check(LEG.every(k => S[k].tier === undefined), 'legendaries have no tier');
 check(LEG.every(k => !E.BUYABLE.includes(k)), 'legendaries are not in the buyable/trainer pool');
 const bst = k => S[k].hp + S[k].atk + S[k].spd;
 const topReg = Math.max(...Object.keys(S).filter(k => !S[k].legendary).map(bst));
-check(LEG.every(k => bst(k) > topReg * 1.3), `every legendary’s base stat total is well above the best regular pokémon (${topReg}): ${LEG.map(k => k + ' ' + bst(k)).join(', ')}`);
+check(LEG.every(k => bst(k) > topReg * (S[k].role === 'support' ? 1.05 : 1.3)),   // 4.12.0: Support legendaries (Mew, like Celebi) trade raw stats for team effects
+  `every legendary’s base stat total is well above the best regular pokémon (${topReg}): ${LEG.map(k => k + ' ' + bst(k)).join(', ')}`);
 // never levels
 const u = E.makeUnit('moltres', 0), G = E.newGame(3); G.team = [u];
 const r = E.addExp(G, u, 5);

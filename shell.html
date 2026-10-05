@@ -2046,6 +2046,49 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .tutpg .btnrow{width:100%}
 .tutskip{font-size:12.5px;min-height:34px}
 .btn.replay{display:block;margin:0 0 8px auto;font-size:12.5px;padding:5px 10px;min-height:34px}
+
+/* 4.12.0 · special badges: a tile grid on the Trainer Card instead of one row each */
+.sbh{margin:8px 0 4px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.sbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px}
+.sbt{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px 5px;min-height:64px;
+  border:2px dashed var(--line2);border-radius:9px;background:transparent;color:var(--muted);font:inherit;cursor:pointer}
+.sbt .hcb{width:32px;height:32px;margin:0}
+.sbt span{font-size:11px;line-height:1.1;font-weight:700;text-align:center}
+.sbt.on{border:2px solid #b9c0c9;background:color-mix(in srgb,#b9c0c9 14%,transparent);color:var(--ink)}
+.sbt.gold{border-color:#e0a526;background:color-mix(in srgb,#e0a526 18%,transparent)}
+.sbt.gold::after{content:'\2605';position:absolute;top:2px;left:5px;font-size:12px;color:#e0a526;text-shadow:0 1px 0 #6b4a05}
+.sbt.cur{outline:3px solid var(--accent,#3d7bd9);outline-offset:1px}
+.sbn{position:absolute;top:3px;right:5px;font-style:normal;font-size:10px;font-weight:800;color:var(--muted)}
+.sbinfo{display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px 10px;min-height:52px;border-radius:8px;background:var(--panel2,rgba(0,0,0,.05));font-size:12px;line-height:1.35}
+.sbinfo .hcb{width:40px;height:40px}
+.sbinfo div{display:flex;flex-direction:column;min-width:0}
+.sbinfo b{font-size:14px}
+.sbinfo span{color:var(--muted)}
+.sbtypes{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.sbtypes i{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--c);padding:1px 5px;border-radius:4px}
+.gtxt{color:#c48a0e}
+.hcb.gold{filter:drop-shadow(0 0 3px #ffd23a) drop-shadow(0 0 1px #e0a526)}
+.thc.gold .hcb{filter:drop-shadow(0 0 2px #ffd23a)}
+.tbadges{display:inline-flex;align-items:center;gap:2px;margin-right:4px;vertical-align:middle}
+.tbadges .hcb.sm{margin:0}
+.tmore{font-style:normal;font-size:11px;font-weight:800;margin-left:2px}
+.sbpill{font-style:normal;display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:#e0a526;color:#2b1a22;font-size:11px;font-weight:900;line-height:18px;text-align:center}
+.hch{display:inline-flex;gap:1px;vertical-align:middle}
+.hch .hcb.sm{width:16px;height:16px;margin:0}
+.hch.gold .hcb{filter:drop-shadow(0 0 2px #ffd23a)}
+.chawards{display:flex;flex-direction:column;gap:2px}
+.hcaward.gold{box-shadow:0 0 0 2px #ffd23a,0 0 12px rgba(255,210,58,.55)}
+.newdot.gold{background:#e0a526;color:#2b1a22}
+.modt b .hcb.sm{width:18px;height:18px;margin:-3px 6px 0 0}
+.chgold{margin-top:6px}
+
+.hcaward.multi{flex-direction:column;gap:8px}
+.chhead{display:flex;flex-direction:column;align-items:center;text-align:center}
+.hcaward .chrow{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:10px}
+.chone{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px}
+.chone .hcb{width:40px;height:40px}
+.chone span{font-size:11px;font-weight:700;color:var(--ink)}
+.chone .newdot{font-size:9px}
 </style>
 </head>
 <body>

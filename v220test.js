@@ -13,8 +13,8 @@ check(again > 0 && again < 100, `…but one that has met one only gets the norma
 const G = E.newGame(42); G.team = [E.makeUnit('zapdos', 0)]; G.legendsCaught = ['mewtwo'];
 const pick = E.championLegend(G);
 check(!!pick && pick !== 'zapdos' && pick !== 'mewtwo' && S[pick].legendary, `the Champion's legendary is one you neither own nor recruited (${pick})`);
-const H = E.newGame(43); H.legendsCaught = ['zapdos','mewtwo','articuno','moltres'];
-check(E.championLegend(H) === null, 'if you recruited all four he brings none');
+const H = E.newGame(43); H.legendsCaught = ['zapdos','mewtwo','articuno','moltres','mew'];
+check(E.championLegend(H) === null, 'if you recruited all of them he brings none');
 let champs = 0, withLeg = 0;
 for(let s = 1; s <= 40; s++){ const K = E.newGame(s); K.team = [E.makeUnit('machop', 0), E.makeUnit('onix', 0)]; K.turn = 38; K.badges = 8;
   const plan = E.runPlan(K); const ci = plan.findIndex(p => p.kind === 'champion'); if(ci < 0) continue; K.stage = ci;

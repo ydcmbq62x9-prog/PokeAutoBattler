@@ -20,9 +20,9 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     const items = await page.evaluate(() => [...document.querySelectorAll('#title .tmi')].map(b => b.dataset.t).join());
     check(items === 'new,daily,dex,trainer,options', `${tag}: title menu is NEW RUN / DAILY / TRAINER CARD / OPTIONS (${items})`);
     await page.click('#title [data-t="trainer"]'); await page.waitForTimeout(200);
-    const c0 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && { txt: m.textContent.replace(/\s+/g, ' '), locked: !!m.querySelector('.hcrow:not(.on) .hcb.locked'),
+    const c0 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && { txt: m.textContent.replace(/\s+/g, ' '), locked: !!m.querySelector('.sbt[data-sb="onelife"]:not(.on) .hcb.locked') && (m.querySelector('.sbt[data-sb="onelife"]').click(), true), info: m.querySelector('.sbinfo').textContent.replace(/\s+/g, ' '),
       facts: [...m.querySelectorAll('.facts span')].map(x => x.textContent).join() }; });
-    check(c0 && c0.locked && /Not earned yet\. Clear a run on One Life/.test(c0.txt), `${tag}: the card shows a locked Hardcore slot and how to earn it`);
+    check(c0 && c0.locked && /Not earned yet\. Clear a run on One Life/.test(c0.info), `${tag}: the card shows a locked Hardcore slot and how to earn it`);
     check(c0 && !/Money|Streak/.test(c0.facts), `${tag}: from the title with no run going, the card shows no run stats (${c0 && c0.facts})`);
     const fit = await page.evaluate(() => { const b = document.querySelector('.modal.trainer .box') || document.querySelector('.modal.trainer'); const r = b.getBoundingClientRect(); return r.right <= innerWidth + 1 && r.left >= -1; });
     check(fit, `${tag}: the card fits the screen width`);
@@ -53,9 +53,9 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
 
     await page.evaluate(() => { G = newGame(3); phase = 'shop'; render(); });
     await page.evaluate(() => openMenu()); await page.waitForTimeout(150);
-    check(!!(await page.$('.startmenu .smi[data-m="trainer"] .hcb')), `${tag}: the START menu marks Trainer once you have the badge`);
+    check(!!(await page.$('.startmenu .smi[data-m="trainer"] .sbpill')), `${tag}: the START menu marks Trainer once you have the badge`);
     await page.evaluate(() => document.querySelector('.startmenu .smi[data-m="trainer"]').click()); await page.waitForTimeout(150);
-    const c1 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && { on: !!m.querySelector('.hcrow.on .hcb:not(.locked)'), txt: m.textContent.replace(/\s+/g, ' ') }; });
+    const c1 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); const b = m && m.querySelector('.sbt[data-sb="onelife"]'); b && b.click(); return m && { on: !!m.querySelector('.sbt.on[data-sb="onelife"] .hcb:not(.locked)'), txt: m.querySelector('.sbinfo').textContent.replace(/\s+/g, ' ') }; });
     check(c1 && c1.on && /2 clears · first/.test(c1.txt), `${tag}: the card shows it earned, with count and first date`);
     await page.evaluate(() => document.querySelector('.modal.trainer [data-m="close"]').click());
 
@@ -65,11 +65,11 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     await page.mouse.click(w / 2, h - 30); await page.waitForTimeout(250);
     const tsub = await page.evaluate(() => { const t = document.querySelector('#title [data-t="trainer"] small'); return t && t.textContent; });
     check(tt.badge, `${tag}: the title shows the badge beside your name`);
-    check(tsub && /Hardcore Badge · 2 clears/.test(tsub), `${tag}: the title's Trainer Card line mentions it (${tsub})`);
+    check(tsub && /\d special badges? · records/.test(tsub), `${tag}: the title's Trainer Card line mentions it (${tsub})`);
     const tvis = await page.evaluate(() => { const t = document.querySelector('#title .tscreen'); const e = document.querySelector('#title [data-t="options"]').getBoundingClientRect(); return e.bottom <= innerHeight + 1; });
     check(tvis, `${tag}: all five title-menu lines are on screen`);
     await page.evaluate(() => document.querySelector('#title [data-t="trainer"]').click()); await page.waitForTimeout(150);
-    const c2 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && m.querySelector('.hcrow.on') !== null; });
+    const c2 = await page.evaluate(() => { const m = document.querySelector('.modal.trainer'); return m && m.querySelector('.sbt.on[data-sb="onelife"]') !== null; });
     check(c2, `${tag}: Trainer Card opens from the title with the badge earned`);
     await page.evaluate(() => document.querySelector('.modal.trainer [data-m="close"]').click());
 

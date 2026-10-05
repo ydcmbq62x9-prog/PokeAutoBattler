@@ -193,8 +193,9 @@ const TUNING = {
   /* Mono-type scales opponents per type, measured so each type clears ~50% for
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
-  mods: { richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
-          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.154, Bug:0.878, Rock:0.767 },   // 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
+  mods: { hardGymsFoes: 1.04, tightCut: 1,   // 4.12.0 handicaps: NOT balanced away — that's the point
+          richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
+          monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.162, Bug:0.878, Rock:0.767 },   // 4.12.0 Psychic +0.008 (Mew); 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
             '2':   { Normal:1.052, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.957, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.983, Psychic:1.018, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
             '1+2': { Normal:1.121, Fire:0.981, Water:1, Electric:0.978, Grass:0.984, Ice:1.225, Fighting:0.998, Ground:1.067, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.857, Dark:0.88 } },
@@ -920,6 +921,18 @@ const M = {
     fn:(u,B,l)=>{ for(const a of B.teams[u.side]){ if(a.dead) continue; if(a.st){ a.st = null; } B.heal(a, Math.round(a.maxHp * sf(f,l)), u); }
       B.log('A soothing aroma filled the air.'); } }),
   /* move itself to the back of the formation */
+  /* 4.12.0 SUPPORT: damage, then barriers on the two lowest-HP teammates (itself included) */
+  ward: (name, p, f) => ({ name,
+    text:l=>`Deals ${pct(p,l)} damage, then gives your two lowest-HP pokémon a barrier worth ${sfp(f,l)} of their HP.`,
+    fn:(u,B,l)=>{ const t=B.front(u); if(t) B.hit(u,t,pw(p,l));
+      const ts = B.teams[u.side].filter(x => !x.dead).sort((a,b) => a.hp/a.maxHp - b.hp/b.maxHp).slice(0, 2);
+      for(const a of ts) B.barrier(a, Math.max(1, Math.round(a.maxHp * sf(f,l)))); } }),
+  /* 4.12.0: copies the main move of the teammate that just fainted */
+  transform: (name, n) => ({ name,
+    text:()=>`Copies the main move of the teammate that just fainted and uses it for this action and its next ${n - 1}.`,
+    fn:(u,B,l)=>{ const f = B.fallen && B.fallen[u.side]; if(!f) return;
+      const mv = SPECIES[f.id].move; B.fx(u,'buff'); B.log(`${u.nm} transformed into ${f.nm}!`);
+      u.copy = { mv, left:n - 1, from:f.nm }; B.log(`${u.nm} used ${mv.name}!`); mv.fn(u, B, l); } }),
   teleport: (name) => ({ name, text:()=>`No damage. Moves itself to the back of your formation.`,
     fn:(u,B)=>{ const arr = B.teams[u.side], used = new Set(arr.map(x => x.pos));
       let to = -1; for(let p = TUNING.maxTeam - 1; p > u.pos; p--) if(!used.has(p)){ to = p; break; }
@@ -945,6 +958,7 @@ const TRIGGER_TEXT = {
   every:   m => `Every ${m.n}${m.n === 2 ? 'nd' : m.n === 3 ? 'rd' : 'th'} action`,
   low:     () => 'Once, below half HP',
   allyLow: () => 'When a teammate is below half HP',
+  allyFaint: () => 'Once, right after a teammate faints',
 };
 const on = (trig, move, extra) => ({ ...move, trig, ...(extra || {}),
   when: function(){ return TRIGGER_TEXT[trig](this); } });
@@ -1028,6 +1042,7 @@ const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
 const CELE = [68, 46, 86];   // 4.10.0: Celebi, a Support legendary (hp, atk, spd)
+const MEW  = [66, 46, 86];   // 4.12.0: Mew, the protector Support legendary (hp, atk, spd)
 const SLOWK = [66, 42, 46];
 const MIME = [38, 42, 58];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
@@ -1514,6 +1529,9 @@ const SPECIES = {
   /* 4.10.0: the first healer legendary */
   celebi:     { name:'Celebi',     type:'Psychic', gen1:'Psychic/Grass', gen:2, role:'support', hp:CELE[0], atk:CELE[1], spd:CELE[2], legendary:true,
                 move:M.mend('Life Dew', 1.0, 0.10) },
+  /* 4.12.0: the second Support legendary — Celebi heals, Mew protects */
+  mew:        { name:'Mew',        type:'Psychic', gen1:'Psychic', role:'support', hp:MEW[0], atk:MEW[1], spd:MEW[2], legendary:true,
+                move:M.ward('Barrier Aura', 0.9, 0.10) },
 
   /* ============ 4.5.0 — POOL FILL-INS ============ */
   omanyte:    { name:'Omanyte',    type:'Rock', gen1:'Rock/Water', tier:3, role:'cannon', hp:OMAN.b[0], atk:OMAN.b[1], spd:OMAN.b[2],
@@ -1837,6 +1855,7 @@ const MOVE2 = {
   lugia:      on('low',   M.recover('Recover', 0.5)),
   'ho-oh':    on('low',   M.recover('Recover', 0.5)),
   celebi:     on('allyLow', M.cleanse('Aromatherapy', 0.08)),
+  mew:        on('allyFaint', M.transform('Transform', 3)),
   omanyte:    on('every', M.slow('Bubble', 0.5, 6), { n:3 }),
   omastar:    on('every', M.slow('Bubble', 0.65, 8), { n:3 }),
   kabuto:     on('open',  M.grow('Swords Dance', 3), { free:true }),
@@ -2473,6 +2492,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
   function kill(u){
     if(u.dead) return;
     u.dead = true;
+    B.fallen = B.fallen || {}; B.fallen[u.side] = u;   // 4.12.0: Mew's Transform copies the latest to fall
     const arr = B.teams[u.side];
     const i = arr.indexOf(u);
     if(i >= 0) arr.splice(i, 1);
@@ -2486,6 +2506,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     if(m2.trig === 'open')  return u.turns === 1;
     if(m2.trig === 'every') return u.turns % m2.n === 0;
     if(m2.trig === 'low'){ if(u.m2used || u.hp > u.maxHp / 2) return false; u.m2used = true; return true; }
+    if(m2.trig === 'allyFaint'){ if(u.m2used || !(B.fallen && B.fallen[u.side])) return false; u.m2used = true; return true; }
     if(m2.trig === 'allyLow'){
       if(u.turns - (u.m2last || -9) < 2) return false;
       if(!B.teams[u.side].some(a => a !== u && !a.dead && a.hp < a.maxHp / 2)) return false;
@@ -2531,6 +2552,8 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     B.snap(u.uid);
   }
   function actMain(u){
+    if(u.copy && u.copy.left > 0 && u.turns > 0){ u.copy.left--; const cm = u.copy.mv;   // 4.12.0: still transformed
+      B.log(`${u.nm} used ${cm.name}!`); cm.fn(u, B, u.lvl); return; }
     const mv = moveOf(u);
     if(!mv.every || (u.turns % mv.every === 0)){
       B.log(`${u.nm} used ${mv.name}!`);
@@ -2860,6 +2883,7 @@ function opponentFor(G){
   const k = (G.mods && G.mods.rich ? modFoes(G, 'richFoes') : 1) * (G.mods && G.mods.mono ? monoFoesFor(G, G.mods.mono) : 1)
           * (G.mods && G.mods.nopc ? modFoes(G, 'nopcFoes') : 1)   // 2.2.0
           * (G.mods && G.mods.onelife ? modFoes(G, 'onelifeFoes') : 1)   // 2.11.0: One Life has its own knob
+          * (G.mods && G.mods.hardgyms && ['gym', 'elite', 'champion'].includes((stageOf(G) || {}).kind) && rivalMeeting(G) < 0 ? TUNING.mods.hardGymsFoes : 1)   // 4.12.0
           * (TUNING.gensFoes[cleanGens(G && G.gens).join('+')] || 1);   // 4.0.0: a mixed roster is thinner, so its opponents are scaled to match
   if(k !== 1 && o && o.team){
     for(const u of o.team){ u.hp = Math.round(u.hp * k); u.atk = Math.round(u.atk * k); u.spd = Math.round(u.spd * k); }
@@ -3038,6 +3062,7 @@ const LEGENDS = () => Object.keys(SPECIES).filter(k => SPECIES[k].legendary && i
 function rollEncounter(G){
   G.encounter = null;
   if(G.badges < TUNING.legend.fromBadge) return null;
+  if(G.mods && G.mods.nolegend) return null;   // 4.12.0
   const met = G.legendsMet || [];
   const mono = G.mods && G.mods.mono;
   const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || inTypePool(k, mono)));
@@ -3150,7 +3175,14 @@ const MOD_INFO = {
   rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
   secrets: { name: () => 'Secret Gauntlet', text: () => 'Red and Professor Oak both wait after the Champion, back to back, one try each. Needs Gen 1 and Gen 2, and costs a Red ticket and an Oak ticket. Beat both for the Gauntlet Badge.' },
   onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
+  /* 4.12.0 — handicaps: unlike the rules above, opponents are NOT eased to match. Each earns its own badge. */
+  noitems:  { name: () => 'No Held Items', text: () => 'The Mart sells no held items, and no reward gives one. Stones, vitamins and other consumables are still for sale.' },
+  nolegend: { name: () => 'No Legendaries', text: () => 'No legendary pokémon will offer to join you.' },
+  hardgyms: { name: () => 'Hard Gyms', text: () => `Gym leaders, the Elite Four and the Champion are ${Math.round((TUNING.mods.hardGymsFoes - 1) * 100)}% stronger.` },
+  tight:    { name: () => 'Tight Budget', text: () => `${TUNING.mods.tightCut}₽ less income every turn.` },
 };
+/* 4.12.0: the opt-in handicaps (each has a badge on the Trainer Card) */
+const HANDICAPS = ['noitems', 'nolegend', 'hardgyms', 'tight'];
 /** 4.0.0: a run that isn't plain Gen 1 is labelled by its gens ("Gen 2", "Gen 1+2") and keeps its own records, like a rule. */
 const genLabel = G => { const g = cleanGens(G && G.gens); return g.join() === '1' ? '' : 'Gen ' + g.join('+'); };
 const genText = G => { const g = cleanGens(G && G.gens);
@@ -3163,7 +3195,7 @@ const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
 function cleanMods(m){
   const out = {};
   if(m && m.mono && MONO_TYPES.includes(m.mono)) out.mono = m.mono;
-  for(const k of ['nopc', 'rich', 'onelife', 'secrets']) if(m && m[k]) out[k] = true;
+  for(const k of ['nopc', 'rich', 'onelife', 'secrets', ...HANDICAPS]) if(m && m[k]) out[k] = true;
   return out;
 }
 /** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
@@ -3394,7 +3426,7 @@ const BADGE_REWARDS = [
     apply: G => { for(let n = 0; n < rewardCfg('training').amount; n++) grantBattleExp(G, 'win', true); } },
   { id:'gift',      name:'Gift Item',    icon:'🎁',
     text: () => 'A random held item from the current shop tier, straight into your Bag.',
-    ok: G => bagRoom(G) > 0 && heldPool(G).length > 0,
+    ok: G => bagRoom(G) > 0 && heldPool(G).length > 0 && !(G.mods && G.mods.noitems),
     apply: (G, rnd) => { const pool = heldPool(G);
       const id = pickWeighted(pool, HELD_ITEMS, rnd ? rnd() : 0);
       G.bag.push(id); G.lastGift = id; } },
@@ -3523,7 +3555,7 @@ function rollMart(G, payCost){
      always had, and held slots are appended, so a reserved item stays put. */
   const plan = [];
   for(let i = 0; i < martSlotsFor(tierFor(G)); i++) plan.push(false);
-  for(let i = 0; i < heldSlotsFor(tierFor(G)); i++) plan.push(true);
+  if(!(G.mods && G.mods.noitems)) for(let i = 0; i < heldSlotsFor(tierFor(G)); i++) plan.push(true);   // 4.12.0: No Held Items
   const next = [];
   plan.forEach((wantHeld, i) => {
     const prev = G.mart[i];
@@ -4046,7 +4078,8 @@ function applyBattleResult(G, result, opp, sim){
       const prize = rivalPrize(G, meeting);
       G.rivalPay = (G.rivalPay || 0) + prize.credits;       // lands with next turn's income
       G.lastRival.credits = prize.credits;
-      if(prize.item && bagRoom(G) > 0){ G.bag.push(prize.item); G.lastRival.item = prize.item; }
+      if(prize.item && G.mods && G.mods.noitems){ const worth = heldResale(prize.item); G.rivalPay += worth; G.lastRival.sold = worth; G.lastRival.item = prize.item; }   // 4.12.0
+      else if(prize.item && bagRoom(G) > 0){ G.bag.push(prize.item); G.lastRival.item = prize.item; }
       else if(prize.item){                                   // full Bag: he pays its worth instead
         const worth = heldResale(prize.item); G.rivalPay += worth; G.lastRival.sold = worth; G.lastRival.item = prize.item;
       }
@@ -4132,7 +4165,7 @@ function nextUp(G){
 /** What next turn's pay packet looks like. Shown in the UI, so it lives here. */
 function incomeFor(G){
   const carry = Math.min(Math.max(0, G.credits), carryCap(G));
-  const base = TUNING.creditsPerTurn;
+  const base = TUNING.creditsPerTurn - (G.mods && G.mods.tight ? TUNING.mods.tightCut : 0);   // 4.12.0: Tight Budget
   const result = G.lastResult === 'win' ? TUNING.winBonus
                : G.lastResult === 'lose' ? TUNING.lossBonus : 0;
   const tbl = G.streak > 0 ? TUNING.winStreakBonus : TUNING.lossStreakBonus;
@@ -4190,7 +4223,7 @@ if(typeof module !== 'undefined' && module.exports){
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,

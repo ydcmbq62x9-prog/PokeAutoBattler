@@ -297,16 +297,31 @@ const gensHtml = () => {
   <p class="note">The Gen 1 twin of Red: about <b>1 run in 6</b> with Gen 1 on hides him (a run with both gens draws one secret boss, Red or Oak, at random), and he appears after the Champion. Team: <b>${E.OAK.lineup.map(u => esc(E.SPECIES[u.id].name)).join(', ')}</b>, level 3, each holding an item. One fight, no retry, nothing lost on a loss; Oak's Badge is a trophy.
   Priced at <b>×${E.TUNING.red.oakRatio['1']}</b> (Gen 1) or <b>×${E.TUNING.red.oakRatio['1+2']}</b> (Gen 1 + 2); the reference bot beats him about 1 time in 3 among runs that reach him (<code>node redwin.js 250 '[1]' oak</code>).
   <b>Porygon2</b> (Normal, Support, Tier 5, ${E.SPECIES.porygon2.hp}/${E.SPECIES.porygon2.atk}/${E.SPECIES.porygon2.spd}) is Porygon's level-up evolution when Gen 2 is on; Porygon is now the ninth cross-gen evolution in the Evolution Pool.</p>
-  <h3 style="margin-top:18px">Supports pass <span class="dim" style="font-size:13px;font-weight:400">— 4.11.0, this update only</span></h3>
-  <p class="note">Every Support finished pokémon was measured as the one added to a random mixed five against a random mixed six (<code>node svall.js</code>, 400 battles each, Gen 1 + 2, everyone at the same level). Supports as a role averaged 47% against 48–49% for the others, but the healers sat well under their tiers: Slowking 37%, Mr. Mime 38%, Togetic 38%, Lanturn 39% (a tier averages about 48%). Healers act on their Speed, so slow ones barely healed anything: the fix was Speed and heal size together. Porygon2 was far above the curve at 67% (the T5 average is 50%).</p>
-  <div class="scroller"><table><thead><tr><th>Pokémon</th><th class="n">Tier</th><th>Stats before → after (HP / Atk / Spd)</th><th>Move before → after</th><th class="n">Win% before</th><th class="n">after</th></tr></thead><tbody>${
-    [['lanturn',39,46],['togetic',38,48],['slowking',37,47],['mr-mime',38,48],['clefable',43,48],['jynx',45,45],['crobat',56,51],['porygon2',67,53]].map(([k, b0, a0]) => {
-      const o = OLD.SPECIES[k], n = E.SPECIES[k];
-      const mv = m => esc(m.name) + ' · ' + esc(m.text(1)).replace(/^Deals /, '').slice(0, 90);
-      const f = v => `${v.hp} / ${v.atk} / ${v.spd}`;
-      const m2 = (a, b) => { const x = OLD.SPECIES[k].move2 && OLD.SPECIES[k].move2.text(1), y = E.SPECIES[k].move2 && E.SPECIES[k].move2.text(1); return x !== y ? `<br><span class="dim">${esc(y.replace(/^No damage\. /, ''))}</span>` : ''; };
-      return `<tr><td class="nm">${esc(n.name)}</td><td class="n">${n.tier}</td><td>${f(o)} → <b>${f(n)}</b></td><td>${o.move.text(1) !== n.move.text(1) ? esc(o.move.text(1).replace(/^Deals /, '')).slice(0, 80) + ' → <b>' + esc(n.move.text(1).replace(/^Deals /, '')).slice(0, 80) + '</b>' : 'unchanged'}${m2()}</td><td class="n">${b0}%</td><td class="n"><b>${a0}%</b></td></tr>`; }).join('')}</tbody></table></div>
-  <p class="note">Also: Chinchou's and Togepi's Speed rose by 4 and 2 so they are not left behind by their evolutions; Jynx got +2 HP and +3 Attack (still a little under its tier). Because Supports got stronger on the whole, Mono Psychic, Grass, Normal, Bug, Poison, Electric, Ground and Rock opponents were nudged to keep every Mono type near 75%. Gen 1 76.0%, Gen 2 77.8%, Gen 1 + 2 75.0% after the pass.</p>
+  <h3 style="margin-top:18px">Mew <span class="dim" style="font-size:13px;font-weight:400">— new in 4.12.0, this update only</span></h3>
+  <p class="note">The second Support legendary, for runs with Gen 1 on. Celebi heals; Mew protects. ${E.SPECIES.mew.hp} ♥ / ${E.SPECIES.mew.atk} ◆ / ${E.SPECIES.mew.spd} ».
+  <b>${esc(E.SPECIES.mew.move.name)}</b>: ${esc(E.SPECIES.mew.move.text(1))} <b>${esc(E.SPECIES.mew.move2.name)}</b> (${esc(E.SPECIES.mew.move2.when())}): ${esc(E.SPECIES.mew.move2.text(1))}
+  No existing pokémon's stats or moves changed in this update.</p>
+  <div class="scroller"><table><thead><tr><th>Legendary forced into every run</th><th class="n">Gen 1</th><th class="n">Gen 1 + 2</th></tr></thead><tbody>
+    <tr><td class="nm">Mew (first try: 70 / 48 / 88, barrier 12%)</td><td class="n">81.7%</td><td class="n">80.0%</td></tr>
+    <tr><td class="nm"><b>Mew (shipped)</b></td><td class="n"><b>80.0%</b></td><td class="n"><b>77.5%</b></td></tr>
+    <tr><td class="nm">Celebi</td><td class="n">—</td><td class="n">74.0% <span class="dim">(Gen 2: 76.5%)</span></td></tr>
+    <tr><td class="nm">Zapdos</td><td class="n">84.2%</td><td class="n"></td></tr>
+    <tr><td class="nm">Articuno</td><td class="n">69.0%</td><td class="n"></td></tr>
+  </tbody></table></div>
+  <p class="note">600 runs each (<code>node legonly.js '[1]' mew 600</code>): the encounter chance is forced to 100% and every other legendary is switched off.</p>
+  <p class="note">With Mew in the Gen 1 legendary pool, normal runs clear 76.8% (Gen 1) and 74.8% (Gen 1 + 2), unchanged within noise. Mono-Psychic in Gen 1 rose to 79% (Mew counts as Psychic), so its opponents went ×1.154 → ×1.162, which brings it back to 76%.</p>
+  <h3 style="margin-top:18px">Challenges <span class="dim" style="font-size:13px;font-weight:400">— new in 4.12.0</span></h3>
+  <p class="note">Unlike Mono-type, No PC, One Life and Rich &amp; Ruthless, the four new challenges are <b>not</b> balanced away: opponents stay the same, so each one really is harder. Each challenge (and One Life, No PC and Mono-type) earns its own badge; a clear with ${3} or more on at once earns the gold version of each.</p>
+  <div class="scroller"><table><thead><tr><th>Gen 1 run with…</th><th>What it does</th><th class="n">Bot clear rate</th></tr></thead><tbody>
+    <tr><td class="nm">No rules</td><td></td><td class="n">75.0%</td></tr>
+    <tr><td class="nm">No Held Items</td><td>No held items in the Mart, no Gift Item reward; the rival pays cash instead</td><td class="n">52.7%</td></tr>
+    <tr><td class="nm">No Legendaries</td><td>No legendary encounters</td><td class="n">64.7%</td></tr>
+    <tr><td class="nm">Hard Gyms</td><td>Gym leaders, Elite Four and Champion ×${E.TUNING.mods.hardGymsFoes} (tried ×1.08: 37.7%)</td><td class="n">56.3%</td></tr>
+    <tr><td class="nm">Tight Budget</td><td>−${E.TUNING.mods.tightCut}₽ base income a turn (tried −2₽: 47.3%)</td><td class="n">68.3%</td></tr>
+    <tr><td class="nm">No Held Items + Tight Budget + Hard Gyms</td><td>a gold run</td><td class="n">14.3%</td></tr>
+    <tr><td class="nm">No Legendaries + Tight Budget + Hard Gyms</td><td>a gold run</td><td class="n">34.0%</td></tr>
+  </tbody></table></div>
+  <p class="note">300 runs each with the reference bot (<code>node modrate.js '[1]' '{"hardgyms":true}' 300</code>). A real player who plans around a challenge will do better than the bot.</p>
   <h3 style="margin-top:18px">Celebi <span class="dim" style="font-size:13px;font-weight:400">— 4.10.0</span></h3>
   <p class="note">Support legendary, ${E.SPECIES.celebi.hp} ♥ / ${E.SPECIES.celebi.atk} ◆ / ${E.SPECIES.celebi.spd} »: ${esc(E.SPECIES.celebi.move.name)} (${esc(E.SPECIES.celebi.move.text(1))}) and ${esc(E.SPECIES.celebi.move2.name)}. Forced into every Gen 2 run it clears 79.5% against 69.5–83.8% for the other legendaries.</p>
   <h3 style="margin-top:18px">Gen 2 roster by tier and role <span class="dim" style="font-size:13px;font-weight:400">— buyable lines</span></h3>

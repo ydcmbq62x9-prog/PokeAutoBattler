@@ -47,7 +47,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     document.querySelector('[data-n="go"]').click(); await new Promise(r => setTimeout(r, 200));
     return { locked1, unlocked, on, secrets: G.secrets && G.secrets.join(), tk: records().tickets, label: modsLabel(G) }; });
   check(ui.locked1 && ui.unlocked && ui.on && ui.secrets === 'red,oak' && ui.tk.red === 0 && ui.tk.oak === 0 && /Secret Gauntlet/.test(ui.label), 'New Run: locked without tickets, unlocked with them, spends both: ' + JSON.stringify(ui));
-  const card = await p.evaluate(() => { openTrainerCard(false); const t = document.querySelector('.tcard, .trainer').innerText; document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
+  const card = await p.evaluate(() => { openTrainerCard(false); const t = [...document.querySelectorAll('.sbt')].map(b => b.getAttribute('aria-label')).join(); document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
   check(/Gauntlet Badge/.test(card), 'Trainer Card shows the Gauntlet Badge row');
   const dock = await p.evaluate(() => { G = newGame(11, { gens: [1, 2], mods: { secrets: true } }); rollShop(G, false); G.stage = runPlan(G).findIndex(x => x.kind === 'champion'); G.badges = 8; phase = 'shop';
     applyBattleResult(G, 'win', opponentFor0(G), null); nextTurn(G); render(); const a = document.querySelector('.dock').innerText;
