@@ -1027,6 +1027,7 @@ const OMAN = { b:[18, 24, 20], e:[56, 66, 36] };
 const KABU = { b:[18, 24, 28], e:[42, 60, 50] };
 const AERO = [34, 44, 66];
 const SLOW = { b:[28, 16, 12], e:[64, 44, 22] };
+const CELE = [68, 46, 86];   // 4.10.0: Celebi, a Support legendary (hp, atk, spd)
 const SLOWK = [68, 36, 30];
 const MIME = [34, 34, 50];
 const PONY = { b:[18, 24, 46], e:[38, 48, 64] };
@@ -1510,6 +1511,9 @@ const SPECIES = {
                 move:M.wall('Aeroblast', 1.3, 2.0) },
   'ho-oh':    { name:'Ho-Oh',      type:'Fire', gen1:'Fire/Flying', gen:2, role:'bruiser', hp:82, atk:76, spd:90, legendary:true,
                 move:M.afflict('Sacred Fire', 1.6, 'brn', 0.5, 'front') },
+  /* 4.10.0: the first healer legendary */
+  celebi:     { name:'Celebi',     type:'Psychic', gen1:'Psychic/Grass', gen:2, role:'support', hp:CELE[0], atk:CELE[1], spd:CELE[2], legendary:true,
+                move:M.mend('Life Dew', 1.0, 0.10) },
 
   /* ============ 4.5.0 — POOL FILL-INS ============ */
   omanyte:    { name:'Omanyte',    type:'Rock', gen1:'Rock/Water', tier:3, role:'cannon', hp:OMAN.b[0], atk:OMAN.b[1], spd:OMAN.b[2],
@@ -1832,6 +1836,7 @@ const MOVE2 = {
   suicune:    on('every', M.haze('Haze', 1.0), { n:3 }),
   lugia:      on('low',   M.recover('Recover', 0.5)),
   'ho-oh':    on('low',   M.recover('Recover', 0.5)),
+  celebi:     on('allyLow', M.cleanse('Aromatherapy', 0.08)),
   omanyte:    on('every', M.slow('Bubble', 0.5, 6), { n:3 }),
   omastar:    on('every', M.slow('Bubble', 0.65, 8), { n:3 }),
   kabuto:     on('open',  M.grow('Swords Dance', 3), { free:true }),

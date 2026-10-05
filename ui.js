@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.9.1', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.10.0', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3113,6 +3113,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.10.0', date:'Oct 5, 2026', title:'Minor gameplay changes', sub:'A first-run tutorial and Celebi, the first Support legendary', items:[
+    'A short tutorial of five cards plays the first time you open the game. Skip it any time, and replay it from START \u2192 How to play.',
+    'Celebi joins the legendaries in Gen 2 runs: a Psychic Support that heals your most-hurt pok\u00e9mon every time it acts and cures and heals the team once when a teammate drops below half HP. It is also a Grass pok\u00e9mon for Mono Grass runs. Recruit it for 12\u20bd after the 5th gym like the others.',
+  ]},
   { v:'4.9.1', date:'Oct 5, 2026', title:'Visual bug fixes', sub:'Phone fixes: slimmer Battle bar, steadier screen, fuller battle scene, Mute and a visible legendary', items:[
     'On phones the Battle bar at the bottom is now just the button, with the next opponent\u2019s name on it. Their card with the road to the badge sits in the page below your party instead of covering the shop.',
     'Tapping things in the shop no longer shoves the page around on iPhone. Whatever you were looking at stays where it was when the message box opens.',
@@ -3896,9 +3900,52 @@ function typeRingHtml(){
     <div><i class="bad">weak to</i> ${chips(TYPES[t].weak)}</div><div><i class="good">resists</i> ${chips(TYPES[t].resist)}</div></div>`).join('') + `</div>`;
 }
 
+/* 4.10.0 · FIRST-RUN TUTORIAL — five short cards the first time the game opens (and from How to Play → Replay the tutorial). */
+function openTutorial(){
+  const T = TUNING;
+  const pages = [
+    { ids:['bulbasaur','charmander','squirtle'], title:'Welcome to PokéBattler',
+      text:`Build a team of up to ${T.maxTeam} pokémon and beat ${T.badgesToWin} gym leaders, the Elite Four and the Champion. Battles play out on their own: your job is the team you bring to each one.` },
+    { ids:['onix','pikachu'], title:'Buy, then place',
+      text:'Tap a pokémon in the Daycare, then tap an empty spot in your party. Where they stand matters: the front rank takes the hits and the back rank deals damage safely. The little badge on each is its role, and “Line up by role” sorts your party for you.' },
+    { ids:['charmander','charmeleon','charizard'], title:'Level up and evolve',
+      text:'Three copies of the same pokémon make it level 2, six make level 3, and levelling up evolves it. You earn ₽ after every battle to spend in the Daycare and the PokéMart on stones, held items and next-battle boosts.' },
+    { ids:['snorlax','zapdos'], title:'Fights have stakes',
+      text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
+    { ids:['eevee','pikachu','mew'], title:'Make it yours',
+      text:'START opens the menu: your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations and rules like Mono type or One Life. The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+  ];
+  let i = 0;
+  const d = modal('', true); d.classList.add('tutorial');
+  const finish = () => { PREF.set('tutorial', 'done'); TIPS.dismiss('shop'); d.remove(); SFX.play('back'); render(); };
+  const draw = () => {
+    const p = pages[i], last = i === pages.length - 1;
+    d.querySelector('.boxscroll').innerHTML = `<div class="tutpg">
+      <div class="tutart">${p.ids.filter(k => SPECIES[k]).map(k => spriteHtml(k, 'lg')).join('')}</div>
+      <h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>
+      <div class="tutdots" aria-hidden="true">${pages.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="btnrow">${i > 0 ? '<button class="btn" data-t="back">Back</button>' : '<button class="btn ghost" data-t="skip">Skip</button>'}
+        <button class="btn primary" data-t="next">${last ? 'Let’s go!' : 'Next'}</button></div>
+      ${i > 0 && !last ? '<button class="btn ghost tutskip" data-t="skip">Skip the tutorial</button>' : ''}</div>`;
+    d.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+      const a = b.dataset.t;
+      if(a === 'skip') return finish();
+      if(a === 'back'){ i--; SFX.play('back'); return draw(); }
+      if(last) return finish();
+      i++; SFX.play('select'); draw(); });
+  };
+  draw(); SFX.play('open');
+}
+/** First time only: a fresh install with nothing played yet. Test browsers skip it like the tips. */
+function maybeTutorial(){
+  if(PREF.get('tutorial', '') === 'done' || (navigator.webdriver && !window.PKB_TIPS)) return;
+  if(!G || G.daily || (records().runs || 0) > 0 || (G.turn || 1) > 1 || (G.stage || 0) > 0) { PREF.set('tutorial', 'done'); return; }   // someone already playing doesn't need it
+  openTutorial();
+}
 function openHelp(){
   const T = TUNING;
   const d = modal(`<h3>How to Play</h3>
+    <button class="btn replay" data-m="tutorial">Replay the tutorial</button>
     <p class="legend"><span style="color:var(--atk)">◆ Attack</span>
        <span style="color:var(--hp)">♥ HP</span>
        <span style="color:var(--spd)">» Speed</span></p>
@@ -4069,7 +4116,8 @@ function openHelp(){
     roster too, more slowly — that is what lets a stuck trainer out-grow a wall instead of retrying into it
     forever.</p>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
-  d.querySelector('[data-m]').onclick = () => d.remove();
+  d.querySelector('[data-m="close"]').onclick = () => d.remove();
+  d.querySelector('[data-m="tutorial"]').onclick = () => { d.remove(); openTutorial(); };
 }
 
 /** 4.9.0: the types a pokémon also has in the games (its label), beyond the one it plays as. */
@@ -4363,7 +4411,7 @@ function newRun(opts){
   phase = 'shop'; sel = null; inspect = null; battle = null;
   save();
 }
-const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); };   // a reward left unchosen
+const afterTitle = () => { if(phase === 'shop' && pendingOffer(G)) openRewardPicker(); else maybeTutorial(); };   // a reward left unchosen
 
 (function boot(){
   applyMotion();
