@@ -13,7 +13,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     G.stage = runPlan(G).findIndex(x => x.kind === 'champion'); G.badges = 8; phase = 'shop'; render();
     applyBattleResult(G, 'win', opponentFor0(G), null); nextTurn(G); render();
     const t = s => (document.querySelector(s) || {}).innerText || '';
-    return { dock: t('.dock'), strip: t('.redstrip'), sprite: !!SPRITES.oak };
+    return { dock: (document.querySelector('.dock') || {}).textContent || '', strip: t('.redstrip'), sprite: !!SPRITES.oak };
   });
   check(a.sprite, 'Oak has a sprite');
   check(/Oak is waiting at Pallet Town/.test(a.dock) && /one chance/.test(a.dock) && /Challenge Oak/i.test(a.dock), 'dock: Oak is waiting at Pallet Town');

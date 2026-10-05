@@ -102,7 +102,7 @@ const mark = m => console.log('… ' + m);
   await page.waitForTimeout(250);
   const solo = await page.$('#inspect .paceline');
   if(solo) errors.push('the rate line shows with a one-pokémon party');
-  const soloq = await page.$('.queue.shopq');
+  const soloq = await page.$('.queue.shopq:not(.ghostq)');
   if(soloq) errors.push('the order strip shows with a one-pokémon party');
   mark('one pokémon: no strip, no rate line');
 

@@ -74,18 +74,18 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     /* ---- Options: sound off, volume ---- */
     await page.evaluate(() => openOptions()); await page.waitForTimeout(100);
     const rows = await page.$$eval('.optrow > span', e => e.map(x => x.textContent));
-    check(['Sound', 'Volume', 'Transitions'].every(r => rows.includes(r)), `${tag}: Options has Sound, Volume and Transitions`);
+    check(['Volume', 'Transitions'].every(r => rows.includes(r)), `${tag}: Options has Volume and Transitions`);
     const tr = await page.$$eval('[data-o="wipe"]', e => e.map(x => x.textContent + (x.classList.contains('on') ? '*' : '')));
     check(tr.join() === 'Auto*,Full,Quick,Off', `${tag}: Transitions offers ${tr.join(' / ')} (Auto by default)`);
     const fit = await page.evaluate(() => { const b = document.querySelector('.modal .box').getBoundingClientRect();
       return [...document.querySelectorAll('.optrow .sp')].every(x => { const r = x.getBoundingClientRect(); return r.right <= b.right + 1 && r.left >= b.left - 1; }); });
     check(fit, `${tag}: every Options button fits inside the box`);
-    await page.click('[data-o="sound"][data-v="off"]'); await page.waitForTimeout(60);
+    await page.click('[data-o="volume"][data-v="off"]'); await page.waitForTimeout(60);
     n = await mark();
     await page.click('[data-m="close"]'); await page.evaluate(() => { handle('rolldc'); SFX.play('win'); });
     got = await logSince(n);
     check(got.length === 0 && await page.evaluate(() => PREF.get('sound') === 'off'), `${tag}: Sound Off silences everything`);
-    await page.evaluate(() => PREF.set('sound', 'on'));
+    await page.evaluate(() => { PREF.set('sound', 'on'); PREF.set('volume', 'mid'); });
 
     /* every sound actually plays through Web Audio without an error */
     const played = await page.evaluate(async () => { const c = SFX.ensure(); for(const k of SFX.names){ SFX.play(k); await new Promise(r => setTimeout(r, 60)); }

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.9.0', date:'Oct 4, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.9.1', date:'Oct 5, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1071,7 +1071,7 @@ function livesHtml(){
    stepping out to challenge you, with the Battle button under it. The dots are
    the road to the next badge: its trainer battles, then the gym (or the five
    fights of the Elite Four). A rival ambush still looks like a trainer here. */
-function dockHtml(closed){
+function dockHtml(closed, flowOnly){
   const n = nextUp(G), st = stageOf(G), plan = runPlan(G), at = G.stage || 0;
   const b = isBoss(st) ? st.boss : null;
   let road = '';
@@ -1099,14 +1099,20 @@ function dockHtml(closed){
   const nobody = closed && !fightersOf(G).length;
   const label = nobody ? 'Nobody can fight — swap someone in from the PC'
     : b ? `Challenge ${esc(b.name)}` : 'Battle';
-  return `<div class="dock">
-    ${undoHtml(closed)}
-    <div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
+  const speech = `<div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
       <span class="who">${b ? bossArt(b, 'dockart') : '<i class="pball"></i>'}</span>
       <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
       <span class="nstage">${n.stage}/${n.total}</span>
-    </div>
-    <button class="btn fight big-cta ${b ? 'boss' : ''}" data-act="endturn" ${nobody ? 'disabled' : ''}>${label}</button>
+    </div>`;
+  if(flowOnly) return speech;
+  /* 4.9.1: on a phone the dock is only the Battle button (who is next sits in the page above the Daycare), so it stops covering the shop */
+  const opp = b ? b.name : trainerName(G.turn);
+  return `<div class="dock">
+    ${undoHtml(closed)}
+    ${!closed && encounterOpen(G) ? (() => { const e = G.encounter; return `<div class="legdock"><span>\u2726 <b>${esc(SPECIES[e.id].name)}</b> appeared!</span>
+      <button class="btn primary" data-act="legend" ${G.credits >= e.cost ? '' : 'disabled'}>Recruit ${e.cost}\u20bd</button><button class="btn ghost" data-act="legendpass">Let it go</button></div>`; })() : ''}
+    ${speech}
+    <button class="btn fight big-cta ${b ? 'boss' : ''}" data-act="endturn" ${nobody ? 'disabled' : ''}>${label}${nobody ? '' : `<small class="fopp"> · ${esc(opp)} ${n.stage}/${n.total}</small>`}</button>
   </div>`;
 }
 
@@ -1162,7 +1168,7 @@ function renderShop(){
      own clock, so it cannot disagree with the fight it is predicting. */
   const partyQueue = (() => {
     const team = fightersOf(G);
-    if(team.length < 2) return '';
+    if(team.length < 2) return '<div class="queue shopq ghostq" aria-hidden="true"><span class="qlbl">Order</span><span class="qmon p"></span></div>';   // 4.9.1: keeps the panel the same height with 0 or 1 pok\u00e9mon
     const cells = previewOrder(team, 8).map((u, n) =>
       `<span class="qmon p ${n === 0 ? 'now' : ''}" data-pop="team:${u.pos}"
         title="${esc(u.nm)} \u00b7 ${effSpd(u)} speed">
@@ -1327,12 +1333,13 @@ function renderShop(){
   ${TIPS.html(G)}
   <div class="panel party">
     <h2>Your Party <span class="sub">the front rank takes the hits · speed decides how often you act</span>
-      ${G.team.length > 1 ? '<button class="btn arrange" data-act="arrange" title="Tanks to the front, Cannons to the back">Line up by role</button>' : ''}
-      ${G.team.length ? '<button class="btn arrange" data-act="presets" title="Save a formation and snap back to it">Formations</button>' : ''}</h2>
+      <button class="btn arrange${G.team.length > 1 ? '' : ' ghostb'}" data-act="arrange" ${G.team.length > 1 ? '' : 'tabindex="-1" aria-hidden="true"'} title="Tanks to the front, Cannons to the back">Line up by role</button>
+      <button class="btn arrange${G.team.length ? '' : ' ghostb'}" data-act="presets" ${G.team.length ? '' : 'tabindex="-1" aria-hidden="true"'} title="Save a formation and snap back to it">Formations</button></h2>
     ${partyGrid}
     ${partyQueue}
   </div>
 
+  <div class="speechflow">${dockHtml(closed, true)}</div>
   ${closed ? nextUpHtml() : ''}
   <div id="inspect">${inspectHtml()}</div>
 
@@ -2225,8 +2232,18 @@ function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
+  /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
+     tap) shoved the whole page down. Remember the first thing on screen and put it back where it was. */
+  const anchor = phase === 'shop' && drawnPhase === 'shop' && window.scrollY > 0 ? (() => {
+    for(const e of app.querySelectorAll('[data-act][data-i], .panel > h2')){
+      const r = e.getBoundingClientRect(); if(r.top >= 0 && r.top < innerHeight - 100 && r.height > 0 && !e.closest('.dock,.speech'))
+        return { sel: e.matches('h2') ? null : `[data-act="${e.dataset.act}"][data-i="${e.dataset.i}"]`, h: e.matches('h2') ? e.textContent.trim().slice(0, 12) : null, top: r.top }; }
+    return null; })() : null;
   if(phase === 'shop' && drawnPhase === 'shop' && app.firstChild) morphInto(app, html);   // v49
   else app.innerHTML = html;
+  if(anchor){
+    const e = anchor.sel ? app.querySelector(anchor.sel) : [...app.querySelectorAll('.panel > h2')].find(x => x.textContent.trim().slice(0, 12) === anchor.h);
+    if(e){ const d = e.getBoundingClientRect().top - anchor.top; if(Math.abs(d) > 1) window.scrollBy(0, d); } }
   drawnPhase = phase;
   const lg = $('#blog'); if(lg) lg.scrollTop = lg.scrollHeight;
   if(phase === 'battle') mountStage();       // v36: the kept arena goes back in
@@ -3096,6 +3113,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.9.1', date:'Oct 5, 2026', title:'Visual bug fixes', sub:'Phone fixes: slimmer Battle bar, steadier screen, fuller battle scene, Mute and a visible legendary', items:[
+    'On phones the Battle bar at the bottom is now just the button, with the next opponent\u2019s name on it. Their card with the road to the badge sits in the page below your party instead of covering the shop.',
+    'Tapping things in the shop no longer shoves the page around on iPhone. Whatever you were looking at stays where it was when the message box opens.',
+    'The battle scene now grows to fill a tall phone screen instead of leaving an empty strip at the bottom.',
+    'When a legendary appears, a small Recruit / Let it go bar shows above the Battle button on phones so you can\u2019t miss it.',
+    'Mute is now part of the Volume setting (Mute, Low, Mid, High) and the separate Sound row is gone.',
+    'On desktop the Your Party panel keeps the same height with no pok\u00e9mon, one pok\u00e9mon or six, so the page below stops jumping.',
+  ]},
   { v:'4.9.0', date:'Oct 4, 2026', title:'Minor gameplay changes', sub:'Run history, Pokédex type tags and a bigger Badges tap area', items:[
     'Run history: your last 30 runs are on the Trainer Card, each with its team, how far it got, the rules and any secret boss you beat. It travels in a transfer code.',
     'The Pokédex now shows a pok\u00e9mon\u2019s second type (Geodude also shows Ground), and the stone and item list says who evolves with each one.',
@@ -3642,11 +3667,10 @@ function openOptions(){
     <div class="optrow"><span>Text</span>${seg('text', PREF.get('text', 'type'), [['type', 'Type out'], ['instant', 'Instant']])}</div>
     <div class="optrow"><span>Motion</span>${seg('motion', PREF.get('motion', 'device'), [['device', 'Normal'], ['reduced', 'Reduced']])}</div>
     <div class="optrow"><span>Title screen</span>${seg('title', PREF.get('title', 'on'), [['on', 'Show'], ['off', 'Skip']])}</div>
-    <div class="optrow"><span>Sound</span>${seg('sound', PREF.get('sound', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Haptics</span>${seg('haptics', PREF.get('haptics', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Trainer battles</span>${seg('autoskip', PREF.get('autoskip', 'off'), [['off', 'Watch'], ['on', 'Skip to result']])}</div>
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
-    <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('volume', 'mid'), [['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
+    <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Auto'], ['full', 'Full'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
@@ -3661,11 +3685,12 @@ function openOptions(){
     const k = b.dataset.o, v = b.dataset.v;
     if(k === 'speed') setSpeed(+v);
     else if(k === 'tips' && v === 'reset'){ TIPS.reset(); PREF.set('tips', 'on'); }
+    else if(k === 'volume'){ if(v === 'off') PREF.set('sound', 'off'); else { PREF.set('sound', 'on'); PREF.set('volume', v); } }   // 4.9.1: Mute lives in the Volume row
     else PREF.set(k, v);
     if(k === 'haptics' && v === 'on') HAPTIC.buzz('select');
     if(k === 'motion') applyMotion();
     if(k === 'theme') applyTheme();
-    if(k === 'sound' || k === 'volume') setTimeout(() => SFX.play('select'), 30);   // hear the new level
+    if((k === 'sound' || k === 'volume') && v !== 'off') setTimeout(() => SFX.play('select'), 30);   // hear the new level
     d.querySelectorAll(`[data-o="${k}"]`).forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
   });
   d.querySelector('[data-m="close"]').onclick = () => { d.remove(); render(); };

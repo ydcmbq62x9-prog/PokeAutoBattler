@@ -2007,6 +2007,32 @@ h2 .btn.arrange{min-height:30px;padding:4px 10px}
 .hrow .hinfo{display:flex;flex-direction:column;min-width:0;font-size:13px}
 .hrow .hinfo .dim{font-size:11.5px}
 .evof{margin-top:2px;font-size:11.5px}
+
+/* 4.9.1 — phone and desktop layout fixes */
+.ghostb,.ghostq{visibility:hidden;pointer-events:none}
+.speechflow{display:none}
+.dock .fopp,.legdock{display:none}
+.dock .btn.fight small{font-size:.62em;opacity:.85;letter-spacing:0;text-transform:none;font-weight:600}
+@media (max-width:700px){
+  .dock .speech{display:none}
+  .speechflow{display:block}
+  .dock .fopp{display:inline}
+  .dock{display:flex;flex-direction:column;align-items:stretch}
+  .dock .btn.fight,.dock .btn.undo{grid-column:auto;grid-row:auto;width:100%;min-width:0}
+  .dock .btn.undo{width:auto;align-self:center;margin-bottom:0}
+  .dock .btn.fight{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dock{gap:5px;padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  .legdock{display:flex;align-items:center;gap:6px;padding:5px 8px;border:2px solid var(--gold);border-radius:10px;background:var(--panel);box-shadow:var(--gbbox)}
+  .legdock span{flex:1;min-width:0;font-size:13px;line-height:1.2}
+  .legdock .btn{min-height:34px;padding:4px 10px;font-size:13px;flex:none;width:auto}
+}
+@media (max-width:700px) and (orientation:portrait){
+  #app:has(.arena){min-height:100vh;min-height:100dvh}
+  #app:has(.arena) .panel.arena{flex:1 1 auto;display:flex;flex-direction:column}
+  #app:has(.arena) .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  #app:has(.arena) #stageslot{flex:1 1 auto;display:flex;flex-direction:column}
+  #app:has(.arena) .bstage{aspect-ratio:auto;flex:1 1 auto;min-height:calc(100vw * .8);max-height:calc(100vw * 1.3)}
+}
 </style>
 </head>
 <body>

@@ -9,8 +9,9 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
       G.pendingRewards = []; G.credits = 30; render(); });
     const geo = () => p.evaluate(() => { const d = document.querySelector('.dock'); if(!d) return null; const q = x => { const e = d.querySelector(x); if(!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height, b: r.bottom }; };
       return { s: q('.speech'), f: q('.btn.fight'), u: q('.btn.undo'), vw: innerWidth, dockW: d.getBoundingClientRect().width }; });
-    const wide = dev.viewport.width >= 620;
+    const wide = dev.viewport.width >= 620, phoneDock = dev.viewport.width <= 700;   // 4.9.1: up to 700px the dock is only the BATTLE button
     const chk = (g, what) => { if(!g || !g.s || !g.f){ check(false, `${tag}: ${what}: dock present`); return; }
+      if(phoneDock){ check(g.f.h <= 70 && g.f.w >= g.dockW - 2, `${tag}: ${what}: BATTLE is a slim full-width bar (${g.f.h.toFixed(0)}px)`); if(g.u) check(g.u.h < 45 && g.u.b <= g.f.t + 1, `${tag}: ${what}: Undo sits above it`); return; }
       if(wide){
         check(Math.abs(g.s.t - g.f.t) < 1.5 && Math.abs(g.s.h - g.f.h) < 1.5, `${tag}: ${what}: box and BATTLE are the same height and line up (${g.s.h.toFixed(0)} / ${g.f.h.toFixed(0)}, tops ${g.s.t.toFixed(0)} / ${g.f.t.toFixed(0)})`);
         check(g.s.w > g.dockW * 0.55 && g.f.w <= 215 && g.f.w >= 150, `${tag}: ${what}: the box keeps most of the width, BATTLE a fixed size (${g.s.w.toFixed(0)} / ${g.f.w.toFixed(0)} of ${g.dockW.toFixed(0)})`);
