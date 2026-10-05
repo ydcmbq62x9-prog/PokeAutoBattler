@@ -2431,6 +2431,10 @@ body.calm .bstage .stfx i,body.calm .bstage .fbarrier::after{animation:none;opac
   .modal.startmenu .smi{min-height:34px;padding-top:4px;padding-bottom:4px}
   .modal.startmenu .smenu hr,.modal.startmenu .sdesc,.modal.startmenu .yesno{grid-column:1 / -1}
 }
+
+/* 4.17.2: a fainted pokémon keeps only its grey silhouette and its name — no cross, no HP bar */
+.bstage.board .ftr.down::after{display:none}
+.bstage.board.stadium .ftr.down .fhp{display:none}
 </style>
 </head>
 <body>

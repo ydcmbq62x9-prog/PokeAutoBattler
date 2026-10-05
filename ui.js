@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.17.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.17.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3267,6 +3267,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.17.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Fainted pok\u00e9mon lose the cross and the HP bar', items:[
+    'A fainted pok\u00e9mon now shows only its grey silhouette and its name: the red cross and the empty HP bar are gone.',
+  ]},
   { v:'4.17.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Smaller pok\u00e9mon in battle and a clean-up of the battle screen', items:[
     'Pok\u00e9mon stand a little smaller again on the battle field.',
     'Fainted pok\u00e9mon are now clear grey silhouettes with a cross, instead of faint shapes that all looked alike.',
