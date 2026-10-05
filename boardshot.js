@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
-  for(const [w,h,tag] of [[844,390,'land'],[390,844,'ph']]){
+  for(const [w,h,tag] of [[390,844,'ph'],[1250,850,'pc']]){
     const p = await b.newPage({ viewport:{ width:w, height:h }, deviceScaleFactor: tag==='ph'?2:1 });
     const errs=[]; p.on('pageerror', e => errs.push(String(e)));
     await p.addInitScript(() => { window.PKB_TITLE = false; localStorage.setItem('pkb_tutorial','done'); });

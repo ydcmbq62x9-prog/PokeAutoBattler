@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.15.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.16.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1555,10 +1555,12 @@ const floorOf = b => { const t = b.boss && b.boss.theme && b.boss.theme[0];
 function fighterHtml(u){
   const art = SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}" draggable="false">`
     : `<span class="fletters" style="--tcol:${typeColor(u.id)}">${esc(u.nm.slice(0, 2))}</span>`;
+  /* 4.16.0: the nameplate floats over the head (inside .fbody, so it faces you on the tilted table);
+     the bar has a white trail (b) and a striped barrier end (em); .stfx holds the status particles */
   return `<div class="fmove">
-      <div class="fhead"><span class="fname">${esc(u.nm)}${u.lvl > 1 ? ` <i>L${u.lvl}</i>` : ''}</span>
-        <div class="fhp"><i></i></div><div class="fchips"></div></div>
-      <div class="fbody"><div class="fart">${art}</div><div class="fbarrier"></div></div>
+      <div class="fbody"><div class="fart">${art}<div class="stfx"><i></i><i></i><i></i></div></div><div class="fbarrier"></div>
+        <div class="fhead"><div class="frow"><span class="fname">${esc(u.nm)}${u.lvl > 1 ? ` <i>L${u.lvl}</i>` : ''}</span><div class="fchips"></div></div>
+          <div class="fhp"><b></b><i></i><em></em></div></div></div>
     </div><div class="fshadow"></div>`;
 }
 
@@ -1598,6 +1600,11 @@ function paintFighter(F, u, pop){
   const bar = F.el.querySelector('.fhp i');
   bar.style.width = (frac * 100).toFixed(1) + '%';
   bar.className = frac > 0.5 ? '' : frac > 0.22 ? 'mid' : 'low';
+  const trail = F.el.querySelector('.fhp b'), shEnd = F.el.querySelector('.fhp em');   // 4.16.0
+  if(trail) trail.style.width = (frac * 100).toFixed(1) + '%';
+  if(shEnd) shEnd.style.width = Math.min(60, (u.shield || 0) / Math.max(1, u.maxHp) * 100).toFixed(1) + '%';
+  for(const c of [...F.el.classList]) if(c.startsWith('st-') && c !== 'st-' + u.st) F.el.classList.remove(c);
+  if(u.st) F.el.classList.add('st-' + u.st);
   if(u.id !== F.id){
     F.id = u.id;
     const img = F.el.querySelector('.fart img');
@@ -1694,7 +1701,7 @@ function restCentre(F){
   const S = battle && battle.stage; if(!S) return null;
   const t = F.el.getBoundingClientRect(), r = S.el.getBoundingClientRect(), art = F.el.querySelector('.fart');
   const v = S.el.classList.contains('vert'), w = art ? art.getBoundingClientRect().width : t.height;
-  return { x: t.left - r.left + (v ? Math.min(t.width * 0.24, t.height * 0.8) : t.width / 2), y: t.top - r.top + t.height * (v ? 0.25 : 0.5), w };
+  return { x: t.left - r.left + t.width / 2, y: t.top - r.top + t.height * (v ? 0.15 : 0.45), w };   // 4.16.0: it stands centred in its spot
 }
 function floatText(S, F, text, cls, lift){
   const c = (S.el.classList.contains('board') && restCentre(F)) || artCentre(S, F);
@@ -1752,6 +1759,17 @@ function lunge(F, towardsFoe, dur){
     ? [{ transform: 'translate(0,0)' }, { transform: to, offset: .45 }, { transform: 'translate(0,0)' }]
     : [{ transform: 'scale(1)' }, { transform: 'scale(1.06)', offset: .4 }, { transform: 'scale(1)' }],
     { duration: dur, easing: 'ease-out' });
+}
+/** 4.16.0: a barrier breaking shatters into pieces. */
+function shatter(S, F){
+  if(motionOff()) return;
+  const c = artCentre(S, F);
+  for(let k = 0; k < 10; k++){
+    const d = fxEl(S, 'shard', c.x, c.y), a = k / 10 * Math.PI * 2, r = c.w * (0.45 + Math.random() * 0.4);
+    anim(d, [{ transform: 'translate(-50%,-50%) scale(1) rotate(0deg)', opacity: 1 },
+             { transform: `translate(calc(-50% + ${Math.cos(a) * r}px), calc(-50% + ${Math.sin(a) * r + c.w * 0.3}px)) scale(.4) rotate(${k * 70}deg)`, opacity: 0 }],
+      { duration: 650, easing: 'ease-out', remove: true });
+  }
 }
 /** 4.15.0: the crowd reacts to a big moment — the stands flash with camera bulbs, and they cheer (not too often). */
 let lastCheer = 0;
@@ -1975,7 +1993,7 @@ function animateStep(S, i){
         glow(F, { brn:'#ff7a2e', psn:'#b05ad0', par:'#ffd93a', slp:'#9fb1d6', cnf:'#ff9bd0', fln:'#ffffff' }[e.stNew] || '#fff');
       }
       if(e.shUp){ floatText(S, F, 'Barrier', 'shield note', lift); lift += 20; }
-      if(e.shDown && !e.fainted){ floatText(S, F, 'Barrier broke', 'shield note', lift); lift += 20; F.el.querySelector('.fbarrier').classList.remove('on'); }
+      if(e.shDown && !e.fainted){ floatText(S, F, 'Barrier broke', 'shield note', lift); lift += 20; F.el.querySelector('.fbarrier').classList.remove('on'); shatter(S, F); }
       if(e.dAtk) { floatText(S, F, e.dAtk > 0 ? 'ATK ▲' : 'ATK ▼', (e.dAtk > 0 ? 'up' : 'down') + ' note', lift); lift += 20; }
       if(e.dSpd) { floatText(S, F, e.dSpd > 0 ? 'SPD ▲' : 'SPD ▼', (e.dSpd > 0 ? 'up' : 'down') + ' note', lift); }
       if(e.fainted) setTimeout(() => { if(S.gen === gen) faintFx(S, F); }, quick ? 60 : 170);
@@ -3206,6 +3224,13 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.16.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Pok\u00e9mon stand free in battle, with new nameplates, HP bars, status effects and barriers', items:[
+    'No more card squares: on the Stadium look each pok\u00e9mon stands free on its spot, over a soft glow, with faint rings marking empty spots.',
+    'A soft nameplate floats over each pok\u00e9mon\u2019s head: its name, level and status, on a dark band that fades into the field.',
+    'New HP bar: green, then yellow, then red, and a white trail shows how much a hit just took. A barrier shows as a striped blue end on the bar.',
+    'Status conditions show on the pok\u00e9mon itself: flames for a burn, purple bubbles for poison, sparks for paralysis, Zs for sleep and stars circling a confused head.',
+    'A barrier is now a shimmering shell around the pok\u00e9mon, and it shatters into pieces when it breaks.',
+  ]},
   { v:'4.15.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The crowd reacts, big wins get a victory moment, and you can pick a battle look', items:[
     'The crowd reacts: camera bulbs flash in the stands on super-effective hits and knockouts, and the crowd cheers (not every time, so it doesn\u2019t get noisy).',
     'Beat a gym leader, an Elite Four member, the Champion or a secret boss and the camera sweeps along your team from front to back while confetti falls.',
