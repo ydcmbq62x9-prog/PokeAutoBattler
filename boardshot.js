@@ -1,8 +1,8 @@
 const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
-  for(const [w,h,tag] of [[844,390,'land'],[768,1024,'tab']]){
-    const p = await b.newPage({ viewport:{ width:w, height:h }, deviceScaleFactor:1 });
+  for(const [w,h,tag] of [[844,390,'land'],[390,844,'ph']]){
+    const p = await b.newPage({ viewport:{ width:w, height:h }, deviceScaleFactor: tag==='ph'?2:1 });
     const errs=[]; p.on('pageerror', e => errs.push(String(e)));
     await p.addInitScript(() => { window.PKB_TITLE = false; localStorage.setItem('pkb_tutorial','done'); });
     await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);

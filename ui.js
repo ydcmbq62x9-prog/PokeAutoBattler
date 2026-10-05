@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.13.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'4.14.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1545,7 +1545,11 @@ const GEN1_COL = { Rock:'#b8a038', Ground:'#d8b460', Water:'#5a8ff0', Electric:'
 const ST_WORD = { brn:'Burned!', psn:'Poisoned!', par:'Paralysed!', slp:'Asleep!', cnf:'Confused!', fln:'Flinched!' };
 
 const backdropOf = b => b.kind === 'gym' ? 'gym' : (b.kind === 'elite' || b.kind === 'champion') ? 'league'
-  : b.kind === 'rival' ? 'dusk' : 'route';
+  : b.kind === 'rival' ? 'dusk' : b.kind === 'red' && b.boss && b.boss.id !== 'oak' ? 'summit' : 'route';
+/* 4.14.0: the stadium floor follows the battle — a leader or Elite Four member fights on their type's floor */
+const FLOOR_TYPES = ['Rock','Water','Electric','Grass','Bug','Psychic','Fire','Ground','Ice','Fighting','Ghost','Dragon','Flying','Normal','Steel','Poison','Dark'];
+const floorOf = b => { const t = b.boss && b.boss.theme && b.boss.theme[0];
+  return (b.kind === 'gym' || b.kind === 'elite') && FLOOR_TYPES.includes(t) ? 'fl-' + t : 'fl-' + backdropOf(b); };
 
 function fighterHtml(u){
   const art = SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}" draggable="false">`
@@ -1560,14 +1564,15 @@ function fighterHtml(u){
 function buildStage(){
   const b = battle, st0 = b.steps[0] || { p:[], e:[] };
   const el = document.createElement('div');
-  el.className = `bstage board bg-${backdropOf(b)}`;   // 4.13.0: the board — both formations as tiles
+  el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)}`;   // 4.13.0 board; 4.14.0 a tilted stadium table
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
-  el.innerHTML = `<div class="ground"></div><div class="midline"></div>
+  el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i></div>
+    <div class="tview"><div class="table"><div class="pitch"></div><div class="midline"></div>
     ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
       `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
-    <div class="fxl"></div>`;
-  const S = { el, fx: el.querySelector('.fxl'), f: new Map(), at: 0, gen: 0 };
+    </div></div><div class="fxl"></div>`;
+  const S = { el, table: el.querySelector('.table'), fx: el.querySelector('.fxl'), f: new Map(), at: 0, gen: 0 };
   for(const side of ['p', 'e']) (st0[side] || []).forEach((u, i) => addFighter(S, u, side, i));
   markActing(S, st0);
   return S;
@@ -1578,7 +1583,7 @@ function addFighter(S, u, side, i){
   const d = document.createElement('div');
   d.className = `ftr ${side} r${rank} f${file}`;   // 4.13.0: the board places it by rank and file (CSS)
   d.innerHTML = fighterHtml(u);
-  S.el.insertBefore(d, S.fx);
+  (S.table || S.el).appendChild(d);   // 4.14.0: fighters stand on the table
   const F = { el: d, side, uid: u.uid, nm: u.nm, id: u.id, hp: u.hp, maxHp: u.maxHp,
               st: null, shield: 0, atk: u.atk, spd: u.spd, down: false };
   S.f.set(side + ':' + u.uid, F);
@@ -1684,10 +1689,11 @@ const anim = (el, frames, opts) => {
 /** A number or word that rises off a pokémon and fades. */
 /* 4.13.0: where a tile's sprite sits at rest (offsets ignore the lunge and intro transforms), so stacked numbers line up */
 function restCentre(F){
-  const art = F.el.querySelector('.fart'), body = F.el.querySelector('.fbody');
-  if(!art || !body) return null;
-  return { x: F.el.offsetLeft + body.offsetLeft + art.offsetLeft + art.offsetWidth / 2,
-           y: F.el.offsetTop + body.offsetTop + art.offsetTop + art.offsetHeight / 2, w: art.offsetWidth };
+  /* 4.14.0: the tile itself never moves (lunges move what's on it), and its box on screen already includes the table's tilt */
+  const S = battle && battle.stage; if(!S) return null;
+  const t = F.el.getBoundingClientRect(), r = S.el.getBoundingClientRect(), art = F.el.querySelector('.fart');
+  const v = S.el.classList.contains('vert'), w = art ? art.getBoundingClientRect().width : t.height;
+  return { x: t.left - r.left + (v ? Math.min(t.width * 0.24, t.height * 0.8) : t.width / 2), y: t.top - r.top + t.height * (v ? 0.25 : 0.5), w };
 }
 function floatText(S, F, text, cls, lift){
   const c = (S.el.classList.contains('board') && restCentre(F)) || artCentre(S, F);
@@ -1745,6 +1751,15 @@ function lunge(F, towardsFoe, dur){
     ? [{ transform: 'translate(0,0)' }, { transform: to, offset: .45 }, { transform: 'translate(0,0)' }]
     : [{ transform: 'scale(1)' }, { transform: 'scale(1.06)', offset: .4 }, { transform: 'scale(1)' }],
     { duration: dur, easing: 'ease-out' });
+}
+/** 4.14.0: on a big hit the camera leans in towards whoever took it, then settles back. */
+function camLean(S, F){
+  if(motionOff() || !S.table) return;
+  const view = S.el.querySelector('.tview').getBoundingClientRect(), t = F.el.getBoundingClientRect();
+  const ox = ((t.left + t.width / 2 - view.left) / view.width * 100).toFixed(1), oy = ((t.top + t.height / 2 - view.top) / view.height * 100).toFixed(1);
+  const o = `${ox}% ${oy}%`;
+  anim(S.el.querySelector('.tview'), [{ transform: 'scale(1)', transformOrigin: o }, { transform: 'scale(1.1)', transformOrigin: o, offset: .3 }, { transform: 'scale(1)', transformOrigin: o }],
+    { duration: 820, easing: 'ease-out' });
 }
 /** What an attack looks like on its way over. Resolves when it lands. */
 function projectile(S, A, T, kind, dur){
@@ -1879,7 +1894,9 @@ function animateStep(S, i){
     if(!quick && A){ const col = typeColor(A.id);
       for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
-    if(!motionOff() && ev.some(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted)))
+    const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
+    if(bigHit && !quick) camLean(S, bigHit.F);
+    if(!motionOff() && bigHit)
       anim(S.el, [{ transform: 'translate(0,0)' }, { transform: 'translate(-5px,3px)' }, { transform: 'translate(5px,-3px)' }, { transform: 'translate(-3px,0)' }, { transform: 'translate(0,0)' }], { duration: 280 });
     if(extra) setTimeout(() => SFX.play(extra), hurt ? 70 : 0);
     if(ev.some(e => e.fainted)) setTimeout(() => { if(S.gen === gen) SFX.play('faint'); }, quick ? 60 : 170);
@@ -3140,6 +3157,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'4.14.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The battle board becomes a stadium, with a floor for every battle type', items:[
+    'Battles now play on a tilted stadium table. Every pok\u00e9mon stands up off its square, with a gentle bob, and the crowd and floodlights sit behind.',
+    'The floor follows the battle: a striped pitch for trainers, a dusk stadium for your rival, the League hall for the Champion and a snowy summit for Red.',
+    'Every gym leader and Elite Four member fights on their type\u2019s floor: pool tiles for Misty, volcanic rock for Blaine, a dojo for Bruno and Chuck, ice for Lorelei and Pryce, steel plates for Jasmine, and more.',
+    'On a super-effective hit or a knockout the camera leans in towards whoever took it, and the stadium shakes.',
+  ]},
   { v:'4.13.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'A new battle screen: both teams on a board in their real formation', items:[
     'Battles now play out on a board. Every pok\u00e9mon sits on a tile in its rank (front, middle, back), with its name, HP bar and status on the tile, so you can follow the whole fight and see why positioning matters.',
     'On a phone the enemy team sits on top and yours below. On a wider screen the two teams face each other side by side, with the front ranks nearest the middle.',
