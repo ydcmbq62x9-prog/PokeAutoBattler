@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1431,7 +1431,7 @@ function renderBattle(){
      in the first time; a re-render (a toast, a tap) just shows it. */
   const fresh = done && !battle.ribbonShown;
   if(done) battle.ribbonShown = true;
-  const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''}"><span>
+  const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''} ${battle.ribbonGone ? 'gone' : ''}"><span>
       ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
               : battle.kind === 'champion' ? 'CHAMPION!'
               : battle.kind === 'red' ? `${esc(battle.boss.name).toUpperCase()} BEATEN!`
@@ -2219,6 +2219,7 @@ function bossOutro(S){
   const ms = L.ms;
   setTimeout(() => {
     if(battle !== b || !S.el.isConnected) return;
+    b.ribbonGone = true; const rb = document.querySelector('.stagewrap .big.ribbon'); if(rb) rb.classList.add('gone');   // 5.3.1: don't cover what they say
     leaderSay(L, endLine(b, won), 2000);
     anim(L.body, won ? [{ scale: '1' }, { scale: '.94' }, { scale: '1' }] : [{ translate: '0 0' }, { translate: '0 -9%' }, { translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }],
       { duration: ms(won ? 420 : 700), easing: 'ease-out' });
@@ -2333,7 +2334,7 @@ function showFieldCards(S, L){
   const E = S.el.getBoundingClientRect(), bx = box.getBoundingClientRect();
   let ox = 0, oy = 0;
   if(L && L.w.isConnected){ const lw = L.w.getBoundingClientRect(); ox = lw.left + lw.width / 2 - (bx.left + bx.width / 2); oy = lw.top + lw.height * .45 - (bx.top + bx.height / 2);
-    leaderSay(L, 'Pick one. It’s yours for the rest of the run.', 2600); }
+    if(!S.el.classList.contains('vert')) leaderSay(L, 'Pick one. It’s yours for the rest of the run.', 2600); }
   const ms = walkPace();
   anim(box.querySelector('.fchead'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 300 * ms, delay: 250 * ms, fill: 'both' });
   box.querySelectorAll('.fcard').forEach((c, k) => {
@@ -2729,6 +2730,7 @@ function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   document.body.dataset.phase = phase;   // 5.0.0: the wide layout is for the shop only
+  document.body.classList.toggle('inspecting', !!inspect);   // 5.3.1: a phone on its side opens the info box only when there is something in it
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
   /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
      tap) shoved the whole page down. Remember the first thing on screen and put it back where it was. */
@@ -3450,13 +3452,13 @@ function shopStage(){
 }
 /** Where the field sits: the battle's box for this screen size (page coordinates). */
 function worldBox(){
-  const vw = document.documentElement.clientWidth, vh = innerHeight;
+  const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight || innerHeight;   // 5.3.1: not innerHeight, which changes as a phone's browser bar slides away
   const tb = document.querySelector('#app > .topbar');
   const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + 10 : 76);
   if(wideMode()){
-    const land = vh <= 520, strip = land ? 78 : 118, pad = land ? 10 : 16;
+    const land = vh <= 520, strip = land ? 70 : 118, pad = land ? 10 : 16, aspect = land ? 2.05 : 16 / 9;   // 5.3.1: a phone on its side gets a wider, flatter field
     const aw = vw - 2 * pad, ah = Math.max(150, vh - T - strip);
-    const w = Math.round(Math.min(aw, ah * 16 / 9)), h = Math.round(w * 9 / 16);
+    const w = Math.round(Math.min(aw, ah * aspect)), h = Math.round(w / aspect);
     return { l: Math.round((vw - w) / 2), t: T, w, h, wide: true };
   }
   const w = vw - 16, h = Math.round(Math.max(w * 1.15, Math.min(w * 1.7, vh - T - 210)));
@@ -3519,6 +3521,7 @@ function layoutWorld(){
     WORLD.shopCam = shopCamera();
     WORLD.cam.style.transform = WORLD.shopCam;
     placeSlots();
+    WORLD.key = worldKey();
     const pp = document.querySelector('.panel.party');
     w.style.height = box.wide ? '' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
   } else {
@@ -3527,6 +3530,19 @@ function layoutWorld(){
   }
 }
 window.addEventListener('resize', () => { if(!WORLD.anim) layoutWorld(); });
+/* 5.3.1: on phones the field is laid out once per draw, but things above the party can change height afterwards
+   (the font arriving, a banner closing, the browser bar sliding away). Check a few times a second and follow. */
+function worldKey(){ const f = document.querySelector('.pfield .formation'), t = document.querySelector('#app > .topbar');
+  if(!f) return ''; const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 };
+  return [r.left, r.top + scrollY, r.width, r.height, q.bottom + scrollY, document.documentElement.clientWidth, document.documentElement.clientHeight].map(v => Math.round(v)).join(','); }
+setInterval(() => { if(phase !== 'shop' || WORLD.anim || fieldPicking || wiping || document.hidden) return;
+  const k = worldKey(); if(k && k !== WORLD.key) layoutWorld(); }, 350);
+/* turning the phone mid-game: redraw once the new size has settled */
+const reflow = () => { [120, 450, 900].forEach(t => setTimeout(() => { if(WORLD.anim || fieldPicking || wiping) return;
+  if(phase === 'shop') render(); else { layoutWorld(); if(battle && battle.stage) fitBoard(battle.stage); } }, t)); };
+window.addEventListener('orientationchange', reflow);
+if(window.visualViewport) visualViewport.addEventListener('resize', () => { clearTimeout(reflow.t); reflow.t = setTimeout(() => { if(!WORLD.anim && !fieldPicking) layoutWorld(); }, 150); });
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if(!WORLD.anim) layoutWorld(); });
 
 /* ---- 5.0.0 · THE CAMERA ------------------------------------------------
    BATTLE: the shop panels drop away, the party's flat slots hand over to the
@@ -3556,7 +3572,9 @@ async function camera(mid, onOpen, dir){
       if(!from || !WORLD.cam){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       const away = shopAway();
+      if(scrollY) window.scrollTo({ top: 0, behavior: 'smooth' });   // 5.3.1: a fight always starts at the top of the page
       await Promise.all(away.map(e => go(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: awayFrame(e) }], 340, { easing: 'ease-in' })));
+      if(scrollY) window.scrollTo(0, 0);
       body.add('cam', 'cam-hide', 'cam-foe');
       WORLD.anim = true;
       await mid();                                 // the battle draws; its field goes into the world under the same camera,
@@ -3637,7 +3655,7 @@ async function startBattle(){
              timer: null, exhibition: false };
   if(opp.kind === 'red'){ const r = records(); r.met = { ...(r.met || {}), [opp.boss && opp.boss.id || secretBoss().id]: true }; saveRecords(r); }   // 4.3.0: Pokédex remembers him
   sessionBattles++;
-  await transition(() => { phase = 'battle'; render(); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
+  await transition(() => { phase = 'battle'; render(); window.scrollTo(0, 0); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
 }
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
@@ -3819,6 +3837,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A clean-up pass on phones, upright and sideways', items:[
+    'Your party now stays lined up on its spots on the field. Before, a font loading in or the browser bar sliding away could leave pok\u00e9mon floating off their spots or on top of each other.',
+    'A battle always starts at the top of the screen, with the scoreboard showing.',
+    'The result banner steps aside when the leader speaks, so it no longer covers their line.',
+    'The reward cards are centred, three across, with their text inside the card.',
+    'Level tags no longer sit under the role badge; the mode tag (like Gen 2) is a small label instead of a bar across the field; the leader\u2019s picture fits inside its tag.',
+    'The BATTLE bar has a backing, so the Undo button never sits on top of text.',
+    'Phones on their side: iPhones no longer blow the text up, the field is wider, the top bar and boxes are slimmer, the duplicate who\u2019s-next box is gone, and the game re-lays itself out properly when you turn the phone mid-game.' ] },
   { v:'5.3.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Rewards on the field, bosses have the last word, and a Champion\u2019s team photo', items:[
     'Gym rewards on the field: after a gym win, Choose your reward keeps you in the stadium. The leader holds out the three reward cards on the pitch; tap one and it flies to your team, then the camera goes back to the shop.',
     'Bosses have the last word: when the fight is over, a gym leader, Elite Four member, the Champion, a secret boss or your rival walks back out and says something. Beat them and they admit it; black out and they gloat.',
