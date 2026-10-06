@@ -54,7 +54,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     check(seen.shots > 0, `${w}px: attacks fly across the field (${seen.shots})`);
     check(seen.same, `${w}px: the field is kept between steps, not redrawn`);
     if(await page.$('.sp[data-i="2"]')){ await page.click('.sp[data-i="2"]'); await page.waitForTimeout(100); }
-    check(await page.evaluate(() => !!document.querySelector('#stageslot .bstage')), `${w}px: changing speed keeps the field on screen`);
+    check(await page.evaluate(() => !!document.querySelector('#world .bstage')), `${w}px: changing speed keeps the field on screen`);
     if(await page.$('[data-act="skip"]')) await page.click('[data-act="skip"]');
     await page.waitForTimeout(1600);     // a faint that was mid-animation finishes
     const end = await page.evaluate(() => {
@@ -71,7 +71,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     check(end.sw, `${w}px: no sideways scrolling`);
     await page.click('[data-act="afterbattle"]'); await page.waitForTimeout(300);
     await page.evaluate(() => document.querySelectorAll('.modal').forEach(x => x.remove()));
-    const back = await page.evaluate(() => ({ phase, stage: !!document.querySelector('.bstage') }));
+    const back = await page.evaluate(() => ({ phase, stage: !!document.querySelector('#app .bstage, #world .bstage:not(.shopstage)') }));   // 5.0.0: the shop keeps its own empty stadium in the world
     check(back.phase === 'shop' && !back.stage, `${w}px: back to the shop (${JSON.stringify(back)})`);
     check(!errs.length, `${w}px: no console errors ${errs.join(' | ')}`);
     await ctx.close();

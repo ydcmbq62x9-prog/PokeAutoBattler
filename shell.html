@@ -2521,71 +2521,6 @@ html.bc #inspect,html.bc #blog{color:var(--text)}
 html.bc .queue .qmon{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
 html.bc .queue .qlbl{color:var(--muted)}
 
-/* ---- 5.0.0 · the party stands on the stadium pitch (a close-up of your half) ----
-   Only the grass is tilted (a 3D layer behind the slots). The slots stay flat, so taps
-   always land where they look; the far rows are just drawn a little smaller and closer
-   together, which reads as the same perspective. */
-html.bc .panel.party{background:transparent;box-shadow:none;padding:2px 0 0;container-type:inline-size}
-html.bc .panel.party > h2{padding:0 2px}
-html.bc .panel.party > h2 .sub{color:#eef3ff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
-html.bc .pfield,html.bc.dark .pfield{background:none;border:0;box-shadow:none;padding:6px 0 4px;max-width:560px}
-html.bc .pfield .rankhead{display:none}
-html.bc .pfield .formation{position:relative;isolation:isolate;padding:6px 6px 2px;gap:0;--pitch:radial-gradient(circle at 100% 50%,transparent 58px,rgba(255,255,255,.75) 59px 62px,transparent 63px),
-    linear-gradient(90deg,transparent calc(100% - 3px),rgba(255,255,255,.75) calc(100% - 3px)),
-    repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)}
-html.bc .pfield .formation::before{content:'';position:absolute;inset:-9% 0 0;z-index:-1;border-radius:10px;background:var(--pitch);
-  transform:perspective(900px) rotateX(20deg);transform-origin:50% 100%;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 16px 24px rgba(0,0,0,.35)}
-html.bc .pfield .slot.pr2{grid-column:1}html.bc .pfield .slot.pr1{grid-column:2}html.bc .pfield .slot.pr0{grid-column:3}
-html.bc .pfield .slot.pf0{grid-row:1}html.bc .pfield .slot.pf1{grid-row:2}
-/* side by side: the top row is the far one */
-html.bc .pfield .slot.pf0{transform:scale(.9)}
-html.bc .pfield .slot.pf0.pr2{transform:translateX(10%) scale(.9)}html.bc .pfield .slot.pf0.pr0{transform:translateX(-10%) scale(.9)}
-@container (max-width:620px){
-  html.bc .pfield .formation{grid-template-columns:1fr 1fr;--pitch:radial-gradient(circle at 50% 0,transparent 58px,rgba(255,255,255,.75) 59px 62px,transparent 63px),
-      linear-gradient(180deg,rgba(255,255,255,.75) 3px,transparent 3px),
-      repeating-linear-gradient(0deg,#3f8f45 0 8.33%,#48a04e 8.33% 16.66%)}
-  html.bc .pfield .slot.pr0{grid-row:1}html.bc .pfield .slot.pr1{grid-row:2}html.bc .pfield .slot.pr2{grid-row:3}
-  html.bc .pfield .slot.pf0{grid-column:1}html.bc .pfield .slot.pf1{grid-column:2}
-  html.bc .pfield .slot{min-height:clamp(104px,30vw,132px)}
-  html.bc .pfield .formation::before{top:-19%;transform:perspective(1100px) rotateX(18deg)}
-  /* stacked: the front rank sits at the top, by the halfway line, furthest from the camera */
-  html.bc .pfield .slot.pf0,html.bc .pfield .slot.pf1{transform:none}
-  html.bc .pfield .slot.pr0.pf0{transform:translateX(7%) scale(.86)}html.bc .pfield .slot.pr0.pf1{transform:translateX(-7%) scale(.86)}
-  html.bc .pfield .slot.pr1.pf0{transform:translateX(3.5%) scale(.93)}html.bc .pfield .slot.pr1.pf1{transform:translateX(-3.5%) scale(.93)}
-}
-html.bc .pfield .slot:hover .unit{transform:translateY(-2px)}
-html.bc .pfield .artwrap::after{background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);box-shadow:none}
-html.bc .pfield .slot.selected .artwrap::after{background:radial-gradient(closest-side,#ffe680,rgba(255,210,58,.35) 70%,transparent);box-shadow:0 0 12px rgba(255,210,58,.6)}
-html.bc .pfield .slot.mergeable .artwrap::after{background:radial-gradient(closest-side,#ffd23a,rgba(255,210,58,.3) 70%,transparent);box-shadow:0 0 0 2px var(--gold)}
-html.bc .pfield .slot.valid:not(.empty) .artwrap::after{background:radial-gradient(closest-side,#9fe0ae,rgba(95,184,119,.3) 70%,transparent);box-shadow:none}
-html.bc .pfield .slot.empty::after{border-color:rgba(255,255,255,.4)}
-html.bc .pfield .slot.empty.valid::after{border-color:#9fe0ae;background:rgba(95,184,119,.25)}
-html.bc .pfield .stats{text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
-html.bc .pfield .stats .a{color:#ffb19c}html.bc .pfield .stats .h{color:#9ff0b4}html.bc .pfield .stats .s{color:#a9d4ff}
-html.bc .pfield .lvl{background:rgba(12,18,34,.85);color:var(--gold);border:0;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
-html.bc .pfield .exp i{background:rgba(0,0,0,.35)}
-html.bc .pfield .exp i.on{background:var(--gold)}
-html.bc .pfield .sprite.img img{filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
-html.bc .shopq{background:var(--glass)}
-
-/* ---- 5.0.0 · wide screens: the pitch on the left, the shop as a column on the right ---- */
-.bcwrap,.bcL,.bcR{display:contents}
-@media (min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px){
-  body[data-phase=shop] #app{max-width:1320px}
-  body[data-phase=shop] .bcwrap{display:grid;grid-template-columns:minmax(0,1fr) clamp(380px,34vw,460px);gap:14px;align-items:start}
-  body[data-phase=shop] .bcL{display:flex;flex-direction:column;gap:10px;min-width:0}
-  body[data-phase=shop] .bcR{display:flex;flex-direction:column;gap:8px;position:sticky;top:76px;max-height:calc(100vh - 84px);min-width:0}
-  body[data-phase=shop] .bcR .shelves{grid-template-columns:1fr;overflow-y:auto;overscroll-behavior:contain;flex:1 1 auto;min-height:0;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
-  body[data-phase=shop] .bcR .dock{position:static;margin:0;padding:0;background:none;flex-direction:column;display:flex}
-  body[data-phase=shop] .bcR .dock .speech{margin:0}
-  body[data-phase=shop] .bcR .dock .btn.fight{min-height:52px;font-size:20px;letter-spacing:2px}
-  html.bc body[data-phase=shop] .pfield{max-width:none;padding:14px 4% 8px}
-  html.bc body[data-phase=shop] .pfield .formation{max-width:640px;margin:0 auto}
-  html.bc body[data-phase=shop] .pfield .slot{min-height:150px}
-  body[data-phase=shop] .topbar.gb{position:sticky;top:0;z-index:40}
-  body[data-phase=shop] .bcR .martlist,body[data-phase=shop] .bcR .dclist{max-height:none}
-}
-
 /* ---- 5.0.0 · the camera between the shop and the stadium ---- */
 body.cam{overflow-x:hidden}
 body.cam .panel.arena,body.cam .stagewrap,body.cam #stageslot{overflow:visible!important}
@@ -2598,18 +2533,6 @@ body.cam-hide .panel.arena{background:transparent!important;box-shadow:none!impo
 body.cam-hide .bstage .ground,body.cam-hide .bstage .slotmark.e{opacity:0}
 body.cam-foe .bstage .ftr.e{opacity:0;transition:opacity .3s}
 
-/* ---- 5.0.0 · wide battle: the full stadium, the queue / commentary / controls as a strip along the bottom ---- */
-@media (min-width:1000px){
-  body[data-phase=battle] #app{max-width:min(1320px,calc((100vh - 230px) * 16 / 9 + 32px));display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;grid-auto-flow:row dense;column-gap:10px;row-gap:10px;align-content:start}
-  body[data-phase=battle] #app > *{grid-column:1 / -1;min-width:0}
-  body[data-phase=battle] #app > #bqueue{grid-column:1;align-self:start}
-  body[data-phase=battle] #app > #bqueue .queue{height:92px;box-sizing:border-box;margin:0;align-content:center}
-  body[data-phase=battle] #app > .blogbox{grid-column:2}
-  body[data-phase=battle] #app > .blogbox #blog{height:66px;max-height:66px}
-  body[data-phase=battle] #app > .shopbar{grid-column:3;flex-direction:column;justify-content:center;align-items:stretch;gap:6px;margin:0;min-width:200px}
-  body[data-phase=battle] #app > .shopbar > *{justify-content:center}
-}
-
 /* 5.0.0: every pop-up is the solid glass, whatever its own panel colour */
 html.bc .modal .box{background:var(--glass2)!important}
 
@@ -2619,36 +2542,135 @@ html.bc.dark .title{background:radial-gradient(90% 45% at 50% 0%,rgba(200,220,25
 html.bc .tlogo .t2{color:var(--gold);text-shadow:0 4px 0 #11182c,3px 0 0 #11182c,-3px 0 0 #11182c,0 -3px 0 #11182c,0 8px 14px rgba(0,0,0,.45)}
 html.bc .tlogo .t1{color:#fff;text-shadow:0 2px 0 #11182c,2px 0 0 #11182c,-2px 0 0 #11182c,0 -2px 0 #11182c}
 
-/* ---- 5.0.0 · landscape phones ---- */
-@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
-  /* the pitch lies sideways like the battle does: back, middle, front from left to right */
-  html.bc body[data-phase=shop] .pfield .formation{grid-template-columns:repeat(3,1fr);
-    --pitch:radial-gradient(circle at 100% 50%,transparent 46px,rgba(255,255,255,.75) 47px 50px,transparent 51px),
-      linear-gradient(90deg,transparent calc(100% - 3px),rgba(255,255,255,.75) calc(100% - 3px)),
-      repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)}
-  html.bc body[data-phase=shop] .pfield .slot.pf1{transform:none}
-  html.bc body[data-phase=shop] .pfield .slot.pf0{transform:scale(.9)}
-  html.bc body[data-phase=shop] .pfield .slot.pf0.pr2{transform:translateX(10%) scale(.9)}html.bc body[data-phase=shop] .pfield .slot.pf0.pr0{transform:translateX(-10%) scale(.9)}
-  html.bc body[data-phase=shop] .pfield .slot.pr2{grid-column:1}html.bc body[data-phase=shop] .pfield .slot.pr1{grid-column:2}html.bc body[data-phase=shop] .pfield .slot.pr0{grid-column:3}
-  html.bc body[data-phase=shop] .pfield .slot.pf0{grid-row:1}html.bc body[data-phase=shop] .pfield .slot.pf1{grid-row:2}
-  html.bc body[data-phase=shop] .pfield .slot{min-height:118px}
-  html.bc body[data-phase=shop] .pfield{padding:4px 2% 4px}
-  body[data-phase=shop] .panel.party > h2 .sub{display:none}
-  body[data-phase=shop] .bcR{top:64px;max-height:calc(100vh - 70px)}
-  body[data-phase=shop] .bcwrap{grid-template-columns:minmax(0,1fr) minmax(300px,40vw)}
-  /* battle: the stadium on the left, the queue, commentary and controls down the right */
-  body[data-phase=battle] #app{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) 240px;grid-auto-flow:row dense;column-gap:8px;row-gap:6px;align-content:start;padding-block:4px}
+/* ---- 5.0.0 · THE WORLD: one stadium behind the game, every screen layered over it ----
+   #world holds the field (.wcam > .bstage) in the battle's box; the camera is .wcam's transform.
+   Shop: close in on your half, the party's flat slots placed over the field's marks (JS).
+   Battle: the camera pulled back; the page's own field box (#stageslot) is just an empty spacer. */
+body{position:relative}
+.bcwrap,.bcL,.bcR{display:contents}
+#world{position:absolute;left:0;right:0;top:0;height:100vh;overflow:hidden;z-index:0;pointer-events:none}
+#world[hidden]{display:none}
+#world.wide{position:fixed;inset:0;height:auto!important}
+#world .wcam{position:absolute;transform-origin:0 0;pointer-events:auto}
+#world .bstage{width:100%!important;height:100%!important;aspect-ratio:auto!important;min-height:0!important;max-height:none!important;border:0;border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+#world .bstage .ground,#world .bstage .slotmark{transition:opacity .6s ease}
+#world.shopview .bstage .ground,#world.shopview .bstage .slotmark{opacity:0}
+#world.shopview .bstage{box-shadow:none}
+body.inworld #app{position:relative;z-index:1;overflow-x:clip}
+/* the page's see-through parts let taps fall through to the field (a fighter's card in battle) */
+body.inworld :where(#app *){pointer-events:auto}
+body.inworld :is(#app,.bcwrap,.bcL,.bcR,.panel.party,.pfield,.pfield .formation,.panel.arena,.stagewrap,#stageslot,.arenanotes){pointer-events:none}
+html.bc #app > .topbar.gb{height:54px;box-sizing:border-box;flex:none}
+
+/* --- the party on the field --- */
+html.bc .panel.party{background:transparent!important;box-shadow:none!important;padding:0;container-type:inline-size}
+html.bc .panel.party > h2{padding:0 2px}
+html.bc .panel.party > h2 .sub{color:#eef3ff;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+html.bc .pfield,html.bc.dark .pfield{background:none;border:0;box-shadow:none;padding:0;margin:0;max-width:none}
+html.bc .pfield .rankhead{display:none}
+html.bc .pfield .formation{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;height:calc(var(--sbH,520px) * .6);min-height:220px}
+@container (max-width:620px){ html.bc .pfield .formation{grid-template-columns:1fr 1fr} }
+html.bc .pfield .slot{position:absolute;min-height:0!important;padding:0;margin:0;transform:none!important;background:none;border:0;box-shadow:none;display:block;z-index:1}
+html.bc .pfield .slot.pr1{z-index:2}html.bc .pfield .slot.pr2{z-index:3}
+html.bc .pfield .slot .unit{position:absolute;inset:0;display:block;padding:0;background:none;border:0;box-shadow:none;transform:none}
+html.bc .pfield .slot:hover .unit{transform:translateY(-2px)}
+html.bc .pfield .artwrap{position:absolute;left:50%;bottom:var(--ab,13%);transform:translateX(-50%);margin:0}
+html.bc .pfield .sprite.img{width:var(--sp,64px);height:var(--sp,64px)}
+html.bc .pfield .slot .stats{position:absolute;left:-10%;right:-10%;white-space:nowrap;bottom:calc(var(--ab,13%) + var(--sp,64px) + 14px);margin:0;gap:5px;justify-content:center;font-size:12px;
+  text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+html.bc .pfield .slot .stats.spd{bottom:calc(var(--ab,13%) + var(--sp,64px) + 1px);font-size:11px}
+html.bc .pfield .stats .a{color:#ffb19c}html.bc .pfield .stats .h{color:#9ff0b4}html.bc .pfield .stats .s{color:#a9d4ff}
+html.bc .pfield .slot .lvl{position:absolute;left:auto;right:calc(50% + var(--sp,64px) * .42);top:auto;bottom:calc(var(--ab,13%) + var(--sp,64px) * .7);background:rgba(12,18,34,.85);color:var(--gold);border:0;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+html.bc .pfield .slot .exp{position:absolute;left:0;right:0;bottom:-7px;margin:0}
+html.bc .pfield .exp i{background:rgba(0,0,0,.35)} html.bc .pfield .exp i.on{background:var(--gold)}
+html.bc .pfield .slot .hpbar{position:absolute;left:25%;right:25%;bottom:calc(var(--ab,13%) + var(--sp,64px) + 29px);margin:0}
+html.bc .pfield .slot .ko{position:absolute;left:0;right:0;bottom:calc(var(--ab,13%) + var(--sp,64px) + 28px);margin:0;text-align:center}
+html.bc .pfield .slot .boosted,html.bc .pfield .slot .twin{bottom:calc(var(--ab,13%) + var(--sp,64px) * .7);top:auto}
+html.bc .pfield .artwrap::after{background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);box-shadow:none}
+html.bc .pfield .slot.selected .artwrap::after{background:radial-gradient(closest-side,#ffe680,rgba(255,210,58,.35) 70%,transparent);box-shadow:0 0 12px rgba(255,210,58,.6)}
+html.bc .pfield .slot.mergeable .artwrap::after{background:radial-gradient(closest-side,#ffd23a,rgba(255,210,58,.3) 70%,transparent);box-shadow:0 0 0 2px var(--gold)}
+html.bc .pfield .slot.valid:not(.empty) .artwrap::after{background:radial-gradient(closest-side,#9fe0ae,rgba(95,184,119,.3) 70%,transparent);box-shadow:none}
+html.bc .pfield .slot.empty::after{bottom:6%;left:50%;right:auto;width:min(80%,calc(var(--sp,64px) * 1.1));transform:translateX(-50%);height:min(22%,22px);border:2px dashed rgba(255,255,255,.45)}
+html.bc .pfield .slot.empty.valid::after{border-style:solid;border-color:#9fe0ae;background:rgba(95,184,119,.25)}
+html.bc .pfield .sprite.img img{filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+html.bc .shopq{background:var(--glass)}
+body.cam-going .pfield .slot{opacity:0;transition:opacity .18s}
+
+/* --- battle: the field box in the page is a spacer; the notes and the ribbon float over the field --- */
+html.bc body[data-phase=battle] .panel.arena{position:relative;padding:0;background:none!important;box-shadow:none!important;border:0;flex:none!important;display:block!important}
+html.bc body[data-phase=battle] .stagewrap{flex:none!important;display:block!important}
+html.bc body[data-phase=battle] #stageslot{height:var(--sbH,520px);display:block!important;flex:none!important}
+html.bc .arenanotes{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;width:min(94%,560px);display:flex;flex-direction:column;gap:6px}
+html.bc .arenanotes > *{margin:0}
+html.bc .arenanotes .award,html.bc .arenanotes .gnote{background:var(--glass2);border-radius:10px;box-shadow:0 0 0 2px rgba(255,210,58,.5),0 8px 20px rgba(0,0,0,.4);padding:8px 12px}
+html.bc .panel.arena > .bosstag{position:absolute;left:10px;top:10px;z-index:6;margin:0;background:var(--glass);border-radius:8px;padding:4px 10px}
+
+/* --- wide screens (computer, phone on its side): the page doesn't scroll, everything floats on the stadium --- */
+@media (min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body.inworld[data-phase=shop]{overflow:hidden}
+  body[data-phase=shop] #app{max-width:none;height:100vh;height:100dvh;box-sizing:border-box;padding:8px 16px 12px;display:flex;flex-direction:column;gap:10px}
+  body[data-phase=shop] .bcwrap{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(330px,36vw,480px);gap:14px}
+  body[data-phase=shop] .bcL{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+  body[data-phase=shop] .panel.party{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:space-between}
+  body[data-phase=shop] .panel.party > h2{align-self:flex-start}
+  html.bc body[data-phase=shop] .pfield{flex:1 1 auto;min-height:0}
+  html.bc body[data-phase=shop] .pfield .formation{height:100%;min-height:0}
+  body[data-phase=shop] .panel.party .shopq{align-self:flex-start;margin:0}
+  body[data-phase=shop] .bcL > #inspect{flex:none;max-height:96px;overflow:auto}
+  body[data-phase=shop] .bcR{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0}
+  body[data-phase=shop] .bcR .shelves{grid-template-columns:1fr;overflow-y:auto;overscroll-behavior:contain;flex:1 1 auto;min-height:0;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+  body[data-phase=shop] .bcR .dock{position:static;margin:0;padding:0;background:none;flex-direction:column;display:flex}
+  body[data-phase=shop] .bcR .dock .speech{margin:0}
+  body[data-phase=shop] .bcR .dock .btn.fight{min-height:52px;font-size:20px;letter-spacing:2px}
+  body[data-phase=shop] .bcR .martlist,body[data-phase=shop] .bcR .dclist{max-height:none}
+  body[data-phase=shop] #app > .vtag{position:absolute;right:10px;bottom:0;opacity:.55;margin:0}
+  /* battle: the whole stadium, with the turn order, commentary and controls as a strip along the bottom */
+  body[data-phase=battle] #app{max-width:none;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;grid-auto-flow:row dense;column-gap:10px;row-gap:10px;align-content:start;padding:8px 16px 10px}
   body[data-phase=battle] #app > *{grid-column:1 / -1;min-width:0}
-  body[data-phase=battle] #app > .panel.arena{grid-column:1;grid-row:2 / span 3}
-  body[data-phase=battle] #app > .panel.arena .bstage{max-height:calc(100vh - 70px);width:auto;margin:0 auto}
-  body[data-phase=battle] #app > #bqueue,body[data-phase=battle] #app > .blogbox,body[data-phase=battle] #app > .shopbar{grid-column:2}
-  body[data-phase=battle] #app > #bqueue .queue{flex-wrap:wrap;margin:0}
-  body[data-phase=battle] #app > .blogbox #blog{height:auto;max-height:calc(100vh - 250px);min-height:60px}
-  body[data-phase=battle] #app > .shopbar{flex-wrap:wrap;justify-content:center;gap:6px;margin:0}
+  html.bc body[data-phase=battle] #app > .panel.arena{justify-self:center;width:var(--sbW,800px)}
+  body[data-phase=battle] #app > #bqueue{grid-column:1;align-self:start}
+  body[data-phase=battle] #app > #bqueue .queue{height:92px;box-sizing:border-box;margin:0;align-content:center}
+  body[data-phase=battle] #app > .blogbox{grid-column:2}
+  body[data-phase=battle] #app > .blogbox #blog{height:66px;max-height:66px}
+  body[data-phase=battle] #app > .shopbar{grid-column:3;flex-direction:column;justify-content:center;align-items:stretch;gap:6px;margin:0;min-width:200px}
+  body[data-phase=battle] #app > .shopbar > *{justify-content:center}
 }
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] #app{padding:6px 12px 8px;gap:6px}
+  body[data-phase=shop] .panel.party > h2 .sub{display:none}
+  body[data-phase=shop] .bcwrap{grid-template-columns:minmax(0,1fr) minmax(290px,40vw);gap:10px}
+  body[data-phase=shop] .bcL > #inspect{max-height:42px;min-height:0;font-size:12.5px;padding:4px 10px;line-height:1.3}
+  body[data-phase=shop] .bcL > #inspect *{min-height:0}
+  html.bc body[data-phase=shop] .pfield .slot .stats{font-size:10px;gap:3px}
+  html.bc body[data-phase=shop] .pfield .slot .stats.spd{font-size:9.5px}
+  body[data-phase=shop] .bcR .dock .speech .say b{font-size:15px;line-height:1.15}
+  body[data-phase=shop] .bcR .dock .speech .who{transform:scale(.8)}
+  body[data-phase=shop] .bcR .dock .btn.fight{min-height:42px;font-size:17px}
+  body[data-phase=shop] .panel.party{position:relative}
+  body[data-phase=shop] .panel.party > h2{position:absolute;left:0;top:0;z-index:4;margin:0}
+  html.bc body[data-phase=shop] .pfield .formation{margin-top:22px;height:calc(100% - 22px)}
+  body[data-phase=shop] .panel.party .shopq{display:none}
+  body[data-phase=battle] #app{padding:6px 12px 6px;row-gap:6px}
+  body[data-phase=battle] #app > #bqueue .queue{height:58px;padding-block:4px}
+  body[data-phase=battle] #app > #bqueue .queue .qmon{width:32px;height:32px}
+  body[data-phase=battle] #app > .blogbox #blog{height:40px;max-height:40px;font-size:12.5px}
+  body[data-phase=battle] #app > .shopbar{flex-direction:row;flex-wrap:wrap;min-width:0;gap:4px}
+  body[data-phase=battle] #app > .shopbar .btn{min-height:30px;padding:2px 10px}
+}
+
+/* ---- 5.0.0 · the boss walk-out ---- */
+.walkout{position:absolute;z-index:25;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.walkout .wbody{width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+.walkout img{width:100%;height:100%;object-fit:contain;object-position:bottom;image-rendering:pixelated}
+.walkout .wname{position:absolute;top:100%;margin-top:4px;white-space:nowrap;font-size:clamp(11px,2.2cqw,16px);color:#fff;background:var(--navy,#11182c);padding:1px 10px;border-radius:6px;box-shadow:0 0 0 2px var(--gold,#ffd23a)}
+.walkout .wspot{position:absolute;bottom:-6%;left:-10%;right:-10%;height:22%;border-radius:50%;z-index:-1;background:radial-gradient(closest-side,rgba(255,250,200,.65),rgba(255,230,120,.2) 70%,transparent)}
+.walkout.elite .wname{box-shadow:0 0 0 2px #a98bff}.walkout.champion .wname{box-shadow:0 0 0 2px #ff9d6e}.walkout.rival .wname{box-shadow:0 0 0 2px #7fc4ff}
+.wball2{position:absolute;width:16px;height:16px;border-radius:50%;z-index:26;pointer-events:none;background:linear-gradient(#e0473f 0 44%,#222 44% 56%,#f4f1e6 56%);box-shadow:0 0 0 2px #22262f}
+.wflash{position:absolute;border-radius:50%;z-index:24;pointer-events:none;background:radial-gradient(closest-side,#fff,rgba(255,255,255,.6) 50%,transparent)}
 </style>
 </head>
 <body>
+<div id="world" hidden aria-hidden="true"><div class="wcam"></div></div>
 <div id="app"></div>
 <script>
 "use strict";

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.0.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.1.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1454,7 +1454,7 @@ function renderBattle(){
   </div>
 
   <div class="panel arena">
-    ${bossTag}${notes}
+    ${bossTag}${notes ? `<div class="arenanotes">${notes}</div>` : ''}
     <div class="stagewrap"><div id="stageslot"></div>${ribbon}</div>
   </div>
 
@@ -1571,10 +1571,11 @@ function fighterHtml(u){
     </div><div class="fshadow"></div>`;
 }
 
-function buildStage(){
-  const b = battle, st0 = b.steps[0] || { p:[], e:[] };
+const lookPref = () => ['stadium', 'mini', 'paper'].includes(PREF.get('look', 'stadium')) ? PREF.get('look', 'stadium') : 'stadium';
+/** 5.0.0: the empty stadium for a bout (b needs kind and boss) — the battle fills it, the shop shows it as it is. */
+function stageShell(b){
   const el = document.createElement('div');
-  el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)} look-${['stadium', 'mini', 'paper'].includes(PREF.get('look', 'stadium')) ? PREF.get('look', 'stadium') : 'stadium'}`;   // 4.15.0: Options → Battle look   // 4.13.0 board; 4.14.0 a tilted stadium table
+  el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)} look-${lookPref()}`;   // 4.15.0: Options → Battle look   // 4.13.0 board; 4.14.0 a tilted stadium table
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
   el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i><i class="bulbs"></i></div>
@@ -1582,6 +1583,11 @@ function buildStage(){
     ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
       `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
     </div></div><div class="fxl"></div>`;
+  return el;
+}
+function buildStage(){
+  const b = battle, st0 = b.steps[0] || { p:[], e:[] };
+  const el = stageShell(b);
   const S = { el, table: el.querySelector('.table'), fx: el.querySelector('.fxl'), f: new Map(), at: 0, gen: 0 };
   for(const side of ['p', 'e']) (st0[side] || []).forEach((u, i) => addFighter(S, u, side, i));
   markActing(S, st0);
@@ -1671,11 +1677,10 @@ function fitBoard(S){ const w = S.el.parentNode ? S.el.parentNode.clientWidth : 
 const isVert = el => !!(el && el.closest && el.closest('.bstage.vert'));
 window.addEventListener('resize', () => { if(battle && battle.stage) fitBoard(battle.stage); });
 function mountStage(){
-  const slot = document.getElementById('stageslot');
-  if(!slot || !battle) return;
+  if(!battle || !document.getElementById('stageslot')) return;
   if(!battle.stage) battle.stage = buildStage();
   const S = battle.stage;
-  if(S.el.parentNode !== slot) slot.appendChild(S.el);
+  layoutWorld();                             // 5.0.0: the field lives in the world behind the page, not in the page
   fitBoard(S);
   if(S.at === battle.i - 1) animateStep(S, battle.i);
   else if(S.at !== battle.i) syncStage(S, battle.i);
@@ -2064,9 +2069,68 @@ function animateStep(S, i){
 
 /* ---------------- intro and outro ---------------- */
 /** "X wants to battle!" slides across, then both teams run in. Returns how long it takes. */
+/* ---- 5.0.0 · THE WALK-OUT --------------------------------------------
+   Before a leader, an Elite Four member, the Champion, a secret boss or your
+   rival fights, they walk out onto their half of the field to a cheer, stop
+   in the middle, and throw out their team: a pokéball arcs to each spot and
+   the pokémon appear in a flash. Then the "wants to battle!" banner. */
+const WALK_KINDS = ['gym', 'elite', 'champion', 'red', 'rival'];
+function walkOut(S, b){
+  if(!b.boss || !WALK_KINDS.includes(b.kind) || !SPRITES[b.boss.id] || motionOff()) return null;
+  const f = speed >= 4 ? .45 : speed >= 2 ? .7 : 1, ms = x => x * f;
+  const E = S.el.getBoundingClientRect(), vert = S.el.classList.contains('vert');
+  const foes = [...S.f.values()].filter(F => F.side === 'e');
+  const marks = [...S.el.querySelectorAll('.slotmark.e')].map(m => m.getBoundingClientRect());
+  if(!marks.length) return null;
+  const U = rectUnion(marks);
+  const size = Math.round(Math.min(E.width * (vert ? .26 : .13), E.height * (vert ? .2 : .34)));
+  const x = U.cx - E.left, y = U.cy - E.top + size * .15;
+  const w = document.createElement('div');
+  w.className = 'walkout ' + b.kind;
+  w.style.cssText = `left:${x.toFixed(0)}px;top:${y.toFixed(0)}px;width:${size}px;height:${size}px`;
+  w.innerHTML = `<div class="wbody"><img src="${SPRITES[b.boss.id]}" alt=""></div><span class="wname">${esc(b.boss.name)}</span><i class="wspot"></i>`;
+  S.fx.appendChild(w);
+  const from = vert ? `translate(-50%,-100%) translateY(${-(y + size).toFixed(0)}px)` : `translate(-50%,-100%) translateX(${(E.width - x + size).toFixed(0)}px)`;
+  const at = 'translate(-50%,-100%)';
+  const walkMs = ms(950), holdMs = ms(450), throwMs = ms(380);
+  anim(w, [{ transform: from, opacity: 1 }, { transform: at, opacity: 1, offset: .82 }, { transform: at, opacity: 1 }], { duration: walkMs, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' });
+  const body = w.querySelector('.wbody');
+  anim(body, [{ translate: '0 0' }, { translate: '0 -7%' }, { translate: '0 0' }], { duration: ms(240), iterations: Math.ceil(walkMs * .82 / ms(240)), easing: 'ease-in-out' });
+  setTimeout(() => { if(battle && battle.stage === S){ crowdReact(S, true);
+    anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' }); } }, walkMs);
+  // the throw: one ball to each spot, the leader steps back off the field
+  const throwAt = walkMs + holdMs;
+  setTimeout(() => {
+    if(!battle || battle.stage !== S || !S.el.isConnected) return;
+    SFX.play('move');
+    const W0 = { x, y: y - size * .6 };
+    for(const F of foes){
+      const c = artCentre(S, F), ball = document.createElement('div');
+      ball.className = 'wball2'; ball.style.left = W0.x + 'px'; ball.style.top = W0.y + 'px';
+      S.fx.appendChild(ball);
+      const dx = c.x - W0.x, dy = c.y - W0.y, lift = Math.max(30, Math.abs(dx) * .3 + 24);
+      anim(ball, [{ transform: 'translate(-50%,-50%) rotate(0)' },
+        { transform: `translate(calc(-50% + ${dx * .5}px), calc(-50% + ${dy * .5 - lift}px)) rotate(360deg)`, offset: .5 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(720deg)` }], { duration: throwMs, easing: 'linear', remove: true });
+    }
+    anim(w, [{ opacity: 1, transform: at }, { opacity: 0, transform: vert ? 'translate(-50%,-100%) translateY(-30%) scale(.8)' : 'translate(-50%,-100%) translateX(40%) scale(.8)' }],
+      { duration: ms(520), delay: ms(120), easing: 'ease-in', fill: 'forwards', remove: true });
+  }, throwAt);
+  const popAt = throwAt + throwMs;
+  setTimeout(() => {
+    if(!battle || battle.stage !== S || !S.el.isConnected) return;
+    SFX.play('land');
+    for(const F of foes){ const c = artCentre(S, F); const fl = document.createElement('div'); fl.className = 'wflash';
+      fl.style.left = c.x + 'px'; fl.style.top = c.y + 'px'; fl.style.width = fl.style.height = (c.w * 1.4) + 'px'; S.fx.appendChild(fl);
+      anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.2)', opacity: 0 }], { duration: ms(420), easing: 'ease-out', remove: true }); }
+  }, popAt);
+  return { total: popAt + ms(380), popAt };
+}
 function playIntro(S){
   const b = battle, still = motionOff();
+  const wo = walkOut(S, b);
   const introMs = still ? 700 : speed >= 4 ? 750 : speed >= 2 ? 1250 : 1900;
+  const lead = wo ? wo.total : 0;                // 5.0.0: the banner waits for the walk-out
   const who = b.kind === 'gym' ? `${b.boss.name} wants to battle!`
     : b.kind === 'elite' ? `Elite Four ${b.boss.name} wants to battle!`
     : b.kind === 'champion' ? `Champion ${b.boss.name} wants to battle!`
@@ -2081,22 +2145,30 @@ function playIntro(S){
   ban.className = 'introban' + (b.kind !== 'trainer' && b.boss ? ' boss ' + b.kind : '');
   ban.innerHTML = `${bossArt(b.boss, 'intro')}<div><b>${esc(who)}</b><span>${esc(sub)}</span><div class="iballs">${balls}</div></div>`;
   S.el.appendChild(ban);
-  if(b.kind === 'rival'){ SFX.play('alert'); setTimeout(() => SFX.play('encounter'), 200); } else SFX.play('encounter');
-  if(still){ setTimeout(() => ban.remove(), introMs); return introMs; }
+  const sting = () => { if(b.kind === 'rival'){ SFX.play('alert'); setTimeout(() => SFX.play('encounter'), 200); } else SFX.play('encounter'); };
+  if(still){ sting(); setTimeout(() => ban.remove(), introMs); return introMs; }
+  if(lead) setTimeout(sting, lead); else sting();
   const hold = introMs * 0.72;
   anim(ban, [{ transform: 'translate(-110%,-50%)', opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)' },
              { transform: 'translate(0,-50%)', opacity: 1, offset: .15 },
              { transform: 'translate(0,-50%)', opacity: 1, offset: .86, easing: 'ease-in' }, { transform: 'translate(110%,-50%)', opacity: 0 }],
-    { duration: hold, fill: 'forwards', remove: true });
+    { duration: hold, delay: lead, fill: 'both', remove: true });
   let k = 0;
   for(const F of S.f.values()){
     if(b.camIn && F.side === 'p') continue;      // 5.0.0: the camera already has your side in place
+    const mv = F.el.querySelector('.fmove'), sh = F.el.querySelector('.fshadow');
+    if(wo && F.side === 'e'){                    // 5.0.0: thrown out by the leader — they appear in the flash
+      anim(mv, [{ transform: 'scale(.15)', opacity: 0, filter: 'brightness(4)' }, { transform: 'scale(1.08)', opacity: 1, filter: 'brightness(2)', offset: .6 }, { transform: 'scale(1)', opacity: 1, filter: 'none' }],
+        { duration: 380 * (speed >= 4 ? .45 : speed >= 2 ? .7 : 1), delay: wo.popAt, easing: 'ease-out', fill: 'backwards' });
+      if(sh) anim(sh, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, delay: wo.popAt, fill: 'backwards' });
+      continue;
+    }
     const v = isVert(F.el), from = v ? (F.side === 'p' ? 'translateY(40vh)' : 'translateY(-40vh)') : (F.side === 'p' ? 'translateX(-60vw)' : 'translateX(60vw)');
-    anim(F.el.querySelector('.fmove'), [{ transform: from, opacity: 0 }, { transform: 'translate(0,0)', opacity: 1 }],
-      { duration: introMs * 0.3, delay: hold * 0.5 + (k++ % 6) * introMs * 0.035, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' });
-    anim(F.el.querySelector('.fshadow'), [{ opacity: 0 }, { opacity: 1 }], { duration: introMs * 0.3, delay: hold * 0.5, fill: 'backwards' });
+    anim(mv, [{ transform: from, opacity: 0 }, { transform: 'translate(0,0)', opacity: 1 }],
+      { duration: introMs * 0.3, delay: lead + hold * 0.5 + (k++ % 6) * introMs * 0.035, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' });
+    if(sh) anim(sh, [{ opacity: 0 }, { opacity: 1 }], { duration: introMs * 0.3, delay: lead + hold * 0.5, fill: 'backwards' });
   }
-  return introMs;
+  return introMs + lead;
 }
 function stageOutro(S){
   if(!battle || battle.stage !== S || motionOff()) return;
@@ -2408,6 +2480,7 @@ function render(){
   else shopFx();                             // v36: what changed since the last draw gets a little life
   if(phase === 'shop') typeInspect();        // v37: the message box types itself out
   updateCarry();
+  layoutWorld();                             // 5.0.0: the stadium behind the page follows what was drawn
 }
 const selRef = () => !sel ? null : sel.kind === 'team' ? `team:${sel.idx}` : sel.kind === 'pc' ? `pc:${sel.idx}`
   : sel.kind === 'dc' ? `dc:${sel.idx}` : null;
@@ -3073,34 +3146,128 @@ async function wipe(mid, onOpen){
 }
 
 
+/* ---- 5.0.0 · THE WORLD ------------------------------------------------
+   One stadium sits behind every game screen (#world), and the screens are
+   layered over it. The shop is the camera close in on your half, with your
+   party standing on the real battle field; a battle is the same camera
+   pulled back to the whole stadium. Nothing is swapped for the transition:
+   the field you were looking at is the field you fight on.
+
+   The field is always laid out in the box the battle uses (worldBox), and
+   the camera (.wcam) is a 2D transform on top of it. The party's slots stay
+   in the page, flat, and are placed over the field's marks after each draw,
+   so a tap always lands where it looks. */
+const WORLD = { el: null, cam: null, shop: null, shopKey: '', shopCam: null, anim: false, box: null };
+const WIDE_Q = '(min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px)';
+const wideMode = () => matchMedia(WIDE_Q).matches;
+function worldEl(){
+  if(!WORLD.el){ WORLD.el = document.getElementById('world'); WORLD.cam = WORLD.el && WORLD.el.querySelector('.wcam'); }
+  return WORLD.el;
+}
+/** Who the next fight is against, in the shape the stadium needs. */
+function nextBout(){
+  if(!G) return { kind: 'trainer', boss: null };
+  const n = nextUp(G), st = stageOf(G);
+  return { kind: n.kind || 'trainer', boss: isBoss(st) ? st.boss : null };
+}
+/** The shop's field: the next fight's stadium, empty. Kept until the next fight changes. */
+function shopStage(){
+  const b = nextBout(), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}`;
+  if(!WORLD.shop || WORLD.shopKey !== key){ WORLD.shop = stageShell(b); WORLD.shop.classList.add('shopstage'); WORLD.shopKey = key; }
+  return WORLD.shop;
+}
+/** Where the field sits: the battle's box for this screen size (page coordinates). */
+function worldBox(){
+  const vw = document.documentElement.clientWidth, vh = innerHeight;
+  const tb = document.querySelector('#app > .topbar');
+  const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + 10 : 76);
+  if(wideMode()){
+    const land = vh <= 520, strip = land ? 78 : 118, pad = land ? 10 : 16;
+    const aw = vw - 2 * pad, ah = Math.max(150, vh - T - strip);
+    const w = Math.round(Math.min(aw, ah * 16 / 9)), h = Math.round(w * 9 / 16);
+    return { l: Math.round((vw - w) / 2), t: T, w, h, wide: true };
+  }
+  const w = vw - 16, h = Math.round(Math.max(w * 1.15, Math.min(w * 1.7, vh - T - 210)));
+  return { l: 8, t: T, w, h, wide: false };
+}
+const rectUnion = rs => { let l = 1e9, t = 1e9, r = -1e9, b = -1e9;
+  for(const q of rs){ l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); }
+  return { l, t, r, b, w: r - l, h: b - t, cx: (l + r) / 2, cy: (t + b) / 2 }; };
+/** The camera for the shop: your half of the field, filling the party's space on the page. */
+function shopCamera(){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
+  if(!fs || !st) return 'none';
+  WORLD.cam.style.transform = 'none';
+  const marks = [...st.querySelectorAll('.slotmark.p')].map(m => m.getBoundingClientRect());
+  if(!marks.length) return 'none';
+  const U = rectUnion(marks), mh = marks[0].height, R = fs.getBoundingClientRect(), E = WORLD.cam.getBoundingClientRect();
+  const top = U.t - mh * (WORLD.box.wide ? .2 : .45), bot = U.b + mh * .12;   // room for the plates over the back row
+  const uw = U.w * 1.04, uh = bot - top, ucy = (top + bot) / 2;
+  let s = Math.min(R.width / uw, R.height / uh);
+  s = Math.max(WORLD.box.wide ? 1.12 : 1.18, Math.min(3, s));
+  const cx = R.left + R.width / 2, cy = R.top + R.height / 2;
+  return `translate(${(cx - (E.left + (U.cx - E.left) * s)).toFixed(1)}px,${(cy - (E.top + (ucy - E.top) * s)).toFixed(1)}px) scale(${s.toFixed(3)})`;
+}
+/** Put each party slot (flat, in the page) over its mark on the field. */
+function placeSlots(){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
+  if(!fs || !st) return;
+  const F = fs.getBoundingClientRect();
+  for(const el of fs.querySelectorAll('.slot[data-i]')){
+    const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
+    if(!m) continue;
+    const r = m.getBoundingClientRect();
+    // the same size and footing as the fighter that will stand there (measured off the battle's own pieces)
+    const vert = st.classList.contains('vert'), sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
+    // a tap target around the pokémon, kept on screen where the close-up crops the field's edges
+    const vw = document.documentElement.clientWidth;
+    let sw = Math.min(r.width, Math.max(sp * 1.7, 64)), sl = r.left + r.width / 2 - sw / 2;
+    sl = Math.max(2, Math.min(vw - sw - 2, sl));
+    el.style.cssText = `left:${(sl - F.left).toFixed(1)}px;top:${(r.top - F.top).toFixed(1)}px;width:${sw.toFixed(1)}px;height:${r.height.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%`;
+  }
+}
+/** Lay the world out for the current screen. Runs after every draw and on resize. */
+function layoutWorld(){
+  const w = worldEl(); if(!w) return;
+  const on = (phase === 'shop' && !!G) || phase === 'battle';
+  document.body.classList.toggle('inworld', on);
+  w.hidden = !on;
+  if(!on) return;
+  const box = WORLD.box = worldBox();
+  w.classList.toggle('wide', box.wide);
+  Object.assign(WORLD.cam.style, { left: box.l + 'px', top: box.t + 'px', width: box.w + 'px', height: box.h + 'px' });
+  const root = document.documentElement.style;
+  root.setProperty('--sbW', box.w + 'px'); root.setProperty('--sbH', box.h + 'px');
+  const stage = phase === 'battle' && battle && battle.stage ? battle.stage.el : shopStage();
+  if(stage.parentNode !== WORLD.cam) WORLD.cam.replaceChildren(stage);
+  stage.classList.toggle('vert', box.w < BOARD_VERT_BELOW && !matchMedia('(orientation:landscape) and (max-height:520px) and (min-width:640px)').matches);
+  if(WORLD.anim) return;                       // the camera is mid-move; it settles itself
+  w.classList.toggle('shopview', phase === 'shop');
+  if(phase === 'shop'){
+    WORLD.shopCam = shopCamera();
+    WORLD.cam.style.transform = WORLD.shopCam;
+    placeSlots();
+    const pp = document.querySelector('.panel.party');
+    w.style.height = box.wide ? '' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
+  } else {
+    WORLD.cam.style.transform = 'none';
+    w.style.height = box.wide ? '' : (box.t + box.h + 8) + 'px';
+  }
+}
+window.addEventListener('resize', () => { if(!WORLD.anim) layoutWorld(); });
+
 /* ---- 5.0.0 · THE CAMERA ------------------------------------------------
-   The shop is a close-up of your half of the stadium, so going to battle is
-   the camera pulling back: the shop panels drop away, the battle field is
-   drawn zoomed in so your pokémon stand exactly where they stood on the
-   pitch, and it eases out to the whole stadium. The stands and lights come
-   up, the other side walks on, and the queue and log slide in. Continue runs
-   it backwards. Options → Transitions: Camera (default), Ball, Quick, Off;
-   reduced motion gets the plain fade. */
-let camShot = null;   // where your party stood in the shop, in page coordinates
-const artUnion = els => {
-  let l = 1e9, t = 1e9, r = -1e9, b = -1e9, n = 0, w = 0;
-  for(const e of els){ const q = e.getBoundingClientRect(); if(!q.width) continue;
-    n++; w += q.width; l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); }
-  return n ? { w: r - l, h: b - t, cx: (l + r) / 2, cy: (t + b) / 2, one: w / n, n } : null;
-};
+   BATTLE: the shop panels drop away, the party's flat slots hand over to the
+   fighters standing on the same marks, and the camera pulls back from your
+   half to the whole stadium. The stands and lights come up, the other side
+   walks on, and the queue and log slide in. Continue runs it backwards.
+   Options → Transitions: Camera (default), Ball, Quick, Off; reduced motion
+   gets the plain fade. */
 const useCamera = () => wipeWanted() && PREF.get('wipe', 'auto') === 'auto' && !motionOff();
 function transition(mid, onOpen, dir){ return useCamera() ? camera(mid, onOpen, dir) : wipe(mid, onOpen); }
-/** The stage transform that puts the fighters `from` where the shop sprites `to` are (viewport px). */
-function camTransform(el, from, to){
-  let s = from.n > 1 && from.w > 30 && to.w > 30 ? to.w / from.w : to.one / from.one;
-  if(from.n > 1 && from.h > 30 && to.h > 30) s = Math.min(s, Math.max(to.h / from.h, s * .75));
-  s = Math.max(1.25, Math.min(3.2, s || 1));   // always a pull back, even where the battle field is drawn bigger than the shop's pitch
-  const E = el.getBoundingClientRect();
-  return `translate(${(to.cx - (E.left + (from.cx - E.left) * s)).toFixed(1)}px,${(to.cy - (E.top + (from.cy - E.top) * s)).toFixed(1)}px) scale(${s.toFixed(3)})`;
-}
 const shopAway = () => [...document.querySelectorAll('#app > :not(.bcwrap):not(.vtag), .bcR, .bcL > :not(.party), .panel.party > :not(.pfield)')];
 const awayFrame = e => e.matches('.topbar') ? 'translateY(-36px)'
-  : e.matches('.bcR') && matchMedia('(min-width:1000px)').matches ? 'translateX(70px)' : 'translateY(46px)';
+  : e.matches('.bcR') && wideMode() ? 'translateX(80px)' : 'translateY(46px)';
 async function camera(mid, onOpen, dir){
   if(wiping) return;
   wiping = true;
@@ -3110,45 +3277,55 @@ async function camera(mid, onOpen, dir){
   const go = (el, frames, ms, o) => el.animate(frames, { duration: T(ms), easing: 'cubic-bezier(.5,0,.2,1)', fill: 'both', ...(o || {}) }).finished.catch(() => {});
   const wait = ms => new Promise(r => setTimeout(r, T(ms)));
   const body = document.body.classList;
+  worldEl();
   try{
     if(dir !== 'back'){
-      const to = artUnion(document.querySelectorAll('.pfield .slot .artwrap'));
-      camShot = to ? { ...to, cy: to.cy + scrollY } : null;
+      const from = WORLD.shopCam;
+      if(!from || !WORLD.cam){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       const away = shopAway();
       await Promise.all(away.map(e => go(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: awayFrame(e) }], 340, { easing: 'ease-in' })));
       body.add('cam', 'cam-hide', 'cam-foe');
-      await mid();
-      const S = battle && battle.stage;
-      const from = S && artUnion(S.el.querySelectorAll('.ftr.p .fart'));
-      if(!S || !from || !to){ body.remove('cam', 'cam-hide', 'cam-foe'); if(onOpen) onOpen(); return; }
-      battle.camIn = true;
-      S.el.style.transformOrigin = '0 0';
-      const tf = camTransform(S.el, from, to);
-      const zoom = go(S.el, [{ transform: tf }, { transform: tf, offset: .1 }, { transform: 'none' }], 1150);
+      WORLD.anim = true;
+      await mid();                                 // the battle draws; its field goes into the world under the same camera,
+                                                   // and the fighters take over from the party's slots on the same marks
+      body.remove('cam-going');
+      WORLD.el.classList.remove('shopview');
+      if(battle) battle.camIn = true;
+      WORLD.cam.style.transform = 'none';
+      const zoom = go(WORLD.cam, [{ transform: from }, { transform: from, offset: .08 }, { transform: 'none' }], 1150);
       SFX.play('wipeOut', true);
       await wait(620);
       body.remove('cam-hide');                     // the stands, the lights and the chrome come up
       await zoom;
-      S.el.getAnimations().forEach(a => a.cancel());
-      body.remove('cam-foe');                      // the other side walks on (the intro slides them in)
+      WORLD.cam.getAnimations().forEach(a => a.cancel());
+      WORLD.anim = false;
+      layoutWorld();
+      body.remove('cam-foe');                      // the other side walks on (the intro brings them)
       if(onOpen) onOpen();
       setTimeout(() => body.remove('cam'), T(600));
     } else {
-      const S = battle && battle.stage;
-      const from = S && S.el.isConnected && artUnion(S.el.querySelectorAll('.ftr.p .fart'));
-      if(!from || !camShot){ wiping = false; return wipe(mid, onOpen); }
+      const to = WORLD.shopCam;
+      if(!to || !WORLD.cam || !battle || !battle.stage){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       body.add('cam');
       void document.body.offsetWidth;
       body.add('cam-hide', 'cam-foe');
       await wait(320);
-      S.el.style.transformOrigin = '0 0';
-      const tf = camTransform(S.el, from, camShot);   // scroll goes to the top, so page = viewport
-      await go(S.el, [{ transform: 'none' }, { transform: tf }], 820);
-      body.remove('cam', 'cam-hide', 'cam-foe');
+      if(scrollY) window.scrollTo(0, 0);
+      WORLD.anim = true;
+      await go(WORLD.cam, [{ transform: 'none' }, { transform: to }], 820);
+      WORLD.cam.style.transform = to;
+      WORLD.cam.getAnimations().forEach(a => a.cancel());
+      WORLD.el.classList.add('shopview');
+      body.add('cam-going');
       await mid();
       window.scrollTo(0, 0);
+      WORLD.anim = false;
+      layoutWorld();
+      body.remove('cam', 'cam-hide', 'cam-foe');
+      void document.body.offsetWidth;
+      body.remove('cam-going');
       if(onOpen) onOpen();
       SFX.play('wipeOut', true);
       if(phase === 'shop'){
@@ -3157,7 +3334,8 @@ async function camera(mid, onOpen, dir){
       }
     }
   } finally {
-    wiping = false;
+    wiping = false; WORLD.anim = false;
+    body.remove('cam-going');
   }
 }
 
@@ -3369,6 +3547,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.1.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'One stadium behind every screen, and bosses walk out before they fight', items:[
+    'The game now sits on a single stadium. The shop is the camera close on your half of the real battle field, with the menus floating over it, and BATTLE pulls that same camera back to the whole stadium. Nothing is swapped: the field you set up on is the field you fight on.',
+    'The field in the shop is already your next opponent\u2019s stadium: a gym leader\u2019s type floor, the League, or your rival\u2019s dusk.',
+    'Boss walk-out: before a gym leader, the Elite Four, the Champion, a secret boss or your rival fights, they walk onto their half to a cheer, then throw out their team. A pok\u00e9ball flies to each spot and the pok\u00e9mon appear in a flash.',
+    'On a computer or a phone turned sideways, the shop column and the Battle button float on the right of the stadium, and battles keep the turn order, commentary and controls in a strip along the bottom.' ] },
   { v:'5.0.0', date:'Oct 6, 2026', title:'Major gameplay update', sub:'The Broadcast look: the whole game is the stadium', items:[
     'The shop is now a camera close-up of your half of the stadium. Your party stands on the pitch in the formation it will fight in.',
     'Going to battle, the camera pulls back to the whole stadium: the shop drops away, the stands and lights come up and the other side walks on. Continue zooms back in. Options \u2192 Transitions: Camera, Ball, Quick or Off.',
