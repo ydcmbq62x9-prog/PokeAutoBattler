@@ -6,7 +6,7 @@
 <title>PokéBattler</title>
 <meta name="description" content="PokéBattler — a Pokémon auto battler for you and your friends.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2b303b">
+<meta name="theme-color" content="#11182c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,7 +26,7 @@
    falls back to the old sans font instead of logging a failed request. */
 if(location.protocol !== 'file:'){
   const l = document.createElement('link'); l.rel = 'stylesheet';
-  l.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500&display=swap';
+  l.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap';
   document.head.appendChild(l);
 }
 </script>
@@ -2580,7 +2580,7 @@ html.bc .pfield,html.bc.dark .pfield{background:none;border:0;box-shadow:none;pa
 html.bc .pfield .rankhead{display:none}
 html.bc .pfield .formation{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;height:calc(var(--sbH,520px) * .6);min-height:220px}
 @container (max-width:620px){ html.bc .pfield .formation{grid-template-columns:1fr 1fr} }
-html.bc .pfield .slot{position:absolute;min-height:0!important;padding:0;margin:0;transform:none!important;background:none;border:0;box-shadow:none;display:block;z-index:1}
+html.bc .pfield .slot{position:absolute;min-height:0!important;max-width:none!important;flex:none;padding:0;margin:0;transform:none!important;background:none;border:0;box-shadow:none;display:block;z-index:1}
 html.bc .pfield .slot.pr1{z-index:2}html.bc .pfield .slot.pr2{z-index:3}
 html.bc .pfield .slot .unit{position:absolute;inset:0;display:block;padding:0;background:none;border:0;box-shadow:none;transform:none}
 html.bc .pfield .slot:hover .unit{transform:translateY(-2px)}
@@ -2726,6 +2726,282 @@ body.fieldpick #app > .shopbar,body.fieldpick .stagewrap .big.ribbon,body.fieldp
 .photoframe .phcap{position:absolute;left:50%;bottom:-5px;transform:translate(-50%,60%);white-space:nowrap;background:var(--navy,#11182c);color:var(--gold,#ffd23a);font-size:clamp(11px,2cqw,15px);letter-spacing:1px;padding:2px 12px;border-radius:6px;box-shadow:0 0 0 2px var(--gold,#ffd23a)}
 .runphoto{display:block;width:min(100%,320px);margin:12px auto;border-radius:8px;box-shadow:0 0 0 2px var(--gold,#ffd23a),0 10px 24px rgba(0,0,0,.4)}
 .runphoto:not([src]){display:none}
+
+/* ---- 5.3.1 · phone clean-up ---- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* iPhones blow text up when turned sideways */
+/* the result ribbon steps aside while the boss speaks */
+.stagewrap .big.ribbon.gone{opacity:0;transition:opacity .35s;pointer-events:none}
+/* reward cards: always three upright cards, centred, text inside */
+.fieldcards{left:50%!important;right:auto;width:min(94%,600px)!important;box-sizing:border-box}
+.fieldcards .fcrow{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.fieldcards .fcard{flex-direction:column!important;flex-wrap:nowrap!important;text-align:center!important;align-items:center;min-width:0;overflow:hidden}
+.fieldcards .fcard .rtext,.fieldcards .fcard .rtaken,.fieldcards .fcard .rnow{flex-basis:auto!important;margin:0!important;max-width:100%;overflow-wrap:anywhere}
+.fieldcards .fchead{max-width:100%;box-sizing:border-box}
+.bstage.vert .fieldcards .fchead{padding:5px 10px}
+.bstage.vert .fieldcards .fchead b{font-size:14px}
+.bstage.vert .fieldcards .fchead span{font-size:11px}
+.bstage.vert .fieldcards .fcard b{font-size:12.5px}
+.bstage.vert .fieldcards .fcard .ricon{font-size:20px}
+/* the party's level tag sits beside its numbers, clear of the role badge */
+html.bc .pfield .slot .lvl{right:calc(50% + 36px);left:auto;bottom:calc(var(--ab,13%) + var(--sp,64px) + 14px);top:auto;transform:none;font-size:10px;line-height:13px;padding:0 3px;z-index:2}
+/* the mode chips are a small tag, not a bar across the field */
+html.bc .bcL > .modebar{align-self:flex-start;display:inline-flex;width:auto;max-width:100%;margin:0 0 4px;padding:3px 8px;font-size:12px;background:var(--glass);border:0;border-radius:8px}
+/* the boss's picture fits inside its tag */
+html.bc .panel.arena > .bosstag{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;max-width:calc(100% - 20px)}
+html.bc .panel.arena > .bosstag .bossart.tag{width:26px;height:26px;margin:0;flex:none}
+/* the walking boss is a little smaller on a phone */
+.bstage.vert .walkout{transform-origin:50% 100%}
+@media (max-width:700px){
+  /* the floating BATTLE dock gets a backing so Undo never sits on top of text */
+  html.bc .dock{background:none;padding-top:14px;isolation:isolate}
+  html.bc .dock::before{content:'';position:absolute;top:0;bottom:0;left:-16px;right:-16px;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(9,14,28,0),rgba(9,14,28,.88) 34%,rgba(9,14,28,.96))}
+  html.bc body.picking .ctxbar{background:linear-gradient(180deg,rgba(9,14,28,.85),rgba(9,14,28,.97) 30%);border-top:2px solid var(--gold)}
+  html.bc .panel.party > h2 .sub{font-size:12px}
+}
+/* phones on their side: the field gets the room, the boxes shrink */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  html.bc #app > .topbar.gb{height:44px;padding-top:2px;padding-bottom:4px}
+  html.bc #app > .topbar.gb .stat.credits{font-size:22px}
+  html.bc .bcL > .modebar{display:none}
+  body[data-phase=shop] .bcL > .nextup:not(.boss.elite):not(.boss.champion){display:none}   /* the dock already says who is next */
+  body[data-phase=shop] .bcL{position:relative}
+  body[data-phase=shop] .bcL > #inspect{position:absolute;left:0;bottom:0;z-index:5;max-width:min(100%,420px);max-height:38px;overflow:hidden;font-size:12px}
+  body.inspecting[data-phase=shop] .bcL > #inspect{max-height:52vh;overflow:auto}
+  html.bc body[data-phase=shop] .pfield .slot .stats.spd{display:none}
+  html.bc body[data-phase=shop] .pfield .slot .stats{bottom:calc(var(--ab,13%) + var(--sp,64px) + 2px)}
+  html.bc body[data-phase=shop] .pfield .slot .lvl{bottom:calc(var(--ab,13%) + var(--sp,64px) + 2px);right:calc(50% + 32px)}
+  body[data-phase=shop] .bcR .dock .speech{padding:5px 8px}
+  body[data-phase=shop] .bcR .dock .speech .who{width:40px;height:40px;transform:none}
+  body[data-phase=shop] .bcR .dock .speech .ssub,body[data-phase=shop] .bcR .dock .speech .road{font-size:11px}
+  body[data-phase=shop] .bcR .shelves .panel{padding:8px}
+  body[data-phase=shop] .bcR .shelves h2{font-size:13px}
+  html.bc body.picking .ctxbar{padding:4px 10px calc(4px + env(safe-area-inset-bottom,0px))}
+  html.bc body.picking .ctxbar .hintbar{display:none}
+  html.bc body.picking .ctxbar .btn{min-height:34px;padding:2px 10px;font-size:13px}
+  body[data-phase=battle] #app > .shopbar .speed .sp{min-width:30px}
+  html.bc .panel.arena > .bosstag{font-size:9px;top:6px;left:6px}
+  .walkout .wsay{font-size:11px;max-width:200px;padding:4px 8px}
+}
+
+/* ---- 5.3.2 · phones on their side, laid out like the Broadcast Wide preview ----
+   Scoreboard across the top; the party tag top-left and the ORDER strip bottom-left, both floating on the field;
+   the shop as a scrolling column on the right with one neat BATTLE bar at its foot; summaries open over the
+   column, never over the field. */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcL > .tipcard,body[data-phase=shop] .bcL > .speechflow{display:none}
+  body[data-phase=shop] #app{padding:6px 10px 8px}
+  body[data-phase=shop] .bcwrap{grid-template-columns:minmax(0,1fr) clamp(280px,40vw,400px);gap:10px}
+  /* the field fills the left side; tag and ORDER float on it */
+  body[data-phase=shop] .panel.party{position:relative}
+  html.bc body[data-phase=shop] .pfield .formation{margin-top:0;height:100%}
+  body[data-phase=shop] .panel.party > h2{position:absolute;left:0;top:0;z-index:6;margin:0;gap:6px}
+  body[data-phase=shop] .panel.party > h2 .btn.arrange{min-height:30px;padding:2px 10px;font-size:12px}
+  body[data-phase=shop] .panel.party .shopq{display:flex;position:absolute;left:0;bottom:0;z-index:6;margin:0;padding:4px 8px;gap:4px;max-width:100%;overflow:hidden}
+  body[data-phase=shop] .panel.party .shopq .qmon{width:30px;height:30px}
+  body[data-phase=shop] .panel.party .shopq .qlbl{font-size:10px}
+  /* the info box: gone until you tap something, then it opens over the shop column */
+  body[data-phase=shop] .bcL > #inspect{display:none}
+  body.inspecting[data-phase=shop] .bcL > #inspect{display:block;position:fixed;left:auto;right:10px;top:58px;bottom:62px;width:clamp(280px,40vw,400px);box-sizing:border-box;
+    max-height:none!important;max-width:none;overflow:auto;z-index:60;background:var(--glass2);box-shadow:0 0 0 2px rgba(255,210,58,.5),0 10px 30px rgba(0,0,0,.5);font-size:13px;padding:10px 12px}
+  /* the pick bar sits under the shop column too, not across the field */
+  html.bc body.picking .ctxbar{left:auto!important;right:10px!important;width:clamp(280px,40vw,400px)!important;bottom:8px!important;border-radius:10px;border:0;box-shadow:0 0 0 2px var(--gold);padding:5px 8px!important}
+  /* the column: compact panels */
+  body[data-phase=shop] .bcR .shelves{gap:8px}
+  body[data-phase=shop] .bcR .shelves .panel{padding:8px 9px}
+  body[data-phase=shop] .bcR .shelves h2{font-size:12px;margin-bottom:6px}
+  body[data-phase=shop] .bcR .pcgrid{grid-template-columns:repeat(6,1fr);gap:4px}
+  body[data-phase=shop] .bcR .pcgrid .slot{min-height:48px}
+  body[data-phase=shop] .bcR .pcgrid .sprite.img{width:36px;height:36px}
+  body[data-phase=shop] .bcR .pcgrid .stats,body[data-phase=shop] .bcR .pcgrid .uname{display:none}
+  body[data-phase=shop] .bcR .dclist,body[data-phase=shop] .bcR .martlist{display:grid;grid-template-columns:1fr 1fr;gap:5px;overflow:visible}
+  body[data-phase=shop] .bcR .martlist .mhead{grid-column:1 / -1}
+  body[data-phase=shop] .bcR .drow,body[data-phase=shop] .bcR .martrow{min-width:0;padding:4px 6px;font-size:11px}
+  body[data-phase=shop] .bcR .drow .dart,body[data-phase=shop] .bcR .martrow .isprite{width:30px;height:30px}
+  body[data-phase=shop] .bcR .drow .dnums,body[data-phase=shop] .bcR .drow .dpace,body[data-phase=shop] .bcR .martrow .mtext > span:not(.mprev){display:none}
+  body[data-phase=shop] .bcR .drow b,body[data-phase=shop] .bcR .martrow b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* one BATTLE bar like the preview: who's next on the left, the button on the right */
+  body[data-phase=shop] .bcR .dock{flex-direction:row!important;align-items:center;gap:8px;background:var(--glass)!important;border-radius:10px;padding:6px 6px 6px 8px!important;flex-wrap:wrap}
+  body[data-phase=shop] .bcR .dock .speech{display:flex!important;flex:1 1 0;min-width:0;background:none!important;box-shadow:none!important;padding:0!important;margin:0;align-items:center;gap:6px}
+  body[data-phase=shop] .bcR .dock .speech .who{width:34px;height:34px;flex:none}
+  body[data-phase=shop] .bcR .dock .speech .say b{font-size:13px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  body[data-phase=shop] .bcR .dock .speech .ssub{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  body[data-phase=shop] .bcR .dock .speech .road,body[data-phase=shop] .bcR .dock .speech .nstage{display:none}
+  body[data-phase=shop] .bcR .dock .btn.fight{flex:none;width:auto;min-height:40px!important;padding:0 14px;font-size:16px!important;letter-spacing:1px}
+  body[data-phase=shop] .bcR .dock .btn.fight small{display:none}
+  body[data-phase=shop] .bcR .dock .btn.undo,body[data-phase=shop] .bcR .dock .legdock{flex:1 1 100%;order:-1}
+}
+
+/* 5.3.2 · landscape, round two: one-column summaries, single-column shop rows, a slimmer battle strip */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body.inspecting[data-phase=shop] .bcL > #inspect .isum{display:block}
+  body.inspecting[data-phase=shop] .bcL > #inspect .isum .pcol + .pcol{margin-top:8px}
+  body.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb{grid-template-columns:34px 1fr 36px}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect{bottom:108px}
+  body[data-phase=shop] .bcR .dclist,body[data-phase=shop] .bcR .martlist{display:flex;flex-direction:column;gap:4px}
+  body[data-phase=shop] .bcR .drow .dtype,body[data-phase=shop] .bcR .drow .rolechip{font-size:9.5px}
+  body[data-phase=shop] .bcR .dock .btn.fight{font-size:14px!important;padding:0 10px}
+  /* battle: slimmer strip so the stadium gets the height */
+  body[data-phase=battle] #app{row-gap:5px;padding:4px 10px 4px}
+  body[data-phase=battle] #app > #bqueue .queue{height:48px;padding-block:2px}
+  body[data-phase=battle] #app > #bqueue .queue .qmon{width:30px;height:30px}
+  body[data-phase=battle] #app > .blogbox #blog{height:38px;max-height:38px;font-size:12px;line-height:1.35}
+  body[data-phase=battle] #app > .shopbar{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px}
+  body[data-phase=battle] #app > .shopbar .btn{min-height:32px;padding:2px 10px;font-size:13px}
+  body[data-phase=battle] #app > .shopbar .speed .sp{min-width:28px;min-height:30px;padding:0 4px}
+}
+
+/* ---- 5.3.3 ---- */
+/* the party's spots are placed one by one over the field, so their box is a plain block, not a grid
+   (Safari lays out absolutely placed grid children differently, which put a spot's ring in the wrong place) */
+html.bc .pfield .formation{display:block!important}
+html.bc .pfield .slot{right:auto;bottom:auto;margin:0!important;align-self:auto;justify-self:auto;grid-area:auto}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  /* a summary only covers the shop column while you are choosing something; otherwise the column stays */
+  body.inspecting:not(.picking)[data-phase=shop] .bcL > #inspect{display:none!important}
+}
+/* the empty spot's ring is measured from the top of its spot (set in px), not from a percentage of its height */
+html.bc .pfield .slot.empty::after{bottom:auto!important;top:calc(var(--mh,80px) * .94 - min(var(--mh,80px) * .22, 22px));height:min(calc(var(--mh,80px) * .22), 22px)}
+
+/* ---- 5.3.4 ---- */
+.bstage.flatshop .tview{perspective:none!important}
+.bstage.flatshop .table{transform:none!important}
+.bstage.flatshop .ftr .fbody{transform:none!important}
+body.cam .bstage .table,body.cam .bstage .ftr .fbody{transition:transform 1s cubic-bezier(.5,0,.2,1)}
+/* the next trainer's picture fits its little box on a sideways phone */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcR .dock .speech .who{display:flex;align-items:center;justify-content:center;border-width:1px;border-radius:7px}
+  body[data-phase=shop] .bcR .dock .speech .who .pball{width:20px;height:20px;margin:0}
+  body[data-phase=shop] .bcR .dock .speech .who .bossart.dockart{width:30px;height:30px;margin:0}
+  body[data-phase=shop] .bcR .dock .speech .who img{max-width:100%;max-height:100%}
+}
+
+/* 5.3.6 · an empty spot's ring is centred where a pokémon's feet go (the same footing as the sprite and its shadow) */
+html.bc .pfield .slot.empty::after{top:calc(var(--mh,80px) * (1 - var(--abf,.22)) - min(var(--mh,80px) * .22, 22px) / 2)!important}
+
+/* ---- 5.3.7 · the shop's field inside the party panel on upright phones ---- */
+html.bc .pfield{position:relative}
+.pfield > .pfclip{position:absolute;z-index:-1;overflow:hidden;pointer-events:none}
+.pfclip .wcam{position:absolute;transform-origin:0 0}
+.pfclip .bstage{width:100%!important;height:100%!important;aspect-ratio:auto!important;min-height:0!important;max-height:none!important;border:0;border-radius:14px;box-shadow:none}
+.pfclip .bstage .ground,.pfclip .bstage .slotmark{opacity:0}
+
+/* 5.3.7 · the page around the field matches the stadium that is showing */
+html.bc body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,0),rgba(0,0,0,.3)),repeating-linear-gradient(0deg,var(--pg1,#3a8840) 0 34px,var(--pg2,#43974a) 34px 68px)!important;background-attachment:fixed!important}
+html.bc.dark body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,.15),rgba(0,0,0,.55)),repeating-linear-gradient(0deg,var(--pg1,#2c6a32) 0 34px,var(--pg2,#337838) 34px 68px)!important;background-attachment:fixed!important}
+
+/* 5.3.8 · during the camera move the stadium has the whole screen (the page is at the top then) */
+body.cam #world{position:fixed!important;inset:0!important;height:auto!important}
+
+/* 5.3.8 · for now the stadium is just its floor: no sky, stands, crowd or lights behind it (Sean: to be redesigned later) */
+.bstage.board.stadium{background:none!important;box-shadow:none!important;border:0!important}
+.bstage.board.stadium::before,.bstage.board.stadium::after{display:none!important}
+html.bc body[data-phase=battle] .panel.arena{background:none!important;box-shadow:none!important}
+body.speaking .panel.arena > .bosstag{opacity:0;transition:opacity .25s}
+.panel.arena > .bosstag{transition:opacity .25s}
+
+/* ---- 5.3.10 iron-out ---- */
+/* the badge rises beside the leader, clear of their speech bubble */
+.walkout .wbadge{bottom:22%!important;left:auto!important;right:-62%}
+.walkout .wbadge .wglow{inset:-30%!important}
+.bstage.vert .walkout .wbadge{right:-70%}
+
+/* ---- 5.4.0 · the Game Boy style retired ----
+   Lettering: a bold condensed sports face (the scoreboard look) instead of the pixel font. Pokémon keep their pixel art.
+   Menus: clean glass lists with a highlighted row, no ▶ cursor. Title: TAP TO PLAY, no blinking. */
+:root{--pix:'Barlow Condensed','Arial Narrow','Roboto Condensed','Segoe UI',system-ui,sans-serif}
+html.bc{--font:var(--pix)}
+html.bc :is(.smi,.sdesc,.sver,.tmi,.tpress,.tlogo,.tsub,.twho,.topbar .stat,.speech .say b,.popname,.big,.ribbon,.introban b,.rankhead span,.rklbl,.qlbl,.pfield .lvl,.carry span,.tg,.btn,h2,h3,.ribbon span,.fchead b,.fcard b,.wname,.phcap,.iconbtn){font-family:var(--pix)!important;font-weight:700!important;letter-spacing:.04em}
+html.bc :is(.tg,.btn.fight,.ribbon span,.big){letter-spacing:.08em}
+html.bc .topbar .stat.credits{font-weight:800!important}
+/* the Menu button */
+html.bc .iconbtn.start{gap:7px;padding:0 14px;letter-spacing:.1em}
+.burger{display:inline-block;width:14px;height:10px;flex:none;background:linear-gradient(currentColor 0 0) top/100% 2px no-repeat,linear-gradient(currentColor 0 0) center/100% 2px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 2px no-repeat}
+/* the menu: highlighted row instead of the ▶ cursor */
+html.bc .smi.cur::before,html.bc .tmi.cur::before{content:none!important}
+html.bc .smi{padding:8px 12px!important;border-radius:8px;font-size:18px;text-transform:none}
+html.bc .smi.cur,html.bc .smi:hover{background:rgba(255,210,58,.16);box-shadow:inset 3px 0 0 var(--gold)}
+html.bc .tmi{padding:9px 14px!important;border-radius:10px;letter-spacing:.06em}
+html.bc .tmi.cur,html.bc .tmi:hover{background:rgba(12,18,34,.72);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
+html.bc .tmi.cur small,html.bc .tmi:hover small{color:#cfd8f0}
+html.bc .modal.startmenu .box{animation:smin2 .18s cubic-bezier(.2,.8,.3,1) both}
+/* title: steady TAP TO PLAY, gold on navy like the scoreboard */
+html.bc .title .tpress{animation:tfade .3s .9s both!important;background:var(--navy);color:var(--gold);border-radius:10px;padding:10px 26px;box-shadow:0 0 0 2px var(--gold),0 8px 20px rgba(0,0,0,.35);letter-spacing:.14em;font-size:20px}
+html.bc .title .tlogo .t1,html.bc .title .tlogo .t2{font-family:var(--pix)!important;font-weight:800!important;font-style:italic;letter-spacing:.04em}
+/* no blinking ▼ in the info box (typed text is retired) */
+html.bc #inspect .more,html.bc #inspect .tcaret,html.bc #inspect::after{animation:none!important}
+/* title: the partner stands on a slice of the pitch (no Game Boy window or pixel clouds) */
+html.bc .tfield{border:0!important;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 14px 30px rgba(0,0,0,.35)!important;border-radius:14px!important;
+  background:radial-gradient(circle at 50% 120%,transparent 34%,rgba(255,255,255,.75) 34.6% 36%,transparent 36.6%),repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)!important}
+html.bc .tfield::before,html.bc .tfield::after,html.bc .tcloud{display:none!important}
+/* ---- 5.5.0 · the stands, redrawn ----
+   No sky and no box: a dark bowl of seats along the top of the field, in a deep shade of the page's own colour, fading
+   out at the sides so it sits in the page. Eight floodlights on its rim (--lit of them on, one per badge) and up to four
+   layers of crowd. Boss fights from the Elite Four on are a full house with every light on. */
+.bstage.board.stadium .ground{display:block!important;background:none!important;--lit:0}
+.bstage.board.stadium .stands{position:absolute;left:0;right:0;top:0;height:24%;clip-path:none!important;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 1.9cqw),
+    linear-gradient(180deg,color-mix(in srgb,var(--pg1,#3a8840) 22%,#070b16) 0%,color-mix(in srgb,var(--pg1,#3a8840) 38%,#0c1222) 100%)!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(180deg,#000 80%,transparent);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(180deg,#000 80%,transparent);mask-composite:intersect;
+  filter:brightness(calc(.5 + var(--lit) * .07));transition:filter .6s}
+.bstage.board.stadium.vert .stands{height:15%}
+.bstage.board.stadium .crowd{position:absolute;inset:2.4cqw 0 0;pointer-events:none}
+.bstage.board.stadium .crowd.c1{background:radial-gradient(circle at 50% 50%,#f1cfa8 0 .34cqw,transparent .46cqw) 0 0/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c2{background:radial-gradient(circle at 50% 50%,#e8505a 0 .34cqw,transparent .46cqw) 1.15cqw .95cqw/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c3{background:radial-gradient(circle at 50% 50%,#5b95ee 0 .34cqw,transparent .46cqw) .6cqw .3cqw/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c4{background:radial-gradient(circle at 50% 50%,#ffd23a 0 .3cqw,transparent .42cqw) 1.75cqw 1.25cqw/4.6cqw 3.8cqw,radial-gradient(circle at 50% 50%,#e9edf5 0 .3cqw,transparent .42cqw) .3cqw 1.4cqw/4.6cqw 3.8cqw}
+.bstage.board.stadium .crowd{opacity:.82}
+.bstage.board.stadium .ground.crowd1 :is(.c2,.c3,.c4),.bstage.board.stadium .ground.crowd2 :is(.c3,.c4),.bstage.board.stadium .ground.crowd3 .c4{display:none}
+/* a full house twinkles with camera flashes */
+.bstage.board.stadium .ground.full .stands::after{content:'';position:absolute;inset:2.4cqw 0 0;pointer-events:none;
+  background:radial-gradient(circle,#fff 0 .3cqw,transparent .6cqw) 3cqw 1cqw/17cqw 4.4cqw,radial-gradient(circle,#fff 0 .3cqw,transparent .6cqw) 11cqw 3cqw/23cqw 5.2cqw;
+  animation:twk 1.7s steps(2,jump-none) infinite;opacity:0}
+@keyframes twk{0%,40%{opacity:0}50%,60%{opacity:.95}70%,100%{opacity:0}}
+body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
+@media (prefers-reduced-motion:reduce){.bstage.board.stadium .ground.full .stands::after{animation:none}}
+/* the floodlights */
+.bstage.board.stadium .lamps{position:absolute;left:6%;right:6%;top:.5cqw;height:1.7cqw;display:flex;justify-content:space-between;pointer-events:none;z-index:1}
+.bstage.board.stadium .lamp{position:relative;width:4.2cqw;height:1.6cqw;border-radius:.4cqw;background:linear-gradient(90deg,rgba(0,0,0,.35) 1px,transparent 1px) 0 0/1.05cqw 100%,#2a3040;box-shadow:0 0 0 1px rgba(255,255,255,.12);transition:background .4s,box-shadow .4s}
+.bstage.board.stadium .lamp.on{background:linear-gradient(90deg,rgba(0,0,0,.18) 1px,transparent 1px) 0 0/1.05cqw 100%,#fffbe2;box-shadow:0 0 0 1px #fff,0 0 1.4cqw .5cqw rgba(255,248,200,.85)}
+.bstage.board.stadium .lamp.on::after{content:'';position:absolute;top:100%;left:50%;width:16cqw;height:16cqw;transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(50% 100% at 50% 0,rgba(255,250,215,.2),transparent 75%)}
+.bstage.board.stadium .lamp.fresh{animation:lampon .9s ease-out}
+@keyframes lampon{0%{transform:scale(1)}20%{transform:scale(1.5);box-shadow:0 0 0 1px #fff,0 0 4cqw 2cqw rgba(255,248,200,1)}100%{transform:scale(1)}}
+.bstage.board.stadium.vert .lamps{left:5%;right:5%}
+.bstage.board.stadium.vert .lamp{width:5.6cqw;height:2cqw}
+.bstage.board.stadium .lights{opacity:calc(var(--lit) / 8);background:radial-gradient(40% 22% at 25% 0%,rgba(255,250,215,.28),transparent 70%),radial-gradient(40% 22% at 75% 0%,rgba(255,250,215,.28),transparent 70%)!important}
+.bstage.board.stadium.bg-summit :is(.stands,.lamps,.lights){display:none}
+/* the phone shop's close-up stays just the floor */
+.pfclip .bstage .ground{display:none!important}
+
+/* 5.5.0 · a floor as a small swatch (home fields, the unlock banner) */
+.fsw.bstage{position:relative;display:block;width:100%;height:100%;aspect-ratio:auto!important;border-radius:8px;overflow:hidden;border:0;box-shadow:none;min-height:0}
+.fsw.bstage .table{position:absolute!important;inset:0!important;transform:none!important;border-radius:inherit;box-shadow:none!important}
+.fsw.bstage .pitch{position:absolute;inset:0}
+.fsw.bstage.fl-route .pitch::before,.fsw.bstage.fl-dusk .pitch::before{width:46cqw!important;border-width:2px!important}
+.fsw.bstage.fl-Fighting .pitch{inset:14% 12%;border-width:2px}
+.hfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;margin:4px 0 6px}
+.hf{position:relative;height:38px;padding:0;border:0;border-radius:9px;background:none;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.hf.cur{box-shadow:0 0 0 3px var(--gold),0 0 10px rgba(255,210,58,.5)}
+.hf.locked .fsw{filter:grayscale(1) brightness(.35)}
+.hflock{position:absolute;left:50%;top:50%;width:12px;height:10px;margin:-3px 0 0 -6px;border-radius:2px;background:rgba(255,255,255,.7)}
+.hflock::before{content:'';position:absolute;left:2px;right:2px;top:-7px;height:9px;border:2px solid rgba(255,255,255,.7);border-bottom:0;border-radius:6px 6px 0 0}
+.hfinfo{font-size:13px;line-height:1.35;min-height:2.7em}
+.fieldban{position:absolute;left:50%;top:7%;z-index:30;display:flex;align-items:center;gap:10px;padding:7px 14px 7px 7px;border-radius:12px;pointer-events:none;
+  background:var(--glass2,rgba(14,20,38,.96));box-shadow:0 0 0 2px var(--gold,#ffd23a),0 10px 24px rgba(0,0,0,.45);color:#fff;white-space:nowrap}
+#world .fieldban .fsw,.fieldban .fsw{width:54px!important;height:36px!important;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+.fieldban small{display:block;font-family:var(--pix);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold,#ffd23a);font-size:12px}
+.fieldban b{font-family:var(--pix);font-weight:800;font-size:19px;letter-spacing:.03em}
+/* 5.5.0 · Career board on the Trainer Card: scoreboard tiles */
+.career{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}
+.career .ct{background:var(--navy,#11182c);border-radius:9px;padding:7px 6px 6px;text-align:center;box-shadow:inset 0 -2px 0 rgba(255,210,58,.5);min-width:0}
+.career .ct b{display:block;font-family:var(--pix);font-weight:800;font-size:24px;line-height:1.05;color:var(--gold,#ffd23a);letter-spacing:.02em}
+.career .ct b i{font-style:normal;font-size:15px;color:#9aa6c4}
+.career .ct span{display:block;font-family:var(--pix);font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#c9d2ea;line-height:1.15}
+.career .ct small{display:block;font-size:11px;color:#9aa6c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.career .ct.fav{grid-column:1/-1;display:flex;align-items:center;gap:10px;text-align:left;padding:6px 10px}
+.career .ct.fav b{font-size:20px}
+.career .ct.fav .sprite{flex:none}
 </style>
 </head>
 <body>
@@ -7270,7 +7546,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.5.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7284,7 +7560,8 @@ const PREF = {
 const playerName = () => String(PREF.get('name', '') || '').replace(/[<>]/g, '').trim() || 'Trainer';
 
 /* ===================================================================
-   v47 · SOUND — Game Boy style blips, made on the fly with Web Audio
+   v47 · SOUND — made on the fly with Web Audio. 5.4.0: softer, rounder tones
+   (triangle/sine through a gentle low-pass) instead of the Game Boy square waves
    Square and triangle waves plus a little noise, like the old sound chip:
    nothing to download. On by default; START → Options has Sound (On/Off)
    and Volume. Phones only allow sound after the first tap, so the audio
@@ -7324,7 +7601,9 @@ const SFX = (() => {
         const AC = window.AudioContext || window.webkitAudioContext;
         if(!AC) return null;
         ctx = new AC();
-        master = ctx.createGain(); master.connect(ctx.destination);
+        master = ctx.createGain();
+        const soft = ctx.createBiquadFilter(); soft.type = 'lowpass'; soft.frequency.value = 3600; soft.Q.value = 0.5;   // 5.4.0
+        master.connect(soft); soft.connect(ctx.destination);
         noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
         const d = noiseBuf.getChannelData(0);
         for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -7347,12 +7626,12 @@ const SFX = (() => {
   function tone(f, t0, d, o){
     o = o || {};
     const t = ctx.currentTime + t0, osc = ctx.createOscillator(), g = ctx.createGain();
-    osc.type = o.type || 'square';
+    osc.type = o.type === 'square' || !o.type ? 'triangle' : o.type;   // 5.4.0: no more square waves
     osc.frequency.setValueAtTime(f, t);
     if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + d);
-    const v = (o.v == null ? 1 : o.v) * (osc.type === 'square' ? 0.5 : 1);
+    const v = (o.v == null ? 1 : o.v) * 0.85;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(v, t + 0.004);
+    g.gain.linearRampToValueAtTime(v, t + Math.min(0.012, d * 0.3));
     g.gain.setValueAtTime(v, t + Math.max(0.005, d * 0.6));
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     osc.connect(g); g.connect(master);
@@ -8413,7 +8692,7 @@ function renderShop(){
   const inc = incomeFor(G);
 
   /* --- the party, as the formation it will fight in --- */
-  const partyGrid = '<div class="pfield">' + rankHeaderHtml(COLS_OWN) + formationHtml(COLS_OWN, i => {
+  const partyGrid = '<div class="pfield"><div class="pfclip" data-keep aria-hidden="true"></div>' + rankHeaderHtml(COLS_OWN) + formationHtml(COLS_OWN, i => {
     const u = teamAt(G, i);
     return `<div class="slot ${u ? '' : 'empty'} ${slotClass(i)} pr${Math.floor(i / RANK_W)} pf${i % RANK_W}" data-act="team" data-i="${i}"
       ${u ? `data-pop="team:${i}"` : ''}>
@@ -8584,7 +8863,7 @@ function renderShop(){
     ${closed ? '' : `<div class="stat next" title="carry ${inc.carry} + base ${inc.base} + result ${inc.result} + streak ${inc.streak}${inc.items ? ` + items ${inc.items}` : ''}${inc.badges ? ` + badges ${inc.badges}` : ''}${inc.rival ? ` + rival ${inc.rival}` : ''}">
       <span class="lbl">Next turn</span>+${inc.total}₽</div>`}
     </div>
-    <button class="iconbtn start" data-act="menu" aria-label="Menu">START${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
+    <button class="iconbtn start" data-act="menu" aria-label="Menu"><i class="burger" aria-hidden="true"></i>MENU${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
   </div>
 
   <div class="bcwrap"><div class="bcL">
@@ -8685,7 +8964,7 @@ function renderBattle(){
      in the first time; a re-render (a toast, a tap) just shows it. */
   const fresh = done && !battle.ribbonShown;
   if(done) battle.ribbonShown = true;
-  const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''}"><span>
+  const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''} ${battle.ribbonGone ? 'gone' : ''}"><span>
       ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
               : battle.kind === 'champion' ? 'CHAMPION!'
               : battle.kind === 'red' ? `${esc(battle.boss.name).toUpperCase()} BEATEN!`
@@ -8812,7 +9091,34 @@ const backdropOf = b => b.kind === 'gym' ? 'gym' : (b.kind === 'elite' || b.kind
 /* 4.14.0: the stadium floor follows the battle — a leader or Elite Four member fights on their type's floor */
 const FLOOR_TYPES = ['Rock','Water','Electric','Grass','Bug','Psychic','Fire','Ground','Ice','Fighting','Ghost','Dragon','Flying','Normal','Steel','Poison','Dark'];
 const floorOf = b => { const t = b.boss && b.boss.theme && b.boss.theme[0];
+  if((b.kind || 'trainer') === 'trainer' && !b.boss) return 'fl-' + homeFloor();   // 5.5.0: ordinary trainer bouts play on your home field
   return (b.kind === 'gym' || b.kind === 'elite') && FLOOR_TYPES.includes(t) ? 'fl-' + t : 'fl-' + backdropOf(b); };
+/* 5.5.0 · HOME FIELDS: beat a leader (or the rival, the Champion, Red) and their floor is yours to pick
+   on the Trainer Card. Your ordinary trainer battles, and the shop before them, are played on it. */
+const SPECIAL_FLOORS = ['route', 'dusk', 'league', 'summit'];
+const ALL_FLOORS = [...SPECIAL_FLOORS, ...FLOOR_TYPES];
+const floorName = f => ({ route:'The pitch', dusk:'Rival’s dusk', league:'League hall', summit:'Mt. Silver' })[f] || f + ' floor';
+const floorHow = f => ({ route:'Yours from the start.', dusk:'Beat your rival.', league:'Beat the Champion.', summit:'Beat Red.' })[f]
+  || `Beat a ${f}-type gym leader or Elite Four member.`;
+/** The floor this win would unlock (null if it's not a boss floor). */
+function floorWon(b){
+  if(!b || b.exhibition) return null;
+  const t = b.boss && b.boss.theme && b.boss.theme[0];
+  if((b.kind === 'gym' || b.kind === 'elite') && FLOOR_TYPES.includes(t)) return t;
+  if(b.kind === 'rival') return 'dusk';
+  if(b.kind === 'champion') return 'league';
+  if(b.kind === 'red' && b.boss && b.boss.id !== 'oak') return 'summit';
+  return null;
+}
+function homeFloor(){ const f = PREF.get('homefloor', 'route'); return f !== 'route' && career().floors.includes(f) ? f : 'route'; }
+/* 5.5.0 · the stands: eight floodlights, one more lit for every badge you hold, and a crowd that fills up as you go.
+   The Elite Four, the Champion and the secret bosses play to a full house with every light on. */
+const LAMP_ORDER = [0, 7, 1, 6, 2, 5, 3, 4];   // k-th badge lights lamp LAMP_ORDER[k]: from the outside in
+function standsOf(b){
+  const big = b.kind === 'elite' || b.kind === 'champion' || b.kind === 'red';
+  const have = G ? Math.min(8, G.badges || 0) : 0;
+  return { lit: big ? 8 : have, crowd: big ? 4 : 1 + Math.floor(have / 3), full: big };
+}
 
 function fighterHtml(u){
   const art = SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}" draggable="false">`
@@ -8833,7 +9139,9 @@ function stageShell(b){
   el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)} look-${lookPref()}`;   // 4.15.0: Options → Battle look   // 4.13.0 board; 4.14.0 a tilted stadium table
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
-  el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i><i class="bulbs"></i></div>
+  const SD = standsOf(b);
+  const lamps = Array.from({ length: 8 }, (_, k) => { const o = LAMP_ORDER.indexOf(k); return `<b class="lamp${o < SD.lit ? ' on' : ''}" data-o="${o}"></b>`; }).join('');
+  el.innerHTML = `<div class="ground crowd${SD.crowd}${SD.full ? ' full' : ''}" style="--lit:${SD.lit}"><i class="stands"><i class="crowd c1"></i><i class="crowd c2"></i><i class="crowd c3"></i><i class="crowd c4"></i></i><i class="lamps">${lamps}</i><i class="lights"></i><i class="bulbs"></i></div>
     <div class="tview"><div class="table"><div class="pitch"></div><div class="midline"></div>
     ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
       `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
@@ -8949,7 +9257,41 @@ function mountStage(){
 }
 
 /* ---------------- the little effects ---------------- */
+/* ---- 5.3.2 · WHERE THINGS ARE ON THE TILTED TABLE -------------------------
+   iPhones (Safari) report the boxes of things on the 3D-tilted table in the
+   wrong place, which put the party's spots and the walking bosses off on
+   phones. So the game works the boxes out itself from the table's geometry
+   (its tilt, the perspective, the element's spot on the flat table): the
+   same answer a correct browser gives, on every browser. */
+function planeBox(el){   // in the stage's own px
+  const table = el && el.offsetParent; if(!table || !table.classList.contains('table')) return null;
+  const tview = table.parentElement, cs = getComputedStyle(table), vs = getComputedStyle(tview);
+  let cos = 1, sin = 0;
+  try{ if(cs.transform && cs.transform !== 'none'){ const m = new DOMMatrix(cs.transform); cos = m.m22; sin = m.m23; } }catch(e){}
+  const d = parseFloat(vs.perspective) || 0, po = String(vs.perspectiveOrigin).split(' ').map(parseFloat);
+  const Lt = tview.offsetLeft + table.offsetLeft, Tt = tview.offsetTop + table.offsetTop, Ht = table.offsetHeight;
+  const ox = tview.offsetLeft + (po[0] || 0), oy = tview.offsetTop + (po[1] || 0);
+  const P = (u, v) => { const dy = v - Ht, X = Lt + u, Y = Tt + Ht + dy * cos, Z = dy * sin, k = d ? d / (d - Z) : 1; return [ox + (X - ox) * k, oy + (Y - oy) * k]; };
+  const u = el.offsetLeft, v = el.offsetTop, w = el.offsetWidth, h = el.offsetHeight;
+  const pts = [P(u, v), P(u + w, v), P(u, v + h), P(u + w, v + h)], xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+  const l = Math.min(...xs), r = Math.max(...xs), t = Math.min(...ys), b = Math.max(...ys);
+  return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+}
+function planeRect(el){  // in viewport px, like getBoundingClientRect
+  const bx = planeBox(el); if(!bx) return el.getBoundingClientRect();
+  const stage = el.closest('.bstage'), E = stage.getBoundingClientRect(), sc = E.width / (stage.offsetWidth || E.width);
+  const left = E.left + bx.left * sc, top = E.top + bx.top * sc, width = bx.width * sc, height = bx.height * sc;
+  return { left, top, width, height, right: left + width, bottom: top + height };
+}
+/* 5.3.4: on iPhones (and any WebKit browser) the shop's field lies flat: Safari draws the tilted 3D table somewhere other
+   than where it reports it, so the party's spots never lined up. Flat, it is plain 2D and exact. The battle still tilts,
+   and the tilt comes in as the camera pulls back. PKB_FLAT forces it on for testing. */
+const flatShop = () => IS_WEBKIT || !!window.PKB_FLAT;
+const IS_WEBKIT = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Android/.test(navigator.userAgent));
 function artCentre(S, F){
+  if(IS_WEBKIT && S.table){   // 5.3.2: from the tile's worked-out box (see planeBox)
+    const t = planeBox(F.el); if(t){ const v = S.el.classList.contains('vert'), ah = t.height * (v ? .66 : .48);
+      return { x: t.left + t.width / 2, y: t.bottom - t.height * (v ? .22 : .135) - ah / 2, w: ah }; } }
   const a = F.el.querySelector('.fart').getBoundingClientRect(), r = S.el.getBoundingClientRect();
   return { x: a.left - r.left + a.width / 2, y: a.top - r.top + a.height / 2, w: a.width };
 }
@@ -8971,8 +9313,10 @@ const anim = (el, frames, opts) => {
 function restCentre(F){
   /* 4.14.0: the tile itself never moves (lunges move what's on it), and its box on screen already includes the table's tilt */
   const S = battle && battle.stage; if(!S) return null;
+  const v = S.el.classList.contains('vert');
+  if(IS_WEBKIT && S.table){ const t = planeBox(F.el); if(t) return { x: t.left + t.width / 2, y: t.top + t.height * (v ? 0.15 : 0.45), w: t.height * (v ? .66 : .48) }; }   // 5.3.2
   const t = F.el.getBoundingClientRect(), r = S.el.getBoundingClientRect(), art = F.el.querySelector('.fart');
-  const v = S.el.classList.contains('vert'), w = art ? art.getBoundingClientRect().width : t.height;
+  const w = art ? art.getBoundingClientRect().width : t.height;
   return { x: t.left - r.left + t.width / 2, y: t.top - r.top + t.height * (v ? 0.15 : 0.45), w };   // 4.16.0: it stands centred in its spot
 }
 function floatText(S, F, text, cls, lift){
@@ -9357,10 +9701,10 @@ const walkPace = () => speed >= 4 ? .45 : speed >= 2 ? .7 : 1;
 function leaderWalk(S, b, where){
   const ms = x => x * walkPace();
   const E = S.el.getBoundingClientRect(), vert = S.el.classList.contains('vert');
-  const marks = [...S.el.querySelectorAll('.slotmark.e')].map(m => m.getBoundingClientRect());
+  const marks = [...S.el.querySelectorAll('.slotmark.e')].map(planeRect);
   if(!marks.length) return null;
   const U = rectUnion(marks);
-  const size = Math.round(Math.min(E.width * (vert ? .26 : .13), E.height * (vert ? .2 : .34)));
+  const size = Math.round(Math.min(E.width * (vert ? .22 : .13), E.height * (vert ? .18 : .34)));
   let x = U.cx - E.left, y = U.cy - E.top + size * .15;
   if(where === 'mid'){ if(vert) y = U.b - E.top + size * .1; else x = U.l - E.left + size * .2; }
   const w = document.createElement('div');
@@ -9379,6 +9723,7 @@ function leaderWalk(S, b, where){
 function leaderSay(L, text, dur){
   if(!text) return;
   const sb = document.createElement('div'); sb.className = 'wsay'; sb.textContent = text;
+  document.body.classList.add('speaking'); clearTimeout(leaderSay.t); leaderSay.t = setTimeout(() => document.body.classList.remove('speaking'), dur);   // 5.3.8: the gym tag steps aside for the bubble
   L.w.appendChild(sb);
   anim(sb, [{ opacity: 0, transform: 'translate(-50%,6px) scale(.8)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .12 },
     { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .9 }, { opacity: 0, transform: 'translate(-50%,-4px) scale(.95)' }], { duration: dur, easing: 'ease-out', fill: 'both', remove: true });
@@ -9473,6 +9818,7 @@ function bossOutro(S){
   const ms = L.ms;
   setTimeout(() => {
     if(battle !== b || !S.el.isConnected) return;
+    b.ribbonGone = true; const rb = document.querySelector('.stagewrap .big.ribbon'); if(rb) rb.classList.add('gone');   // 5.3.1: don't cover what they say
     leaderSay(L, endLine(b, won), 2000);
     anim(L.body, won ? [{ scale: '1' }, { scale: '.94' }, { scale: '1' }] : [{ translate: '0 0' }, { translate: '0 -9%' }, { translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }],
       { duration: ms(won ? 420 : 700), easing: 'ease-out' });
@@ -9494,9 +9840,10 @@ function handBadge(S, b, L){
   const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
   w.appendChild(bd);
   SFX.play('sparkle');
+  if(gym) setTimeout(() => lightLamp(S, b), ms(2300));   // 5.5.0: one more floodlight comes on for the new badge
   const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
-  const tgt = mine.length ? artCentre(S, mine[0]) : null, me = w.getBoundingClientRect(), E = S.el.getBoundingClientRect();
-  const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top - E.top - size * .35) : 0;
+  const tgt = mine.length ? artCentre(S, mine[0]) : null, me = bd.getBoundingClientRect(), E = S.el.getBoundingClientRect();   // 5.3.10: from the badge's own spot
+  const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top + me.height / 2 - E.top) : 0;
   anim(bd, [{ transform: 'translate(-50%,0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-40%) scale(1.25)', opacity: 1, offset: .2 },
     { transform: 'translate(-50%,-40%) scale(1)', opacity: 1, offset: .62 },
     { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.5)`, opacity: 1, offset: .92 },
@@ -9505,6 +9852,24 @@ function handBadge(S, b, L){
     const fl = document.createElement('div'); fl.className = 'wflash gold'; fl.style.left = tgt.x + 'px'; fl.style.top = tgt.y + 'px';
     fl.style.width = fl.style.height = (tgt.w * 1.8) + 'px'; S.fx.appendChild(fl);
     anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.3)', opacity: 0 }], { duration: ms(520), easing: 'ease-out', remove: true }); }, ms(2120));
+}
+/** 5.5.0: the badge just won switches on the next floodlight. */
+function lightLamp(S, b){
+  if(battle !== b || !S.el.isConnected) return;
+  const g = S.el.querySelector('.ground'), l = S.el.querySelector(`.lamp[data-o="${Math.min(7, G.badges || 0)}"]`);
+  if(!g || !l || l.classList.contains('on')) return;
+  l.classList.add('on', 'fresh'); g.style.setProperty('--lit', String(Math.min(8, (+g.style.getPropertyValue('--lit') || 0) + 1)));
+  SFX.play('tap'); crowdReact(S, false);
+}
+/** 5.5.0: a new home field, announced on the pitch. */
+function fieldBanner(S, f){
+  if(!S.el.isConnected) return;
+  const d = document.createElement('div'); d.className = 'fieldban';
+  d.innerHTML = `<span class="fsw bstage board stadium fl-${f}"><span class="table"><span class="pitch"></span></span></span><div><small>New home field</small><b>${esc(floorName(f))}</b></div>`;
+  S.el.appendChild(d);
+  SFX.play('sparkle');
+  anim(d, [{ opacity: 0, transform: 'translate(-50%,-12px)' }, { opacity: 1, transform: 'translate(-50%,0)', offset: .1 }, { opacity: 1, transform: 'translate(-50%,0)', offset: .88 }, { opacity: 0, transform: 'translate(-50%,-8px)' }],
+    { duration: motionOff() ? 2600 : 3200, easing: 'ease-out', fill: 'both', remove: true });
 }
 /* ---- 5.3.0 · THE CHAMPION'S PHOTO --------------------------------------
    Beat the Champion and the Champion steps aside; your whole team (the
@@ -9587,7 +9952,7 @@ function showFieldCards(S, L){
   const E = S.el.getBoundingClientRect(), bx = box.getBoundingClientRect();
   let ox = 0, oy = 0;
   if(L && L.w.isConnected){ const lw = L.w.getBoundingClientRect(); ox = lw.left + lw.width / 2 - (bx.left + bx.width / 2); oy = lw.top + lw.height * .45 - (bx.top + bx.height / 2);
-    leaderSay(L, 'Pick one. It’s yours for the rest of the run.', 2600); }
+  }   // 5.3.10 iron-out: the cards' own header says it; a bubble only collided with it
   const ms = walkPace();
   anim(box.querySelector('.fchead'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 300 * ms, delay: 250 * ms, fill: 'both' });
   box.querySelectorAll('.fcard').forEach((c, k) => {
@@ -9673,6 +10038,7 @@ function stageOutro(S){
       { duration: 900, delay: k++ * 90, easing: 'ease-out' });
   }
   const later = (fn, t) => setTimeout(() => { if(battle && battle.stage === S) fn(S); }, t * walkPace());
+  if(r === 'win' && battle.newFloor) later(S2 => fieldBanner(S2, battle.newFloor), 500);   // 5.5.0
   if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)){ victorySweep(S); later(bossOutro, 1300); }
   else if(r === 'win'){ crowdReact(S, true); if(battle.kind === 'rival') later(bossOutro, 900); }
   else if(battle.boss) later(bossOutro, 900);           // 5.3.0: and when you lose, they gloat
@@ -9703,9 +10069,19 @@ function shopFloat(el, text, cls){
   const e = document.createElement('div');
   e.className = 'sfloat ' + (cls || '');
   e.textContent = text;
-  e.style.left = (r.left + r.width / 2 + window.scrollX) + 'px';
-  e.style.top = (r.top + window.scrollY + Math.min(18, r.height * 0.25)) + 'px';
-  document.body.appendChild(e);
+  const slot = el.closest && el.closest('.pfield .slot');
+  if(slot){   // 5.3.9: follows the party spot every frame, so it stays over the pokémon while the field settles (and survives redraws)
+    const sel = `.pfield .slot[data-i="${slot.dataset.i}"] .artwrap`;
+    document.body.appendChild(e);
+    const follow = () => { if(!e.isConnected) return; const a = document.querySelector(sel);
+      if(a){ const q = a.getBoundingClientRect(); e.style.left = (q.left + q.width / 2 + window.scrollX) + 'px'; e.style.top = (q.top + window.scrollY - 44) + 'px'; }   // above the stats line
+      requestAnimationFrame(follow); };
+    follow();
+  } else {
+    e.style.left = (r.left + r.width / 2 + window.scrollX) + 'px';
+    e.style.top = (r.top + window.scrollY + Math.min(18, r.height * 0.25)) + 'px';
+    document.body.appendChild(e);
+  }
   const still = motionOff();
   anim(e, still ? [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .75 }, { opacity: 0 }]
     : [{ opacity: 0, transform: 'translate(-50%,0) scale(.7)' }, { opacity: 1, transform: 'translate(-50%,-14px) scale(1.1)', offset: .2 },
@@ -9714,7 +10090,7 @@ function shopFloat(el, text, cls){
 }
 function shopFx(){
   if(!G || phase !== 'shop') return;
-  const rec = u => ({ id: u.id, lvl: unitLevel(u), exp: u.exp || 0 });
+  const rec = u => ({ id: u.id, lvl: unitLevel(u), exp: u.exp || 0, st: { hp: u.hp, atk: u.atk, spd: u.spd } });
   const now = {
     seed: G.seed, credits: G.credits,
     mon: new Map([...G.team, ...G.pc].map(u => [u.uid, rec(u)])),
@@ -9737,6 +10113,9 @@ function shopFx(){
     if(n.id !== w.id){ replay(el, 'fx-evo'); shopFloat(el, `${SPECIES[u.id].name}!`, 'evo'); snd.add('evolve'); }
     else if(n.lvl > w.lvl){ replay(el, 'fx-lvl'); shopFloat(el, `Level ${n.lvl}!`, 'lvl'); snd.add('levelup'); }
     else if(n.exp > w.exp){ replay(el, 'fx-exp'); shopFloat(el, '+EXP', 'exp'); snd.add('up'); }
+    else if(w.st && (n.st.hp > w.st.hp || n.st.atk > w.st.atk || n.st.spd > w.st.spd)){   // 5.3.9: battle EXP grows the stats, so say what grew
+      const g = [n.st.atk > w.st.atk ? `\u25c6+${n.st.atk - w.st.atk}` : '', n.st.hp > w.st.hp ? `\u2665+${n.st.hp - w.st.hp}` : '', n.st.spd > w.st.spd ? `\u00bb+${n.st.spd - w.st.spd}` : ''].filter(Boolean).join(' ');
+      replay(el, 'fx-exp'); shopFloat(el, `+EXP ${g}`, 'exp'); snd.add('up'); }
   }
   const dc = now.credits - was.credits;
   if(dc) snd.add(dc > 0 ? 'gain' : 'coin');
@@ -9808,14 +10187,14 @@ function runSummaryHtml(){
 }
 /* A 3:4 card drawn on a canvas: the team, the result, the MVP. */
 async function runImage(){
-  try{ if(document.fonts) await Promise.race([document.fonts.load('500 24px "Pixelify Sans"'), new Promise(r => setTimeout(r, 800))]); }catch(e){}
+  try{ if(document.fonts) await Promise.race([document.fonts.load('700 24px "Barlow Condensed"'), new Promise(r => setTimeout(r, 800))]); }catch(e){}
   const W = 720, H = 960, c = document.createElement('canvas'); c.width = W; c.height = H;
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
   const won = G.over === 'won', dark = '#2b303b', cream = '#f7f1de';
   x.fillStyle = cream; x.fillRect(0, 0, W, H);
   x.fillStyle = dark; x.fillRect(0, 0, W, 150); x.fillRect(0, H - 70, W, 70);
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
-  const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
+  const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Barlow Condensed", Nunito, system-ui, sans-serif`;
   x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
   x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `CHAMPION · ${secretBoss().name.toUpperCase()} DEFEATED` : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
@@ -9954,6 +10333,7 @@ function morphNode(f, t){
   morphKids(f, t);
 }
 function morphKids(from, to){
+  if(from.hasAttribute && from.hasAttribute('data-keep')) return;   // 5.3.7: the field the party stands on lives in here
   let f = from.firstChild, t = to.firstChild;
   while(t){
     const tn = t.nextSibling;
@@ -9983,6 +10363,7 @@ function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   document.body.dataset.phase = phase;   // 5.0.0: the wide layout is for the shop only
+  document.body.classList.toggle('inspecting', !!inspect);   // 5.3.1: a phone on its side opens the info box only when there is something in it
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
   /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
      tap) shoved the whole page down. Remember the first thing on screen and put it back where it was. */
@@ -10632,8 +11013,8 @@ async function wipe(mid, onOpen){
   w.dataset.mode = mode;
   SFX.play('wipeIn', mode === 'quick');
   try{
-    if(motionOff()){
-      iris.classList.add('flat');
+    if(true){   // 5.4.0: the pokéball wipe is retired; Quick (and reduced motion) is a short fade to dark
+      iris.classList.add('flat'); ball.hidden = true;
       await go(iris, [{ opacity: 0 }, { opacity: 1 }], 130);
       await mid(); if(onOpen) onOpen();
       SFX.play('wipeOut', true);
@@ -10698,19 +11079,20 @@ function nextBout(){
 }
 /** The shop's field: the next fight's stadium, empty. Kept until the next fight changes. */
 function shopStage(){
-  const b = nextBout(), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}`;
+  const b = nextBout(), SD = standsOf(b), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}|${SD.lit}|${SD.crowd}`;
   if(!WORLD.shop || WORLD.shopKey !== key){ WORLD.shop = stageShell(b); WORLD.shop.classList.add('shopstage'); WORLD.shopKey = key; }
+  WORLD.shop.classList.toggle('flatshop', flatShop());
   return WORLD.shop;
 }
 /** Where the field sits: the battle's box for this screen size (page coordinates). */
 function worldBox(){
-  const vw = document.documentElement.clientWidth, vh = innerHeight;
+  const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight || innerHeight;   // 5.3.1: not innerHeight, which changes as a phone's browser bar slides away
   const tb = document.querySelector('#app > .topbar');
-  const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + 10 : 76);
+  const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + (wideMode() && vh <= 520 ? 5 : 10) : 76);
   if(wideMode()){
-    const land = vh <= 520, strip = land ? 78 : 118, pad = land ? 10 : 16;
+    const land = vh <= 520, strip = land ? 58 : 118, pad = land ? 10 : 16, aspect = land ? 2.3 : 16 / 9;   // 5.3.1: a phone on its side gets a wider, flatter field
     const aw = vw - 2 * pad, ah = Math.max(150, vh - T - strip);
-    const w = Math.round(Math.min(aw, ah * 16 / 9)), h = Math.round(w * 9 / 16);
+    const w = Math.round(Math.min(aw, ah * aspect)), h = Math.round(w / aspect);
     return { l: Math.round((vw - w) / 2), t: T, w, h, wide: true };
   }
   const w = vw - 16, h = Math.round(Math.max(w * 1.15, Math.min(w * 1.7, vh - T - 210)));
@@ -10724,33 +11106,87 @@ function shopCamera(){
   const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
   if(!fs || !st) return 'none';
   WORLD.cam.style.transform = 'none';
-  const marks = [...st.querySelectorAll('.slotmark.p')].map(m => m.getBoundingClientRect());
+  const marks = [...st.querySelectorAll('.slotmark.p')].map(planeRect);
   if(!marks.length) return 'none';
   const U = rectUnion(marks), mh = marks[0].height, R = fs.getBoundingClientRect(), E = WORLD.cam.getBoundingClientRect();
-  const top = U.t - mh * (WORLD.box.wide ? .2 : .45), bot = U.b + mh * .12;   // room for the plates over the back row
+  const top = U.t - mh * (WORLD.box.wide ? .2 : .8), bot = U.b + mh * .12;   // room for the plates over the front row, clear of the party tag (5.3.6)
   const uw = U.w * 1.04, uh = bot - top, ucy = (top + bot) / 2;
   let s = Math.min(R.width / uw, R.height / uh);
   s = Math.max(WORLD.box.wide ? 1.12 : 1.18, Math.min(3, s));
   const cx = R.left + R.width / 2, cy = R.top + R.height / 2;
   return `translate(${(cx - (E.left + (U.cx - E.left) * s)).toFixed(1)}px,${(cy - (E.top + (ucy - E.top) * s)).toFixed(1)}px) scale(${s.toFixed(3)})`;
 }
+/* 5.3.8: on an upright phone everything about the shop's field is worked out from the page layout itself
+   (offsetLeft/offsetTop), never from where the browser says things are on screen. iPhones report on-screen
+   positions that lag behind while the page scrolls (picking a pokémon scrolls it), which dragged the party's
+   spots off the field. Layout numbers don't move when you scroll, so they can't drift. */
+const pageOff = el => { let x = 0, y = 0; for(let e = el; e; e = e.offsetParent){ x += e.offsetLeft; y += e.offsetTop; } return { x, y }; };
+function clipCamera(){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild, C = WORLD.clipO;
+  if(!fs || !st || !C) return null;
+  const qs = [...st.querySelectorAll('.slotmark.p')].map(planeBox).filter(Boolean);
+  if(!qs.length) return null;
+  const U = { l: Math.min(...qs.map(q => q.left)), r: Math.max(...qs.map(q => q.right)), t: Math.min(...qs.map(q => q.top)), b: Math.max(...qs.map(q => q.bottom)) };
+  const mh = qs[0].height, top = U.t - mh * .8, bot = U.b + mh * .12, uw = (U.r - U.l) * 1.04, uh = bot - top;
+  const R = { x: fs.offsetLeft, y: fs.offsetTop, w: fs.offsetWidth, h: fs.offsetHeight };
+  const s = Math.max(1.18, Math.min(3, Math.min(R.w / uw, R.h / uh)));
+  const tx = R.x + R.w / 2 - C.x - s * (U.l + U.r) / 2, ty = R.y + R.h / 2 - C.y - s * (top + bot) / 2;
+  return { s, tx, ty, css: `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${s.toFixed(4)})` };
+}
+function placeSlotsClip(K){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam.firstElementChild, C = WORLD.clipO, vert = st.classList.contains('vert');
+  const fx = fs.offsetLeft, fy = fs.offsetTop, vw = document.documentElement.clientWidth, fsx = pageOff(fs).x;
+  for(const el of fs.querySelectorAll('.slot[data-i]')){
+    const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
+    const q = m && planeBox(m); if(!q) continue;
+    const L = C.x + K.tx + K.s * q.left - fx, T = C.y + K.ty + K.s * q.top - fy, W = q.width * K.s, H = q.height * K.s;
+    const sp = Math.round(Math.min(W * .9, H * (vert ? .66 : .48)));
+    let sw = Math.min(W, Math.max(sp * 1.7, 64)), sl = L + W / 2 - sw / 2;
+    sl = Math.max(2 - fsx, Math.min(vw - fsx - sw - 2, sl));
+    el.style.cssText = `left:${sl.toFixed(1)}px;top:${T.toFixed(1)}px;width:${sw.toFixed(1)}px;height:${H.toFixed(1)}px;--mh:${H.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%;--abf:${vert ? .22 : .135}`;
+  }
+}
 /** Put each party slot (flat, in the page) over its mark on the field. */
 function placeSlots(){
   const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
   if(!fs || !st) return;
-  const F = fs.getBoundingClientRect();
+  /* 5.3.5: measure everything first, then place (no layout changes in between), then check each spot really landed
+     where it was aimed and nudge it if not. iPhones were dropping every spot after the first one about 40px low;
+     whatever the cause, a spot's own (flat) box is reported correctly, so the check catches it. */
+  const F = fs.getBoundingClientRect(), vw = document.documentElement.clientWidth, vert = st.classList.contains('vert');
+  const plan = [];
   for(const el of fs.querySelectorAll('.slot[data-i]')){
     const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
     if(!m) continue;
-    const r = m.getBoundingClientRect();
+    const r = planeRect(m);
     // the same size and footing as the fighter that will stand there (measured off the battle's own pieces)
-    const vert = st.classList.contains('vert'), sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
+    const sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
     // a tap target around the pokémon, kept on screen where the close-up crops the field's edges
-    const vw = document.documentElement.clientWidth;
     let sw = Math.min(r.width, Math.max(sp * 1.7, 64)), sl = r.left + r.width / 2 - sw / 2;
     sl = Math.max(2, Math.min(vw - sw - 2, sl));
-    el.style.cssText = `left:${(sl - F.left).toFixed(1)}px;top:${(r.top - F.top).toFixed(1)}px;width:${sw.toFixed(1)}px;height:${r.height.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%`;
+    plan.push({ el, x: sl, y: r.top, w: sw, h: r.height, sp });
   }
+  const put = (q, dx, dy) => { q.el.style.cssText = `left:${(q.x - F.left + dx).toFixed(1)}px;top:${(q.y - F.top + dy).toFixed(1)}px;width:${q.w.toFixed(1)}px;height:${q.h.toFixed(1)}px;--mh:${q.h.toFixed(1)}px;--sp:${q.sp}px;--ab:${vert ? 22 : 13.5}%;--abf:${vert ? .22 : .135}`; };
+  for(const q of plan){ q.dx = 0; q.dy = 0; put(q, 0, 0); }
+  for(let pass = 0; pass < 2; pass++){
+    let moved = false;
+    for(const q of plan){ const b = q.el.getBoundingClientRect(), ex = q.x - b.left, ey = q.y - b.top;
+      if(Math.abs(ex) > 1.5 || Math.abs(ey) > 1.5){ q.dx += ex; q.dy += ey; moved = true; } }
+    if(!moved) break;
+    for(const q of plan) put(q, q.dx, q.dy);
+  }
+}
+/* 5.3.7: the page around the field takes the field's own colours (a deep shade of its floor), in the shop and in battle,
+   so the surround always matches whatever stadium is showing */
+const PAGE_TONE = { route:['#3a8840','#43974a'], gym:['#3a8840','#43974a'], dusk:['#2c5a34','#326538'], league:['#241e4a','#2a2356'],
+  summit:['#6f8296','#7a8ea3'], Water:['#1f4f86','#235a95'], Fire:['#3a1e18','#44241c'], Rock:['#5e5442','#685d4a'], Ground:['#7a5e32','#866838'],
+  Grass:['#2f6e35','#357a3b'], Bug:['#3b5226','#435c2b'], Psychic:['#4a2556','#532a60'], Electric:['#3e4452','#454c5b'], Ice:['#4f8aa6','#5795b2'],
+  Fighting:['#6e4e2e','#785634'], Ghost:['#1d1630','#221a38'], Dragon:['#24226a','#2a2776'], Flying:['#3f7aa6','#4684b2'], Normal:['#9a6e7e','#a57888'],
+  Steel:['#59616d','#626a77'], Poison:['#3e2150','#45255a'], Dark:['#1a0f14','#21141a'] };
+function setPageTone(stageEl){
+  const f = stageEl && [...stageEl.classList].find(c => c.startsWith('fl-'));
+  const t = PAGE_TONE[f ? f.slice(3) : 'route'] || PAGE_TONE.route, r = document.documentElement.style;
+  if(r.getPropertyValue('--pg1') !== t[0]){ r.setProperty('--pg1', t[0]); r.setProperty('--pg2', t[1]); }
 }
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
@@ -10761,26 +11197,61 @@ function layoutWorld(){
   if(!on) return;
   const box = WORLD.box = worldBox();
   w.classList.toggle('wide', box.wide);
+  /* 5.3.7: on an upright phone the shop's field lives inside the party panel itself (in .pfclip), so the field and the
+     party's spots share one parent and can never drift apart, whatever the page or the phone does. Battles, and the
+     wide layouts, keep it in #world. */
+  const clip = phase === 'shop' && !box.wide ? document.querySelector('.pfield > .pfclip') : null;
+  const host = clip || w;
+  if(WORLD.cam.parentNode !== host) host.appendChild(WORLD.cam);
+  if(clip){
+    const pfe = clip.parentElement, P = pageOff(pfe), pp = document.querySelector('.panel.party'), tb = document.querySelector('#app > .topbar');
+    const camTop = tb ? pageOff(tb).y + tb.offsetHeight + 10 : box.t, pBot = pp ? pageOff(pp).y + pp.offsetHeight + 6 : camTop + box.h;
+    WORLD.clipO = { x: box.l - P.x, y: camTop - P.y };   // the field's top-left, in the party field's own coordinates
+    Object.assign(clip.style, { left: (-P.x) + 'px', top: (-P.y) + 'px', width: document.documentElement.clientWidth + 'px', height: Math.max(0, pBot) + 'px' });
+    Object.assign(WORLD.cam.style, { left: box.l + 'px', top: camTop + 'px', width: box.w + 'px', height: box.h + 'px' });
+  } else
   Object.assign(WORLD.cam.style, { left: box.l + 'px', top: box.t + 'px', width: box.w + 'px', height: box.h + 'px' });
   const root = document.documentElement.style;
   root.setProperty('--sbW', box.w + 'px'); root.setProperty('--sbH', box.h + 'px');
   const stage = phase === 'battle' && battle && battle.stage ? battle.stage.el : shopStage();
   if(stage.parentNode !== WORLD.cam) WORLD.cam.replaceChildren(stage);
+  setPageTone(stage);
   stage.classList.toggle('vert', box.w < BOARD_VERT_BELOW && !matchMedia('(orientation:landscape) and (max-height:520px) and (min-width:640px)').matches);
+  if(!clip && !box.wide && phase === 'battle') w.style.height = (box.t + box.h + 8) + 'px';   // 5.3.7: the field may have just come out of the party panel
   if(WORLD.anim) return;                       // the camera is mid-move; it settles itself
   w.classList.toggle('shopview', phase === 'shop');
+  if(clip) clip.classList.add('shopview');
   if(phase === 'shop'){
-    WORLD.shopCam = shopCamera();
-    WORLD.cam.style.transform = WORLD.shopCam;
-    placeSlots();
+    const K = clip && clipCamera();
+    if(K){ WORLD.shopCam = K.css; WORLD.cam.style.transform = K.css; placeSlotsClip(K); }
+    else { WORLD.shopCam = shopCamera(); WORLD.cam.style.transform = WORLD.shopCam; placeSlots(); }
+    WORLD.key = worldKey();
     const pp = document.querySelector('.panel.party');
-    w.style.height = box.wide ? '' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
+    w.style.height = box.wide ? '' : clip ? '0px' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
   } else {
     WORLD.cam.style.transform = 'none';
     w.style.height = box.wide ? '' : (box.t + box.h + 8) + 'px';
   }
 }
 window.addEventListener('resize', () => { if(!WORLD.anim) layoutWorld(); });
+/* 5.3.1: on phones the field is laid out once per draw, but things above the party can change height afterwards
+   (the font arriving, a banner closing, the browser bar sliding away). Check a few times a second and follow. */
+function worldKey(){ const f = document.querySelector('.pfield .formation'), t = document.querySelector('#app > .topbar');
+  if(!f || !WORLD.cam) return '';
+  if(WORLD.cam.parentNode && WORLD.cam.parentNode.classList && WORLD.cam.parentNode.classList.contains('pfclip')){   // 5.3.8: layout only
+    const a = pageOff(f), b = t ? pageOff(t).y + t.offsetHeight : 0, pp = document.querySelector('.panel.party');
+    return [a.x, a.y, f.offsetWidth, f.offsetHeight, b, pp ? pp.offsetHeight : 0, document.documentElement.clientWidth, document.documentElement.clientHeight].join(','); }
+  const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 }, w = WORLD.cam.getBoundingClientRect();
+  // 5.3.2: where the party's space is relative to the field itself, so any drift of either one is caught
+  return [r.left - w.left, r.top - w.top, r.width, r.height, q.bottom - w.top, document.documentElement.clientWidth, document.documentElement.clientHeight].map(v => Math.round(v)).join(','); }
+setInterval(() => { if(phase !== 'shop' || WORLD.anim || fieldPicking || wiping || document.hidden) return;
+  const k = worldKey(); if(k && k !== WORLD.key) layoutWorld(); }, 200);
+/* turning the phone mid-game: redraw once the new size has settled */
+const reflow = () => { [120, 450, 900].forEach(t => setTimeout(() => { if(WORLD.anim || fieldPicking || wiping) return;
+  if(phase === 'shop') render(); else { layoutWorld(); if(battle && battle.stage) fitBoard(battle.stage); } }, t)); };
+window.addEventListener('orientationchange', reflow);
+if(window.visualViewport) visualViewport.addEventListener('resize', () => { clearTimeout(reflow.t); reflow.t = setTimeout(() => { if(!WORLD.anim && !fieldPicking) layoutWorld(); }, 150); });
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if(!WORLD.anim) layoutWorld(); });
 
 /* ---- 5.0.0 · THE CAMERA ------------------------------------------------
    BATTLE: the shop panels drop away, the party's flat slots hand over to the
@@ -10806,11 +11277,14 @@ async function camera(mid, onOpen, dir){
   worldEl();
   try{
     if(dir !== 'back'){
-      const from = WORLD.shopCam;
+      let from = WORLD.shopCam;
       if(!from || !WORLD.cam){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       const away = shopAway();
+      if(scrollY) window.scrollTo({ top: 0, behavior: 'smooth' });   // 5.3.1: a fight always starts at the top of the page
       await Promise.all(away.map(e => go(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: awayFrame(e) }], 340, { easing: 'ease-in' })));
+      if(scrollY) window.scrollTo(0, 0);
+      { const se = WORLD.cam.firstElementChild, q = se && se.getBoundingClientRect(); WORLD.shopRect = q ? { left: q.left, top: q.top, width: q.width, height: q.height } : null; }   // 5.3.7
       body.add('cam', 'cam-hide', 'cam-foe');
       WORLD.anim = true;
       await mid();                                 // the battle draws; its field goes into the world under the same camera,
@@ -10819,6 +11293,10 @@ async function camera(mid, onOpen, dir){
       WORLD.el.classList.remove('shopview');
       if(battle) battle.camIn = true;
       WORLD.cam.style.transform = 'none';
+      { const W0 = WORLD.cam.getBoundingClientRect(), q = WORLD.shopRect;   // the battle field starts exactly where the shop's was
+        if(q && W0.width) from = `translate(${(q.left - W0.left).toFixed(1)}px,${(q.top - W0.top).toFixed(1)}px) scale(${(q.width / W0.width).toFixed(4)})`; }
+      const bst = battle && battle.stage && battle.stage.el;
+      if(bst && flatShop()){ bst.classList.add('flatshop'); void bst.offsetWidth; requestAnimationFrame(() => bst.classList.remove('flatshop')); }   // 5.3.4: tilt in as we pull back
       const zoom = go(WORLD.cam, [{ transform: from }, { transform: from, offset: .08 }, { transform: 'none' }], 1150);
       SFX.play('wipeOut', true);
       await wait(620);
@@ -10831,7 +11309,7 @@ async function camera(mid, onOpen, dir){
       if(onOpen) onOpen();
       setTimeout(() => body.remove('cam'), T(600));
     } else {
-      const to = WORLD.shopCam;
+      let to = WORLD.shopCam;
       if(!to || !WORLD.cam || !WORLD.cam.firstElementChild || (!battle && !fieldPicking)){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       body.add('cam');
@@ -10840,6 +11318,10 @@ async function camera(mid, onOpen, dir){
       await wait(320);
       if(scrollY) window.scrollTo(0, 0);
       WORLD.anim = true;
+      { const W0 = WORLD.cam.getBoundingClientRect(), q = WORLD.shopRect;   // 5.3.7: back to exactly where the shop's field was
+        if(q && W0.width) to = `translate(${(q.left - W0.left).toFixed(1)}px,${(q.top - W0.top).toFixed(1)}px) scale(${(q.width / W0.width).toFixed(4)})`; }
+      const bst = WORLD.cam.firstElementChild;
+      if(bst && flatShop()) bst.classList.add('flatshop');   // 5.3.4: and flatten again on the way back in
       await go(WORLD.cam, [{ transform: 'none' }, { transform: to }], 820);
       WORLD.cam.style.transform = to;
       WORLD.cam.getAnimations().forEach(a => a.cancel());
@@ -10889,9 +11371,10 @@ async function startBattle(){
              prize: rv ? rivalPrize(G, opp.meeting) : null, bagFull: rv ? bagRoom(G) === 0 : false,
              gauntlet: nextUp(G).gauntlet,
              timer: null, exhibition: false };
+  { const f = sim.result === 'win' ? floorWon(battle) : null; battle.newFloor = f && !career().floors.includes(f) ? f : null; }   // 5.5.0
   if(opp.kind === 'red'){ const r = records(); r.met = { ...(r.met || {}), [opp.boss && opp.boss.id || secretBoss().id]: true }; saveRecords(r); }   // 4.3.0: Pokédex remembers him
   sessionBattles++;
-  await transition(() => { phase = 'battle'; render(); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
+  await transition(() => { phase = 'battle'; render(); window.scrollTo(0, 0); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
 }
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
@@ -10940,7 +11423,7 @@ function playback(){
   clearTimeout(battle.timer);
   if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
-  battle.timer = setTimeout(() => { battle.i++; advanceView(); playback(); }, stepDelay());
+  battle.timer = setTimeout(() => { if(!battle) return; battle.i++; advanceView(); playback(); }, stepDelay());   // 5.3.2: the run may have been replaced meanwhile
 }
 /* A step no longer redraws the screen: the arena animates it, and only the
    queue, the log and the counter are patched. The last step is a full render
@@ -10967,6 +11450,7 @@ async function afterBattle(opts){
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
   noteBattle(battle);                             // v37: Trainer Card records
+  noteCareer(battle, result);                     // 5.5.0: career totals and home fields
   noteRunStats(battle);                           // 3.7.0: for the run summary
   applyBattleResult(G, result, opp, battle.sim);  // badges, blackout, lives, streak, EXP, wounds
   noteProgress();
@@ -11073,6 +11557,53 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.5.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The stadium comes alive: floodlights for your badges, home fields to unlock and a career on your Trainer Card', items:[
+    'The stands are back, redrawn: a dark bowl behind the field with eight floodlights along the top. One more light comes on for every badge you hold (you see it switch on as the leader hands the badge over), and the crowd fills up as you go. The Elite Four, the Champion and the secret bosses play to a full house with every light on.',
+    'Home fields: beat a gym leader or Elite Four member and their floor is yours. So are your rival\u2019s dusk pitch, the League hall and Mt. Silver. Pick one on the Trainer Card and your ordinary trainer battles, and the shop before them, are played on it. Boss fights keep their own floors.',
+    'The Trainer Card has a Career board: battles won, gym leaders and Elite Four beaten, Champion wins, your fastest clear, your biggest hit and your favourite pok\u00e9mon. It starts from your run history, and transfer codes carry it along.',
+    'The home-screen app has a new icon: PB on the pitch, in place of the old Game Boy box.' ] },
+  { v:'5.4.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The last of the Game Boy style retired: a stadium look from the title to the menus', items:[
+    'New lettering: headings, buttons and the scoreboard use a bold sports font instead of the pixel font. The pok\u00e9mon keep their pixel art.',
+    'The title says TAP TO PLAY and fades into the stadium, and the yellow START button is now a MENU button. The menu is a clean list with a highlighted row instead of the \u25b6 cursor.',
+    'Softer sounds: rounder tones replace the Game Boy beeps.',
+    'The info box shows its text straight away instead of typing it out letter by letter, so Options no longer has a Text setting.',
+    'The pok\u00e9ball wipe is retired: Transitions are now Camera, Quick or Off.' ] },
+  { v:'5.3.10', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Iron-out: tidier boss scenes', items:[
+    'The badge a leader hands over now rises beside them instead of on top of their speech bubble, and flies to your team from there.',
+    'The extra \u201cPick one\u201d bubble over the reward cards is gone; the cards\u2019 own header already says it, and on a sideways phone the two overlapped.' ] },
+  { v:'5.3.9', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'+EXP and Level up show over your pok\u00e9mon again', items:[
+    'After a battle each pok\u00e9mon shows +EXP over it again, with what grew (for example \u25c6+1 \u2665+2). Battle EXP grows a pok\u00e9mon\u2019s stats rather than its level, so the pop-up had stopped firing.', 'The +EXP, Level up and evolution pop-ups now ride on the pok\u00e9mon\u2019s own spot, so they appear right over it even while the party is settling back onto the field.' ] },
+  { v:'5.3.8', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots hold still on iPhone, and the camera no longer cuts off', items:[
+    'On an upright phone the party\u2019s spots are now worked out from the page layout itself instead of from where the phone says things are on screen, which lags while the page scrolls. Picking a pok\u00e9mon scrolls the page, and that was dragging your party off the field.',
+    'The camera move between the shop and a battle uses the whole screen, so the field is no longer cut off part-way down.',
+    'For now the stadium is just its floor: the sky, stands and crowd behind it are gone while a new backdrop is worked out.' ] },
+  { v:'5.3.7', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'The party stays put on the field when you pick a pok\u00e9mon', items:[
+    'On an upright phone the shop\u2019s field now lives inside the party\u2019s own panel instead of behind the whole page, so the field and your pok\u00e9mon move as one. Picking a pok\u00e9mon, closing a tip or scrolling can no longer slide the field out from under them.',
+    'The page around the field now takes the colours of whatever stadium is showing (sky blue for Falkner, purple for the League, deep green on routes), in the shop and in battle, so the background always matches the field.' ] },
+  { v:'5.3.6', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Every spot\u2019s ring sits where a pok\u00e9mon stands', items:[
+    'The rings on empty party spots now sit exactly where a pok\u00e9mon\u2019s feet go, so empty and filled spots line up row by row.',
+    'On phones the field sits a little lower, so the front row\u2019s numbers no longer run into the halfway line and the Formations button.' ] },
+  { v:'5.3.5', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots line up on iPhone', items:[
+    'The party\u2019s spots are now placed all at once, then checked: if a spot did not land exactly where it was aimed, it is nudged into place. On iPhones every spot after the first was landing too low, which is why the rings sat off the grid when picking where to put a pok\u00e9mon.' ] },
+  { v:'5.3.4', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots on iPhone, for real this time', items:[
+    'On iPhones the shop\u2019s field now lies flat, a straight-down close-up of your half. iPhones drew the tilted field somewhere other than where they reported it, so the empty-spot rings never lined up. Flat, every spot sits exactly under its ring. The field still tilts into the stadium as the camera pulls back for a battle.',
+    'Phones on their side: the next trainer\u2019s picture fits its box in the BATTLE bar instead of being zoomed in.' ] },
+  { v:'5.3.3', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Empty-spot rings on iPhone, and the sideways shop column', items:[
+    'The party\u2019s empty-spot rings are laid out a simpler way that iPhones can\u2019t get wrong, so the rings line up when you pick a pok\u00e9mon to place.',
+    'Phones on their side: a pok\u00e9mon\u2019s summary only covers the shop column while you are choosing what to do with it. Cancel or finish and the shop is back.' ] },
+  { v:'5.3.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'iPhone placement fixed, and a tidy sideways layout', items:[
+    'iPhones measured the tilted field wrongly, which put your party\u2019s spots in the wrong places (most visible when picking a spot) and walked bosses off-centre. The game now works out where everything sits on the field itself, so spots and bosses line up on every phone.',
+    'If anything nudges the field or the party after drawing, the spots now follow straight away.',
+    'Phones on their side now match the Broadcast Wide preview. The field fills the left with the party tag and ORDER strip floating on it, and the shop is a neat column on the right with a single BATTLE bar.',
+    'Sideways, a pok\u00e9mon\u2019s summary opens over the shop column instead of covering the field, the pick bar sits under the column, the tips box is hidden, and the shop rows are compact. Battles have a slimmer strip so the stadium is bigger.' ] },
+  { v:'5.3.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A clean-up pass on phones, upright and sideways', items:[
+    'Your party now stays lined up on its spots on the field. Before, a font loading in or the browser bar sliding away could leave pok\u00e9mon floating off their spots or on top of each other.',
+    'A battle always starts at the top of the screen, with the scoreboard showing.',
+    'The result banner steps aside when the leader speaks, so it no longer covers their line.',
+    'The reward cards are centred, three across, with their text inside the card.',
+    'Level tags no longer sit under the role badge; the mode tag (like Gen 2) is a small label instead of a bar across the field; the leader\u2019s picture fits inside its tag.',
+    'The BATTLE bar has a backing, so the Undo button never sits on top of text.',
+    'Phones on their side: iPhones no longer blow the text up, the field is wider, the top bar and boxes are slimmer, the duplicate who\u2019s-next box is gone, and the game re-lays itself out properly when you turn the phone mid-game.' ] },
   { v:'5.3.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Rewards on the field, bosses have the last word, and a Champion\u2019s team photo', items:[
     'Gym rewards on the field: after a gym win, Choose your reward keeps you in the stadium. The leader holds out the three reward cards on the pitch; tap one and it flies to your team, then the camera goes back to the shop.',
     'Bosses have the last word: when the fight is over, a gym leader, Elite Four member, the Champion, a secret boss or your rival walks back out and says something. Beat them and they admit it; black out and they gloat.',
@@ -11511,6 +12042,80 @@ function records(){
   return Object.assign({ runs:0, cleared:0, best:-1 }, r || {});
 }
 function saveRecords(r){ try{ localStorage.setItem(REC_KEY, JSON.stringify(r)); }catch(e){} }
+/* 5.5.0 · CAREER: totals across every run on this device, for the Trainer Card. Before 5.5.0 nothing counted
+   battles, so the first time it's read it starts from what the records already know (run history, clears). */
+function career(r){
+  r = r || records();
+  if(r.career) return Object.assign({ battles:0, wins:0, gyms:0, elite:0, champs:0, used:{}, hit:null, fastest:0, floors:[] }, r.career);
+  const H = r.history || [], used = {};
+  for(const h of H) for(const id of h.team || []) used[id] = (used[id] || 0) + 1;
+  const fast = H.filter(h => h.won && h.turn).map(h => h.turn);
+  return { battles:0, wins:0, gyms: H.reduce((n, h) => n + (h.badges || 0), 0), elite:0, champs: r.cleared || 0, used, hit:null,
+           fastest: fast.length ? Math.min(...fast) : 0, floors:[] };
+}
+function noteCareer(b, result){
+  if(!b || b.exhibition || !b.steps || !b.steps.length) return;
+  const r = records(), c = career(r);
+  c.battles++;
+  if(result === 'win'){
+    c.wins++;
+    if(b.kind === 'gym') c.gyms++;
+    if(b.kind === 'elite') c.elite++;
+    if(b.kind === 'champion') c.champs++;
+    const f = floorWon(b); if(f && !c.floors.includes(f)) c.floors.push(f);
+  }
+  for(const u of b.steps[0].p) c.used[u.id] = (c.used[u.id] || 0) + 1;
+  const h = G && G.rec && G.rec.hit; if(h && (!c.hit || h.dmg > c.hit.dmg)) c.hit = { ...h };
+  r.career = c; saveRecords(r);
+}
+function noteCareerEnd(){
+  if(!G || G.over !== 'won') return;
+  const r = records(), c = career(r), t = G.turn || 1;
+  if(!c.fastest || t < c.fastest){ c.fastest = t; r.career = c; saveRecords(r); }
+}
+function mergeCareer(a, b){
+  if(!a && !b) return null;
+  const A = Object.assign({ used:{}, floors:[] }, a || {}), B = Object.assign({ used:{}, floors:[] }, b || {}), used = { ...A.used };
+  for(const [k, v] of Object.entries(B.used)) used[k] = Math.max(used[k] || 0, v);
+  const mx = k => Math.max(A[k] || 0, B[k] || 0), fs = [A.fastest, B.fastest].filter(Boolean);
+  return { battles: mx('battles'), wins: mx('wins'), gyms: mx('gyms'), elite: mx('elite'), champs: mx('champs'), used,
+           hit: [A.hit, B.hit].filter(Boolean).sort((x, y) => y.dmg - x.dmg)[0] || null,
+           fastest: fs.length ? Math.min(...fs) : 0, floors: [...new Set([...A.floors, ...B.floors])] };
+}
+function careerHtml(){
+  const c = career(), fav = Object.entries(c.used).sort((x, y) => y[1] - x[1])[0], favId = fav && SPECIES[fav[0]] ? fav[0] : null;
+  const tile = (n, lbl, extra) => `<div class="ct"><b>${n}</b><span>${lbl}</span>${extra || ''}</div>`;
+  return `<h4>Career</h4><div class="career">
+    ${tile(c.battles ? `${c.wins}<i>/${c.battles}</i>` : '—', 'Battles won')}
+    ${tile(c.gyms, 'Gym leaders beaten')}
+    ${tile(c.elite, 'Elite Four beaten')}
+    ${tile(c.champs, 'Champion wins')}
+    ${tile(c.fastest ? `T${c.fastest}` : '—', 'Fastest clear')}
+    ${tile(c.hit ? c.hit.dmg : '—', 'Biggest hit', c.hit && SPECIES[c.hit.id] ? `<small>${esc(SPECIES[c.hit.id].name)}</small>` : '')}
+    <div class="ct fav">${favId ? spriteHtml(favId, 'sm') : ''}<div><b>${favId ? esc(SPECIES[favId].name) : '—'}</b><span>Favourite pokémon${fav ? ` · ${fav[1]} battle${fav[1] === 1 ? '' : 's'}` : ''}</span></div></div>
+  </div>`;
+}
+function homeFieldHtml(){
+  const c = career(), cur = homeFloor();
+  const sw = f => { const on = f === 'route' || c.floors.includes(f);
+    return `<button class="hf ${on ? '' : 'locked'} ${f === cur ? 'cur' : ''}" data-hf="${f}" aria-label="${esc(floorName(f))}"><span class="fsw bstage board stadium fl-${f}"><span class="table"><span class="pitch"></span></span></span>${on ? '' : '<i class="hflock"></i>'}</button>`; };
+  return `<h4>Home field <span class="dim">${1 + c.floors.length} / ${ALL_FLOORS.length}</span></h4>
+    <div class="hfgrid">${ALL_FLOORS.map(sw).join('')}</div>
+    <div class="hfinfo">${hfInfo(cur)}</div>`;
+}
+function hfInfo(f){
+  const on = f === 'route' || career().floors.includes(f);
+  return `<b>${esc(floorName(f))}</b> <span class="dim">${on ? 'Your trainer battles, and the shop before them, are played here.' : 'Locked. ' + esc(floorHow(f))}</span>`;
+}
+function bindHomeField(d){
+  const info = d.querySelector('.hfinfo');
+  d.querySelectorAll('[data-hf]').forEach(btn => btn.onclick = () => {
+    const f = btn.dataset.hf, on = f === 'route' || career().floors.includes(f);
+    SFX.play(on ? 'tap' : 'error');
+    if(on){ PREF.set('homefloor', f); d.querySelectorAll('[data-hf]').forEach(x => x.classList.toggle('cur', x === btn)); layoutWorld(); }
+    info.innerHTML = hfInfo(f);
+  });
+}
 
 /* ---- 2.4.0 · THE HARDCORE BADGE ---------------------------------------
    Earned by clearing a run with One Life on (a One Life daily counts). Kept in
@@ -11736,7 +12341,7 @@ function logRun(){
   saveRecords(r);
 }
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ logRun(); awardHardcore(); awardChallenges(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ logRun(); noteCareerEnd(); awardHardcore(); awardChallenges(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
 function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ logRun(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
@@ -11790,7 +12395,9 @@ function openTrainerCard(fromTitle){
       <div class="tface" title="${P ? esc(P.u.nm) + ', your partner' : ''}">${SPRITES[face] ? `<img src="${SPRITES[face]}" alt="">` : '<i class="pball"></i>'}</div>
     </div>
     <h4>Badges</h4><div class="bcase">${cells}</div>
+    ${careerHtml()}
     ${specialBadgesHtml()}
+    ${homeFieldHtml()}
     <h4>Records</h4><div class="recs">
       ${R.secStreak && R.secStreak.best ? `<div><span>Secret boss streak</span><b>${R.secStreak.cur} now · best ${R.secStreak.best}</b></div>` : ''}
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
@@ -11803,7 +12410,7 @@ function openTrainerCard(fromTitle){
   </div>
   <div class="btnrow"><button class="btn" data-m="history">Run history</button><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
   d.classList.add('trainer');
-  bindSpecialBadges(d);
+  bindSpecialBadges(d); bindHomeField(d);
   d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); if(b.dataset.m === 'history') openHistory(fromTitle); });
 }
 
@@ -11828,7 +12435,6 @@ function openOptions(){
       <input id="optname" maxlength="10" value="${esc(PREF.get('name', ''))}" placeholder="Trainer" autocomplete="off" spellcheck="false"></label>
     <div class="optrow"><span>Theme</span>${seg('theme', PREF.get('theme', 'light'), [['light', 'Light'], ['dark', 'Dark'], ['system', 'System']])}</div>
     <div class="optrow"><span>Battle speed</span>${seg('speed', speed, [[1, '1×'], [2, '2×'], [4, '4×']])}</div>
-    <div class="optrow"><span>Text</span>${seg('text', PREF.get('text', 'type'), [['type', 'Type out'], ['instant', 'Instant']])}</div>
     <div class="optrow"><span>Motion</span>${seg('motion', PREF.get('motion', 'device'), [['device', 'Normal'], ['reduced', 'Reduced']])}</div>
     <div class="optrow"><span>Title screen</span>${seg('title', PREF.get('title', 'on'), [['on', 'Show'], ['off', 'Skip']])}</div>
     <div class="optrow"><span>Haptics</span>${seg('haptics', PREF.get('haptics', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
@@ -11836,7 +12442,7 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
-    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['full', 'Ball'], ['quick', 'Quick'], ['off', 'Off']])}</div>
+    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
@@ -11873,7 +12479,7 @@ function typeInspect(){
   const html = box.innerHTML;
   if(html === lastInspect) return;
   lastInspect = html;
-  if(motionOff() || PREF.get('text', 'type') === 'instant') return;
+  if(motionOff() || true) return;   // 5.4.0: the info box no longer types itself out (that was the Game Boy style)
   /* v43: a full summary has chips, bars and flex rows that splitting into
      letters would break apart, so it rolls out line by line instead. */
   const sum = box.querySelector('.isum');
@@ -11899,7 +12505,7 @@ function typeInspect(){
 function openExport(){
   const code = exportTeam(G.team, playerName());
   const d = modal(`<h3>Your Team Code</h3>
-    <p>Send this to a friend — they can paste it into <b>START → Vs friend</b> and fight your exact party.</p>
+    <p>Send this to a friend — they can paste it into <b>Menu → Vs friend</b> and fight your exact party.</p>
     <textarea readonly>${esc(code)}</textarea>
     <div class="btnrow"><button class="btn primary" data-m="copy">Copy</button>
     <button class="btn ghost" data-m="close">Close</button></div>`);
@@ -11972,8 +12578,9 @@ function applyTransfer(data){
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
     const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) }, ga = mergeHardcore(a.gauntlet, b.gauntlet), st = { cur: Math.max((a.secStreak || {}).cur || 0, (b.secStreak || {}).cur || 0), best: Math.max((a.secStreak || {}).best || 0, (b.secStreak || {}).best || 0) };
     const chm = mergeChal(a.chal, b.chal);   // 4.12.0
+    const cr = mergeCareer(a.career, b.career);   // 5.5.0
     const hist = [...(a.history || []), ...(b.history || [])].filter((x, i, arr) => x && arr.findIndex(y => y && y.at === x.at) === i).sort((p, q) => q.at - p.at).slice(0, HIST_MAX);
-    saveRecords({ ...a, chal: chm, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    saveRecords({ ...a, ...(cr ? { career: cr } : {}), chal: chm, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;
@@ -12076,7 +12683,7 @@ function openTutorial(){
     { ids:['snorlax','zapdos'], title:'Fights have stakes',
       text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
     { ids:['eevee','pikachu','mew'], title:'Make it yours',
-      text:'START opens the menu: your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
   ];
   let i = 0;
   const d = modal('', true); d.classList.add('tutorial');
@@ -12507,7 +13114,7 @@ function showTitle(then){
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
     <div class="twho">${titleBadgesHtml()}${who}</div>
-    <button class="tpress" data-t="start">PRESS START</button>
+    <button class="tpress" data-t="start">TAP TO PLAY</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
@@ -12527,8 +13134,11 @@ function showTitle(then){
   const leave = () => {
     if(!titleEl) return;
     titleEl = null; document.removeEventListener('keydown', onKey, true);
-    /* v41: the pokéball wipe carries you from the title into the game */
-    wipe(() => { d.remove(); document.body.classList.remove('titled'); }).then(() => { if(then) then(); });
+    /* 5.4.0: the title fades into the stadium (the pokéball wipe was the Game Boy style) */
+    const done = () => { d.remove(); document.body.classList.remove('titled'); if(then) then(); };
+    if(motionOff() || !wipeWanted()){ done(); return; }
+    SFX.play('wipeOut', true);
+    d.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(1.06)' }], { duration: 420, easing: 'ease-in', fill: 'forwards' }).finished.then(done, done);
   };
   const act = t => {
     SFX.play(t === 'start' ? 'start' : t === 'new-no' ? 'back' : 'select');
