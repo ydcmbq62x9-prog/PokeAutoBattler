@@ -2864,6 +2864,9 @@ body.cam .bstage .table,body.cam .bstage .ftr .fbody{transition:transform 1s cub
   body[data-phase=shop] .bcR .dock .speech .who .bossart.dockart{width:30px;height:30px;margin:0}
   body[data-phase=shop] .bcR .dock .speech .who img{max-width:100%;max-height:100%}
 }
+
+/* 5.3.6 · an empty spot's ring is centred where a pokémon's feet go (the same footing as the sprite and its shadow) */
+html.bc .pfield .slot.empty::after{top:calc(var(--mh,80px) * (1 - var(--abf,.22)) - min(var(--mh,80px) * .22, 22px) / 2)!important}
 </style>
 </head>
 <body>

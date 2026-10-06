@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.5', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.6', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3512,7 +3512,7 @@ function shopCamera(){
   const marks = [...st.querySelectorAll('.slotmark.p')].map(planeRect);
   if(!marks.length) return 'none';
   const U = rectUnion(marks), mh = marks[0].height, R = fs.getBoundingClientRect(), E = WORLD.cam.getBoundingClientRect();
-  const top = U.t - mh * (WORLD.box.wide ? .2 : .45), bot = U.b + mh * .12;   // room for the plates over the back row
+  const top = U.t - mh * (WORLD.box.wide ? .2 : .8), bot = U.b + mh * .12;   // room for the plates over the front row, clear of the party tag (5.3.6)
   const uw = U.w * 1.04, uh = bot - top, ucy = (top + bot) / 2;
   let s = Math.min(R.width / uw, R.height / uh);
   s = Math.max(WORLD.box.wide ? 1.12 : 1.18, Math.min(3, s));
@@ -3539,7 +3539,7 @@ function placeSlots(){
     sl = Math.max(2, Math.min(vw - sw - 2, sl));
     plan.push({ el, x: sl, y: r.top, w: sw, h: r.height, sp });
   }
-  const put = (q, dx, dy) => { q.el.style.cssText = `left:${(q.x - F.left + dx).toFixed(1)}px;top:${(q.y - F.top + dy).toFixed(1)}px;width:${q.w.toFixed(1)}px;height:${q.h.toFixed(1)}px;--mh:${q.h.toFixed(1)}px;--sp:${q.sp}px;--ab:${vert ? 22 : 13.5}%`; };
+  const put = (q, dx, dy) => { q.el.style.cssText = `left:${(q.x - F.left + dx).toFixed(1)}px;top:${(q.y - F.top + dy).toFixed(1)}px;width:${q.w.toFixed(1)}px;height:${q.h.toFixed(1)}px;--mh:${q.h.toFixed(1)}px;--sp:${q.sp}px;--ab:${vert ? 22 : 13.5}%;--abf:${vert ? .22 : .135}`; };
   for(const q of plan){ q.dx = 0; q.dy = 0; put(q, 0, 0); }
   for(let pass = 0; pass < 2; pass++){
     let moved = false;
@@ -3891,6 +3891,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.6', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Every spot\u2019s ring sits where a pok\u00e9mon stands', items:[
+    'The rings on empty party spots now sit exactly where a pok\u00e9mon\u2019s feet go, so empty and filled spots line up row by row.',
+    'On phones the field sits a little lower, so the front row\u2019s numbers no longer run into the halfway line and the Formations button.' ] },
   { v:'5.3.5', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots line up on iPhone', items:[
     'The party\u2019s spots are now placed all at once, then checked: if a spot did not land exactly where it was aimed, it is nudged into place. On iPhones every spot after the first was landing too low, which is why the rings sat off the grid when picking where to put a pok\u00e9mon.' ] },
   { v:'5.3.4', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots on iPhone, for real this time', items:[
