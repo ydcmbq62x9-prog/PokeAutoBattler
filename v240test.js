@@ -11,7 +11,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if(m.type() === 'error') errs.push(m.text()); });
     await page.goto(URL); await page.waitForTimeout(200);
     await page.evaluate(() => localStorage.clear());
-    await ctx.addInitScript(() => { window.PKB_TITLE = true; window.PKB_WIPE = true; });
+    await ctx.addInitScript(() => { window.PKB_TITLE = true; window.PKB_WIPE = true; try{ if(!localStorage.getItem('pkb_wipe')) localStorage.setItem('pkb_wipe', 'ballauto'); }catch(e){} });
 
     /* fresh device: no badge, but the Trainer Card is on the title menu and shows the empty slot */
     await page.reload(); await page.waitForTimeout(300);

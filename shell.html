@@ -9,7 +9,7 @@
    never sees a flash of cream. Light (default) · Dark · System. */
 (function(){ let t = 'light'; try{ t = localStorage.getItem('pkb_theme') || 'light'; }catch(e){}
   const dark = t === 'dark' || (t === 'system' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.classList.toggle('dark', dark); })();
+  document.documentElement.classList.toggle('dark', dark); document.documentElement.classList.add('bc'); })();   /* 5.0.0: the Broadcast look */
 </script>
 <script>
 /* v37: the pixel font (and since v45 Nunito, the reading font). Loaded from Google Fonts when the game is served from the web; opened as a local file it
@@ -1372,58 +1372,58 @@ html.dark{
   --gbbox:inset 0 0 0 2px var(--panel),inset 0 0 0 4px var(--line),3px 3px 0 rgba(0,0,0,.45);
   color-scheme:dark;
 }
-html.dark body{background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 6px),var(--bg)}
-html.dark .pfield{background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 6px),linear-gradient(180deg,#2d3a30,#1f2a23)}
-html.dark .pfield .rankhead span{color:#a9b5a0}
-html.dark .pfield .artwrap::after{background:#3f5c3a;box-shadow:inset 0 -3px 0 #2c4229}
-html.dark .pfield .slot.empty::after{border-color:#5c7a55}
-html.dark .pfield .slot.selected .artwrap::after{background:#8a6d1e;box-shadow:inset 0 -3px 0 #5e4a12}
-html.dark .pfield .slot.mergeable .artwrap::after{background:#9a7a22;box-shadow:inset 0 -3px 0 #6b5516,0 0 0 2px var(--gold2)}
-html.dark .pfield .slot.valid:not(.empty) .artwrap::after{background:#2f7a45;box-shadow:inset 0 -3px 0 #1f5530}
-html.dark .pfield .exp i{background:rgba(255,255,255,.2)}
-html.dark .wall{background-color:#1f3a50;background-image:radial-gradient(circle at 50% 50%,rgba(255,255,255,.08) 2px,transparent 2px),linear-gradient(180deg,#234259,#172d40)}
-html.dark .wall.bag{background-image:radial-gradient(circle at 50% 50%,rgba(255,214,106,.1) 2px,transparent 2px),linear-gradient(180deg,#3a3050,#261f38)}
-html.dark .cell:not(.empty)::after{background:rgba(0,0,0,.35)}
-html.dark .cell:hover:not(.empty),html.dark .bcell:hover:not(.empty){background:rgba(255,255,255,.08)}
-html.dark .bcell.empty::before{border-color:rgba(255,214,106,.3)}
-html.dark .sprite.img{background:radial-gradient(circle at 50% 62%,color-mix(in srgb,var(--tcol) 30%,#252a37) 0%,#1e222d 72%)}
-html.dark .popart{background:var(--panel2)}
-html.dark .sbar,html.dark .xpips i{background:#171a22}
-html.dark .sbar em{background:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 4px)}
-html.dark .martrow.fixed,html.dark .popheld,html.dark .award{background:#3a3222}
-html.dark .modal p.legend,html.dark .modal textarea,html.dark .optrow input{background:var(--panel2);color:var(--text)}
-html.dark .modal{background:rgba(0,0,0,.6)}
-html.dark .modal.startmenu{background:rgba(0,0,0,.35)}
-html.dark .modal.trainer .box{background:var(--panel)}
-html.dark .tcard .tface,html.dark .speech .who{background:linear-gradient(180deg,#2c3240 0 55%,#2d3a30 55%)}
-html.dark .speech.elite .who{background:linear-gradient(180deg,#2c2a40 0 52%,#3a3160 52%)}
-html.dark .speech.champion .who{background:linear-gradient(180deg,#3a2c2a 0 52%,#5a3a2c 52%)}
-html.dark .bcell2{background:repeating-linear-gradient(45deg,#232733 0 4px,#1d212b 4px 8px)}
-html.dark .bcell2.on{background:var(--panel2)}
-html.dark .bcell2 span{background:rgba(37,42,55,.92)}
+html.dark body,html.bc body{background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 6px),var(--bg)}
+html.dark .pfield,html.bc .pfield{background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 6px),linear-gradient(180deg,#2d3a30,#1f2a23)}
+html.dark .pfield .rankhead span,html.bc .pfield .rankhead span{color:#a9b5a0}
+html.dark .pfield .artwrap::after,html.bc .pfield .artwrap::after{background:#3f5c3a;box-shadow:inset 0 -3px 0 #2c4229}
+html.dark .pfield .slot.empty::after,html.bc .pfield .slot.empty::after{border-color:#5c7a55}
+html.dark .pfield .slot.selected .artwrap::after,html.bc .pfield .slot.selected .artwrap::after{background:#8a6d1e;box-shadow:inset 0 -3px 0 #5e4a12}
+html.dark .pfield .slot.mergeable .artwrap::after,html.bc .pfield .slot.mergeable .artwrap::after{background:#9a7a22;box-shadow:inset 0 -3px 0 #6b5516,0 0 0 2px var(--gold2)}
+html.dark .pfield .slot.valid:not(.empty) .artwrap::after,html.bc .pfield .slot.valid:not(.empty) .artwrap::after{background:#2f7a45;box-shadow:inset 0 -3px 0 #1f5530}
+html.dark .pfield .exp i,html.bc .pfield .exp i{background:rgba(255,255,255,.2)}
+html.dark .wall,html.bc .wall{background-color:#1f3a50;background-image:radial-gradient(circle at 50% 50%,rgba(255,255,255,.08) 2px,transparent 2px),linear-gradient(180deg,#234259,#172d40)}
+html.dark .wall.bag,html.bc .wall.bag{background-image:radial-gradient(circle at 50% 50%,rgba(255,214,106,.1) 2px,transparent 2px),linear-gradient(180deg,#3a3050,#261f38)}
+html.dark .cell:not(.empty)::after,html.bc .cell:not(.empty)::after{background:rgba(0,0,0,.35)}
+html.dark .cell:hover:not(.empty),html.dark .bcell:hover:not(.empty),html.bc .cell:hover:not(.empty),html.bc .bcell:hover:not(.empty){background:rgba(255,255,255,.08)}
+html.dark .bcell.empty::before,html.bc .bcell.empty::before{border-color:rgba(255,214,106,.3)}
+html.dark .sprite.img,html.bc .sprite.img{background:radial-gradient(circle at 50% 62%,color-mix(in srgb,var(--tcol) 30%,#252a37) 0%,#1e222d 72%)}
+html.dark .popart,html.bc .popart{background:var(--panel2)}
+html.dark .sbar,html.dark .xpips i,html.bc .sbar,html.bc .xpips i{background:#171a22}
+html.dark .sbar em,html.bc .sbar em{background:repeating-linear-gradient(135deg,rgba(255,255,255,.5) 0 2px,transparent 2px 4px)}
+html.dark .martrow.fixed,html.dark .popheld,html.dark .award,html.bc .martrow.fixed,html.bc .popheld,html.bc .award{background:#3a3222}
+html.dark .modal p.legend,html.dark .modal textarea,html.dark .optrow input,html.bc .modal p.legend,html.bc .modal textarea,html.bc .optrow input{background:var(--panel2);color:var(--text)}
+html.dark .modal,html.bc .modal{background:rgba(0,0,0,.6)}
+html.dark .modal.startmenu,html.bc .modal.startmenu{background:rgba(0,0,0,.35)}
+html.dark .modal.trainer .box,html.bc .modal.trainer .box{background:var(--panel)}
+html.dark .tcard .tface,html.dark .speech .who,html.bc .tcard .tface,html.bc .speech .who{background:linear-gradient(180deg,#2c3240 0 55%,#2d3a30 55%)}
+html.dark .speech.elite .who,html.bc .speech.elite .who{background:linear-gradient(180deg,#2c2a40 0 52%,#3a3160 52%)}
+html.dark .speech.champion .who,html.bc .speech.champion .who{background:linear-gradient(180deg,#3a2c2a 0 52%,#5a3a2c 52%)}
+html.dark .bcell2,html.bc .bcell2{background:repeating-linear-gradient(45deg,#232733 0 4px,#1d212b 4px 8px)}
+html.dark .bcell2.on,html.bc .bcell2.on{background:var(--panel2)}
+html.dark .bcell2 span,html.bc .bcell2 span{background:rgba(37,42,55,.92)}
 html.dark .bdg.g0:not(.on),html.dark .bdg.g1:not(.on),html.dark .bdg.g2:not(.on),html.dark .bdg.g3:not(.on),
 html.dark .bdg.g4:not(.on),html.dark .bdg.g5:not(.on),html.dark .bdg.g6:not(.on),html.dark .bdg.g7:not(.on),
-html.dark .bdg[class*=" j"]:not(.on){background:rgba(255,255,255,.16)}
-html.dark .gmem.now{background:#2e2850} html.dark .gmem.now.champ{background:#3e2a22}
-html.dark .dock{background:linear-gradient(180deg,rgba(25,28,37,0),var(--bg) 18%)}
-@media (hover:none){ html.dark body.picking .ctxbar{background:linear-gradient(180deg,rgba(25,28,37,.94),var(--bg) 40%)} }
-html.dark .r-tank{--rc:#7fb2ff} html.dark .r-bruiser{--rc:#ff9e5e} html.dark .r-cannon{--rc:#ff5e7a} html.dark .r-support{--rc:#6fe3a1}
-html.dark .hkind.stat{color:#ffb39c;border-color:#5e3a33} html.dark .hkind.trigger{color:#9ee0b6;border-color:#245140} html.dark .hkind.economy{color:#ffd76a;border-color:#5a4a1e}
-html.dark .pacechip.p1,html.dark .dpace.p1{color:#8fa0c4} html.dark .pacechip.p2,html.dark .dpace.p2{color:#9ee0b6;border-color:#245140}
-html.dark .pacechip.p3,html.dark .dpace.p3{color:#7dc4ff;border-color:#24446e}
-html.dark #inspect .mu.bad,html.dark .popmu .bad{color:#ff8e96;border-color:#5e2d33}
-html.dark #inspect .mu.good,html.dark .popmu .good{color:#7de0aa;border-color:#245140}
-html.dark .smi.red{color:#ff7a7a}
-html.dark .stat.streak.win{color:#ffb14d}
-html.dark .nrule.hot{color:#ffd9a0}
-html.dark .nextup.boss.elite{border-color:#a98bff} html.dark .nextup.boss.champion{border-color:#ff9d6e}
-html.dark .bosstag.elite{color:#c8b6ff} html.dark .bosstag.champion{color:#ff9d6e}
-html.dark #blog .eff{color:#ffd166} html.dark #blog .ineff{color:#8f96ab} html.dark #blog .evo{color:#7de0aa}
-html.dark .carry{box-shadow:3px 3px 0 rgba(0,0,0,.45)}
-html.dark .btn{box-shadow:2px 2px 0 rgba(0,0,0,.45)}
-html.dark .btn.danger{background:#c23a34}
-html.dark .pfield .lvl{background:var(--panel);color:var(--text)}
-html.dark .pfield .sprite.img{background:none}
+html.dark .bdg[class*=" j"]:not(.on),html.bc .bdg.g0:not(.on),html.bc .bdg.g1:not(.on),html.bc .bdg.g2:not(.on),html.bc .bdg.g3:not(.on),html.bc .bdg.g4:not(.on),html.bc .bdg.g5:not(.on),html.bc .bdg.g6:not(.on),html.bc .bdg.g7:not(.on),html.bc .bdg[class*=" j"]:not(.on){background:rgba(255,255,255,.16)}
+html.dark .gmem.now,html.bc .gmem.now{background:#2e2850} html.dark .gmem.now.champ,html.bc .gmem.now.champ{background:#3e2a22}
+html.dark .dock,html.bc .dock{background:linear-gradient(180deg,rgba(25,28,37,0),var(--bg) 18%)}
+@media (hover:none){ html.dark body.picking .ctxbar,html.bc body.picking .ctxbar{background:linear-gradient(180deg,rgba(25,28,37,.94),var(--bg) 40%)} }
+html.dark .r-tank,html.bc .r-tank{--rc:#7fb2ff} html.dark .r-bruiser,html.bc .r-bruiser{--rc:#ff9e5e} html.dark .r-cannon,html.bc .r-cannon{--rc:#ff5e7a} html.dark .r-support,html.bc .r-support{--rc:#6fe3a1}
+html.dark .hkind.stat,html.bc .hkind.stat{color:#ffb39c;border-color:#5e3a33} html.dark .hkind.trigger,html.bc .hkind.trigger{color:#9ee0b6;border-color:#245140} html.dark .hkind.economy,html.bc .hkind.economy{color:#ffd76a;border-color:#5a4a1e}
+html.dark .pacechip.p1,html.dark .dpace.p1,html.bc .pacechip.p1,html.bc .dpace.p1{color:#8fa0c4} html.dark .pacechip.p2,html.dark .dpace.p2,html.bc .pacechip.p2,html.bc .dpace.p2{color:#9ee0b6;border-color:#245140}
+html.dark .pacechip.p3,html.dark .dpace.p3,html.bc .pacechip.p3,html.bc .dpace.p3{color:#7dc4ff;border-color:#24446e}
+html.dark #inspect .mu.bad,html.dark .popmu .bad,html.bc #inspect .mu.bad,html.bc .popmu .bad{color:#ff8e96;border-color:#5e2d33}
+html.dark #inspect .mu.good,html.dark .popmu .good,html.bc #inspect .mu.good,html.bc .popmu .good{color:#7de0aa;border-color:#245140}
+html.dark .smi.red,html.bc .smi.red{color:#ff7a7a}
+html.dark .stat.streak.win,html.bc .stat.streak.win{color:#ffb14d}
+html.dark .nrule.hot,html.bc .nrule.hot{color:#ffd9a0}
+html.dark .nextup.boss.elite,html.bc .nextup.boss.elite{border-color:#a98bff} html.dark .nextup.boss.champion,html.bc .nextup.boss.champion{border-color:#ff9d6e}
+html.dark .bosstag.elite,html.bc .bosstag.elite{color:#c8b6ff} html.dark .bosstag.champion,html.bc .bosstag.champion{color:#ff9d6e}
+html.dark #blog .eff,html.bc #blog .eff{color:#ffd166} html.dark #blog .ineff,html.bc #blog .ineff{color:#8f96ab} html.dark #blog .evo,html.bc #blog .evo{color:#7de0aa}
+html.dark .carry,html.bc .carry{box-shadow:3px 3px 0 rgba(0,0,0,.45)}
+html.dark .btn,html.bc .btn{box-shadow:2px 2px 0 rgba(0,0,0,.45)}
+html.dark .btn.danger,html.bc .btn.danger{background:#c23a34}
+html.dark .pfield .lvl,html.bc .pfield .lvl{background:var(--panel);color:var(--text)}
+html.dark .pfield .sprite.img,html.bc .pfield .sprite.img{background:none}
 
 /* ===================================================================
    v38 — TITLE SCREEN
@@ -1482,12 +1482,12 @@ body.titled{overflow:hidden}
 .title.still,.title.still *{animation:none!important}
 .title.still .tpress{animation:none}
 html.dark .title{background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,transparent 2px 6px),var(--bg)}
-html.dark .tlogo .t1{color:#ff6b62;text-shadow:2px 2px 0 #0b0d13}
-html.dark .tlogo .t2{text-shadow:4px 4px 0 #8a6412}
-html.dark .tfield{background:
+html.dark .tlogo .t1,html.bc .tlogo .t1{color:#ff6b62;text-shadow:2px 2px 0 #0b0d13}
+html.dark .tlogo .t2,html.bc .tlogo .t2{text-shadow:4px 4px 0 #8a6412}
+html.dark .tfield,html.bc .tfield{background:
    radial-gradient(ellipse 60% 14% at 50% 80%,#3c5a40 0 70%,#2c4430 71% 100%,transparent 101%),
    linear-gradient(180deg,#26334d 0 55%,#2d3a30 55% 58%,#1f2a23 58%)}
-html.dark .tfield::before,html.dark .tfield::after{background:#f3eed8;opacity:.25;box-shadow:10px -6px 0 #f3eed8,22px 0 0 #f3eed8}
+html.dark .tfield::before,html.dark .tfield::after,html.bc .tfield::before,html.bc .tfield::after{background:#f3eed8;opacity:.25;box-shadow:10px -6px 0 #f3eed8,22px 0 0 #f3eed8}
 @media (max-height:620px){ .tfield{height:140px} .tmon{width:100px;height:100px} .tlogo .t2{font-size:44px} .tscreen{gap:8px} }
 
 /* ===================================================================
@@ -1512,7 +1512,7 @@ html.dark .tfield::before,html.dark .tfield::after{background:#f3eed8;opacity:.2
 #blog::before{content:'';position:sticky;top:-2px;display:block;height:22px;margin-bottom:-22px;z-index:1;pointer-events:none;
   background:linear-gradient(var(--panel),rgba(0,0,0,0))}
 html:not(.dark) #blog::before{background:linear-gradient(var(--panel),rgba(251,248,236,0))}
-html.dark #blog::before{background:linear-gradient(var(--panel),rgba(37,42,55,0))}
+html.dark #blog::before,html.bc #blog::before{background:linear-gradient(var(--panel),rgba(37,42,55,0))}
 .overteam{flex-wrap:wrap;gap:6px}
 .overteam .held{bottom:auto;top:-5px;right:-7px}
 .shopbar .btn{white-space:nowrap}
@@ -1537,8 +1537,8 @@ html{font-synthesis-weight:none;font-synthesis:none}
 .pfield .exp{margin-top:10px;gap:3px;justify-content:center}
 .pfield .exp i{width:7px;height:7px;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px var(--edge);opacity:.55}
 .pfield .exp i.on{background:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold2);opacity:1}
-html.dark .pfield .exp i{background:transparent;box-shadow:inset 0 0 0 1.5px var(--edge)}
-html.dark .pfield .exp i.on{background:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold2)}
+html.dark .pfield .exp i,html.bc .pfield .exp i{background:transparent;box-shadow:inset 0 0 0 1.5px var(--edge)}
+html.dark .pfield .exp i.on,html.bc .pfield .exp i.on{background:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold2)}
 
 /* one summary: the message box */
 .isum{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
@@ -1668,7 +1668,7 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none}
 /* v51: an item that costs a stat shows the cost in red */
 .sb b .sbon.neg,html .sb b .sbon.neg{color:var(--bad,#c0392b)}
 .stats .xdown,html .stats .xdown{color:#c0392b;text-shadow:none}
-html.dark .stats .xdown{color:#ff8e96}
+html.dark .stats .xdown,html.bc .stats .xdown{color:#ff8e96}
 
 /* v52: a second move a Choice Band has locked out */
 .popmove.locked b,.popmove.locked p{text-decoration:line-through;opacity:.55}
@@ -1737,7 +1737,7 @@ body.calm .martrow.fx-rare::after,body.calm .martrow.fx-vrare::after{animation:n
 .btn.undo .dim{font-size:11px;margin-left:4px}
 .panel.legend{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-color:#c98a12;
   background:linear-gradient(135deg,var(--panel) 60%,#f6e3b0);animation:legin .5s ease-out both}
-html.dark .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a14)}
+html.dark .panel.legend,html.bc .panel.legend{background:linear-gradient(135deg,var(--panel) 60%,#4a3a14)}
 @keyframes legin{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
 .legart{width:64px;height:64px;flex:0 0 auto;border:2px solid var(--edge);border-radius:10px;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--tcol) 35%,transparent),transparent 70%)}
@@ -1839,7 +1839,7 @@ h4.genhead{margin:12px 0 4px}
 .tcloud.c2{top:30%;left:-60px;width:24px;animation-duration:38s;animation-delay:-14s}
 .tcloud.c3{top:8%;left:-40px;width:20px;animation-duration:31s;animation-delay:-22s}
 @keyframes tdrift{to{transform:translateX(520px)}}
-html.dark .tcloud{background:#f3eed8;opacity:.18}
+html.dark .tcloud,html.bc .tcloud{background:#f3eed8;opacity:.18}
 .tside{position:absolute;bottom:15%;width:clamp(64px,19vw,84px);height:clamp(64px,19vw,84px);transform:translateX(-50%)}
 .tside img{width:100%;height:100%;object-fit:contain;object-position:bottom;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(63,74,92,.25));animation:tbob 1.6s steps(2) infinite}
 .tside.l{left:20%}.tside.r{left:80%}.tside.r img{animation-delay:-.8s;transform:scaleX(-1)}
@@ -1925,7 +1925,7 @@ html.dark .tcloud{background:#f3eed8;opacity:.18}
 .hcaward b{font-size:15px;letter-spacing:.5px;white-space:nowrap}
 .hcaward span{font-size:13px;color:var(--muted)}
 .hcnote{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:#b07a10;white-space:nowrap}
-html.dark .hcnote{color:#f2c14e}
+html.dark .hcnote,html.bc .hcnote{color:#f2c14e}
 @media (prefers-reduced-motion:reduce){ .hcaward{animation:none} }
 
 /* 3.0.0 · type chart (help) */
@@ -2439,6 +2439,213 @@ body.calm .bstage .stfx i,body.calm .bstage .fbarrier::after{animation:none;opac
 /* 4.17.3: no team-coloured spots under the pokémon — a soft neutral shadow instead (Miniatures keep their bases) */
 .bstage.board.stadium:is(.look-stadium,.look-paper) .ftr::before,.bstage.board.stadium:is(.look-stadium,.look-paper) .ftr.acting::before{background:radial-gradient(closest-side,rgba(0,0,0,.32),transparent);box-shadow:none;opacity:1}
 .bstage.board.stadium.look-paper .ftr::before{border-radius:50%}
+
+/* =====================================================================
+   5.0.0 · BROADCAST — the whole game is the stadium. The page is the pitch;
+   every box is a dark see-through panel floating over it like a sports
+   broadcast; headings are gold tags; the top bar is a scoreboard. Scoped
+   under html.bc so it beats the older Light/Dark rules. Light = a sunny
+   pitch, Dark = an evening one; the panels are the same in both.
+   ===================================================================== */
+html.bc,html.bc.dark{
+  --bg:#3a8840; --bg2:#43974a; --panel:rgba(12,18,34,.8); --panel2:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.14); --line2:rgba(255,255,255,.28); --edge:rgba(255,255,255,.22);
+  --text:#f4f6fb; --muted:#c3cbe0; --dim:#98a3c0;
+  --gold:#ffd23a; --gold2:#e0a526; --goldtx:#ffd23a;
+  --hp:#5ad17a; --atk:#ff8a6a; --spd:#7ab8ff;
+  --good:#5ad17a; --bad:#ff6b73; --info:#7ab8ff;
+  --navy:#11182c; --navy2:#1f2b4e; --glass:rgba(12,18,34,.8); --glass2:rgba(14,20,38,.96);
+  --gbbox:0 4px 12px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+html.bc body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,0),rgba(0,0,0,.28)),repeating-linear-gradient(0deg,#3a8840 0 34px,#43974a 34px 68px);background-attachment:fixed;color:var(--text)}
+html.bc.dark body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,.1),rgba(0,0,0,.5)),repeating-linear-gradient(0deg,#2c6a32 0 34px,#337838 34px 68px);background-attachment:fixed}
+
+/* boxes: no thick borders, soft glass, the same corners everywhere */
+html.bc :is(.panel,#inspect,.popup,#blog,.queue,.nextup,.closed,.speech){background:var(--glass);border:0;border-radius:10px;box-shadow:var(--gbbox);color:var(--text)}
+html.bc .modal .box{background:var(--glass2);border:0;border-radius:12px;box-shadow:0 0 0 2px rgba(255,210,58,.55),0 14px 40px rgba(0,0,0,.55);color:var(--text)}
+html.bc .modal{background:rgba(6,10,20,.55)}
+html.bc .panel h2{color:var(--text)}
+html.bc .panel h2 .sub{color:var(--muted)}
+html.bc .panel h2.sep{border-top:1px solid var(--line)}
+/* gold headline tags */
+html.bc .tg{display:inline-flex;align-items:center;background:var(--gold);color:var(--navy);font-family:var(--pix);font-weight:500;text-transform:uppercase;letter-spacing:1.2px;font-size:13.5px;padding:2px 9px;border-radius:4px;line-height:1.35}
+html.bc .modal h3{color:var(--gold);letter-spacing:.6px}
+html.bc .modal h4{color:var(--muted)}
+
+/* buttons */
+html.bc .btn{background:rgba(255,255,255,.1);border:0;border-radius:8px;color:var(--text);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
+html.bc .btn:active{transform:translateY(1px);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.22)}
+html.bc .btn.primary,html.bc .btn.gold,html.bc .btn.big-cta.boss{background:var(--gold);color:var(--navy);box-shadow:0 3px 0 #a07a10}
+html.bc .btn.danger{background:linear-gradient(180deg,#ff5a4a,#d8352a);color:#fff;box-shadow:0 3px 0 #8a1f18}
+html.bc .btn.ghost{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2)}
+html.bc .btn.buy,html.bc .btn.freeroll{color:var(--gold);box-shadow:inset 0 0 0 1.5px rgba(255,210,58,.6)}
+html.bc h2 .btn.arrange{background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2)}
+html.bc .btn.fight{background:linear-gradient(180deg,#ff5a4a,#d8352a);color:#fff;border:0;box-shadow:0 4px 0 #8a1f18,0 0 18px rgba(255,90,74,.35)}
+html.bc .btn.fight.boss{background:linear-gradient(180deg,#ff5a4a,#d8352a);color:#fff}
+html.bc .btn.fight[disabled]{background:rgba(255,255,255,.12);color:var(--muted);box-shadow:none}
+
+/* scoreboard */
+html.bc .topbar.gb{background:linear-gradient(90deg,var(--navy),var(--navy2));border:0;border-radius:8px;box-shadow:0 4px 0 rgba(0,0,0,.35);border-bottom:3px solid var(--gold);padding:6px 6px 6px 12px;position:relative}
+html.bc .topbar.gb .stat.credits,html.bc .topbar.gb .stat.credits .lbl{color:var(--gold)}
+html.bc .topbar.gb .stat.credits{font-size:26px}
+html.bc .tcol .stat .lbl,html.bc .stat.next{color:var(--muted)}
+html.bc .stat.turn{color:#fff}
+html.bc .iconbtn.start{background:var(--gold);color:var(--navy);border-radius:6px;align-self:stretch;display:flex;align-items:center}
+html.bc .stat.streak.win{color:var(--gold)}
+
+/* the dock: the next trainer and BATTLE, floating at the bottom */
+html.bc .dock{background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.22) 30%)}
+html.bc .speech .who{border:0;border-radius:8px;background:linear-gradient(180deg,#2c376a 0 52%,#3f8f45 52%)}
+html.bc .speech .ssub,html.bc .speech .nstage{color:var(--muted)}
+html.bc .speech .road i:not(.bdg){border-color:rgba(255,255,255,.5)}
+html.bc .speech .road i.done{background:rgba(255,255,255,.75)}
+html.bc .speech .road i.now{background:#ff5a4a;border-color:#ffb0a8}
+
+/* Daycare and Mart rows: glass with a gold edge */
+html.bc .drow,html.bc .martrow{background:rgba(255,255,255,.07);border:0;border-left:4px solid var(--gold);border-radius:6px;color:var(--text)}
+html.bc .drow{background:linear-gradient(90deg,color-mix(in srgb,var(--c,#888) 22%,transparent),rgba(255,255,255,.05) 60%)}
+html.bc .drow.sel,html.bc .martrow.sel{box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,210,58,.35)}
+html.bc .drow.locked,html.bc .drow.out,html.bc .martrow.out{opacity:.55;border-left-color:rgba(255,255,255,.25)}
+html.bc .dprice,html.bc .mprice{color:var(--gold)}
+html.bc .martrow .mtext span,html.bc .dsub{color:var(--muted)}
+html.bc .mhead{color:var(--gold)}
+/* PC and Bag */
+html.bc .wall{background:rgba(255,255,255,.06);background-image:none;border:0;border-radius:8px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.12)}
+html.bc .bagwall,html.bc .bag{background:rgba(255,255,255,.06);background-image:none;border:0;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.12)}
+html.bc .cell{background:rgba(255,255,255,.05)}
+html.bc .cell.empty::before{opacity:.25}
+
+/* the inspector (message box) and the log */
+html.bc #inspect,html.bc #blog{color:var(--text)}
+html.bc .queue .qmon{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+html.bc .queue .qlbl{color:var(--muted)}
+
+/* ---- 5.0.0 · the party stands on the stadium pitch (a close-up of your half) ----
+   Only the grass is tilted (a 3D layer behind the slots). The slots stay flat, so taps
+   always land where they look; the far rows are just drawn a little smaller and closer
+   together, which reads as the same perspective. */
+html.bc .panel.party{background:transparent;box-shadow:none;padding:2px 0 0;container-type:inline-size}
+html.bc .panel.party > h2{padding:0 2px}
+html.bc .panel.party > h2 .sub{color:#eef3ff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+html.bc .pfield,html.bc.dark .pfield{background:none;border:0;box-shadow:none;padding:6px 0 4px;max-width:560px}
+html.bc .pfield .rankhead{display:none}
+html.bc .pfield .formation{position:relative;isolation:isolate;padding:6px 6px 2px;gap:0;--pitch:radial-gradient(circle at 100% 50%,transparent 58px,rgba(255,255,255,.75) 59px 62px,transparent 63px),
+    linear-gradient(90deg,transparent calc(100% - 3px),rgba(255,255,255,.75) calc(100% - 3px)),
+    repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)}
+html.bc .pfield .formation::before{content:'';position:absolute;inset:-9% 0 0;z-index:-1;border-radius:10px;background:var(--pitch);
+  transform:perspective(900px) rotateX(20deg);transform-origin:50% 100%;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 16px 24px rgba(0,0,0,.35)}
+html.bc .pfield .slot.pr2{grid-column:1}html.bc .pfield .slot.pr1{grid-column:2}html.bc .pfield .slot.pr0{grid-column:3}
+html.bc .pfield .slot.pf0{grid-row:1}html.bc .pfield .slot.pf1{grid-row:2}
+/* side by side: the top row is the far one */
+html.bc .pfield .slot.pf0{transform:scale(.9)}
+html.bc .pfield .slot.pf0.pr2{transform:translateX(10%) scale(.9)}html.bc .pfield .slot.pf0.pr0{transform:translateX(-10%) scale(.9)}
+@container (max-width:620px){
+  html.bc .pfield .formation{grid-template-columns:1fr 1fr;--pitch:radial-gradient(circle at 50% 0,transparent 58px,rgba(255,255,255,.75) 59px 62px,transparent 63px),
+      linear-gradient(180deg,rgba(255,255,255,.75) 3px,transparent 3px),
+      repeating-linear-gradient(0deg,#3f8f45 0 8.33%,#48a04e 8.33% 16.66%)}
+  html.bc .pfield .slot.pr0{grid-row:1}html.bc .pfield .slot.pr1{grid-row:2}html.bc .pfield .slot.pr2{grid-row:3}
+  html.bc .pfield .slot.pf0{grid-column:1}html.bc .pfield .slot.pf1{grid-column:2}
+  html.bc .pfield .slot{min-height:clamp(104px,30vw,132px)}
+  html.bc .pfield .formation::before{top:-19%;transform:perspective(1100px) rotateX(18deg)}
+  /* stacked: the front rank sits at the top, by the halfway line, furthest from the camera */
+  html.bc .pfield .slot.pf0,html.bc .pfield .slot.pf1{transform:none}
+  html.bc .pfield .slot.pr0.pf0{transform:translateX(7%) scale(.86)}html.bc .pfield .slot.pr0.pf1{transform:translateX(-7%) scale(.86)}
+  html.bc .pfield .slot.pr1.pf0{transform:translateX(3.5%) scale(.93)}html.bc .pfield .slot.pr1.pf1{transform:translateX(-3.5%) scale(.93)}
+}
+html.bc .pfield .slot:hover .unit{transform:translateY(-2px)}
+html.bc .pfield .artwrap::after{background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);box-shadow:none}
+html.bc .pfield .slot.selected .artwrap::after{background:radial-gradient(closest-side,#ffe680,rgba(255,210,58,.35) 70%,transparent);box-shadow:0 0 12px rgba(255,210,58,.6)}
+html.bc .pfield .slot.mergeable .artwrap::after{background:radial-gradient(closest-side,#ffd23a,rgba(255,210,58,.3) 70%,transparent);box-shadow:0 0 0 2px var(--gold)}
+html.bc .pfield .slot.valid:not(.empty) .artwrap::after{background:radial-gradient(closest-side,#9fe0ae,rgba(95,184,119,.3) 70%,transparent);box-shadow:none}
+html.bc .pfield .slot.empty::after{border-color:rgba(255,255,255,.4)}
+html.bc .pfield .slot.empty.valid::after{border-color:#9fe0ae;background:rgba(95,184,119,.25)}
+html.bc .pfield .stats{text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000}
+html.bc .pfield .stats .a{color:#ffb19c}html.bc .pfield .stats .h{color:#9ff0b4}html.bc .pfield .stats .s{color:#a9d4ff}
+html.bc .pfield .lvl{background:rgba(12,18,34,.85);color:var(--gold);border:0;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+html.bc .pfield .exp i{background:rgba(0,0,0,.35)}
+html.bc .pfield .exp i.on{background:var(--gold)}
+html.bc .pfield .sprite.img img{filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+html.bc .shopq{background:var(--glass)}
+
+/* ---- 5.0.0 · wide screens: the pitch on the left, the shop as a column on the right ---- */
+.bcwrap,.bcL,.bcR{display:contents}
+@media (min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] #app{max-width:1320px}
+  body[data-phase=shop] .bcwrap{display:grid;grid-template-columns:minmax(0,1fr) clamp(380px,34vw,460px);gap:14px;align-items:start}
+  body[data-phase=shop] .bcL{display:flex;flex-direction:column;gap:10px;min-width:0}
+  body[data-phase=shop] .bcR{display:flex;flex-direction:column;gap:8px;position:sticky;top:76px;max-height:calc(100vh - 84px);min-width:0}
+  body[data-phase=shop] .bcR .shelves{grid-template-columns:1fr;overflow-y:auto;overscroll-behavior:contain;flex:1 1 auto;min-height:0;padding-right:4px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+  body[data-phase=shop] .bcR .dock{position:static;margin:0;padding:0;background:none;flex-direction:column;display:flex}
+  body[data-phase=shop] .bcR .dock .speech{margin:0}
+  body[data-phase=shop] .bcR .dock .btn.fight{min-height:52px;font-size:20px;letter-spacing:2px}
+  html.bc body[data-phase=shop] .pfield{max-width:none;padding:14px 4% 8px}
+  html.bc body[data-phase=shop] .pfield .formation{max-width:640px;margin:0 auto}
+  html.bc body[data-phase=shop] .pfield .slot{min-height:150px}
+  body[data-phase=shop] .topbar.gb{position:sticky;top:0;z-index:40}
+  body[data-phase=shop] .bcR .martlist,body[data-phase=shop] .bcR .dclist{max-height:none}
+}
+
+/* ---- 5.0.0 · the camera between the shop and the stadium ---- */
+body.cam{overflow-x:hidden}
+body.cam .panel.arena,body.cam .stagewrap,body.cam #stageslot{overflow:visible!important}
+body.cam .panel.arena{z-index:5;position:relative}
+body.cam :is(#app > *,.bosstag,.award,.gnote,.stagewrap > .ribbon){transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.3,1),background-color .45s,box-shadow .45s}
+body.cam .bstage :is(.ground,.slotmark.e,.introban){transition:opacity .55s ease}
+body.cam-hide :is(#app > :not(.panel.arena):not(.topbar),.bosstag,.award,.gnote,.stagewrap > .ribbon){opacity:0;transform:translateY(30px)}
+body.cam-hide #app > .topbar{opacity:0;transform:translateY(-30px)}
+body.cam-hide .panel.arena{background:transparent!important;box-shadow:none!important}
+body.cam-hide .bstage .ground,body.cam-hide .bstage .slotmark.e{opacity:0}
+body.cam-foe .bstage .ftr.e{opacity:0;transition:opacity .3s}
+
+/* ---- 5.0.0 · wide battle: the full stadium, the queue / commentary / controls as a strip along the bottom ---- */
+@media (min-width:1000px){
+  body[data-phase=battle] #app{max-width:min(1320px,calc((100vh - 230px) * 16 / 9 + 32px));display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) auto;grid-auto-flow:row dense;column-gap:10px;row-gap:10px;align-content:start}
+  body[data-phase=battle] #app > *{grid-column:1 / -1;min-width:0}
+  body[data-phase=battle] #app > #bqueue{grid-column:1;align-self:start}
+  body[data-phase=battle] #app > #bqueue .queue{height:92px;box-sizing:border-box;margin:0;align-content:center}
+  body[data-phase=battle] #app > .blogbox{grid-column:2}
+  body[data-phase=battle] #app > .blogbox #blog{height:66px;max-height:66px}
+  body[data-phase=battle] #app > .shopbar{grid-column:3;flex-direction:column;justify-content:center;align-items:stretch;gap:6px;margin:0;min-width:200px}
+  body[data-phase=battle] #app > .shopbar > *{justify-content:center}
+}
+
+/* 5.0.0: every pop-up is the solid glass, whatever its own panel colour */
+html.bc .modal .box{background:var(--glass2)!important}
+
+/* 5.0.0: the title screen stands on the same pitch, under the stadium lights */
+html.bc .title{background:radial-gradient(90% 45% at 50% 0%,rgba(255,250,220,.35),transparent 70%),radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,0),rgba(0,0,0,.3)),repeating-linear-gradient(0deg,#3a8840 0 34px,#43974a 34px 68px)}
+html.bc.dark .title{background:radial-gradient(90% 45% at 50% 0%,rgba(200,220,255,.22),transparent 70%),radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,.1),rgba(0,0,0,.55)),repeating-linear-gradient(0deg,#2c6a32 0 34px,#337838 34px 68px)}
+html.bc .tlogo .t2{color:var(--gold);text-shadow:0 4px 0 #11182c,3px 0 0 #11182c,-3px 0 0 #11182c,0 -3px 0 #11182c,0 8px 14px rgba(0,0,0,.45)}
+html.bc .tlogo .t1{color:#fff;text-shadow:0 2px 0 #11182c,2px 0 0 #11182c,-2px 0 0 #11182c,0 -2px 0 #11182c}
+
+/* ---- 5.0.0 · landscape phones ---- */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  /* the pitch lies sideways like the battle does: back, middle, front from left to right */
+  html.bc body[data-phase=shop] .pfield .formation{grid-template-columns:repeat(3,1fr);
+    --pitch:radial-gradient(circle at 100% 50%,transparent 46px,rgba(255,255,255,.75) 47px 50px,transparent 51px),
+      linear-gradient(90deg,transparent calc(100% - 3px),rgba(255,255,255,.75) calc(100% - 3px)),
+      repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)}
+  html.bc body[data-phase=shop] .pfield .slot.pf1{transform:none}
+  html.bc body[data-phase=shop] .pfield .slot.pf0{transform:scale(.9)}
+  html.bc body[data-phase=shop] .pfield .slot.pf0.pr2{transform:translateX(10%) scale(.9)}html.bc body[data-phase=shop] .pfield .slot.pf0.pr0{transform:translateX(-10%) scale(.9)}
+  html.bc body[data-phase=shop] .pfield .slot.pr2{grid-column:1}html.bc body[data-phase=shop] .pfield .slot.pr1{grid-column:2}html.bc body[data-phase=shop] .pfield .slot.pr0{grid-column:3}
+  html.bc body[data-phase=shop] .pfield .slot.pf0{grid-row:1}html.bc body[data-phase=shop] .pfield .slot.pf1{grid-row:2}
+  html.bc body[data-phase=shop] .pfield .slot{min-height:118px}
+  html.bc body[data-phase=shop] .pfield{padding:4px 2% 4px}
+  body[data-phase=shop] .panel.party > h2 .sub{display:none}
+  body[data-phase=shop] .bcR{top:64px;max-height:calc(100vh - 70px)}
+  body[data-phase=shop] .bcwrap{grid-template-columns:minmax(0,1fr) minmax(300px,40vw)}
+  /* battle: the stadium on the left, the queue, commentary and controls down the right */
+  body[data-phase=battle] #app{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) 240px;grid-auto-flow:row dense;column-gap:8px;row-gap:6px;align-content:start;padding-block:4px}
+  body[data-phase=battle] #app > *{grid-column:1 / -1;min-width:0}
+  body[data-phase=battle] #app > .panel.arena{grid-column:1;grid-row:2 / span 3}
+  body[data-phase=battle] #app > .panel.arena .bstage{max-height:calc(100vh - 70px);width:auto;margin:0 auto}
+  body[data-phase=battle] #app > #bqueue,body[data-phase=battle] #app > .blogbox,body[data-phase=battle] #app > .shopbar{grid-column:2}
+  body[data-phase=battle] #app > #bqueue .queue{flex-wrap:wrap;margin:0}
+  body[data-phase=battle] #app > .blogbox #blog{height:auto;max-height:calc(100vh - 250px);min-height:60px}
+  body[data-phase=battle] #app > .shopbar{flex-wrap:wrap;justify-content:center;gap:6px;margin:0}
+}
 </style>
 </head>
 <body>

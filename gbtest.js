@@ -19,7 +19,8 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const dock = await page.evaluate(() => { const d = document.querySelector('.dock'); const r = d.getBoundingClientRect();
       return { text: d.textContent.replace(/\s+/g, ' '), dots: d.querySelectorAll('.road i:not(.bdg)').length, done: d.querySelectorAll('.road i.done').length,
         now: d.querySelectorAll('.road i.now').length, gem: d.querySelectorAll('.road .bdg').length, btn: !!d.querySelector('[data-act="endturn"]'),
-        pinned: getComputedStyle(d).position, bottom: Math.round(r.bottom), vh: innerHeight, name: trainerName(G.turn) }; });
+        pinned: d.closest('.bcR') && getComputedStyle(d.closest('.bcR')).display === 'flex' ? getComputedStyle(d.closest('.bcR')).position : getComputedStyle(d).position,   // 5.0.0: on a computer the dock is the foot of the pinned shop column
+        bottom: Math.round(r.bottom), vh: innerHeight, name: trainerName(G.turn) }; });
     check(dock.text.includes(dock.name + ' wants to battle!'), `${tag}: dock says "${dock.name} wants to battle!"`);
     check(/Trainer battle/.test(dock.text) && /to the gym/.test(dock.text), `${tag}: and that it's a trainer battle before the gym`);
     check(dock.dots === 3 && dock.done === 1 && dock.now === 1 && dock.gem === 1, `${tag}: road shows 3 trainers (1 done, this one lit) then the badge (${dock.dots}/${dock.done}/${dock.now}/${dock.gem})`);

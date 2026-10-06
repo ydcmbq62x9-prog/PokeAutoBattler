@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'4.17.3', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.0.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -592,7 +592,7 @@ function bagHtml(){
     cells += `<button class="bcell ${on ? 'lifted' : ''}" data-act="bag" data-i="${i}"
       data-bagpop="${i}" title="${esc(d.name)}">${itemGlyph(id, d.icon)}</button>`;
   }
-  return `<h2 class="sep bagttl">Bag <span class="sub">${G.bag.length}/${bagCap(G)} held items</span></h2>
+  return `<h2 class="sep bagttl"><span class="tg">Bag</span> <span class="sub">${G.bag.length}/${bagCap(G)} held items</span></h2>
     <div class="wall bag">${cells}</div>`;
 }
 
@@ -1161,7 +1161,7 @@ function renderShop(){
   /* --- the party, as the formation it will fight in --- */
   const partyGrid = '<div class="pfield">' + rankHeaderHtml(COLS_OWN) + formationHtml(COLS_OWN, i => {
     const u = teamAt(G, i);
-    return `<div class="slot ${u ? '' : 'empty'} ${slotClass(i)}" data-act="team" data-i="${i}"
+    return `<div class="slot ${u ? '' : 'empty'} ${slotClass(i)} pr${Math.floor(i / RANK_W)} pf${i % RANK_W}" data-act="team" data-i="${i}"
       ${u ? `data-pop="team:${i}"` : ''}>
       ${u ? unitHtml(u, { where:'team', idx:i, frac: inGauntlet(G) ? hpFracOf(G, u) : null }) : ''}</div>`;
   }) + '</div>';
@@ -1333,11 +1333,12 @@ function renderShop(){
     <button class="iconbtn start" data-act="menu" aria-label="Menu">START${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
   </div>
 
+  <div class="bcwrap"><div class="bcL">
   ${modeBarHtml()}
   ${closed ? '' : encounterHtml()}
   ${TIPS.html(G)}
   <div class="panel party">
-    <h2>Your Party <span class="sub">the front rank takes the hits · speed decides how often you act</span>
+    <h2><span class="tg">Your Party</span> <span class="sub">the front rank takes the hits · speed decides how often you act</span>
       <button class="btn arrange${G.team.length > 1 ? '' : ' ghostb'}" data-act="arrange" ${G.team.length > 1 ? '' : 'tabindex="-1" aria-hidden="true"'} title="Tanks to the front, Cannons to the back">Line up by role</button>
       <button class="btn arrange${G.team.length ? '' : ' ghostb'}" data-act="presets" ${G.team.length ? '' : 'tabindex="-1" aria-hidden="true"'} title="Save a formation and snap back to it">Formations</button></h2>
     ${partyGrid}
@@ -1347,23 +1348,27 @@ function renderShop(){
   <div class="speechflow">${dockHtml(closed, true)}</div>
   ${closed ? nextUpHtml() : ''}
   <div id="inspect">${inspectHtml()}</div>
+  ${ctx}
+  ${closed ? '' : G.redOpen && stageOf(G).kind === 'red' ? redStripHtml() : nextUpHtml()}
+  </div>
 
+  <div class="bcR">
   <div class="shelves">
     <section class="panel pc">
-      <h2>PC <span class="sub">${pcCap(G) ? `${G.pc.length}/${pcCap(G)} · trains at half rate` : 'closed this run'}</span></h2>
+      <h2><span class="tg">PC</span> <span class="sub">${pcCap(G) ? `${G.pc.length}/${pcCap(G)} · trains at half rate` : 'closed this run'}</span></h2>
       ${pcCap(G) ? pcHtml() : '<div class="closed"><b>No PC</b><span>This run’s rule: just the six you carry.</span></div>'}
       ${bagHtml()}
     </section>
 
     <section class="panel">
-      <h2>Daycare <span class="sub">${TUNING.costBuy}₽ · ${TUNING.expModel === 'trainer'
+      <h2><span class="tg">Daycare</span> <span class="sub">${TUNING.costBuy}₽ · ${TUNING.expModel === 'trainer'
         ? 'arrives at your level' : 'three copies to evolve'}</span></h2>
       ${closed ? closedNote('The Daycare') : dcList}
       <div class="shopbar">${rollBtn('rolldc', closed)}</div>
     </section>
 
     <section class="panel">
-      <h2>PokéMart <span class="sub">tier ${maxTier}</span></h2>
+      <h2><span class="tg">PokéMart</span> <span class="sub">tier ${maxTier}</span></h2>
       ${closed ? closedNote('The PokéMart') : `<div class="martlist">
         ${restock}
         <div class="mhead">Always in stock — next battle only</div>
@@ -1372,10 +1377,8 @@ function renderShop(){
       <div class="shopbar">${rollBtn('rollmart', closed)}</div>
     </section>
   </div>
-
-  ${ctx}
-  ${closed ? '' : G.redOpen && stageOf(G).kind === 'red' ? redStripHtml() : nextUpHtml()}
-  ${dockHtml(closed)}`;
+  ${dockHtml(closed)}
+  </div></div>`;
 }
 
 /* ===================================================================
@@ -1537,7 +1540,7 @@ function applyMotion(){ document.body.classList.toggle('calm', motionOff()); }
    and changes with it. The head of the page applies it before first paint. */
 const themeDark = () => { const t = PREF.get('theme', 'light');
   return t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches); };
-function applyTheme(){ document.documentElement.classList.toggle('dark', themeDark()); }
+function applyTheme(){ document.documentElement.classList.toggle('dark', themeDark()); document.documentElement.classList.add('bc'); }
 try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme); }catch(e){}
 const ARENA_X = { p:[38, 24, 10], e:[62, 76, 90] };   // by rank: front, middle, back (% across)
 const ARENA_Y = [60, 87];                              // the two files, where the feet are (% down)
@@ -1662,7 +1665,9 @@ function syncStage(S, i){
    date: animated if it is exactly one step behind, snapped otherwise. */
 /* 4.13.0: a narrow field (phones) stacks the two teams top and bottom; a wide one sets them side by side */
 const BOARD_VERT_BELOW = 620;
-function fitBoard(S){ const w = S.el.parentNode ? S.el.parentNode.clientWidth : 0; if(w) S.el.classList.toggle('vert', w < BOARD_VERT_BELOW); }
+function fitBoard(S){ const w = S.el.parentNode ? S.el.parentNode.clientWidth : 0;
+  const sideways = matchMedia('(orientation:landscape) and (max-height:520px) and (min-width:640px)').matches;   // 5.0.0: a phone on its side keeps the wide field
+  if(w) S.el.classList.toggle('vert', w < BOARD_VERT_BELOW && !sideways); }
 const isVert = el => !!(el && el.closest && el.closest('.bstage.vert'));
 window.addEventListener('resize', () => { if(battle && battle.stage) fitBoard(battle.stage); });
 function mountStage(){
@@ -2085,6 +2090,7 @@ function playIntro(S){
     { duration: hold, fill: 'forwards', remove: true });
   let k = 0;
   for(const F of S.f.values()){
+    if(b.camIn && F.side === 'p') continue;      // 5.0.0: the camera already has your side in place
     const v = isVert(F.el), from = v ? (F.side === 'p' ? 'translateY(40vh)' : 'translateY(-40vh)') : (F.side === 'p' ? 'translateX(-60vw)' : 'translateX(60vw)');
     anim(F.el.querySelector('.fmove'), [{ transform: from, opacity: 0 }, { transform: 'translate(0,0)', opacity: 1 }],
       { duration: introMs * 0.3, delay: hold * 0.5 + (k++ % 6) * introMs * 0.035, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' });
@@ -2382,6 +2388,7 @@ function render(){
   if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
+  document.body.dataset.phase = phase;   // 5.0.0: the wide layout is for the shop only
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
   /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
      tap) shoved the whole page down. Remember the first thing on screen and put it back where it was. */
@@ -2944,7 +2951,7 @@ function handle(act, i, data){
     case 'overcard': openUnitCard(G.team[i]); return;
     case 'runimage': shareRunImage(); return;
     case 'tipok':   SFX.play('select'); TIPS.dismiss(data.tip); break;
-    case 'afterbattle': if(!wiping) wipe(afterBattle); return;   // v40: the wipe carries you back
+    case 'afterbattle': if(!wiping) transition(afterBattle, null, 'back'); return;   // v40: the wipe carries you back
     case 'menu':    openMenu(); return;
     case 'badges':  openBadgeInfo(); return;
     case 'arrange': {
@@ -3065,6 +3072,95 @@ async function wipe(mid, onOpen){
   }
 }
 
+
+/* ---- 5.0.0 · THE CAMERA ------------------------------------------------
+   The shop is a close-up of your half of the stadium, so going to battle is
+   the camera pulling back: the shop panels drop away, the battle field is
+   drawn zoomed in so your pokémon stand exactly where they stood on the
+   pitch, and it eases out to the whole stadium. The stands and lights come
+   up, the other side walks on, and the queue and log slide in. Continue runs
+   it backwards. Options → Transitions: Camera (default), Ball, Quick, Off;
+   reduced motion gets the plain fade. */
+let camShot = null;   // where your party stood in the shop, in page coordinates
+const artUnion = els => {
+  let l = 1e9, t = 1e9, r = -1e9, b = -1e9, n = 0, w = 0;
+  for(const e of els){ const q = e.getBoundingClientRect(); if(!q.width) continue;
+    n++; w += q.width; l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); }
+  return n ? { w: r - l, h: b - t, cx: (l + r) / 2, cy: (t + b) / 2, one: w / n, n } : null;
+};
+const useCamera = () => wipeWanted() && PREF.get('wipe', 'auto') === 'auto' && !motionOff();
+function transition(mid, onOpen, dir){ return useCamera() ? camera(mid, onOpen, dir) : wipe(mid, onOpen); }
+/** The stage transform that puts the fighters `from` where the shop sprites `to` are (viewport px). */
+function camTransform(el, from, to){
+  let s = from.n > 1 && from.w > 30 && to.w > 30 ? to.w / from.w : to.one / from.one;
+  if(from.n > 1 && from.h > 30 && to.h > 30) s = Math.min(s, Math.max(to.h / from.h, s * .75));
+  s = Math.max(1.25, Math.min(3.2, s || 1));   // always a pull back, even where the battle field is drawn bigger than the shop's pitch
+  const E = el.getBoundingClientRect();
+  return `translate(${(to.cx - (E.left + (from.cx - E.left) * s)).toFixed(1)}px,${(to.cy - (E.top + (from.cy - E.top) * s)).toFixed(1)}px) scale(${s.toFixed(3)})`;
+}
+const shopAway = () => [...document.querySelectorAll('#app > :not(.bcwrap):not(.vtag), .bcR, .bcL > :not(.party), .panel.party > :not(.pfield)')];
+const awayFrame = e => e.matches('.topbar') ? 'translateY(-36px)'
+  : e.matches('.bcR') && matchMedia('(min-width:1000px)').matches ? 'translateX(70px)' : 'translateY(46px)';
+async function camera(mid, onOpen, dir){
+  if(wiping) return;
+  wiping = true;
+  hidePopup();
+  const k = (sessionBattles > WIPE_FULL_BATTLES ? .8 : 1) * (speed >= 4 ? .6 : speed >= 2 ? .8 : 1);
+  const T = ms => ms * k;
+  const go = (el, frames, ms, o) => el.animate(frames, { duration: T(ms), easing: 'cubic-bezier(.5,0,.2,1)', fill: 'both', ...(o || {}) }).finished.catch(() => {});
+  const wait = ms => new Promise(r => setTimeout(r, T(ms)));
+  const body = document.body.classList;
+  try{
+    if(dir !== 'back'){
+      const to = artUnion(document.querySelectorAll('.pfield .slot .artwrap'));
+      camShot = to ? { ...to, cy: to.cy + scrollY } : null;
+      SFX.play('wipeIn', true);
+      const away = shopAway();
+      await Promise.all(away.map(e => go(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: awayFrame(e) }], 340, { easing: 'ease-in' })));
+      body.add('cam', 'cam-hide', 'cam-foe');
+      await mid();
+      const S = battle && battle.stage;
+      const from = S && artUnion(S.el.querySelectorAll('.ftr.p .fart'));
+      if(!S || !from || !to){ body.remove('cam', 'cam-hide', 'cam-foe'); if(onOpen) onOpen(); return; }
+      battle.camIn = true;
+      S.el.style.transformOrigin = '0 0';
+      const tf = camTransform(S.el, from, to);
+      const zoom = go(S.el, [{ transform: tf }, { transform: tf, offset: .1 }, { transform: 'none' }], 1150);
+      SFX.play('wipeOut', true);
+      await wait(620);
+      body.remove('cam-hide');                     // the stands, the lights and the chrome come up
+      await zoom;
+      S.el.getAnimations().forEach(a => a.cancel());
+      body.remove('cam-foe');                      // the other side walks on (the intro slides them in)
+      if(onOpen) onOpen();
+      setTimeout(() => body.remove('cam'), T(600));
+    } else {
+      const S = battle && battle.stage;
+      const from = S && S.el.isConnected && artUnion(S.el.querySelectorAll('.ftr.p .fart'));
+      if(!from || !camShot){ wiping = false; return wipe(mid, onOpen); }
+      SFX.play('wipeIn', true);
+      body.add('cam');
+      void document.body.offsetWidth;
+      body.add('cam-hide', 'cam-foe');
+      await wait(320);
+      S.el.style.transformOrigin = '0 0';
+      const tf = camTransform(S.el, from, camShot);   // scroll goes to the top, so page = viewport
+      await go(S.el, [{ transform: 'none' }, { transform: tf }], 820);
+      body.remove('cam', 'cam-hide', 'cam-foe');
+      await mid();
+      window.scrollTo(0, 0);
+      if(onOpen) onOpen();
+      SFX.play('wipeOut', true);
+      if(phase === 'shop'){
+        const back = shopAway();
+        await Promise.all(back.map(e => go(e, [{ opacity: 0, transform: awayFrame(e) }, { opacity: 1, transform: 'none' }], 380, { easing: 'ease-out', fill: 'backwards' })));
+      }
+    }
+  } finally {
+    wiping = false;
+  }
+}
+
 /* ===================================================================
    BATTLE FLOW
    =================================================================== */
@@ -3091,7 +3187,7 @@ async function startBattle(){
              timer: null, exhibition: false };
   if(opp.kind === 'red'){ const r = records(); r.met = { ...(r.met || {}), [opp.boss && opp.boss.id || secretBoss().id]: true }; saveRecords(r); }   // 4.3.0: Pokédex remembers him
   sessionBattles++;
-  await wipe(() => { phase = 'battle'; render(); }, beginPlayback);   // v40: the intro starts as the circle opens
+  await transition(() => { phase = 'battle'; render(); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
 }
 /* v36: the intro plays, then the steps. The intro shares the step timer, so
    Skip cancels it like any other step. */
@@ -3273,6 +3369,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.0.0', date:'Oct 6, 2026', title:'Major gameplay update', sub:'The Broadcast look: the whole game is the stadium', items:[
+    'The shop is now a camera close-up of your half of the stadium. Your party stands on the pitch in the formation it will fight in.',
+    'Going to battle, the camera pulls back to the whole stadium: the shop drops away, the stands and lights come up and the other side walks on. Continue zooms back in. Options \u2192 Transitions: Camera, Ball, Quick or Off.',
+    'New look everywhere: a scoreboard along the top, gold headings, and dark glass panels over the pitch. Light theme is a sunny day, Dark is an evening match.',
+    'On a computer or a phone turned sideways, the pitch sits on the left and the shop is a column on the right with the Battle button at its foot. Battles show the full stadium with the queue, commentary and controls alongside.',
+    'The title screen, menus, Pok\u00e9dex, Trainer Card and every pop-up follow the new look.' ] },
   { v:'4.17.3', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'No coloured spots under pok\u00e9mon, and the sound fixed', items:[
     'The blue and red spots under the pok\u00e9mon in battle are gone; each one just casts a soft shadow.',
     'Sound fix: pausing a battle and then stepping to the end, or leaving it while paused, used to mute the game until you reloaded. It doesn\u2019t any more.',
@@ -4011,7 +4113,7 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
-    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Auto'], ['full', 'Full'], ['quick', 'Quick'], ['off', 'Off']])}</div>
+    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['full', 'Ball'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
@@ -4227,7 +4329,7 @@ function openVersus(){
     const sim = simulateBattle(G.team, parsed.team, (G.seed + 31) * 7);
     battle = { steps: sim.steps, i:0, result: sim.result, oppName: parsed.name, timer:null, exhibition:true };
     sessionBattles++;
-    wipe(() => { phase = 'battle'; render(); }, beginPlayback);
+    transition(() => { phase = 'battle'; render(); }, beginPlayback);
   });
 }
 

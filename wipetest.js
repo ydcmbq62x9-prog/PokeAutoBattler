@@ -19,7 +19,7 @@ const setup = () => { localStorage.clear(); };
     await page.goto(URL); await page.waitForTimeout(200); await prep();
     await page.click('[data-act="endturn"]'); await page.waitForTimeout(60);
     check(await page.evaluate(() => phase === 'battle' && !document.querySelector('.wipe')), `${tag}: browser tests go straight into the battle`);
-    await ctx.addInitScript(() => { window.PKB_WIPE = true; });
+    await ctx.addInitScript(() => { window.PKB_WIPE = true; try{ if(!localStorage.getItem('pkb_wipe')) localStorage.setItem('pkb_wipe', 'ballauto'); }catch(e){} });   // 5.0.0: the ball wipe is no longer the default (the camera is)
     await page.reload(); await page.waitForTimeout(200); await prep();
 
     /* into the battle */

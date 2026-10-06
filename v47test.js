@@ -76,7 +76,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     const rows = await page.$$eval('.optrow > span', e => e.map(x => x.textContent));
     check(['Volume', 'Transitions'].every(r => rows.includes(r)), `${tag}: Options has Volume and Transitions`);
     const tr = await page.$$eval('[data-o="wipe"]', e => e.map(x => x.textContent + (x.classList.contains('on') ? '*' : '')));
-    check(tr.join() === 'Auto*,Full,Quick,Off', `${tag}: Transitions offers ${tr.join(' / ')} (Auto by default)`);
+    check(tr.join() === 'Camera*,Ball,Quick,Off', `${tag}: Transitions offers ${tr.join(' / ')} (5.0.0: Camera by default)`);
     const fit = await page.evaluate(() => { const b = document.querySelector('.modal .box').getBoundingClientRect();
       return [...document.querySelectorAll('.optrow .sp')].every(x => { const r = x.getBoundingClientRect(); return r.right <= b.right + 1 && r.left >= b.left - 1; }); });
     check(fit, `${tag}: every Options button fits inside the box`);
@@ -93,7 +93,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     check(played.n >= 25 && played.state && errs.length === 0, `${tag}: all ${played.n} sounds play through Web Audio (${played.state}) with no errors`);
 
     /* ---- battle sounds + wipes ---- */
-    await page.evaluate(() => { window.PKB_WIPE = true; sessionBattles = 0; PREF.set('wipe', 'auto'); });
+    await page.evaluate(() => { window.PKB_WIPE = true; sessionBattles = 0; PREF.set('wipe', 'ballauto'); });
     await page.evaluate(prep); await page.evaluate(() => setSpeed(1));
     const durs = [], modes = [];
     for(let k = 0; k < 4; k++){
@@ -119,7 +119,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     const off = await page.evaluate(() => new Promise(res => { let seen = false; document.querySelector('[data-act="endturn"]').click();
       const iv = setInterval(() => { if(document.querySelector('.wipe')) seen = true; if(phase === 'battle'){ clearInterval(iv); setTimeout(() => res(seen || !!document.querySelector('.wipe')), 100); } }, 5); }));
     check(!off, `${tag}: Transitions → Off goes straight into the battle`);
-    await page.evaluate(() => PREF.set('wipe', 'auto'));
+    await page.evaluate(() => PREF.set('wipe', 'ballauto'));
 
     /* hits in a fight make sounds */
     await page.evaluate(() => { finishPlayback(); handle('afterbattle'); });

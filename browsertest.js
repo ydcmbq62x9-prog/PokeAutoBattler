@@ -101,7 +101,7 @@ const { chromium } = require('playwright');
   });
   if(!grid) errors.push('no formation grid rendered');
   else {
-    if(grid.cols !== 3) errors.push('formation should be 3 columns, got ' + grid.cols);
+    if(grid.cols !== 2) errors.push('formation should be 2 columns on a phone (5.0.0: ranks run top to bottom), got ' + grid.cols);
     if(grid.idx.join(',') !== '4,2,0,5,3,1')
       errors.push('formation slot order should be back/mid/front per row, got ' + grid.idx.join(','));
     if(grid.heads.join('/') !== 'Back/Middle/Front')

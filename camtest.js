@@ -1,0 +1,41 @@
+/* 5.0.0: the camera between the shop and the stadium (the default transition). */
+const { chromium } = require('playwright');
+let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
+(async () => { const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  for(const [tag, vp] of [['phone', { width:390, height:844 }], ['desktop', { width:1250, height:900 }], ['landscape', { width:844, height:390 }]]){
+    const ctx = await b.newContext({ viewport: vp }); await ctx.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
+    const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.pendingRewards = [];
+      G.team = ['charmeleon','wartortle','pikachu','gengar'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i; return u; }); fixSlots(G); render(); });
+    check(await p.evaluate(() => PREF.get('wipe', 'auto') === 'auto' && useCamera()), `${tag}: the camera is the default transition`);
+    const turn0 = await p.evaluate(() => G.turn);
+    await p.evaluate(() => document.querySelector('[data-act="endturn"]').click());
+    await p.waitForTimeout(170);
+    const a = await p.evaluate(() => { const o = [...document.querySelectorAll('.bcR, .speechflow, #inspect')].map(e => +getComputedStyle(e).opacity); return { phase, fading: o.some(x => x < 0.95), wipe: !!document.querySelector('.wipe') }; });
+    check(a.phase === 'shop' && a.fading && !a.wipe, `${tag}: BATTLE first drops the shop panels away (no pokéball wipe)`);
+    await p.waitForTimeout(330);
+    const z = await p.evaluate(() => { const S = battle && battle.stage; if(!S) return null; const t = getComputedStyle(S.el).transform; const m = t.match(/matrix\(([^,]+)/);
+      return { phase, scale: m ? +m[1] : 1, cam: document.body.classList.contains('cam'), foeHidden: [...S.el.querySelectorAll('.ftr.e')].every(e => +getComputedStyle(e).opacity < .1) }; });
+    check(z && z.phase === 'battle' && z.scale > 1.05 && z.cam && z.foeHidden, `${tag}: the stadium starts zoomed in on your side (×${z && z.scale.toFixed(2)}), the other side not there yet`);
+    await p.waitForFunction(() => !wiping, null, { timeout: 5000 });
+    const done = await p.evaluate(() => { const S = battle.stage; return { t: getComputedStyle(S.el).transform, foes: [...S.el.querySelectorAll('.ftr.e')].length, ban: !!document.querySelector('.introban'), camIn: battle.camIn }; });
+    check(done.t === 'none' && done.ban && done.camIn, `${tag}: it settles on the whole stadium and the "wants to battle!" banner plays`);
+    await p.waitForTimeout(1500);
+    check(await p.evaluate(() => [...battle.stage.el.querySelectorAll('.ftr.e')].every(e => +getComputedStyle(e).opacity > .9) && !document.body.classList.contains('cam')), `${tag}: the other side has walked on and the chrome is back`);
+    await p.evaluate(() => finishPlayback()); await p.waitForTimeout(800);
+    await p.evaluate(() => { const c = document.querySelector('[data-act="afterbattle"]'); c.click(); c.click(); });
+    await p.waitForTimeout(250);
+    check(await p.evaluate(() => phase === 'battle' && document.body.classList.contains('cam-hide')), `${tag}: Continue fades the battle chrome first, still on the stadium`);
+    await p.waitForFunction(() => phase === 'shop' && !wiping, null, { timeout: 5000 });
+    await p.waitForTimeout(500);
+    const back = await p.evaluate(() => ({ turn: G.turn, cls: ['cam', 'cam-hide', 'cam-foe'].some(c => document.body.classList.contains(c)), op: Math.min(...[...document.querySelectorAll('.bcR, #inspect, #app > .topbar')].map(e => +getComputedStyle(e).opacity)) }));
+    check(back.turn === turn0 + 1 && !back.cls && back.op > .95, `${tag}: back in the shop one turn later (${turn0} → ${back.turn}), even after a double tap, everything visible`);
+    await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); G.pendingRewards = []; if(G.over){ G.over = null; G.lives = 5; phase = 'shop'; } render(); PREF.set('wipe', 'full'); });
+    check(await p.evaluate(() => !useCamera()), `${tag}: Transitions → Ball brings the pokéball wipe back`);
+    await p.evaluate(() => PREF.set('wipe', 'auto'));
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    check(await p.evaluate(() => !useCamera()), `${tag}: reduced motion skips the camera`);
+    check(!errs.length, `${tag}: no errors ${errs.join('; ')}`);
+    await ctx.close(); }
+  await b.close(); console.log(fails ? `${fails} FAILED` : 'camtest passed'); process.exit(fails ? 1 : 0); })();
