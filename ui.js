@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.4.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.5.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1561,7 +1561,34 @@ const backdropOf = b => b.kind === 'gym' ? 'gym' : (b.kind === 'elite' || b.kind
 /* 4.14.0: the stadium floor follows the battle — a leader or Elite Four member fights on their type's floor */
 const FLOOR_TYPES = ['Rock','Water','Electric','Grass','Bug','Psychic','Fire','Ground','Ice','Fighting','Ghost','Dragon','Flying','Normal','Steel','Poison','Dark'];
 const floorOf = b => { const t = b.boss && b.boss.theme && b.boss.theme[0];
+  if((b.kind || 'trainer') === 'trainer' && !b.boss) return 'fl-' + homeFloor();   // 5.5.0: ordinary trainer bouts play on your home field
   return (b.kind === 'gym' || b.kind === 'elite') && FLOOR_TYPES.includes(t) ? 'fl-' + t : 'fl-' + backdropOf(b); };
+/* 5.5.0 · HOME FIELDS: beat a leader (or the rival, the Champion, Red) and their floor is yours to pick
+   on the Trainer Card. Your ordinary trainer battles, and the shop before them, are played on it. */
+const SPECIAL_FLOORS = ['route', 'dusk', 'league', 'summit'];
+const ALL_FLOORS = [...SPECIAL_FLOORS, ...FLOOR_TYPES];
+const floorName = f => ({ route:'The pitch', dusk:'Rival’s dusk', league:'League hall', summit:'Mt. Silver' })[f] || f + ' floor';
+const floorHow = f => ({ route:'Yours from the start.', dusk:'Beat your rival.', league:'Beat the Champion.', summit:'Beat Red.' })[f]
+  || `Beat a ${f}-type gym leader or Elite Four member.`;
+/** The floor this win would unlock (null if it's not a boss floor). */
+function floorWon(b){
+  if(!b || b.exhibition) return null;
+  const t = b.boss && b.boss.theme && b.boss.theme[0];
+  if((b.kind === 'gym' || b.kind === 'elite') && FLOOR_TYPES.includes(t)) return t;
+  if(b.kind === 'rival') return 'dusk';
+  if(b.kind === 'champion') return 'league';
+  if(b.kind === 'red' && b.boss && b.boss.id !== 'oak') return 'summit';
+  return null;
+}
+function homeFloor(){ const f = PREF.get('homefloor', 'route'); return f !== 'route' && career().floors.includes(f) ? f : 'route'; }
+/* 5.5.0 · the stands: eight floodlights, one more lit for every badge you hold, and a crowd that fills up as you go.
+   The Elite Four, the Champion and the secret bosses play to a full house with every light on. */
+const LAMP_ORDER = [0, 7, 1, 6, 2, 5, 3, 4];   // k-th badge lights lamp LAMP_ORDER[k]: from the outside in
+function standsOf(b){
+  const big = b.kind === 'elite' || b.kind === 'champion' || b.kind === 'red';
+  const have = G ? Math.min(8, G.badges || 0) : 0;
+  return { lit: big ? 8 : have, crowd: big ? 4 : 1 + Math.floor(have / 3), full: big };
+}
 
 function fighterHtml(u){
   const art = SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}" draggable="false">`
@@ -1582,7 +1609,9 @@ function stageShell(b){
   el.className = `bstage board stadium bg-${backdropOf(b)} ${floorOf(b)} look-${lookPref()}`;   // 4.15.0: Options → Battle look   // 4.13.0 board; 4.14.0 a tilted stadium table
   const theme = b.boss && b.boss.theme && b.boss.theme[0];
   if(theme && GEN1_COL[theme]) el.style.setProperty('--gymc', GEN1_COL[theme]);
-  el.innerHTML = `<div class="ground"><i class="stands"></i><i class="lights"></i><i class="bulbs"></i></div>
+  const SD = standsOf(b);
+  const lamps = Array.from({ length: 8 }, (_, k) => { const o = LAMP_ORDER.indexOf(k); return `<b class="lamp${o < SD.lit ? ' on' : ''}" data-o="${o}"></b>`; }).join('');
+  el.innerHTML = `<div class="ground crowd${SD.crowd}${SD.full ? ' full' : ''}" style="--lit:${SD.lit}"><i class="stands"><i class="crowd c1"></i><i class="crowd c2"></i><i class="crowd c3"></i><i class="crowd c4"></i></i><i class="lamps">${lamps}</i><i class="lights"></i><i class="bulbs"></i></div>
     <div class="tview"><div class="table"><div class="pitch"></div><div class="midline"></div>
     ${['p', 'e'].map(s => Array.from({ length: TUNING.maxTeam }, (_, pos) =>
       `<div class="slotmark ${s} r${Math.min(2, Math.floor(pos / RANK_W))} f${pos % RANK_W}"></div>`).join('')).join('')}
@@ -2281,6 +2310,7 @@ function handBadge(S, b, L){
   const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
   w.appendChild(bd);
   SFX.play('sparkle');
+  if(gym) setTimeout(() => lightLamp(S, b), ms(2300));   // 5.5.0: one more floodlight comes on for the new badge
   const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
   const tgt = mine.length ? artCentre(S, mine[0]) : null, me = bd.getBoundingClientRect(), E = S.el.getBoundingClientRect();   // 5.3.10: from the badge's own spot
   const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top + me.height / 2 - E.top) : 0;
@@ -2292,6 +2322,24 @@ function handBadge(S, b, L){
     const fl = document.createElement('div'); fl.className = 'wflash gold'; fl.style.left = tgt.x + 'px'; fl.style.top = tgt.y + 'px';
     fl.style.width = fl.style.height = (tgt.w * 1.8) + 'px'; S.fx.appendChild(fl);
     anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.3)', opacity: 0 }], { duration: ms(520), easing: 'ease-out', remove: true }); }, ms(2120));
+}
+/** 5.5.0: the badge just won switches on the next floodlight. */
+function lightLamp(S, b){
+  if(battle !== b || !S.el.isConnected) return;
+  const g = S.el.querySelector('.ground'), l = S.el.querySelector(`.lamp[data-o="${Math.min(7, G.badges || 0)}"]`);
+  if(!g || !l || l.classList.contains('on')) return;
+  l.classList.add('on', 'fresh'); g.style.setProperty('--lit', String(Math.min(8, (+g.style.getPropertyValue('--lit') || 0) + 1)));
+  SFX.play('tap'); crowdReact(S, false);
+}
+/** 5.5.0: a new home field, announced on the pitch. */
+function fieldBanner(S, f){
+  if(!S.el.isConnected) return;
+  const d = document.createElement('div'); d.className = 'fieldban';
+  d.innerHTML = `<span class="fsw bstage board stadium fl-${f}"><span class="table"><span class="pitch"></span></span></span><div><small>New home field</small><b>${esc(floorName(f))}</b></div>`;
+  S.el.appendChild(d);
+  SFX.play('sparkle');
+  anim(d, [{ opacity: 0, transform: 'translate(-50%,-12px)' }, { opacity: 1, transform: 'translate(-50%,0)', offset: .1 }, { opacity: 1, transform: 'translate(-50%,0)', offset: .88 }, { opacity: 0, transform: 'translate(-50%,-8px)' }],
+    { duration: motionOff() ? 2600 : 3200, easing: 'ease-out', fill: 'both', remove: true });
 }
 /* ---- 5.3.0 · THE CHAMPION'S PHOTO --------------------------------------
    Beat the Champion and the Champion steps aside; your whole team (the
@@ -2460,6 +2508,7 @@ function stageOutro(S){
       { duration: 900, delay: k++ * 90, easing: 'ease-out' });
   }
   const later = (fn, t) => setTimeout(() => { if(battle && battle.stage === S) fn(S); }, t * walkPace());
+  if(r === 'win' && battle.newFloor) later(S2 => fieldBanner(S2, battle.newFloor), 500);   // 5.5.0
   if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)){ victorySweep(S); later(bossOutro, 1300); }
   else if(r === 'win'){ crowdReact(S, true); if(battle.kind === 'rival') later(bossOutro, 900); }
   else if(battle.boss) later(bossOutro, 900);           // 5.3.0: and when you lose, they gloat
@@ -3500,7 +3549,7 @@ function nextBout(){
 }
 /** The shop's field: the next fight's stadium, empty. Kept until the next fight changes. */
 function shopStage(){
-  const b = nextBout(), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}`;
+  const b = nextBout(), SD = standsOf(b), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}|${SD.lit}|${SD.crowd}`;
   if(!WORLD.shop || WORLD.shopKey !== key){ WORLD.shop = stageShell(b); WORLD.shop.classList.add('shopstage'); WORLD.shopKey = key; }
   WORLD.shop.classList.toggle('flatshop', flatShop());
   return WORLD.shop;
@@ -3792,6 +3841,7 @@ async function startBattle(){
              prize: rv ? rivalPrize(G, opp.meeting) : null, bagFull: rv ? bagRoom(G) === 0 : false,
              gauntlet: nextUp(G).gauntlet,
              timer: null, exhibition: false };
+  { const f = sim.result === 'win' ? floorWon(battle) : null; battle.newFloor = f && !career().floors.includes(f) ? f : null; }   // 5.5.0
   if(opp.kind === 'red'){ const r = records(); r.met = { ...(r.met || {}), [opp.boss && opp.boss.id || secretBoss().id]: true }; saveRecords(r); }   // 4.3.0: Pokédex remembers him
   sessionBattles++;
   await transition(() => { phase = 'battle'; render(); window.scrollTo(0, 0); }, beginPlayback);   // v40 wipe; 5.0.0 the camera: the intro starts as the circle opens
@@ -3870,6 +3920,7 @@ async function afterBattle(opts){
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
   noteBattle(battle);                             // v37: Trainer Card records
+  noteCareer(battle, result);                     // 5.5.0: career totals and home fields
   noteRunStats(battle);                           // 3.7.0: for the run summary
   applyBattleResult(G, result, opp, battle.sim);  // badges, blackout, lives, streak, EXP, wounds
   noteProgress();
@@ -3976,6 +4027,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.5.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The stadium comes alive: floodlights for your badges, home fields to unlock and a career on your Trainer Card', items:[
+    'The stands are back, redrawn: a dark bowl behind the field with eight floodlights along the top. One more light comes on for every badge you hold (you see it switch on as the leader hands the badge over), and the crowd fills up as you go. The Elite Four, the Champion and the secret bosses play to a full house with every light on.',
+    'Home fields: beat a gym leader or Elite Four member and their floor is yours. So are your rival\u2019s dusk pitch, the League hall and Mt. Silver. Pick one on the Trainer Card and your ordinary trainer battles, and the shop before them, are played on it. Boss fights keep their own floors.',
+    'The Trainer Card has a Career board: battles won, gym leaders and Elite Four beaten, Champion wins, your fastest clear, your biggest hit and your favourite pok\u00e9mon. It starts from your run history, and transfer codes carry it along.',
+    'The home-screen app has a new icon: PB on the pitch, in place of the old Game Boy box.' ] },
   { v:'5.4.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The last of the Game Boy style retired: a stadium look from the title to the menus', items:[
     'New lettering: headings, buttons and the scoreboard use a bold sports font instead of the pixel font. The pok\u00e9mon keep their pixel art.',
     'The title says TAP TO PLAY and fades into the stadium, and the yellow START button is now a MENU button. The menu is a clean list with a highlighted row instead of the \u25b6 cursor.',
@@ -4456,6 +4512,80 @@ function records(){
   return Object.assign({ runs:0, cleared:0, best:-1 }, r || {});
 }
 function saveRecords(r){ try{ localStorage.setItem(REC_KEY, JSON.stringify(r)); }catch(e){} }
+/* 5.5.0 · CAREER: totals across every run on this device, for the Trainer Card. Before 5.5.0 nothing counted
+   battles, so the first time it's read it starts from what the records already know (run history, clears). */
+function career(r){
+  r = r || records();
+  if(r.career) return Object.assign({ battles:0, wins:0, gyms:0, elite:0, champs:0, used:{}, hit:null, fastest:0, floors:[] }, r.career);
+  const H = r.history || [], used = {};
+  for(const h of H) for(const id of h.team || []) used[id] = (used[id] || 0) + 1;
+  const fast = H.filter(h => h.won && h.turn).map(h => h.turn);
+  return { battles:0, wins:0, gyms: H.reduce((n, h) => n + (h.badges || 0), 0), elite:0, champs: r.cleared || 0, used, hit:null,
+           fastest: fast.length ? Math.min(...fast) : 0, floors:[] };
+}
+function noteCareer(b, result){
+  if(!b || b.exhibition || !b.steps || !b.steps.length) return;
+  const r = records(), c = career(r);
+  c.battles++;
+  if(result === 'win'){
+    c.wins++;
+    if(b.kind === 'gym') c.gyms++;
+    if(b.kind === 'elite') c.elite++;
+    if(b.kind === 'champion') c.champs++;
+    const f = floorWon(b); if(f && !c.floors.includes(f)) c.floors.push(f);
+  }
+  for(const u of b.steps[0].p) c.used[u.id] = (c.used[u.id] || 0) + 1;
+  const h = G && G.rec && G.rec.hit; if(h && (!c.hit || h.dmg > c.hit.dmg)) c.hit = { ...h };
+  r.career = c; saveRecords(r);
+}
+function noteCareerEnd(){
+  if(!G || G.over !== 'won') return;
+  const r = records(), c = career(r), t = G.turn || 1;
+  if(!c.fastest || t < c.fastest){ c.fastest = t; r.career = c; saveRecords(r); }
+}
+function mergeCareer(a, b){
+  if(!a && !b) return null;
+  const A = Object.assign({ used:{}, floors:[] }, a || {}), B = Object.assign({ used:{}, floors:[] }, b || {}), used = { ...A.used };
+  for(const [k, v] of Object.entries(B.used)) used[k] = Math.max(used[k] || 0, v);
+  const mx = k => Math.max(A[k] || 0, B[k] || 0), fs = [A.fastest, B.fastest].filter(Boolean);
+  return { battles: mx('battles'), wins: mx('wins'), gyms: mx('gyms'), elite: mx('elite'), champs: mx('champs'), used,
+           hit: [A.hit, B.hit].filter(Boolean).sort((x, y) => y.dmg - x.dmg)[0] || null,
+           fastest: fs.length ? Math.min(...fs) : 0, floors: [...new Set([...A.floors, ...B.floors])] };
+}
+function careerHtml(){
+  const c = career(), fav = Object.entries(c.used).sort((x, y) => y[1] - x[1])[0], favId = fav && SPECIES[fav[0]] ? fav[0] : null;
+  const tile = (n, lbl, extra) => `<div class="ct"><b>${n}</b><span>${lbl}</span>${extra || ''}</div>`;
+  return `<h4>Career</h4><div class="career">
+    ${tile(c.battles ? `${c.wins}<i>/${c.battles}</i>` : '—', 'Battles won')}
+    ${tile(c.gyms, 'Gym leaders beaten')}
+    ${tile(c.elite, 'Elite Four beaten')}
+    ${tile(c.champs, 'Champion wins')}
+    ${tile(c.fastest ? `T${c.fastest}` : '—', 'Fastest clear')}
+    ${tile(c.hit ? c.hit.dmg : '—', 'Biggest hit', c.hit && SPECIES[c.hit.id] ? `<small>${esc(SPECIES[c.hit.id].name)}</small>` : '')}
+    <div class="ct fav">${favId ? spriteHtml(favId, 'sm') : ''}<div><b>${favId ? esc(SPECIES[favId].name) : '—'}</b><span>Favourite pokémon${fav ? ` · ${fav[1]} battle${fav[1] === 1 ? '' : 's'}` : ''}</span></div></div>
+  </div>`;
+}
+function homeFieldHtml(){
+  const c = career(), cur = homeFloor();
+  const sw = f => { const on = f === 'route' || c.floors.includes(f);
+    return `<button class="hf ${on ? '' : 'locked'} ${f === cur ? 'cur' : ''}" data-hf="${f}" aria-label="${esc(floorName(f))}"><span class="fsw bstage board stadium fl-${f}"><span class="table"><span class="pitch"></span></span></span>${on ? '' : '<i class="hflock"></i>'}</button>`; };
+  return `<h4>Home field <span class="dim">${1 + c.floors.length} / ${ALL_FLOORS.length}</span></h4>
+    <div class="hfgrid">${ALL_FLOORS.map(sw).join('')}</div>
+    <div class="hfinfo">${hfInfo(cur)}</div>`;
+}
+function hfInfo(f){
+  const on = f === 'route' || career().floors.includes(f);
+  return `<b>${esc(floorName(f))}</b> <span class="dim">${on ? 'Your trainer battles, and the shop before them, are played here.' : 'Locked. ' + esc(floorHow(f))}</span>`;
+}
+function bindHomeField(d){
+  const info = d.querySelector('.hfinfo');
+  d.querySelectorAll('[data-hf]').forEach(btn => btn.onclick = () => {
+    const f = btn.dataset.hf, on = f === 'route' || career().floors.includes(f);
+    SFX.play(on ? 'tap' : 'error');
+    if(on){ PREF.set('homefloor', f); d.querySelectorAll('[data-hf]').forEach(x => x.classList.toggle('cur', x === btn)); layoutWorld(); }
+    info.innerHTML = hfInfo(f);
+  });
+}
 
 /* ---- 2.4.0 · THE HARDCORE BADGE ---------------------------------------
    Earned by clearing a run with One Life on (a One Life daily counts). Kept in
@@ -4681,7 +4811,7 @@ function logRun(){
   saveRecords(r);
 }
 function noteProgress(){ if(G.daily) return noteDaily(); const r = records(), b = recBucket(r); if(reachedStage() > b.best){ b.best = reachedStage(); saveRecords(r); } }
-function noteRunEnd(){ logRun(); awardHardcore(); awardChallenges(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
+function noteRunEnd(){ logRun(); noteCareerEnd(); awardHardcore(); awardChallenges(); awardRed(); noteSecretStreak(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; if(G.over === 'won') b.cleared++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); }
 /** Restarting a run you have actually played counts as finishing it. */
 function noteQuit(){ if(G && !G.over && ((G.stage || 0) > 0 || G.turn > 1)){ logRun(); if(G.daily){ noteDaily(); return; } const r = records(), b = recBucket(r); b.runs++; b.best = Math.max(b.best, reachedStage()); saveRecords(r); } }
 function noteBattle(b){
@@ -4735,7 +4865,9 @@ function openTrainerCard(fromTitle){
       <div class="tface" title="${P ? esc(P.u.nm) + ', your partner' : ''}">${SPRITES[face] ? `<img src="${SPRITES[face]}" alt="">` : '<i class="pball"></i>'}</div>
     </div>
     <h4>Badges</h4><div class="bcase">${cells}</div>
+    ${careerHtml()}
     ${specialBadgesHtml()}
+    ${homeFieldHtml()}
     <h4>Records</h4><div class="recs">
       ${R.secStreak && R.secStreak.best ? `<div><span>Secret boss streak</span><b>${R.secStreak.cur} now · best ${R.secStreak.best}</b></div>` : ''}
       <div><span>Best run</span><b>${esc(bestRunLabel(Math.max(R.best, live ? reachedStage() : 0)))}</b></div>
@@ -4748,7 +4880,7 @@ function openTrainerCard(fromTitle){
   </div>
   <div class="btnrow"><button class="btn" data-m="history">Run history</button><button class="btn" data-m="options">Change name</button><button class="btn ghost" data-m="close">Close</button></div>`);
   d.classList.add('trainer');
-  bindSpecialBadges(d);
+  bindSpecialBadges(d); bindHomeField(d);
   d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { d.remove(); if(b.dataset.m === 'options') openOptions(); if(b.dataset.m === 'history') openHistory(fromTitle); });
 }
 
@@ -4916,8 +5048,9 @@ function applyTransfer(data){
     const hc = mergeHardcore(a.hardcore, b.hardcore), rd = mergeHardcore(a.red, b.red), ok = mergeHardcore(a.oak, b.oak);
     const tk = { red: Math.max((a.tickets || {}).red || 0, (b.tickets || {}).red || 0), oak: Math.max((a.tickets || {}).oak || 0, (b.tickets || {}).oak || 0) }, mt = { ...(a.met || {}), ...(b.met || {}) }, ga = mergeHardcore(a.gauntlet, b.gauntlet), st = { cur: Math.max((a.secStreak || {}).cur || 0, (b.secStreak || {}).cur || 0), best: Math.max((a.secStreak || {}).best || 0, (b.secStreak || {}).best || 0) };
     const chm = mergeChal(a.chal, b.chal);   // 4.12.0
+    const cr = mergeCareer(a.career, b.career);   // 5.5.0
     const hist = [...(a.history || []), ...(b.history || [])].filter((x, i, arr) => x && arr.findIndex(y => y && y.at === x.at) === i).sort((p, q) => q.at - p.at).slice(0, HIST_MAX);
-    saveRecords({ ...a, chal: chm, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
+    saveRecords({ ...a, ...(cr ? { career: cr } : {}), chal: chm, history: hist, tickets: tk, met: mt, ...(ga ? { gauntlet: ga } : {}), ...(st.best ? { secStreak: st } : {}), runs: Math.max(a.runs, b.runs), cleared: Math.max(a.cleared, b.cleared), best: Math.max(a.best, b.best), ...(hc ? { hardcore: hc } : {}), ...(rd ? { red: rd } : {}), ...(ok ? { oak: ok } : {}) });
     if(data.name && data.name !== 'Trainer') PREF.set('name', String(data.name).replace(/[<>]/g, '').slice(0, 10));
     G = d.G; phase = d.phase === 'over' ? 'over' : 'shop';
     sel = null; inspect = null; battle = null; shopMem = null; drawnPhase = null; toast = ''; undo = null;

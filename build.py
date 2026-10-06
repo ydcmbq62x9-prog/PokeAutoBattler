@@ -30,7 +30,7 @@ for f in ['icon-192.png', 'icon-512.png', 'maskable-192.png', 'maskable-512.png'
     shutil.copy('app/icons/' + f, appdir / 'icons' / f)
 head = '''<meta name="description" content="PokéBattler — a Pokémon auto battler for you and your friends.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2b303b">
+<meta name="theme-color" content="#11182c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -48,7 +48,7 @@ manifest = {
   "description": "A Pokémon auto battler for you and your friends.",
   "id": "./", "start_url": "./", "scope": "./",
   "display": "standalone", "orientation": "any",
-  "background_color": "#e9e3cc", "theme_color": "#2b303b",
+  "background_color": "#3a8840", "theme_color": "#11182c",
   "icons": [
     {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

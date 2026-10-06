@@ -2884,7 +2884,6 @@ body.cam #world{position:fixed!important;inset:0!important;height:auto!important
 
 /* 5.3.8 · for now the stadium is just its floor: no sky, stands, crowd or lights behind it (Sean: to be redesigned later) */
 .bstage.board.stadium{background:none!important;box-shadow:none!important;border:0!important}
-.bstage.board.stadium .ground{display:none!important}
 .bstage.board.stadium::before,.bstage.board.stadium::after{display:none!important}
 html.bc body[data-phase=battle] .panel.arena{background:none!important;box-shadow:none!important}
 body.speaking .panel.arena > .bosstag{opacity:0;transition:opacity .25s}
@@ -2924,6 +2923,75 @@ html.bc #inspect .more,html.bc #inspect .tcaret,html.bc #inspect::after{animatio
 html.bc .tfield{border:0!important;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 14px 30px rgba(0,0,0,.35)!important;border-radius:14px!important;
   background:radial-gradient(circle at 50% 120%,transparent 34%,rgba(255,255,255,.75) 34.6% 36%,transparent 36.6%),repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)!important}
 html.bc .tfield::before,html.bc .tfield::after,html.bc .tcloud{display:none!important}
+/* ---- 5.5.0 · the stands, redrawn ----
+   No sky and no box: a dark bowl of seats along the top of the field, in a deep shade of the page's own colour, fading
+   out at the sides so it sits in the page. Eight floodlights on its rim (--lit of them on, one per badge) and up to four
+   layers of crowd. Boss fights from the Elite Four on are a full house with every light on. */
+.bstage.board.stadium .ground{display:block!important;background:none!important;--lit:0}
+.bstage.board.stadium .stands{position:absolute;left:0;right:0;top:0;height:24%;clip-path:none!important;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 1.9cqw),
+    linear-gradient(180deg,color-mix(in srgb,var(--pg1,#3a8840) 22%,#070b16) 0%,color-mix(in srgb,var(--pg1,#3a8840) 38%,#0c1222) 100%)!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(180deg,#000 80%,transparent);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 7%,#000 93%,transparent 100%),linear-gradient(180deg,#000 80%,transparent);mask-composite:intersect;
+  filter:brightness(calc(.5 + var(--lit) * .07));transition:filter .6s}
+.bstage.board.stadium.vert .stands{height:15%}
+.bstage.board.stadium .crowd{position:absolute;inset:2.4cqw 0 0;pointer-events:none}
+.bstage.board.stadium .crowd.c1{background:radial-gradient(circle at 50% 50%,#f1cfa8 0 .34cqw,transparent .46cqw) 0 0/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c2{background:radial-gradient(circle at 50% 50%,#e8505a 0 .34cqw,transparent .46cqw) 1.15cqw .95cqw/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c3{background:radial-gradient(circle at 50% 50%,#5b95ee 0 .34cqw,transparent .46cqw) .6cqw .3cqw/2.3cqw 1.9cqw}
+.bstage.board.stadium .crowd.c4{background:radial-gradient(circle at 50% 50%,#ffd23a 0 .3cqw,transparent .42cqw) 1.75cqw 1.25cqw/4.6cqw 3.8cqw,radial-gradient(circle at 50% 50%,#e9edf5 0 .3cqw,transparent .42cqw) .3cqw 1.4cqw/4.6cqw 3.8cqw}
+.bstage.board.stadium .crowd{opacity:.82}
+.bstage.board.stadium .ground.crowd1 :is(.c2,.c3,.c4),.bstage.board.stadium .ground.crowd2 :is(.c3,.c4),.bstage.board.stadium .ground.crowd3 .c4{display:none}
+/* a full house twinkles with camera flashes */
+.bstage.board.stadium .ground.full .stands::after{content:'';position:absolute;inset:2.4cqw 0 0;pointer-events:none;
+  background:radial-gradient(circle,#fff 0 .3cqw,transparent .6cqw) 3cqw 1cqw/17cqw 4.4cqw,radial-gradient(circle,#fff 0 .3cqw,transparent .6cqw) 11cqw 3cqw/23cqw 5.2cqw;
+  animation:twk 1.7s steps(2,jump-none) infinite;opacity:0}
+@keyframes twk{0%,40%{opacity:0}50%,60%{opacity:.95}70%,100%{opacity:0}}
+body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
+@media (prefers-reduced-motion:reduce){.bstage.board.stadium .ground.full .stands::after{animation:none}}
+/* the floodlights */
+.bstage.board.stadium .lamps{position:absolute;left:6%;right:6%;top:.5cqw;height:1.7cqw;display:flex;justify-content:space-between;pointer-events:none;z-index:1}
+.bstage.board.stadium .lamp{position:relative;width:4.2cqw;height:1.6cqw;border-radius:.4cqw;background:linear-gradient(90deg,rgba(0,0,0,.35) 1px,transparent 1px) 0 0/1.05cqw 100%,#2a3040;box-shadow:0 0 0 1px rgba(255,255,255,.12);transition:background .4s,box-shadow .4s}
+.bstage.board.stadium .lamp.on{background:linear-gradient(90deg,rgba(0,0,0,.18) 1px,transparent 1px) 0 0/1.05cqw 100%,#fffbe2;box-shadow:0 0 0 1px #fff,0 0 1.4cqw .5cqw rgba(255,248,200,.85)}
+.bstage.board.stadium .lamp.on::after{content:'';position:absolute;top:100%;left:50%;width:16cqw;height:16cqw;transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(50% 100% at 50% 0,rgba(255,250,215,.2),transparent 75%)}
+.bstage.board.stadium .lamp.fresh{animation:lampon .9s ease-out}
+@keyframes lampon{0%{transform:scale(1)}20%{transform:scale(1.5);box-shadow:0 0 0 1px #fff,0 0 4cqw 2cqw rgba(255,248,200,1)}100%{transform:scale(1)}}
+.bstage.board.stadium.vert .lamps{left:5%;right:5%}
+.bstage.board.stadium.vert .lamp{width:5.6cqw;height:2cqw}
+.bstage.board.stadium .lights{opacity:calc(var(--lit) / 8);background:radial-gradient(40% 22% at 25% 0%,rgba(255,250,215,.28),transparent 70%),radial-gradient(40% 22% at 75% 0%,rgba(255,250,215,.28),transparent 70%)!important}
+.bstage.board.stadium.bg-summit :is(.stands,.lamps,.lights){display:none}
+/* the phone shop's close-up stays just the floor */
+.pfclip .bstage .ground{display:none!important}
+
+/* 5.5.0 · a floor as a small swatch (home fields, the unlock banner) */
+.fsw.bstage{position:relative;display:block;width:100%;height:100%;aspect-ratio:auto!important;border-radius:8px;overflow:hidden;border:0;box-shadow:none;min-height:0}
+.fsw.bstage .table{position:absolute!important;inset:0!important;transform:none!important;border-radius:inherit;box-shadow:none!important}
+.fsw.bstage .pitch{position:absolute;inset:0}
+.fsw.bstage.fl-route .pitch::before,.fsw.bstage.fl-dusk .pitch::before{width:46cqw!important;border-width:2px!important}
+.fsw.bstage.fl-Fighting .pitch{inset:14% 12%;border-width:2px}
+.hfgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;margin:4px 0 6px}
+.hf{position:relative;height:38px;padding:0;border:0;border-radius:9px;background:none;cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.hf.cur{box-shadow:0 0 0 3px var(--gold),0 0 10px rgba(255,210,58,.5)}
+.hf.locked .fsw{filter:grayscale(1) brightness(.35)}
+.hflock{position:absolute;left:50%;top:50%;width:12px;height:10px;margin:-3px 0 0 -6px;border-radius:2px;background:rgba(255,255,255,.7)}
+.hflock::before{content:'';position:absolute;left:2px;right:2px;top:-7px;height:9px;border:2px solid rgba(255,255,255,.7);border-bottom:0;border-radius:6px 6px 0 0}
+.hfinfo{font-size:13px;line-height:1.35;min-height:2.7em}
+.fieldban{position:absolute;left:50%;top:7%;z-index:30;display:flex;align-items:center;gap:10px;padding:7px 14px 7px 7px;border-radius:12px;pointer-events:none;
+  background:var(--glass2,rgba(14,20,38,.96));box-shadow:0 0 0 2px var(--gold,#ffd23a),0 10px 24px rgba(0,0,0,.45);color:#fff;white-space:nowrap}
+#world .fieldban .fsw,.fieldban .fsw{width:54px!important;height:36px!important;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+.fieldban small{display:block;font-family:var(--pix);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold,#ffd23a);font-size:12px}
+.fieldban b{font-family:var(--pix);font-weight:800;font-size:19px;letter-spacing:.03em}
+/* 5.5.0 · Career board on the Trainer Card: scoreboard tiles */
+.career{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}
+.career .ct{background:var(--navy,#11182c);border-radius:9px;padding:7px 6px 6px;text-align:center;box-shadow:inset 0 -2px 0 rgba(255,210,58,.5);min-width:0}
+.career .ct b{display:block;font-family:var(--pix);font-weight:800;font-size:24px;line-height:1.05;color:var(--gold,#ffd23a);letter-spacing:.02em}
+.career .ct b i{font-style:normal;font-size:15px;color:#9aa6c4}
+.career .ct span{display:block;font-family:var(--pix);font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#c9d2ea;line-height:1.15}
+.career .ct small{display:block;font-size:11px;color:#9aa6c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.career .ct.fav{grid-column:1/-1;display:flex;align-items:center;gap:10px;text-align:left;padding:6px 10px}
+.career .ct.fav b{font-size:20px}
+.career .ct.fav .sprite{flex:none}
 </style>
 </head>
 <body>
