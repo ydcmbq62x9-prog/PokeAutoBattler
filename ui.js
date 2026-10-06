@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1695,7 +1695,37 @@ function mountStage(){
 }
 
 /* ---------------- the little effects ---------------- */
+/* ---- 5.3.2 · WHERE THINGS ARE ON THE TILTED TABLE -------------------------
+   iPhones (Safari) report the boxes of things on the 3D-tilted table in the
+   wrong place, which put the party's spots and the walking bosses off on
+   phones. So the game works the boxes out itself from the table's geometry
+   (its tilt, the perspective, the element's spot on the flat table): the
+   same answer a correct browser gives, on every browser. */
+function planeBox(el){   // in the stage's own px
+  const table = el && el.offsetParent; if(!table || !table.classList.contains('table')) return null;
+  const tview = table.parentElement, cs = getComputedStyle(table), vs = getComputedStyle(tview);
+  let cos = 1, sin = 0;
+  try{ if(cs.transform && cs.transform !== 'none'){ const m = new DOMMatrix(cs.transform); cos = m.m22; sin = m.m23; } }catch(e){}
+  const d = parseFloat(vs.perspective) || 0, po = String(vs.perspectiveOrigin).split(' ').map(parseFloat);
+  const Lt = tview.offsetLeft + table.offsetLeft, Tt = tview.offsetTop + table.offsetTop, Ht = table.offsetHeight;
+  const ox = tview.offsetLeft + (po[0] || 0), oy = tview.offsetTop + (po[1] || 0);
+  const P = (u, v) => { const dy = v - Ht, X = Lt + u, Y = Tt + Ht + dy * cos, Z = dy * sin, k = d ? d / (d - Z) : 1; return [ox + (X - ox) * k, oy + (Y - oy) * k]; };
+  const u = el.offsetLeft, v = el.offsetTop, w = el.offsetWidth, h = el.offsetHeight;
+  const pts = [P(u, v), P(u + w, v), P(u, v + h), P(u + w, v + h)], xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+  const l = Math.min(...xs), r = Math.max(...xs), t = Math.min(...ys), b = Math.max(...ys);
+  return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
+}
+function planeRect(el){  // in viewport px, like getBoundingClientRect
+  const bx = planeBox(el); if(!bx) return el.getBoundingClientRect();
+  const stage = el.closest('.bstage'), E = stage.getBoundingClientRect(), sc = E.width / (stage.offsetWidth || E.width);
+  const left = E.left + bx.left * sc, top = E.top + bx.top * sc, width = bx.width * sc, height = bx.height * sc;
+  return { left, top, width, height, right: left + width, bottom: top + height };
+}
+const IS_WEBKIT = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Android/.test(navigator.userAgent));
 function artCentre(S, F){
+  if(IS_WEBKIT && S.table){   // 5.3.2: from the tile's worked-out box (see planeBox)
+    const t = planeBox(F.el); if(t){ const v = S.el.classList.contains('vert'), ah = t.height * (v ? .66 : .48);
+      return { x: t.left + t.width / 2, y: t.bottom - t.height * (v ? .22 : .135) - ah / 2, w: ah }; } }
   const a = F.el.querySelector('.fart').getBoundingClientRect(), r = S.el.getBoundingClientRect();
   return { x: a.left - r.left + a.width / 2, y: a.top - r.top + a.height / 2, w: a.width };
 }
@@ -1717,8 +1747,10 @@ const anim = (el, frames, opts) => {
 function restCentre(F){
   /* 4.14.0: the tile itself never moves (lunges move what's on it), and its box on screen already includes the table's tilt */
   const S = battle && battle.stage; if(!S) return null;
+  const v = S.el.classList.contains('vert');
+  if(IS_WEBKIT && S.table){ const t = planeBox(F.el); if(t) return { x: t.left + t.width / 2, y: t.top + t.height * (v ? 0.15 : 0.45), w: t.height * (v ? .66 : .48) }; }   // 5.3.2
   const t = F.el.getBoundingClientRect(), r = S.el.getBoundingClientRect(), art = F.el.querySelector('.fart');
-  const v = S.el.classList.contains('vert'), w = art ? art.getBoundingClientRect().width : t.height;
+  const w = art ? art.getBoundingClientRect().width : t.height;
   return { x: t.left - r.left + t.width / 2, y: t.top - r.top + t.height * (v ? 0.15 : 0.45), w };   // 4.16.0: it stands centred in its spot
 }
 function floatText(S, F, text, cls, lift){
@@ -2103,10 +2135,10 @@ const walkPace = () => speed >= 4 ? .45 : speed >= 2 ? .7 : 1;
 function leaderWalk(S, b, where){
   const ms = x => x * walkPace();
   const E = S.el.getBoundingClientRect(), vert = S.el.classList.contains('vert');
-  const marks = [...S.el.querySelectorAll('.slotmark.e')].map(m => m.getBoundingClientRect());
+  const marks = [...S.el.querySelectorAll('.slotmark.e')].map(planeRect);
   if(!marks.length) return null;
   const U = rectUnion(marks);
-  const size = Math.round(Math.min(E.width * (vert ? .26 : .13), E.height * (vert ? .2 : .34)));
+  const size = Math.round(Math.min(E.width * (vert ? .22 : .13), E.height * (vert ? .18 : .34)));
   let x = U.cx - E.left, y = U.cy - E.top + size * .15;
   if(where === 'mid'){ if(vert) y = U.b - E.top + size * .1; else x = U.l - E.left + size * .2; }
   const w = document.createElement('div');
@@ -3454,9 +3486,9 @@ function shopStage(){
 function worldBox(){
   const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight || innerHeight;   // 5.3.1: not innerHeight, which changes as a phone's browser bar slides away
   const tb = document.querySelector('#app > .topbar');
-  const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + 10 : 76);
+  const T = Math.round(tb ? tb.getBoundingClientRect().bottom + scrollY + (wideMode() && vh <= 520 ? 5 : 10) : 76);
   if(wideMode()){
-    const land = vh <= 520, strip = land ? 70 : 118, pad = land ? 10 : 16, aspect = land ? 2.05 : 16 / 9;   // 5.3.1: a phone on its side gets a wider, flatter field
+    const land = vh <= 520, strip = land ? 58 : 118, pad = land ? 10 : 16, aspect = land ? 2.3 : 16 / 9;   // 5.3.1: a phone on its side gets a wider, flatter field
     const aw = vw - 2 * pad, ah = Math.max(150, vh - T - strip);
     const w = Math.round(Math.min(aw, ah * aspect)), h = Math.round(w / aspect);
     return { l: Math.round((vw - w) / 2), t: T, w, h, wide: true };
@@ -3472,7 +3504,7 @@ function shopCamera(){
   const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
   if(!fs || !st) return 'none';
   WORLD.cam.style.transform = 'none';
-  const marks = [...st.querySelectorAll('.slotmark.p')].map(m => m.getBoundingClientRect());
+  const marks = [...st.querySelectorAll('.slotmark.p')].map(planeRect);
   if(!marks.length) return 'none';
   const U = rectUnion(marks), mh = marks[0].height, R = fs.getBoundingClientRect(), E = WORLD.cam.getBoundingClientRect();
   const top = U.t - mh * (WORLD.box.wide ? .2 : .45), bot = U.b + mh * .12;   // room for the plates over the back row
@@ -3490,7 +3522,7 @@ function placeSlots(){
   for(const el of fs.querySelectorAll('.slot[data-i]')){
     const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
     if(!m) continue;
-    const r = m.getBoundingClientRect();
+    const r = planeRect(m);
     // the same size and footing as the fighter that will stand there (measured off the battle's own pieces)
     const vert = st.classList.contains('vert'), sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
     // a tap target around the pokémon, kept on screen where the close-up crops the field's edges
@@ -3533,10 +3565,11 @@ window.addEventListener('resize', () => { if(!WORLD.anim) layoutWorld(); });
 /* 5.3.1: on phones the field is laid out once per draw, but things above the party can change height afterwards
    (the font arriving, a banner closing, the browser bar sliding away). Check a few times a second and follow. */
 function worldKey(){ const f = document.querySelector('.pfield .formation'), t = document.querySelector('#app > .topbar');
-  if(!f) return ''; const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 };
-  return [r.left, r.top + scrollY, r.width, r.height, q.bottom + scrollY, document.documentElement.clientWidth, document.documentElement.clientHeight].map(v => Math.round(v)).join(','); }
+  if(!f || !WORLD.cam) return ''; const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 }, w = WORLD.cam.getBoundingClientRect();
+  // 5.3.2: where the party's space is relative to the field itself, so any drift of either one is caught
+  return [r.left - w.left, r.top - w.top, r.width, r.height, q.bottom - w.top, document.documentElement.clientWidth, document.documentElement.clientHeight].map(v => Math.round(v)).join(','); }
 setInterval(() => { if(phase !== 'shop' || WORLD.anim || fieldPicking || wiping || document.hidden) return;
-  const k = worldKey(); if(k && k !== WORLD.key) layoutWorld(); }, 350);
+  const k = worldKey(); if(k && k !== WORLD.key) layoutWorld(); }, 200);
 /* turning the phone mid-game: redraw once the new size has settled */
 const reflow = () => { [120, 450, 900].forEach(t => setTimeout(() => { if(WORLD.anim || fieldPicking || wiping) return;
   if(phase === 'shop') render(); else { layoutWorld(); if(battle && battle.stage) fitBoard(battle.stage); } }, t)); };
@@ -3704,7 +3737,7 @@ function playback(){
   clearTimeout(battle.timer);
   if(battle.paused) return;                                   // 4.2.0: Pause holds the next step
   if(battle.i >= battle.steps.length - 1){ render(); return; }
-  battle.timer = setTimeout(() => { battle.i++; advanceView(); playback(); }, stepDelay());
+  battle.timer = setTimeout(() => { if(!battle) return; battle.i++; advanceView(); playback(); }, stepDelay());   // 5.3.2: the run may have been replaced meanwhile
 }
 /* A step no longer redraws the screen: the arena animates it, and only the
    queue, the log and the counter are patched. The last step is a full render
@@ -3837,6 +3870,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'iPhone placement fixed, and a tidy sideways layout', items:[
+    'iPhones measured the tilted field wrongly, which put your party\u2019s spots in the wrong places (most visible when picking a spot) and walked bosses off-centre. The game now works out where everything sits on the field itself, so spots and bosses line up on every phone.',
+    'If anything nudges the field or the party after drawing, the spots now follow straight away.',
+    'Phones on their side now match the Broadcast Wide preview. The field fills the left with the party tag and ORDER strip floating on it, and the shop is a neat column on the right with a single BATTLE bar.',
+    'Sideways, a pok\u00e9mon\u2019s summary opens over the shop column instead of covering the field, the pick bar sits under the column, the tips box is hidden, and the shop rows are compact. Battles have a slimmer strip so the stadium is bigger.' ] },
   { v:'5.3.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A clean-up pass on phones, upright and sideways', items:[
     'Your party now stays lined up on its spots on the field. Before, a font loading in or the browser bar sliding away could leave pok\u00e9mon floating off their spots or on top of each other.',
     'A battle always starts at the top of the screen, with the scoreboard showing.',

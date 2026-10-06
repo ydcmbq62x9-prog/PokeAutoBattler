@@ -1,0 +1,21 @@
+const { chromium } = require('playwright');
+const [W,H,tag] = [+process.argv[2], +process.argv[3], process.argv[4]];
+(async () => {
+  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  const ctx = await b.newContext({ viewport:{ width:W, height:H }, hasTouch:true, isMobile:true, deviceScaleFactor:2 });
+  const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
+  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.turn = 2; G.credits = 14;
+    G.team = ['ledyba','hoothoot'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i + 2; return u; }); fixSlots(G); render(); });
+  await p.waitForTimeout(500); await p.screenshot({ path:`${tag}_1.png` });
+  await p.locator('[data-act="team"][data-i="2"]').tap(); await p.waitForTimeout(600); await p.screenshot({ path:`${tag}_2.png` });
+  await p.evaluate(() => { sel = null; inspect = null; render(); });
+  await p.locator('.drow[data-act="dc"][data-i="0"]').tap(); await p.waitForTimeout(600); await p.screenshot({ path:`${tag}_3.png` });
+  await p.evaluate(() => { sel = null; inspect = null; render(); G.stage = runPlan().findIndex(s => s.kind === 'gym'); G.team = ['quilava','chikorita','azumarill','spinarak','hoothoot'].map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); render(); });
+  await p.waitForTimeout(300); await p.screenshot({ path:`${tag}_4.png` });
+  await p.evaluate(() => document.querySelector('[data-act=endturn]').click());
+  await p.waitForTimeout(2600); await p.screenshot({ path:`${tag}_5.png` });
+  await p.evaluate(() => { battle.result = 'win'; finishPlayback(); }); await p.waitForTimeout(3800); await p.screenshot({ path:`${tag}_6.png` });
+  console.log(errs); await b.close();
+})();

@@ -2570,7 +2570,7 @@ html.bc .pfield,html.bc.dark .pfield{background:none;border:0;box-shadow:none;pa
 html.bc .pfield .rankhead{display:none}
 html.bc .pfield .formation{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:0;height:calc(var(--sbH,520px) * .6);min-height:220px}
 @container (max-width:620px){ html.bc .pfield .formation{grid-template-columns:1fr 1fr} }
-html.bc .pfield .slot{position:absolute;min-height:0!important;padding:0;margin:0;transform:none!important;background:none;border:0;box-shadow:none;display:block;z-index:1}
+html.bc .pfield .slot{position:absolute;min-height:0!important;max-width:none!important;flex:none;padding:0;margin:0;transform:none!important;background:none;border:0;box-shadow:none;display:block;z-index:1}
 html.bc .pfield .slot.pr1{z-index:2}html.bc .pfield .slot.pr2{z-index:3}
 html.bc .pfield .slot .unit{position:absolute;inset:0;display:block;padding:0;background:none;border:0;box-shadow:none;transform:none}
 html.bc .pfield .slot:hover .unit{transform:translateY(-2px)}
@@ -2771,6 +2771,73 @@ html.bc .panel.arena > .bosstag .bossart.tag{width:26px;height:26px;margin:0;fle
   body[data-phase=battle] #app > .shopbar .speed .sp{min-width:30px}
   html.bc .panel.arena > .bosstag{font-size:9px;top:6px;left:6px}
   .walkout .wsay{font-size:11px;max-width:200px;padding:4px 8px}
+}
+
+/* ---- 5.3.2 · phones on their side, laid out like the Broadcast Wide preview ----
+   Scoreboard across the top; the party tag top-left and the ORDER strip bottom-left, both floating on the field;
+   the shop as a scrolling column on the right with one neat BATTLE bar at its foot; summaries open over the
+   column, never over the field. */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcL > .tipcard,body[data-phase=shop] .bcL > .speechflow{display:none}
+  body[data-phase=shop] #app{padding:6px 10px 8px}
+  body[data-phase=shop] .bcwrap{grid-template-columns:minmax(0,1fr) clamp(280px,40vw,400px);gap:10px}
+  /* the field fills the left side; tag and ORDER float on it */
+  body[data-phase=shop] .panel.party{position:relative}
+  html.bc body[data-phase=shop] .pfield .formation{margin-top:0;height:100%}
+  body[data-phase=shop] .panel.party > h2{position:absolute;left:0;top:0;z-index:6;margin:0;gap:6px}
+  body[data-phase=shop] .panel.party > h2 .btn.arrange{min-height:30px;padding:2px 10px;font-size:12px}
+  body[data-phase=shop] .panel.party .shopq{display:flex;position:absolute;left:0;bottom:0;z-index:6;margin:0;padding:4px 8px;gap:4px;max-width:100%;overflow:hidden}
+  body[data-phase=shop] .panel.party .shopq .qmon{width:30px;height:30px}
+  body[data-phase=shop] .panel.party .shopq .qlbl{font-size:10px}
+  /* the info box: gone until you tap something, then it opens over the shop column */
+  body[data-phase=shop] .bcL > #inspect{display:none}
+  body.inspecting[data-phase=shop] .bcL > #inspect{display:block;position:fixed;left:auto;right:10px;top:58px;bottom:62px;width:clamp(280px,40vw,400px);box-sizing:border-box;
+    max-height:none!important;max-width:none;overflow:auto;z-index:60;background:var(--glass2);box-shadow:0 0 0 2px rgba(255,210,58,.5),0 10px 30px rgba(0,0,0,.5);font-size:13px;padding:10px 12px}
+  /* the pick bar sits under the shop column too, not across the field */
+  html.bc body.picking .ctxbar{left:auto!important;right:10px!important;width:clamp(280px,40vw,400px)!important;bottom:8px!important;border-radius:10px;border:0;box-shadow:0 0 0 2px var(--gold);padding:5px 8px!important}
+  /* the column: compact panels */
+  body[data-phase=shop] .bcR .shelves{gap:8px}
+  body[data-phase=shop] .bcR .shelves .panel{padding:8px 9px}
+  body[data-phase=shop] .bcR .shelves h2{font-size:12px;margin-bottom:6px}
+  body[data-phase=shop] .bcR .pcgrid{grid-template-columns:repeat(6,1fr);gap:4px}
+  body[data-phase=shop] .bcR .pcgrid .slot{min-height:48px}
+  body[data-phase=shop] .bcR .pcgrid .sprite.img{width:36px;height:36px}
+  body[data-phase=shop] .bcR .pcgrid .stats,body[data-phase=shop] .bcR .pcgrid .uname{display:none}
+  body[data-phase=shop] .bcR .dclist,body[data-phase=shop] .bcR .martlist{display:grid;grid-template-columns:1fr 1fr;gap:5px;overflow:visible}
+  body[data-phase=shop] .bcR .martlist .mhead{grid-column:1 / -1}
+  body[data-phase=shop] .bcR .drow,body[data-phase=shop] .bcR .martrow{min-width:0;padding:4px 6px;font-size:11px}
+  body[data-phase=shop] .bcR .drow .dart,body[data-phase=shop] .bcR .martrow .isprite{width:30px;height:30px}
+  body[data-phase=shop] .bcR .drow .dnums,body[data-phase=shop] .bcR .drow .dpace,body[data-phase=shop] .bcR .martrow .mtext > span:not(.mprev){display:none}
+  body[data-phase=shop] .bcR .drow b,body[data-phase=shop] .bcR .martrow b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* one BATTLE bar like the preview: who's next on the left, the button on the right */
+  body[data-phase=shop] .bcR .dock{flex-direction:row!important;align-items:center;gap:8px;background:var(--glass)!important;border-radius:10px;padding:6px 6px 6px 8px!important;flex-wrap:wrap}
+  body[data-phase=shop] .bcR .dock .speech{display:flex!important;flex:1 1 0;min-width:0;background:none!important;box-shadow:none!important;padding:0!important;margin:0;align-items:center;gap:6px}
+  body[data-phase=shop] .bcR .dock .speech .who{width:34px;height:34px;flex:none}
+  body[data-phase=shop] .bcR .dock .speech .say b{font-size:13px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  body[data-phase=shop] .bcR .dock .speech .ssub{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  body[data-phase=shop] .bcR .dock .speech .road,body[data-phase=shop] .bcR .dock .speech .nstage{display:none}
+  body[data-phase=shop] .bcR .dock .btn.fight{flex:none;width:auto;min-height:40px!important;padding:0 14px;font-size:16px!important;letter-spacing:1px}
+  body[data-phase=shop] .bcR .dock .btn.fight small{display:none}
+  body[data-phase=shop] .bcR .dock .btn.undo,body[data-phase=shop] .bcR .dock .legdock{flex:1 1 100%;order:-1}
+}
+
+/* 5.3.2 · landscape, round two: one-column summaries, single-column shop rows, a slimmer battle strip */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body.inspecting[data-phase=shop] .bcL > #inspect .isum{display:block}
+  body.inspecting[data-phase=shop] .bcL > #inspect .isum .pcol + .pcol{margin-top:8px}
+  body.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb{grid-template-columns:34px 1fr 36px}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect{bottom:108px}
+  body[data-phase=shop] .bcR .dclist,body[data-phase=shop] .bcR .martlist{display:flex;flex-direction:column;gap:4px}
+  body[data-phase=shop] .bcR .drow .dtype,body[data-phase=shop] .bcR .drow .rolechip{font-size:9.5px}
+  body[data-phase=shop] .bcR .dock .btn.fight{font-size:14px!important;padding:0 10px}
+  /* battle: slimmer strip so the stadium gets the height */
+  body[data-phase=battle] #app{row-gap:5px;padding:4px 10px 4px}
+  body[data-phase=battle] #app > #bqueue .queue{height:48px;padding-block:2px}
+  body[data-phase=battle] #app > #bqueue .queue .qmon{width:30px;height:30px}
+  body[data-phase=battle] #app > .blogbox #blog{height:38px;max-height:38px;font-size:12px;line-height:1.35}
+  body[data-phase=battle] #app > .shopbar{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px}
+  body[data-phase=battle] #app > .shopbar .btn{min-height:32px;padding:2px 10px;font-size:13px}
+  body[data-phase=battle] #app > .shopbar .speed .sp{min-width:28px;min-height:30px;padding:0 4px}
 }
 </style>
 </head>
