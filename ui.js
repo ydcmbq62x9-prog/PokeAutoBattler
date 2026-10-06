@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.7', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.8', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2161,6 +2161,7 @@ function leaderWalk(S, b, where){
 function leaderSay(L, text, dur){
   if(!text) return;
   const sb = document.createElement('div'); sb.className = 'wsay'; sb.textContent = text;
+  document.body.classList.add('speaking'); clearTimeout(leaderSay.t); leaderSay.t = setTimeout(() => document.body.classList.remove('speaking'), dur);   // 5.3.8: the gym tag steps aside for the bubble
   L.w.appendChild(sb);
   anim(sb, [{ opacity: 0, transform: 'translate(-50%,6px) scale(.8)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .12 },
     { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .9 }, { opacity: 0, transform: 'translate(-50%,-4px) scale(.95)' }], { duration: dur, easing: 'ease-out', fill: 'both', remove: true });
@@ -3520,6 +3521,36 @@ function shopCamera(){
   const cx = R.left + R.width / 2, cy = R.top + R.height / 2;
   return `translate(${(cx - (E.left + (U.cx - E.left) * s)).toFixed(1)}px,${(cy - (E.top + (ucy - E.top) * s)).toFixed(1)}px) scale(${s.toFixed(3)})`;
 }
+/* 5.3.8: on an upright phone everything about the shop's field is worked out from the page layout itself
+   (offsetLeft/offsetTop), never from where the browser says things are on screen. iPhones report on-screen
+   positions that lag behind while the page scrolls (picking a pokémon scrolls it), which dragged the party's
+   spots off the field. Layout numbers don't move when you scroll, so they can't drift. */
+const pageOff = el => { let x = 0, y = 0; for(let e = el; e; e = e.offsetParent){ x += e.offsetLeft; y += e.offsetTop; } return { x, y }; };
+function clipCamera(){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild, C = WORLD.clipO;
+  if(!fs || !st || !C) return null;
+  const qs = [...st.querySelectorAll('.slotmark.p')].map(planeBox).filter(Boolean);
+  if(!qs.length) return null;
+  const U = { l: Math.min(...qs.map(q => q.left)), r: Math.max(...qs.map(q => q.right)), t: Math.min(...qs.map(q => q.top)), b: Math.max(...qs.map(q => q.bottom)) };
+  const mh = qs[0].height, top = U.t - mh * .8, bot = U.b + mh * .12, uw = (U.r - U.l) * 1.04, uh = bot - top;
+  const R = { x: fs.offsetLeft, y: fs.offsetTop, w: fs.offsetWidth, h: fs.offsetHeight };
+  const s = Math.max(1.18, Math.min(3, Math.min(R.w / uw, R.h / uh)));
+  const tx = R.x + R.w / 2 - C.x - s * (U.l + U.r) / 2, ty = R.y + R.h / 2 - C.y - s * (top + bot) / 2;
+  return { s, tx, ty, css: `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${s.toFixed(4)})` };
+}
+function placeSlotsClip(K){
+  const fs = document.querySelector('.pfield .formation'), st = WORLD.cam.firstElementChild, C = WORLD.clipO, vert = st.classList.contains('vert');
+  const fx = fs.offsetLeft, fy = fs.offsetTop, vw = document.documentElement.clientWidth, fsx = pageOff(fs).x;
+  for(const el of fs.querySelectorAll('.slot[data-i]')){
+    const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
+    const q = m && planeBox(m); if(!q) continue;
+    const L = C.x + K.tx + K.s * q.left - fx, T = C.y + K.ty + K.s * q.top - fy, W = q.width * K.s, H = q.height * K.s;
+    const sp = Math.round(Math.min(W * .9, H * (vert ? .66 : .48)));
+    let sw = Math.min(W, Math.max(sp * 1.7, 64)), sl = L + W / 2 - sw / 2;
+    sl = Math.max(2 - fsx, Math.min(vw - fsx - sw - 2, sl));
+    el.style.cssText = `left:${sl.toFixed(1)}px;top:${T.toFixed(1)}px;width:${sw.toFixed(1)}px;height:${H.toFixed(1)}px;--mh:${H.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%;--abf:${vert ? .22 : .135}`;
+  }
+}
 /** Put each party slot (flat, in the page) over its mark on the field. */
 function placeSlots(){
   const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
@@ -3578,9 +3609,11 @@ function layoutWorld(){
   const host = clip || w;
   if(WORLD.cam.parentNode !== host) host.appendChild(WORLD.cam);
   if(clip){
-    const pf = clip.parentElement.getBoundingClientRect(), pp = document.querySelector('.panel.party'), pb = pp ? pp.getBoundingClientRect().bottom : pf.bottom;
-    Object.assign(clip.style, { left: (-pf.left) + 'px', top: (-pf.top - scrollY) + 'px', width: document.documentElement.clientWidth + 'px', height: Math.max(0, pb - pf.top + pf.top + scrollY + 6) + 'px' });
-    Object.assign(WORLD.cam.style, { left: box.l + 'px', top: (box.t) + 'px', width: box.w + 'px', height: box.h + 'px' });
+    const pfe = clip.parentElement, P = pageOff(pfe), pp = document.querySelector('.panel.party'), tb = document.querySelector('#app > .topbar');
+    const camTop = tb ? pageOff(tb).y + tb.offsetHeight + 10 : box.t, pBot = pp ? pageOff(pp).y + pp.offsetHeight + 6 : camTop + box.h;
+    WORLD.clipO = { x: box.l - P.x, y: camTop - P.y };   // the field's top-left, in the party field's own coordinates
+    Object.assign(clip.style, { left: (-P.x) + 'px', top: (-P.y) + 'px', width: document.documentElement.clientWidth + 'px', height: Math.max(0, pBot) + 'px' });
+    Object.assign(WORLD.cam.style, { left: box.l + 'px', top: camTop + 'px', width: box.w + 'px', height: box.h + 'px' });
   } else
   Object.assign(WORLD.cam.style, { left: box.l + 'px', top: box.t + 'px', width: box.w + 'px', height: box.h + 'px' });
   const root = document.documentElement.style;
@@ -3594,9 +3627,9 @@ function layoutWorld(){
   w.classList.toggle('shopview', phase === 'shop');
   if(clip) clip.classList.add('shopview');
   if(phase === 'shop'){
-    WORLD.shopCam = shopCamera();
-    WORLD.cam.style.transform = WORLD.shopCam;
-    placeSlots();
+    const K = clip && clipCamera();
+    if(K){ WORLD.shopCam = K.css; WORLD.cam.style.transform = K.css; placeSlotsClip(K); }
+    else { WORLD.shopCam = shopCamera(); WORLD.cam.style.transform = WORLD.shopCam; placeSlots(); }
     WORLD.key = worldKey();
     const pp = document.querySelector('.panel.party');
     w.style.height = box.wide ? '' : clip ? '0px' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
@@ -3609,7 +3642,11 @@ window.addEventListener('resize', () => { if(!WORLD.anim) layoutWorld(); });
 /* 5.3.1: on phones the field is laid out once per draw, but things above the party can change height afterwards
    (the font arriving, a banner closing, the browser bar sliding away). Check a few times a second and follow. */
 function worldKey(){ const f = document.querySelector('.pfield .formation'), t = document.querySelector('#app > .topbar');
-  if(!f || !WORLD.cam) return ''; const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 }, w = WORLD.cam.getBoundingClientRect();
+  if(!f || !WORLD.cam) return '';
+  if(WORLD.cam.parentNode && WORLD.cam.parentNode.classList && WORLD.cam.parentNode.classList.contains('pfclip')){   // 5.3.8: layout only
+    const a = pageOff(f), b = t ? pageOff(t).y + t.offsetHeight : 0, pp = document.querySelector('.panel.party');
+    return [a.x, a.y, f.offsetWidth, f.offsetHeight, b, pp ? pp.offsetHeight : 0, document.documentElement.clientWidth, document.documentElement.clientHeight].join(','); }
+  const r = f.getBoundingClientRect(), q = t ? t.getBoundingClientRect() : { bottom: 0 }, w = WORLD.cam.getBoundingClientRect();
   // 5.3.2: where the party's space is relative to the field itself, so any drift of either one is caught
   return [r.left - w.left, r.top - w.top, r.width, r.height, q.bottom - w.top, document.documentElement.clientWidth, document.documentElement.clientHeight].map(v => Math.round(v)).join(','); }
 setInterval(() => { if(phase !== 'shop' || WORLD.anim || fieldPicking || wiping || document.hidden) return;
@@ -3923,6 +3960,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.8', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots hold still on iPhone, and the camera no longer cuts off', items:[
+    'On an upright phone the party\u2019s spots are now worked out from the page layout itself instead of from where the phone says things are on screen, which lags while the page scrolls. Picking a pok\u00e9mon scrolls the page, and that was dragging your party off the field.',
+    'The camera move between the shop and a battle uses the whole screen, so the field is no longer cut off part-way down.',
+    'For now the stadium is just its floor: the sky, stands and crowd behind it are gone while a new backdrop is worked out.' ] },
   { v:'5.3.7', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'The party stays put on the field when you pick a pok\u00e9mon', items:[
     'On an upright phone the shop\u2019s field now lives inside the party\u2019s own panel instead of behind the whole page, so the field and your pok\u00e9mon move as one. Picking a pok\u00e9mon, closing a tip or scrolling can no longer slide the field out from under them.',
     'The page around the field now takes the colours of whatever stadium is showing (sky blue for Falkner, purple for the League, deep green on routes), in the shop and in battle, so the background always matches the field.' ] },

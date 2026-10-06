@@ -2878,6 +2878,17 @@ html.bc .pfield{position:relative}
 /* 5.3.7 · the page around the field matches the stadium that is showing */
 html.bc body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,0),rgba(0,0,0,.3)),repeating-linear-gradient(0deg,var(--pg1,#3a8840) 0 34px,var(--pg2,#43974a) 34px 68px)!important;background-attachment:fixed!important}
 html.bc.dark body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,.15),rgba(0,0,0,.55)),repeating-linear-gradient(0deg,var(--pg1,#2c6a32) 0 34px,var(--pg2,#337838) 34px 68px)!important;background-attachment:fixed!important}
+
+/* 5.3.8 · during the camera move the stadium has the whole screen (the page is at the top then) */
+body.cam #world{position:fixed!important;inset:0!important;height:auto!important}
+
+/* 5.3.8 · for now the stadium is just its floor: no sky, stands, crowd or lights behind it (Sean: to be redesigned later) */
+.bstage.board.stadium{background:none!important;box-shadow:none!important;border:0!important}
+.bstage.board.stadium .ground{display:none!important}
+.bstage.board.stadium::before,.bstage.board.stadium::after{display:none!important}
+html.bc body[data-phase=battle] .panel.arena{background:none!important;box-shadow:none!important}
+body.speaking .panel.arena > .bosstag{opacity:0;transition:opacity .25s}
+.panel.arena > .bosstag{transition:opacity .25s}
 </style>
 </head>
 <body>

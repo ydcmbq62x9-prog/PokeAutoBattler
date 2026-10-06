@@ -4,7 +4,7 @@ const [w,h,tag] = [+process.argv[2]||390, +process.argv[3]||844, process.argv[4]
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:w, height:h } });
   const errs=[]; p.on('pageerror', e => errs.push(String(e)));
-  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
+  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; });
   await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.turn = 9; G.credits = 23;
     const ids = ['charmeleon','wartortle','pikachu','gengar','snorlax']; G.team = ids.map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); fixSlots(G); rollShop(G, false); render(); });
