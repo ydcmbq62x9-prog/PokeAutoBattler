@@ -2687,6 +2687,8 @@ html.bc body[data-phase=battle] .stagewrap .big.ribbon{top:17%;transform:transla
   html.bc .arenanotes .award,html.bc .arenanotes .gnote{padding:6px 10px;font-size:13px}
   html.bc .arenanotes .award .dim{display:none}
 }
+/* 5.2.1: no outlines on the battle field's empty spots */
+#world:not(.shopview) .bstage .slotmark,#world:not(.shopview) .bstage .slotmark::before{border-color:transparent!important;background:none!important;box-shadow:none!important}
 </style>
 </head>
 <body>

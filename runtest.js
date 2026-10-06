@@ -98,13 +98,14 @@ const mark = m => console.log('… ' + m);
   const onWin = await page.evaluate(() => ({
     lit: document.querySelectorAll('.stat.badges .bdg.on').length,
     stored: G.badges,
-    award: (document.querySelector('.award b') || {}).textContent || null,
+    award: (document.querySelector('[data-act="afterbattle"]') || {}).textContent || null,   // 5.2.1: the badge is handed over on the field; Continue goes to the reward
+    box: !!document.querySelector('.arenanotes .award'),
     fresh: document.querySelectorAll('.bdg.fresh').length,
   }));
   if(onWin.lit !== 4)
     errors.push(`won a badge but the case still shows ${onWin.lit} — it must light before Continue`);
   if(onWin.stored !== 3) errors.push('the badge was banked before Continue');
-  if(!onWin.award || !/Badge/.test(onWin.award)) errors.push('no badge handover panel: ' + onWin.award);
+  if(!onWin.award || !/reward/i.test(onWin.award) || onWin.box) errors.push('a won gym should go straight to the reward: ' + onWin.award);
   if(!onWin.fresh) errors.push('the new pip is not marked fresh');
   mark(`badge shows the moment it is won: "${onWin.award}", ${onWin.lit}/8 lit`);
 

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.2.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.2.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1417,7 +1417,8 @@ function renderBattle(){
     : `<div class="award rivallose">${bossArt(battle.boss, 'hero')}
         <div><b>Your rival won.</b><span>“${esc(rvl.won)}”</span>
           <span class="dim">It costs a life like any trainer battle. He'll be back.</span></div></div>`;
-  const award = winningBadge ? `<div class="award">
+  /* 5.2.1: the leader hands the badge over on the field now, so no box for it — Continue goes straight to the reward */
+  const award = false ? `<div class="award">
       ${bossArt(battle.boss, 'hero')}<i class="bdg ${badgeCls(G, G.badges % 8)} on fresh big"></i>
       <div><b>${esc(battle.boss.badge)} Badge</b>
         <span>${esc(battle.boss.name)} of the ${esc(battle.boss.title)} hands it over.</span>
@@ -1464,7 +1465,7 @@ function renderBattle(){
 
   <div class="shopbar">
     ${done
-      ? `<button class="btn primary" data-act="afterbattle">${battle.exhibition ? 'Back to the Mart' : 'Continue ▶'}</button>`
+      ? `<button class="btn primary" data-act="afterbattle">${battle.exhibition ? 'Back to the Mart' : winningBadge ? 'Choose your reward ▶' : 'Continue ▶'}</button>`
       : `<div class="speed" role="group" aria-label="Playback speed">
            ${SPEEDS.map(v => `<button class="sp ${v === speed ? 'on' : ''}" data-act="speed" data-i="${v}"
              aria-pressed="${v === speed}">${v}×</button>`).join('')}
@@ -3062,9 +3063,12 @@ function handle(act, i, data){
     }
 
     case 'sell': {
-      const r = sellUnit(G, sel.idx);
+      /* 5.2.1: sel.idx is the spot on the field; sellUnit wants the place in the party list. Mixing the two
+         meant Release did nothing (or let the wrong pokémon go) once the party had been moved around. */
+      const r = sellUnit(G, teamIdx(G, sel.idx));
+      if(!r.ok){ fail(r.why || "Can't release that pokémon."); return; }
       sel = null; inspect = null;
-      if(r.ok) say(`Released for ${r.refund}₽`);
+      say(`Released for ${r.refund}₽`);
       break;
     }
 
@@ -3629,6 +3633,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.2.1', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Release works on any party pok\u00e9mon again, and a cleaner finish after a gym', items:[
+    'Fixed: Release on a party pok\u00e9mon did nothing (or let a different one go) once your party had been moved around the field. It now always lets go of the one you tapped, and if its held item can\u2019t fit in a full Bag it tells you why.',
+    'The empty spots on the battle field no longer have outlines.',
+    'After a gym win the leader hands the badge over on the field, so the badge box under it is gone. Continue now reads Choose your reward and takes you straight there.' ] },
   { v:'5.2.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Bosses speak when they walk out, and leaders hand over their badge on the field', items:[
     'Walk-out lines: when a gym leader, Elite Four member, the Champion, a secret boss or your rival reaches the middle of the field, they say something before throwing out their team.',
     'Badge ceremony: beat a gym leader (or a secret boss) and they walk back out to the halfway line and hand you the badge. It rises over them, glowing, and flies across to your team.',
