@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.3', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.4', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1721,6 +1721,10 @@ function planeRect(el){  // in viewport px, like getBoundingClientRect
   const left = E.left + bx.left * sc, top = E.top + bx.top * sc, width = bx.width * sc, height = bx.height * sc;
   return { left, top, width, height, right: left + width, bottom: top + height };
 }
+/* 5.3.4: on iPhones (and any WebKit browser) the shop's field lies flat: Safari draws the tilted 3D table somewhere other
+   than where it reports it, so the party's spots never lined up. Flat, it is plain 2D and exact. The battle still tilts,
+   and the tilt comes in as the camera pulls back. PKB_FLAT forces it on for testing. */
+const flatShop = () => IS_WEBKIT || !!window.PKB_FLAT;
 const IS_WEBKIT = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Android/.test(navigator.userAgent));
 function artCentre(S, F){
   if(IS_WEBKIT && S.table){   // 5.3.2: from the tile's worked-out box (see planeBox)
@@ -3480,6 +3484,7 @@ function nextBout(){
 function shopStage(){
   const b = nextBout(), key = `${backdropOf(b)}|${floorOf(b)}|${lookPref()}|${b.boss ? b.boss.id : ''}`;
   if(!WORLD.shop || WORLD.shopKey !== key){ WORLD.shop = stageShell(b); WORLD.shop.classList.add('shopstage'); WORLD.shopKey = key; }
+  WORLD.shop.classList.toggle('flatshop', flatShop());
   return WORLD.shop;
 }
 /** Where the field sits: the battle's box for this screen size (page coordinates). */
@@ -3616,6 +3621,8 @@ async function camera(mid, onOpen, dir){
       WORLD.el.classList.remove('shopview');
       if(battle) battle.camIn = true;
       WORLD.cam.style.transform = 'none';
+      const bst = battle && battle.stage && battle.stage.el;
+      if(bst && flatShop()){ bst.classList.add('flatshop'); void bst.offsetWidth; requestAnimationFrame(() => bst.classList.remove('flatshop')); }   // 5.3.4: tilt in as we pull back
       const zoom = go(WORLD.cam, [{ transform: from }, { transform: from, offset: .08 }, { transform: 'none' }], 1150);
       SFX.play('wipeOut', true);
       await wait(620);
@@ -3637,6 +3644,8 @@ async function camera(mid, onOpen, dir){
       await wait(320);
       if(scrollY) window.scrollTo(0, 0);
       WORLD.anim = true;
+      const bst = WORLD.cam.firstElementChild;
+      if(bst && flatShop()) bst.classList.add('flatshop');   // 5.3.4: and flatten again on the way back in
       await go(WORLD.cam, [{ transform: 'none' }, { transform: to }], 820);
       WORLD.cam.style.transform = to;
       WORLD.cam.getAnimations().forEach(a => a.cancel());
@@ -3870,6 +3879,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.4', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots on iPhone, for real this time', items:[
+    'On iPhones the shop\u2019s field now lies flat, a straight-down close-up of your half. iPhones drew the tilted field somewhere other than where they reported it, so the empty-spot rings never lined up. Flat, every spot sits exactly under its ring. The field still tilts into the stadium as the camera pulls back for a battle.',
+    'Phones on their side: the next trainer\u2019s picture fits its box in the BATTLE bar instead of being zoomed in.' ] },
   { v:'5.3.3', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Empty-spot rings on iPhone, and the sideways shop column', items:[
     'The party\u2019s empty-spot rings are laid out a simpler way that iPhones can\u2019t get wrong, so the rings line up when you pick a pok\u00e9mon to place.',
     'Phones on their side: a pok\u00e9mon\u2019s summary only covers the shop column while you are choosing what to do with it. Cancel or finish and the shop is back.' ] },

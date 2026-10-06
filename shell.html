@@ -2851,6 +2851,19 @@ html.bc .pfield .slot{right:auto;bottom:auto;margin:0!important;align-self:auto;
 }
 /* the empty spot's ring is measured from the top of its spot (set in px), not from a percentage of its height */
 html.bc .pfield .slot.empty::after{bottom:auto!important;top:calc(var(--mh,80px) * .94 - min(var(--mh,80px) * .22, 22px));height:min(calc(var(--mh,80px) * .22), 22px)}
+
+/* ---- 5.3.4 ---- */
+.bstage.flatshop .tview{perspective:none!important}
+.bstage.flatshop .table{transform:none!important}
+.bstage.flatshop .ftr .fbody{transform:none!important}
+body.cam .bstage .table,body.cam .bstage .ftr .fbody{transition:transform 1s cubic-bezier(.5,0,.2,1)}
+/* the next trainer's picture fits its little box on a sideways phone */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcR .dock .speech .who{display:flex;align-items:center;justify-content:center;border-width:1px;border-radius:7px}
+  body[data-phase=shop] .bcR .dock .speech .who .pball{width:20px;height:20px;margin:0}
+  body[data-phase=shop] .bcR .dock .speech .who .bossart.dockart{width:30px;height:30px;margin:0}
+  body[data-phase=shop] .bcR .dock .speech .who img{max-width:100%;max-height:100%}
+}
 </style>
 </head>
 <body>
