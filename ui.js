@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.8', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.9', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2487,9 +2487,19 @@ function shopFloat(el, text, cls){
   const e = document.createElement('div');
   e.className = 'sfloat ' + (cls || '');
   e.textContent = text;
-  e.style.left = (r.left + r.width / 2 + window.scrollX) + 'px';
-  e.style.top = (r.top + window.scrollY + Math.min(18, r.height * 0.25)) + 'px';
-  document.body.appendChild(e);
+  const slot = el.closest && el.closest('.pfield .slot');
+  if(slot){   // 5.3.9: follows the party spot every frame, so it stays over the pokémon while the field settles (and survives redraws)
+    const sel = `.pfield .slot[data-i="${slot.dataset.i}"] .artwrap`;
+    document.body.appendChild(e);
+    const follow = () => { if(!e.isConnected) return; const a = document.querySelector(sel);
+      if(a){ const q = a.getBoundingClientRect(); e.style.left = (q.left + q.width / 2 + window.scrollX) + 'px'; e.style.top = (q.top + window.scrollY - 44) + 'px'; }   // above the stats line
+      requestAnimationFrame(follow); };
+    follow();
+  } else {
+    e.style.left = (r.left + r.width / 2 + window.scrollX) + 'px';
+    e.style.top = (r.top + window.scrollY + Math.min(18, r.height * 0.25)) + 'px';
+    document.body.appendChild(e);
+  }
   const still = motionOff();
   anim(e, still ? [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: 1, offset: .75 }, { opacity: 0 }]
     : [{ opacity: 0, transform: 'translate(-50%,0) scale(.7)' }, { opacity: 1, transform: 'translate(-50%,-14px) scale(1.1)', offset: .2 },
@@ -2498,7 +2508,7 @@ function shopFloat(el, text, cls){
 }
 function shopFx(){
   if(!G || phase !== 'shop') return;
-  const rec = u => ({ id: u.id, lvl: unitLevel(u), exp: u.exp || 0 });
+  const rec = u => ({ id: u.id, lvl: unitLevel(u), exp: u.exp || 0, st: { hp: u.hp, atk: u.atk, spd: u.spd } });
   const now = {
     seed: G.seed, credits: G.credits,
     mon: new Map([...G.team, ...G.pc].map(u => [u.uid, rec(u)])),
@@ -2521,6 +2531,9 @@ function shopFx(){
     if(n.id !== w.id){ replay(el, 'fx-evo'); shopFloat(el, `${SPECIES[u.id].name}!`, 'evo'); snd.add('evolve'); }
     else if(n.lvl > w.lvl){ replay(el, 'fx-lvl'); shopFloat(el, `Level ${n.lvl}!`, 'lvl'); snd.add('levelup'); }
     else if(n.exp > w.exp){ replay(el, 'fx-exp'); shopFloat(el, '+EXP', 'exp'); snd.add('up'); }
+    else if(w.st && (n.st.hp > w.st.hp || n.st.atk > w.st.atk || n.st.spd > w.st.spd)){   // 5.3.9: battle EXP grows the stats, so say what grew
+      const g = [n.st.atk > w.st.atk ? `\u25c6+${n.st.atk - w.st.atk}` : '', n.st.hp > w.st.hp ? `\u2665+${n.st.hp - w.st.hp}` : '', n.st.spd > w.st.spd ? `\u00bb+${n.st.spd - w.st.spd}` : ''].filter(Boolean).join(' ');
+      replay(el, 'fx-exp'); shopFloat(el, `+EXP ${g}`, 'exp'); snd.add('up'); }
   }
   const dc = now.credits - was.credits;
   if(dc) snd.add(dc > 0 ? 'gain' : 'coin');
@@ -3960,6 +3973,8 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.9', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'+EXP and Level up show over your pok\u00e9mon again', items:[
+    'After a battle each pok\u00e9mon shows +EXP over it again, with what grew (for example \u25c6+1 \u2665+2). Battle EXP grows a pok\u00e9mon\u2019s stats rather than its level, so the pop-up had stopped firing.', 'The +EXP, Level up and evolution pop-ups now ride on the pok\u00e9mon\u2019s own spot, so they appear right over it even while the party is settling back onto the field.' ] },
   { v:'5.3.8', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots hold still on iPhone, and the camera no longer cuts off', items:[
     'On an upright phone the party\u2019s spots are now worked out from the page layout itself instead of from where the phone says things are on screen, which lags while the page scrolls. Picking a pok\u00e9mon scrolls the page, and that was dragging your party off the field.',
     'The camera move between the shop and a battle uses the whole screen, so the field is no longer cut off part-way down.',
