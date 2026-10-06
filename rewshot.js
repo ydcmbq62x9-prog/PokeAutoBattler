@@ -1,0 +1,22 @@
+const { chromium } = require('playwright');
+const [w,h,tag] = [+process.argv[2]||390, +process.argv[3]||844, process.argv[4]||'ph'];
+(async () => {
+  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  const p = await b.newPage({ viewport:{ width:w, height:h } });
+  const errs=[]; p.on('pageerror', e => errs.push(String(e)));
+  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] });
+    G.stage = runPlan().findIndex(s => s.kind === 'gym'); sessionBattles = 9;
+    G.team = ['mewtwo','mew','dragonite','snorlax','gyarados','alakazam'].map((id, i) => { const u = makeUnit(id, 3); u.pos = i; return u; }); fixSlots(G); render(); });
+  await p.evaluate(() => document.querySelector('[data-act=endturn]').click());
+  await p.waitForTimeout(2500); await p.evaluate(() => finishPlayback());
+  await p.waitForTimeout(7000); await p.screenshot({ path:`rw_${tag}_1.png` });
+  await p.evaluate(() => document.querySelector('[data-act=afterbattle]').click());
+  await p.waitForTimeout(1200); await p.screenshot({ path:`rw_${tag}_2.png` });
+  await p.evaluate(() => document.querySelector('.fieldcards .fcard').click());
+  await p.waitForTimeout(500); await p.screenshot({ path:`rw_${tag}_3.png` });
+  await p.waitForTimeout(2600); await p.screenshot({ path:`rw_${tag}_4.png` });
+  console.log(errs, await p.evaluate(() => ({ phase, pend: (G.pendingRewards||[]).length, log: G.rewardLog, badges: G.badges })));
+  await b.close();
+})();

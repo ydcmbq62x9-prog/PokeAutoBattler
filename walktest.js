@@ -30,7 +30,10 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     check(!(await p.evaluate(() => document.querySelector('#world .walkout'))), `${tag}: the leader has left the field when the fight starts`);
     /* a won gym: the leader walks back out and hands over the badge; fainted pokémon have no name plate */
     await p.evaluate(() => { battle.result = 'win'; battle.outroPlayed = false; finishPlayback(); });
-    await p.waitForTimeout(3300);
+    await p.waitForTimeout(3500);
+    const [said, want] = await p.evaluate(() => [(document.querySelector('#world .walkout .wsay') || {}).textContent || '', DEFEAT_LINES[battle.boss.id]]);
+    check(said === want, `${tag}: beaten, the leader says so first ("${said}")`);
+    await p.waitForTimeout(1900);
     const cer = await p.evaluate(() => ({ walk: !!document.querySelector('#world .walkout'), say: (document.querySelector('#world .walkout .wsay') || {}).textContent || '', badge: !!document.querySelector('#world .wbadge'),
       downPlates: [...document.querySelectorAll('#world .ftr.down .fhead')].map(e => getComputedStyle(e).display) }));
     check(cer.walk && cer.badge && /Badge/.test(cer.say), `${tag}: after the win the leader hands over the badge ("${cer.say}")`);

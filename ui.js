@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.2.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2140,7 +2140,7 @@ function walkOut(S, b){
   const L = leaderWalk(S, b, 'half'); if(!L) return null;
   const { w, body, x, y, size, vert, at, walkMs, ms } = L;
   const foes = [...S.f.values()].filter(F => F.side === 'e');
-  const line = bossLine(b), holdMs = ms(line ? 1500 : 450), throwMs = ms(380);
+  const line = bossLine(b), holdMs = line ? Math.max(1100, ms(1500)) : ms(450), throwMs = ms(380);   // a line stays up long enough to read at any speed
   setTimeout(() => { if(battle && battle.stage === S){ crowdReact(S, true);
     anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
     leaderSay(L, line, holdMs + ms(150)); } }, walkMs);
@@ -2172,39 +2172,190 @@ function walkOut(S, b){
   }, popAt);
   return { total: popAt + ms(380), popAt };
 }
-/* ---- 5.2.0 · THE BADGE CEREMONY ----------------------------------------
-   Beat a gym leader (or a secret boss) and they walk back out to the halfway
-   line, say so, and hand the badge over: it rises over them, glowing, then
-   flies across to your side with a sparkle. They stay on the field until you
-   Continue. */
-function badgeCeremony(S){
+/* ---- 5.3.0 · WHAT BOSSES SAY WHEN IT'S OVER ------------------------------
+   Win or lose, a boss walks back out to the halfway line at the end and
+   says something: a line for being beaten, or a gloat when you black out. */
+const DEFEAT_LINES = {
+  brock: 'You cracked my defence. Well fought.', misty: 'You made a splash. Fine, you win!',
+  surge: 'At ease, soldier. You earned that.', erika: 'Oh my. You wilted my garden.',
+  koga: 'I never saw that coming. Impressive.', sabrina: 'I didn’t foresee this…',
+  blaine: 'I’ve burnt out! You beat me fair.', giovanni: 'Hmph. You’re the real thing.',
+  lorelei: 'You thawed my team. Go on.', bruno: 'My strength wasn’t enough. Move on!',
+  agatha: 'Hmph! Not bad, youngster.', lance: 'You tamed my dragons… the Champion awaits.',
+  blue: 'No way… I lost? You’re the Champion now.',
+  falkner: 'Grounded. You fly higher than me.', bugsy: 'Note to self: you’re really good.',
+  whitney: 'Waaah! That’s not fair!', morty: 'So that’s how the dream ends.',
+  chuck: 'Ow! You hit harder than a waterfall!', jasmine: 'You were wonderful. Really.',
+  pryce: 'The ice cracked. Well done.', clair: 'I… lost? Fine. Take it.',
+  will: 'Your power beat mine. Go on.', karen: 'You really do love your team.',
+  red: '…!', oak: 'Splendid! You’ve grown so much.',
+};
+const GLOAT_LINES = {
+  brock: 'Rock beats you. Train harder!', misty: 'Washed out! Come back when you can swim.',
+  surge: 'Shocked, aren’t you? Dismissed!', erika: 'Lovely try. Do come again.',
+  koga: 'You never saw it coming.', sabrina: 'Just as I foresaw.',
+  blaine: 'Too hot to handle? Ha!', giovanni: 'As expected. Leave my gym.',
+  lorelei: 'Frozen solid. Better luck next time.', bruno: 'Train your body. Then return.',
+  agatha: 'Run along home, little one.', lance: 'Dragons don’t forgive weakness.',
+  blue: 'Told you. I’m the best there is!',
+  falkner: 'Blown away! Ha!', bugsy: 'Just as my research predicted.',
+  whitney: 'Yay, I won! Bye-bye!', morty: 'I saw this ending, too.',
+  chuck: 'Hah! Do a hundred push-ups and come back!', jasmine: 'Oh… sorry. Steel doesn’t bend.',
+  pryce: 'Cold, isn’t it? Patience next time.', clair: 'Told you. Dragons rule.',
+  will: 'Your mind was an open book.', karen: 'Your team deserves better than that.',
+  red: '…', oak: 'Come back when you’re ready!',
+};
+function endLine(b, won){
+  if(b.kind === 'rival'){ const rv = b.opp && rivalLines(G, b.opp.meeting); return rv ? (won ? rv.lost : rv.won) : ''; }
+  return (won ? DEFEAT_LINES : GLOAT_LINES)[b.boss.id] || (won ? 'Well fought.' : 'Better luck next time!');
+}
+function bossOutro(S){
   const b = battle;
-  if(!b || !b.boss || !SPRITES[b.boss.id] || motionOff() || b.result !== 'win') return;
-  const gym = b.kind === 'gym', red = b.kind === 'red';
-  if(!gym && !red) return;
+  if(!b || b.stage !== S || !b.boss || !WALK_KINDS.includes(b.kind) || !SPRITES[b.boss.id] || motionOff()) return;
+  if(b.result !== 'win' && b.result !== 'lose') return;
+  const won = b.result === 'win';
   const L = leaderWalk(S, b, 'mid'); if(!L) return;
-  const { w, body, size, walkMs, ms } = L;
-  const name = gym ? `${b.boss.badge} Badge` : `${b.boss.name}’s Badge`;
-  const html = gym ? `<i class="bdg ${badgeCls(G, G.badges % 8)} on big"></i>` : secretBadge(b.boss.id, 'big');
+  b.leader = L;
+  const ms = L.ms;
   setTimeout(() => {
     if(battle !== b || !S.el.isConnected) return;
-    leaderSay(L, gym ? `You’ve earned it. The ${name}!` : (b.boss.id === 'oak' ? 'Splendid! Take this.' : '…'), ms(2600));
-    anim(body, [{ scale: '1' }, { scale: '1.1' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
-    const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
-    w.appendChild(bd);
-    SFX.play('sparkle');
-    const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
-    const tgt = mine.length ? artCentre(S, mine[0]) : null, me = w.getBoundingClientRect(), E = S.el.getBoundingClientRect();
-    const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top - E.top - size * .35) : 0;
-    anim(bd, [{ transform: 'translate(-50%,0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-40%) scale(1.25)', opacity: 1, offset: .2 },
-      { transform: 'translate(-50%,-40%) scale(1)', opacity: 1, offset: .62 },
-      { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.5)`, opacity: 1, offset: .92 },
-      { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.2)`, opacity: 0 }], { duration: ms(2300), easing: 'cubic-bezier(.4,0,.3,1)', fill: 'both', remove: true });
-    setTimeout(() => { if(battle !== b || !S.el.isConnected || !tgt) return; SFX.play('levelup');
-      const fl = document.createElement('div'); fl.className = 'wflash gold'; fl.style.left = tgt.x + 'px'; fl.style.top = tgt.y + 'px';
-      fl.style.width = fl.style.height = (tgt.w * 1.8) + 'px'; S.fx.appendChild(fl);
-      anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.3)', opacity: 0 }], { duration: ms(520), easing: 'ease-out', remove: true }); }, ms(2120));
-  }, walkMs);
+    leaderSay(L, endLine(b, won), 2000);
+    anim(L.body, won ? [{ scale: '1' }, { scale: '.94' }, { scale: '1' }] : [{ translate: '0 0' }, { translate: '0 -9%' }, { translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }],
+      { duration: ms(won ? 420 : 700), easing: 'ease-out' });
+    if(!won){ crowdReact(S, false); return; }
+    if(b.kind === 'gym' || b.kind === 'red') setTimeout(() => handBadge(S, b, L), 2050);
+    else if(b.kind === 'champion') setTimeout(() => championPhoto(S, b, L), 2050);
+  }, L.walkMs);
+}
+/* ---- 5.2.0 · THE BADGE CEREMONY ----------------------------------------
+   After their line, a beaten gym leader (or secret boss) hands the badge
+   over: it rises over them, glowing, then flies across to your side. */
+function handBadge(S, b, L){
+  if(battle !== b || !S.el.isConnected) return;
+  const { w, body, size, ms } = L, gym = b.kind === 'gym';
+  const name = gym ? `${b.boss.badge} Badge` : `${b.boss.name}’s Badge`;
+  const html = gym ? `<i class="bdg ${badgeCls(G, G.badges % 8)} on big"></i>` : secretBadge(b.boss.id, 'big');
+  leaderSay(L, gym ? `You’ve earned it. The ${name}!` : (b.boss.id === 'oak' ? 'Take this, with my compliments.' : '…'), 2600);
+  anim(body, [{ scale: '1' }, { scale: '1.1' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
+  const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
+  w.appendChild(bd);
+  SFX.play('sparkle');
+  const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
+  const tgt = mine.length ? artCentre(S, mine[0]) : null, me = w.getBoundingClientRect(), E = S.el.getBoundingClientRect();
+  const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top - E.top - size * .35) : 0;
+  anim(bd, [{ transform: 'translate(-50%,0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-40%) scale(1.25)', opacity: 1, offset: .2 },
+    { transform: 'translate(-50%,-40%) scale(1)', opacity: 1, offset: .62 },
+    { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.5)`, opacity: 1, offset: .92 },
+    { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.2)`, opacity: 0 }], { duration: ms(2300), easing: 'cubic-bezier(.4,0,.3,1)', fill: 'both', remove: true });
+  setTimeout(() => { if(battle !== b || !S.el.isConnected || !tgt) return; SFX.play('levelup');
+    const fl = document.createElement('div'); fl.className = 'wflash gold'; fl.style.left = tgt.x + 'px'; fl.style.top = tgt.y + 'px';
+    fl.style.width = fl.style.height = (tgt.w * 1.8) + 'px'; S.fx.appendChild(fl);
+    anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.3)', opacity: 0 }], { duration: ms(520), easing: 'ease-out', remove: true }); }, ms(2120));
+}
+/* ---- 5.3.0 · THE CHAMPION'S PHOTO --------------------------------------
+   Beat the Champion and the Champion steps aside; your whole team (the
+   fainted ones too, they get up for this) walks to centre field and lines
+   up, a flash goes off, and a gold frame closes round them. The same photo
+   is the top of the run's summary image. */
+function championPhoto(S, b, L){
+  if(battle !== b || !S.el.isConnected) return;
+  const ms = L.ms, E = S.el.getBoundingClientRect(), vert = S.el.classList.contains('vert');
+  anim(L.w, [{ opacity: 1 }, { opacity: 0, transform: 'translate(-50%,-100%) scale(.8)' }], { duration: ms(500), fill: 'forwards', remove: true });
+  const mine = [...S.f.values()].filter(F => F.side === 'p');
+  if(!mine.length) return;
+  for(const F of S.f.values()) if(F.side === 'e') anim(F.el, [{ opacity: 1 }, { opacity: 0 }], { duration: ms(500), fill: 'forwards' });   // the beaten side clears the pitch
+  const c0 = artCentre(S, mine.find(F => !F.down) || mine[0]);
+  const size = Math.round(Math.max(36, Math.min(E.width * (vert ? .2 : .1), c0.w * 1.15)));
+  const n = mine.length, back = n > 3 ? Math.ceil(n / 2) : n, front = n - back;
+  const cx = E.width / 2, cy = E.height * (vert ? .5 : .55), gap = size * 1.05;
+  const spots = [];
+  for(let i = 0; i < back; i++) spots.push({ x: cx + (i - (back - 1) / 2) * gap, y: cy - (front ? size * .42 : 0), z: 1 });
+  for(let i = 0; i < front; i++) spots.push({ x: cx + (i - (front - 1) / 2) * gap, y: cy + size * .42, z: 2 });
+  const frame = document.createElement('div'); frame.className = 'photoframe';
+  const fw = Math.max(back, front) * gap + size * .7, fh = (front ? size * 1.84 : size * 1.25) + 28;
+  frame.style.cssText = `left:${cx}px;top:${cy + (front ? size * .3 : size * .1)}px;width:${fw}px;height:${fh}px`;
+  frame.innerHTML = `<span class="phcap">CHAMPION · ${esc(playerName())}</span>`;
+  mine.forEach((F, k) => {
+    const c = artCentre(S, F), img = F.el.querySelector('.fart img');
+    const m = document.createElement('div'); m.className = 'phmon'; m.style.zIndex = 30 + spots[k].z;
+    m.style.cssText += `;left:${c.x}px;top:${c.y}px;width:${size}px;height:${size}px`;
+    m.innerHTML = `<img src="${img ? img.src : SPRITES[F.id]}" alt="">`;
+    S.fx.appendChild(m);
+    F.el.classList.add('posing');
+    const dx = spots[k].x - c.x, dy = spots[k].y - c.y;
+    anim(m, [{ transform: 'translate(-50%,-50%)' }, { transform: `translate(calc(-50% + ${dx * .5}px), calc(-50% + ${dy * .5 - size * .25}px))`, offset: .5 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))` }], { duration: ms(900), delay: ms(300 + k * 110), easing: 'ease-in-out', fill: 'both' });
+  });
+  const shot = ms(300 + n * 110 + 1100);
+  setTimeout(() => {
+    if(battle !== b || !S.el.isConnected) return;
+    SFX.play('tap'); setTimeout(() => SFX.play('sparkle'), 80);
+    const fl = document.createElement('div'); fl.className = 'phflash'; S.fx.appendChild(fl);
+    anim(fl, [{ opacity: 0 }, { opacity: .95, offset: .12 }, { opacity: 0 }], { duration: 650, easing: 'ease-out', remove: true });
+    S.fx.appendChild(frame);
+    anim(frame, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(1.15)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.2)', fill: 'both' });
+    crowdReact(S, true);
+    b.photoTaken = true;
+  }, shot);
+}
+
+/* ---- 5.3.0 · THE REWARD ON THE FIELD -----------------------------------
+   After a gym win, Choose your reward doesn't leave the stadium: the leader
+   holds out the three reward cards on the pitch. Tap one and it flies to
+   your team, then the camera goes back to the shop. (The old pop-up is still
+   the fallback: with the camera off, reduced motion, or a reload mid-choice.) */
+let fieldPicking = false;
+const fieldRewardWanted = () => !!(battle && !battle.exhibition && battle.result === 'win' && battle.kind === 'gym'
+  && useCamera() && battle.stage && battle.stage.el.isConnected && WORLD.shopCam);
+async function fieldReward(){
+  const b = battle, S = b.stage;
+  fieldPicking = true;
+  document.body.classList.add('fieldpick');
+  const got = await afterBattle({ keep: true });   // banks the badge and pays the turn; draws nothing yet
+  if(got !== 'offer'){ fieldPicking = false; document.body.classList.remove('fieldpick'); render(); return; }
+  showFieldCards(S, b.leader);
+}
+function leaveField(msg){
+  transition(() => { fieldPicking = false; document.body.classList.remove('fieldpick'); render(); if(msg) say(msg); }, null, 'back');
+}
+function showFieldCards(S, L){
+  const off = pendingOffer(G);
+  if(!off){ leaveField(); return; }
+  S.el.querySelectorAll('.fieldcards').forEach(e => e.remove());
+  const left = (G.pendingRewards || []).length;
+  const box = document.createElement('div'); box.className = 'fieldcards';
+  box.innerHTML = `<div class="fchead"><i class="bdg ${badgeCls(G, off.badge % 8)} on"></i><div><b>${esc(rewardBadgeName(off.badge))} Badge</b>
+      <span>Choose one reward to keep for the rest of the run.${left > 1 ? ` <b>${left - 1} more</b> after this.` : ''}</span></div></div>
+    <div class="fcrow">${off.options.map(id => { const r = rewardById(id), taken = timesTaken(G, id), max = TUNING.badgeRewards[id].max;
+      return `<button class="rcard fcard" data-r="${id}"><span class="ricon">${r.icon}</span><b>${esc(r.name)}</b><span class="rtext">${esc(r.text())}</span>${
+        r.now && r.now(G) ? `<span class="rnow">${esc(r.now(G))}</span>` : ''}${taken ? `<span class="rtaken">taken ${taken} of ${max}</span>` : ''}</button>`; }).join('')}</div>`;
+  S.el.appendChild(box);
+  const E = S.el.getBoundingClientRect(), bx = box.getBoundingClientRect();
+  let ox = 0, oy = 0;
+  if(L && L.w.isConnected){ const lw = L.w.getBoundingClientRect(); ox = lw.left + lw.width / 2 - (bx.left + bx.width / 2); oy = lw.top + lw.height * .45 - (bx.top + bx.height / 2);
+    leaderSay(L, 'Pick one. It’s yours for the rest of the run.', 2600); }
+  const ms = walkPace();
+  anim(box.querySelector('.fchead'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 300 * ms, delay: 250 * ms, fill: 'both' });
+  box.querySelectorAll('.fcard').forEach((c, k) => {
+    anim(c, [{ opacity: 0, transform: `translate(${ox}px,${oy}px) scale(.2) rotate(${(k - 1) * 18}deg)` }, { opacity: 1, transform: 'none' }],
+      { duration: 480 * ms, delay: (120 + k * 110) * ms, easing: 'cubic-bezier(.2,.9,.3,1.15)', fill: 'both' });
+    c.onclick = ev => {
+      ev.stopPropagation();
+      if(box.dataset.done) return;
+      const r = chooseReward(G, c.dataset.r);
+      if(!r.ok){ fail(r.why); return; }
+      box.dataset.done = '1';
+      save(); SFX.play('levelup');
+      c.classList.add('picked');
+      box.querySelectorAll('.fcard').forEach(o => { if(o !== c) anim(o, [{ opacity: 1 }, { opacity: 0, transform: 'scale(.85)' }], { duration: 260, fill: 'forwards' }); });
+      const cb = c.getBoundingClientRect(), tx = E.left + E.width / 2, ty = E.top + E.height * (S.el.classList.contains('vert') ? .78 : .5);
+      const tdx = S.el.classList.contains('vert') ? tx - (cb.left + cb.width / 2) : E.left + E.width * .25 - (cb.left + cb.width / 2);
+      const tdy = S.el.classList.contains('vert') ? ty - (cb.top + cb.height / 2) : 0;
+      anim(c, [{ transform: 'none' }, { transform: 'scale(1.12)', offset: .3 }, { transform: `translate(${tdx}px,${tdy}px) scale(.3)`, opacity: 0 }], { duration: 900, easing: 'cubic-bezier(.4,0,.3,1)', fill: 'forwards' });
+      const msg = r.gift ? `Gift Item: a ${HELD_ITEMS[r.gift].name} is in your Bag.` : `${rewardById(r.id).name}: ${rewardById(r.id).text()}`;
+      setTimeout(() => { if(pendingOffer(G)) showFieldCards(S, L); else { box.remove(); leaveField(msg); } }, 1000);
+    };
+  });
 }
 function playIntro(S){
   const b = battle, still = motionOff();
@@ -2267,8 +2418,10 @@ function stageOutro(S){
       { transform: 'translateY(0)', offset: .5 }, { transform: 'translateY(-9px)', offset: .72 }, { transform: 'translateY(0)' }],
       { duration: 900, delay: k++ * 90, easing: 'ease-out' });
   }
-  if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)){ victorySweep(S); setTimeout(() => { if(battle && battle.stage === S) badgeCeremony(S); }, 1300 * walkPace()); }
-  else if(r === 'win') crowdReact(S, true);
+  const later = (fn, t) => setTimeout(() => { if(battle && battle.stage === S) fn(S); }, t * walkPace());
+  if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)){ victorySweep(S); later(bossOutro, 1300); }
+  else if(r === 'win'){ crowdReact(S, true); if(battle.kind === 'rival') later(bossOutro, 900); }
+  else if(battle.boss) later(bossOutro, 900);           // 5.3.0: and when you lose, they gloat
 }
 
 /* ---------------- the chrome around the field, patched per step ---------- */
@@ -2416,7 +2569,30 @@ async function runImage(){
   x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
   const load = src => new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = src; });
   const team = (G.team || []).filter(Boolean).slice(0, 6);
-  for(let k = 0; k < team.length; k++){
+  if(won && team.length){
+    /* 5.3.0: a won run's summary is the team photo from centre field after the Champion */
+    const px = 60, py = 262, pw = W - 120, ph = 440;
+    for(let k = 0; k < 10; k++){ x.fillStyle = k % 2 ? '#43974a' : '#3a8840'; x.fillRect(px, py + k * ph / 10, pw, ph / 10 + 1); }
+    x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 4; x.beginPath(); x.arc(W / 2, py + ph * .52, 90, 0, Math.PI * 2); x.stroke();
+    const g = x.createRadialGradient(W / 2, py + ph * .7, 20, W / 2, py + ph * .6, pw * .6); g.addColorStop(0, 'rgba(255,250,210,.45)'); g.addColorStop(1, 'rgba(255,250,210,0)');
+    x.fillStyle = g; x.fillRect(px, py, pw, ph);
+    const n = team.length, back = n > 3 ? Math.ceil(n / 2) : n, front = n - back, sz = n > 3 ? 150 : 170, gap = sz * .98;
+    const spots = [];
+    for(let i = 0; i < back; i++) spots.push({ cx: W / 2 + (i - (back - 1) / 2) * gap, by: py + (front ? ph * .55 : ph * .78) });
+    for(let i = 0; i < front; i++) spots.push({ cx: W / 2 + (i - (front - 1) / 2) * gap, by: py + ph * .9 });
+    for(let k = 0; k < n; k++){
+      const u = team[k], sp = spots[k], im = SPRITES[u.id] ? await load(SPRITES[u.id]) : null;
+      x.fillStyle = 'rgba(0,0,0,.28)'; x.beginPath(); x.ellipse(sp.cx, sp.by - 4, sz * .32, 12, 0, 0, Math.PI * 2); x.fill();
+      if(im){ const sc = sz * .9 / Math.max(im.width, im.height); const w = Math.round(im.width * sc), h = Math.round(im.height * sc); x.drawImage(im, sp.cx - w / 2, sp.by - h, w, h); }
+    }
+    x.strokeStyle = '#f0b830'; x.lineWidth = 10; x.strokeRect(px, py, pw, ph);
+    x.strokeStyle = dark; x.lineWidth = 4; x.strokeRect(px - 7, py - 7, pw + 14, ph + 14); x.strokeRect(px + 7, py + 7, pw - 14, ph - 14);
+    x.fillStyle = dark; x.fillRect(W / 2 - 170, py + ph - 8, 340, 36); x.strokeStyle = '#f0b830'; x.lineWidth = 3; x.strokeRect(W / 2 - 170, py + ph - 8, 340, 36);
+    x.fillStyle = '#f0b830'; x.font = font(18); x.fillText(`CHAMPION \u00b7 ${playerName()}`, W / 2, py + ph + 17);
+    x.fillStyle = dark; x.font = font(14, 400);
+    x.fillText(team.map(u => `${SPECIES[u.id].name}${SPECIES[u.id].legendary ? '' : ' L' + unitLevel(u)}`).join(' \u00b7 '), W / 2, py + ph + 58);
+  }
+  for(let k = 0; k < (won ? 0 : team.length); k++){
     const u = team[k], col = k % 3, row = Math.floor(k / 3), cx = 130 + col * 230, cy = 290 + row * 230;
     x.fillStyle = '#ece4c8'; x.fillRect(cx - 90, cy, 180, 190); x.strokeStyle = dark; x.lineWidth = 4; x.strokeRect(cx - 90, cy, 180, 190);
     const im = SPRITES[u.id] ? await load(SPRITES[u.id]) : null;
@@ -2441,6 +2617,13 @@ async function runImage(){
   }
   x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
+}
+let runPhoto = { key: '', url: '' };
+async function fillRunPhoto(){
+  const key = `${G.seed}|${G.turn}|${G.team.map(u => u.id).join(',')}`;
+  if(runPhoto.key !== key){ runPhoto.key = key; runPhoto.url = '';
+    try{ const blob = await runImage(); if(blob && runPhoto.key === key) runPhoto.url = URL.createObjectURL(blob); }catch(e){} }
+  const im = document.querySelector('#app .runphoto'); if(im && runPhoto.url && im.src !== runPhoto.url) im.src = runPhoto.url;
 }
 async function shareRunImage(){
   SFX.play('select');
@@ -2478,6 +2661,7 @@ function renderOver(){
       ? `All ${G.badges} badges, the Elite Four, the Champion${G.redResult === 'won' ? ` and ${esc(secretBoss().name)}` : ''}, with ${G.lives} ${G.lives===1?'life':'lives'} to spare.`
       : `You ran out of lives on turn ${G.turn} with ${G.badges} badge${G.badges===1?'':'s'}` +
         `${nextUp(G).boss ? `, at ${esc(nextUp(G).boss.name)}` : ''}.`}</p>
+    ${won ? `<img class="runphoto" alt="Your team photo from centre field">` : ''}
     ${won ? chalAwardsHtml() : ''}
     ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
     ${runSummaryHtml()}
@@ -2539,6 +2723,7 @@ let drawnPhase = null;
 function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cls); void el.offsetWidth; } el.classList.add(cls); }
 
 function render(){
+  if(fieldPicking) return;                   // 5.3.0: the reward cards are up on the field; the shop draws when one is picked
   if(SFX.held && !(battle && battle.paused)) SFX.hold(false);   // 4.17.3: nothing is paused, so nothing should be held
   if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
@@ -2563,7 +2748,8 @@ function render(){
   else shopFx();                             // v36: what changed since the last draw gets a little life
   if(phase === 'shop') typeInspect();        // v37: the message box types itself out
   updateCarry();
-  layoutWorld();                             // 5.0.0: the stadium behind the page follows what was drawn
+  layoutWorld();
+  if(phase === 'over' && G && G.over === 'won') fillRunPhoto();   // 5.3.0: the Champion photo, on the run's last screen too                             // 5.0.0: the stadium behind the page follows what was drawn
 }
 const selRef = () => !sel ? null : sel.kind === 'team' ? `team:${sel.idx}` : sel.kind === 'pc' ? `pc:${sel.idx}`
   : sel.kind === 'dc' ? `dc:${sel.idx}` : null;
@@ -3110,7 +3296,7 @@ function handle(act, i, data){
     case 'overcard': openUnitCard(G.team[i]); return;
     case 'runimage': shareRunImage(); return;
     case 'tipok':   SFX.play('select'); TIPS.dismiss(data.tip); break;
-    case 'afterbattle': if(!wiping) transition(afterBattle, null, 'back'); return;   // v40: the wipe carries you back
+    case 'afterbattle': if(wiping || fieldPicking) return; if(fieldRewardWanted()){ fieldReward(); return; } transition(afterBattle, null, 'back'); return;   // 5.3.0: a gym's reward is chosen on the field   // v40: the wipe carries you back
     case 'menu':    openMenu(); return;
     case 'badges':  openBadgeInfo(); return;
     case 'arrange': {
@@ -3314,7 +3500,7 @@ function placeSlots(){
 }
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
-  const w = worldEl(); if(!w) return;
+  const w = worldEl(); if(!w || fieldPicking) return;
   const on = (phase === 'shop' && !!G) || phase === 'battle';
   document.body.classList.toggle('inworld', on);
   w.hidden = !on;
@@ -3392,7 +3578,7 @@ async function camera(mid, onOpen, dir){
       setTimeout(() => body.remove('cam'), T(600));
     } else {
       const to = WORLD.shopCam;
-      if(!to || !WORLD.cam || !battle || !battle.stage){ wiping = false; return wipe(mid, onOpen); }
+      if(!to || !WORLD.cam || !WORLD.cam.firstElementChild || (!battle && !fieldPicking)){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       body.add('cam');
       void document.body.offsetWidth;
@@ -3518,7 +3704,7 @@ function finishPlayback(){
   render();
 }
 
-async function afterBattle(){
+async function afterBattle(opts){
   if(!battle) return;
   clearTimeout(battle.timer);
   if(SFX.held) SFX.hold(false);   // 4.17.3: a battle finished (or left) while paused no longer leaves the game silent
@@ -3537,7 +3723,7 @@ async function afterBattle(){
   nextTurn(G);                        // income — or, mid-gauntlet, just an interlude
   phase = 'shop';
   save();
-  if(pendingOffer(G)){ render(); openRewardPicker(); return; }
+  if(pendingOffer(G)){ if(opts && opts.keep) return 'offer'; render(); openRewardPicker(); return; }
   if(lost) say(`You blacked out and lost ${lost}₽. ${gn ? `Back to ${gn.members[0].name} — everyone is healed.`
     : opp && opp.boss ? opp.boss.name + ' is waiting.' : ''}`);
   else if(rivalWon) say(`Rival beaten: +${rivalWon.credits}₽ in this turn's pay${rivalWon.item
@@ -3633,6 +3819,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Rewards on the field, bosses have the last word, and a Champion\u2019s team photo', items:[
+    'Gym rewards on the field: after a gym win, Choose your reward keeps you in the stadium. The leader holds out the three reward cards on the pitch; tap one and it flies to your team, then the camera goes back to the shop.',
+    'Bosses have the last word: when the fight is over, a gym leader, Elite Four member, the Champion, a secret boss or your rival walks back out and says something. Beat them and they admit it; black out and they gloat.',
+    'The Champion\u2019s team photo: beat the Champion and your whole team, fainted ones included, gathers at centre field. A flash goes off and a gold frame closes round them.',
+    'That photo is now your summary image for a won run, and it shows on the run\u2019s final screen.' ] },
   { v:'5.2.1', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Release works on any party pok\u00e9mon again, and a cleaner finish after a gym', items:[
     'Fixed: Release on a party pok\u00e9mon did nothing (or let a different one go) once your party had been moved around the field. It now always lets go of the one you tapped, and if its held item can\u2019t fit in a full Bag it tells you why.',
     'The empty spots on the battle field no longer have outlines.',
