@@ -36,7 +36,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     await page.click('.slot[data-act="team"][data-i="0"]').catch(() => page.click('.slot[data-act="team"]:not(.empty)'));
     await page.waitForTimeout(30);
     const tw = await page.evaluate(() => ({ roll: !!document.querySelector('#inspect .isum.reveal'), txt: document.querySelector('#inspect').textContent }));
-    check(tw.roll && /Charizard|Blastoise|Pidgeot/.test(tw.txt), `${tag}: message box rolls the summary out with the full text already there`);
+    check(/Charizard|Blastoise|Pidgeot/.test(tw.txt), `${tag}: 5.4.0: message box shows the summary straight away`);
     await page.keyboard.press('Escape');
 
     /* ---- START menu ---- */

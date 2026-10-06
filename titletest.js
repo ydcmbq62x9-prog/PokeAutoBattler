@@ -22,7 +22,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     const t0 = await page.evaluate(() => { const t = document.querySelector('#title');
       return t && { txt: t.textContent.replace(/\s+/g, ' '), img: !!t.querySelector('.tmon img[src^="data:"]'), alt: t.querySelector('.tmon img').alt,
         menu: t.querySelector('.tmenu').hidden, v: GAME_VERSION.v, sub: t.querySelector('.tsub').textContent, top: document.elementFromPoint(innerWidth / 2, innerHeight / 2).closest('#title') !== null }; });
-    check(t0 && /POK/.test(t0.txt) && /BATTLER/.test(t0.txt) && /PRESS START/.test(t0.txt), `${tag}: title shows the logo and PRESS START`);
+    check(t0 && /POK/.test(t0.txt) && /BATTLER/.test(t0.txt) && /TAP TO PLAY/.test(t0.txt), `${tag}: title shows the logo and TAP TO PLAY`);
     check(t0 && t0.img && ['Bulbasaur', 'Charmander', 'Squirtle', 'Pikachu'].includes(t0.alt), `${tag}: with no partner yet it shows a starter (${t0 && t0.alt})`);
     check(t0 && t0.menu && t0.top, `${tag}: covers the game, no menu until START`);
     check(t0 && t0.txt.includes(t0.v) && !/Best:/.test(t0.txt), `${tag}: version at the bottom, no best run on a fresh device`);

@@ -10,7 +10,7 @@ const setup = () => { G.pendingRewards = []; document.querySelectorAll('.modal')
   G.team[0].held = 'lefto'; G.turn = 6; G.stage = 4; setSpeed(4); rollShop(G, false); save(); render(); };
 (async () => {
   const html = fs.readFileSync('/mnt/user-data/outputs/gen2/pokebattler.html', 'utf8');
-  check(/Pixelify\+Sans:wght@400;500&/.test(html) && /family=Nunito:/.test(html), 'v45: the pixel font loads 400–500 only, and Nunito is the reading font');
+  check(/Barlow\+Condensed:wght@/.test(html) && /family=Nunito:/.test(html) && !/Pixelify\+Sans/.test(html), '5.4.0: the sports font replaces the pixel font, and Nunito is the reading font');
   const browser = await chromium.launch();
 
   /* ---- desktop ---- */

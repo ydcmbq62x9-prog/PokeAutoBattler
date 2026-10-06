@@ -26,7 +26,7 @@ const mark = () => { const vis = [...document.querySelectorAll('#title .tmi, .mo
     await p.evaluate(() => { const sb = document.querySelector('[data-act="menu"]'); sb && sb.click(); }); await p.waitForTimeout(400);
     const sm = await p.evaluate(mark);
     if(sm.length){ if(!dev.hasTouch){ await p.focus('.smi:nth-of-type(3)').catch(() => {}); await p.waitForTimeout(80); }
-      const s2 = await p.evaluate(mark); check(s2.filter(x => x.arrow).length === 1 && s2.every(x => !x.outline && (x.bg === 'rgba(0, 0, 0, 0)' || x.bg === 'transparent')), `${tag}: START menu shows only its arrow (${s2.length} items)`); }
+      const s2 = await p.evaluate(mark); check(s2.filter(x => x.arrow).length === 1 && s2.every(x => !x.outline && (x.arrow || x.bg === 'rgba(0, 0, 0, 0)' || x.bg === 'transparent')), `${tag}: 5.4.0: the menu highlights just one row (${s2.length} items)`); }
     check(!errs.length, `${tag}: no errors ${errs.join(';')}`);
     await ctx.close(); }
   await b.close(); console.log(fails ? `${fails} FAILED` : 'selfix passed'); process.exit(fails ? 1 : 0); })();

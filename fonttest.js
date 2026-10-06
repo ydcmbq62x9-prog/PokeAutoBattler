@@ -15,9 +15,9 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
       name: ff('#inspect .popname'), h2: ff('.panel h2'), btn: ff('.btn'), cta: ff('[data-act="endturn"]'), top: ff('.topbar .stat'), rank: ff('.rankhead span'), dock: ff('.speech .say b'), chip: ff('.rchip') }; });
   const read = ['body', 'move', 'moveName', 'dcName', 'martText', 'chip'], pix = ['name', 'h2', 'btn', 'cta', 'top', 'rank', 'dock'];
   for(const k of read) check(f[k].startsWith('Nunito'), `reading text uses Nunito: ${k} → ${f[k]}`);
-  for(const k of pix) check(f[k].startsWith('Pixelify') && !/ (6|7|8|9)00$/.test(f[k]), `display text uses the pixel font at 500 or lighter: ${k} → ${f[k]}`);
+  for(const k of pix) check(f[k].startsWith('Barlow Condensed'), `5.4.0: display text uses the sports font: ${k} → ${f[k]}`);
   await page.click('[data-act="menu"]'); await page.waitForTimeout(200);
-  check(await page.evaluate(() => getComputedStyle(document.querySelector('.smi')).fontFamily.startsWith('"Pixelify')), 'the START menu stays pixel');
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('.smi')).fontFamily.includes('Barlow Condensed')), '5.4.0: the menu uses the sports font');
   check(errs.length === 0, `no page errors ${errs.join(' | ')}`);
   await browser.close();
   console.log(fails ? `${fails} FAILED` : 'fonts passed');

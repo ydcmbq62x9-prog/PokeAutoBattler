@@ -35,7 +35,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
       await page.keyboard.press('ArrowDown'); await page.waitForTimeout(60);
       check(await page.evaluate(() => document.querySelector('.smi.cur').dataset.m === 'dex'), `${tag}: arrow keys still move the ▶ cursor`);
     }
-    check(await page.evaluate(() => getComputedStyle(document.querySelector('#inspect'), '::after').animationPlayState === 'paused'),
+    check(await page.evaluate(() => (s => s.animationPlayState === 'paused' || s.animationName === 'none')(getComputedStyle(document.querySelector('#inspect'), '::after'))),
       `${tag}: the page's looping animations pause behind the menu`);
     let got = await logSince(n);
     check(got[0] === 'open' && (w < 500 || got.includes('move')), `${tag}: sounds — START opens with a chime${w > 500 ? ', the cursor blips' : ''} (${got.join(', ')})`);
@@ -76,7 +76,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     const rows = await page.$$eval('.optrow > span', e => e.map(x => x.textContent));
     check(['Volume', 'Transitions'].every(r => rows.includes(r)), `${tag}: Options has Volume and Transitions`);
     const tr = await page.$$eval('[data-o="wipe"]', e => e.map(x => x.textContent + (x.classList.contains('on') ? '*' : '')));
-    check(tr.join() === 'Camera*,Ball,Quick,Off', `${tag}: Transitions offers ${tr.join(' / ')} (5.0.0: Camera by default)`);
+    check(tr.join() === 'Camera*,Quick,Off', `${tag}: Transitions offers ${tr.join(' / ')} (5.0.0: Camera by default)`);
     const fit = await page.evaluate(() => { const b = document.querySelector('.modal .box').getBoundingClientRect();
       return [...document.querySelectorAll('.optrow .sp')].every(x => { const r = x.getBoundingClientRect(); return r.right <= b.right + 1 && r.left >= b.left - 1; }); });
     check(fit, `${tag}: every Options button fits inside the box`);
@@ -112,7 +112,7 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
       await page.evaluate(() => { document.querySelectorAll('.modal').forEach(x => x.remove()); G.pendingRewards = []; if(G.over){ G.over = null; G.lives = 5; phase = 'shop'; } render(); });
     }
     check(modes.slice(0, 3).every(m => m === 'full') && modes[3] === 'quick', `${tag}: Auto — battles 1–3 get the full wipe, battle 4 the quick one (${modes.join(', ')})`);
-    check(durs[3] < 650 && durs[0] > 900, `${tag}: the quick wipe takes ${durs[3]}ms against ${durs[0]}ms for the full one`);
+    check(durs.every(x => x < 900), `${tag}: 5.4.0: the fade is short every time (${durs.join(', ')}ms)`);
     await page.evaluate(() => PREF.set('wipe', 'full'));
     check(await page.evaluate(() => wipeMode()) === 'full', `${tag}: Transitions → Full keeps the rolling ball all session`);
     await page.evaluate(() => PREF.set('wipe', 'off'));

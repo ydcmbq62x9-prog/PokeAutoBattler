@@ -16,7 +16,7 @@
    falls back to the old sans font instead of logging a failed request. */
 if(location.protocol !== 'file:'){
   const l = document.createElement('link'); l.rel = 'stylesheet';
-  l.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Pixelify+Sans:wght@400;500&display=swap';
+  l.href = 'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap';
   document.head.appendChild(l);
 }
 </script>
@@ -2895,6 +2895,35 @@ body.speaking .panel.arena > .bosstag{opacity:0;transition:opacity .25s}
 .walkout .wbadge{bottom:22%!important;left:auto!important;right:-62%}
 .walkout .wbadge .wglow{inset:-30%!important}
 .bstage.vert .walkout .wbadge{right:-70%}
+
+/* ---- 5.4.0 · the Game Boy style retired ----
+   Lettering: a bold condensed sports face (the scoreboard look) instead of the pixel font. Pokémon keep their pixel art.
+   Menus: clean glass lists with a highlighted row, no ▶ cursor. Title: TAP TO PLAY, no blinking. */
+:root{--pix:'Barlow Condensed','Arial Narrow','Roboto Condensed','Segoe UI',system-ui,sans-serif}
+html.bc{--font:var(--pix)}
+html.bc :is(.smi,.sdesc,.sver,.tmi,.tpress,.tlogo,.tsub,.twho,.topbar .stat,.speech .say b,.popname,.big,.ribbon,.introban b,.rankhead span,.rklbl,.qlbl,.pfield .lvl,.carry span,.tg,.btn,h2,h3,.ribbon span,.fchead b,.fcard b,.wname,.phcap,.iconbtn){font-family:var(--pix)!important;font-weight:700!important;letter-spacing:.04em}
+html.bc :is(.tg,.btn.fight,.ribbon span,.big){letter-spacing:.08em}
+html.bc .topbar .stat.credits{font-weight:800!important}
+/* the Menu button */
+html.bc .iconbtn.start{gap:7px;padding:0 14px;letter-spacing:.1em}
+.burger{display:inline-block;width:14px;height:10px;flex:none;background:linear-gradient(currentColor 0 0) top/100% 2px no-repeat,linear-gradient(currentColor 0 0) center/100% 2px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 2px no-repeat}
+/* the menu: highlighted row instead of the ▶ cursor */
+html.bc .smi.cur::before,html.bc .tmi.cur::before{content:none!important}
+html.bc .smi{padding:8px 12px!important;border-radius:8px;font-size:18px;text-transform:none}
+html.bc .smi.cur,html.bc .smi:hover{background:rgba(255,210,58,.16);box-shadow:inset 3px 0 0 var(--gold)}
+html.bc .tmi{padding:9px 14px!important;border-radius:10px;letter-spacing:.06em}
+html.bc .tmi.cur,html.bc .tmi:hover{background:rgba(12,18,34,.72);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
+html.bc .tmi.cur small,html.bc .tmi:hover small{color:#cfd8f0}
+html.bc .modal.startmenu .box{animation:smin2 .18s cubic-bezier(.2,.8,.3,1) both}
+/* title: steady TAP TO PLAY, gold on navy like the scoreboard */
+html.bc .title .tpress{animation:tfade .3s .9s both!important;background:var(--navy);color:var(--gold);border-radius:10px;padding:10px 26px;box-shadow:0 0 0 2px var(--gold),0 8px 20px rgba(0,0,0,.35);letter-spacing:.14em;font-size:20px}
+html.bc .title .tlogo .t1,html.bc .title .tlogo .t2{font-family:var(--pix)!important;font-weight:800!important;font-style:italic;letter-spacing:.04em}
+/* no blinking ▼ in the info box (typed text is retired) */
+html.bc #inspect .more,html.bc #inspect .tcaret,html.bc #inspect::after{animation:none!important}
+/* title: the partner stands on a slice of the pitch (no Game Boy window or pixel clouds) */
+html.bc .tfield{border:0!important;box-shadow:0 0 0 3px rgba(255,255,255,.8),0 14px 30px rgba(0,0,0,.35)!important;border-radius:14px!important;
+  background:radial-gradient(circle at 50% 120%,transparent 34%,rgba(255,255,255,.75) 34.6% 36%,transparent 36.6%),repeating-linear-gradient(90deg,#3f8f45 0 12.5%,#48a04e 12.5% 25%)!important}
+html.bc .tfield::before,html.bc .tfield::after,html.bc .tcloud{display:none!important}
 </style>
 </head>
 <body>

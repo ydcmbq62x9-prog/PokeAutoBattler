@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.10', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.4.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -30,7 +30,8 @@ const PREF = {
 const playerName = () => String(PREF.get('name', '') || '').replace(/[<>]/g, '').trim() || 'Trainer';
 
 /* ===================================================================
-   v47 · SOUND — Game Boy style blips, made on the fly with Web Audio
+   v47 · SOUND — made on the fly with Web Audio. 5.4.0: softer, rounder tones
+   (triangle/sine through a gentle low-pass) instead of the Game Boy square waves
    Square and triangle waves plus a little noise, like the old sound chip:
    nothing to download. On by default; START → Options has Sound (On/Off)
    and Volume. Phones only allow sound after the first tap, so the audio
@@ -70,7 +71,9 @@ const SFX = (() => {
         const AC = window.AudioContext || window.webkitAudioContext;
         if(!AC) return null;
         ctx = new AC();
-        master = ctx.createGain(); master.connect(ctx.destination);
+        master = ctx.createGain();
+        const soft = ctx.createBiquadFilter(); soft.type = 'lowpass'; soft.frequency.value = 3600; soft.Q.value = 0.5;   // 5.4.0
+        master.connect(soft); soft.connect(ctx.destination);
         noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
         const d = noiseBuf.getChannelData(0);
         for(let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -93,12 +96,12 @@ const SFX = (() => {
   function tone(f, t0, d, o){
     o = o || {};
     const t = ctx.currentTime + t0, osc = ctx.createOscillator(), g = ctx.createGain();
-    osc.type = o.type || 'square';
+    osc.type = o.type === 'square' || !o.type ? 'triangle' : o.type;   // 5.4.0: no more square waves
     osc.frequency.setValueAtTime(f, t);
     if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + d);
-    const v = (o.v == null ? 1 : o.v) * (osc.type === 'square' ? 0.5 : 1);
+    const v = (o.v == null ? 1 : o.v) * 0.85;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(v, t + 0.004);
+    g.gain.linearRampToValueAtTime(v, t + Math.min(0.012, d * 0.3));
     g.gain.setValueAtTime(v, t + Math.max(0.005, d * 0.6));
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     osc.connect(g); g.connect(master);
@@ -1330,7 +1333,7 @@ function renderShop(){
     ${closed ? '' : `<div class="stat next" title="carry ${inc.carry} + base ${inc.base} + result ${inc.result} + streak ${inc.streak}${inc.items ? ` + items ${inc.items}` : ''}${inc.badges ? ` + badges ${inc.badges}` : ''}${inc.rival ? ` + rival ${inc.rival}` : ''}">
       <span class="lbl">Next turn</span>+${inc.total}₽</div>`}
     </div>
-    <button class="iconbtn start" data-act="menu" aria-label="Menu">START${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
+    <button class="iconbtn start" data-act="menu" aria-label="Menu"><i class="burger" aria-hidden="true"></i>MENU${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
   </div>
 
   <div class="bcwrap"><div class="bcL">
@@ -2605,14 +2608,14 @@ function runSummaryHtml(){
 }
 /* A 3:4 card drawn on a canvas: the team, the result, the MVP. */
 async function runImage(){
-  try{ if(document.fonts) await Promise.race([document.fonts.load('500 24px "Pixelify Sans"'), new Promise(r => setTimeout(r, 800))]); }catch(e){}
+  try{ if(document.fonts) await Promise.race([document.fonts.load('700 24px "Barlow Condensed"'), new Promise(r => setTimeout(r, 800))]); }catch(e){}
   const W = 720, H = 960, c = document.createElement('canvas'); c.width = W; c.height = H;
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
   const won = G.over === 'won', dark = '#2b303b', cream = '#f7f1de';
   x.fillStyle = cream; x.fillRect(0, 0, W, H);
   x.fillStyle = dark; x.fillRect(0, 0, W, 150); x.fillRect(0, H - 70, W, 70);
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
-  const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Pixelify Sans", Nunito, ui-monospace, monospace`;
+  const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Barlow Condensed", Nunito, system-ui, sans-serif`;
   x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
   x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `CHAMPION · ${secretBoss().name.toUpperCase()} DEFEATED` : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
@@ -3431,8 +3434,8 @@ async function wipe(mid, onOpen){
   w.dataset.mode = mode;
   SFX.play('wipeIn', mode === 'quick');
   try{
-    if(motionOff()){
-      iris.classList.add('flat');
+    if(true){   // 5.4.0: the pokéball wipe is retired; Quick (and reduced motion) is a short fade to dark
+      iris.classList.add('flat'); ball.hidden = true;
       await go(iris, [{ opacity: 0 }, { opacity: 1 }], 130);
       await mid(); if(onOpen) onOpen();
       SFX.play('wipeOut', true);
@@ -3973,6 +3976,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.4.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The last of the Game Boy style retired: a stadium look from the title to the menus', items:[
+    'New lettering: headings, buttons and the scoreboard use a bold sports font instead of the pixel font. The pok\u00e9mon keep their pixel art.',
+    'The title says TAP TO PLAY and fades into the stadium, and the yellow START button is now a MENU button. The menu is a clean list with a highlighted row instead of the \u25b6 cursor.',
+    'Softer sounds: rounder tones replace the Game Boy beeps.',
+    'The info box shows its text straight away instead of typing it out letter by letter, so Options no longer has a Text setting.',
+    'The pok\u00e9ball wipe is retired: Transitions are now Camera, Quick or Off.' ] },
   { v:'5.3.10', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Iron-out: tidier boss scenes', items:[
     'The badge a leader hands over now rises beside them instead of on top of their speech bubble, and flies to your team from there.',
     'The extra \u201cPick one\u201d bubble over the reward cards is gone; the cards\u2019 own header already says it, and on a sideways phone the two overlapped.' ] },
@@ -4764,7 +4773,6 @@ function openOptions(){
       <input id="optname" maxlength="10" value="${esc(PREF.get('name', ''))}" placeholder="Trainer" autocomplete="off" spellcheck="false"></label>
     <div class="optrow"><span>Theme</span>${seg('theme', PREF.get('theme', 'light'), [['light', 'Light'], ['dark', 'Dark'], ['system', 'System']])}</div>
     <div class="optrow"><span>Battle speed</span>${seg('speed', speed, [[1, '1×'], [2, '2×'], [4, '4×']])}</div>
-    <div class="optrow"><span>Text</span>${seg('text', PREF.get('text', 'type'), [['type', 'Type out'], ['instant', 'Instant']])}</div>
     <div class="optrow"><span>Motion</span>${seg('motion', PREF.get('motion', 'device'), [['device', 'Normal'], ['reduced', 'Reduced']])}</div>
     <div class="optrow"><span>Title screen</span>${seg('title', PREF.get('title', 'on'), [['on', 'Show'], ['off', 'Skip']])}</div>
     <div class="optrow"><span>Haptics</span>${seg('haptics', PREF.get('haptics', 'on'), [['on', 'On'], ['off', 'Off']])}</div>
@@ -4772,7 +4780,7 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
-    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['full', 'Ball'], ['quick', 'Quick'], ['off', 'Off']])}</div>
+    <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
@@ -4809,7 +4817,7 @@ function typeInspect(){
   const html = box.innerHTML;
   if(html === lastInspect) return;
   lastInspect = html;
-  if(motionOff() || PREF.get('text', 'type') === 'instant') return;
+  if(motionOff() || true) return;   // 5.4.0: the info box no longer types itself out (that was the Game Boy style)
   /* v43: a full summary has chips, bars and flex rows that splitting into
      letters would break apart, so it rolls out line by line instead. */
   const sum = box.querySelector('.isum');
@@ -4835,7 +4843,7 @@ function typeInspect(){
 function openExport(){
   const code = exportTeam(G.team, playerName());
   const d = modal(`<h3>Your Team Code</h3>
-    <p>Send this to a friend — they can paste it into <b>START → Vs friend</b> and fight your exact party.</p>
+    <p>Send this to a friend — they can paste it into <b>Menu → Vs friend</b> and fight your exact party.</p>
     <textarea readonly>${esc(code)}</textarea>
     <div class="btnrow"><button class="btn primary" data-m="copy">Copy</button>
     <button class="btn ghost" data-m="close">Close</button></div>`);
@@ -5012,7 +5020,7 @@ function openTutorial(){
     { ids:['snorlax','zapdos'], title:'Fights have stakes',
       text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
     { ids:['eevee','pikachu','mew'], title:'Make it yours',
-      text:'START opens the menu: your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
   ];
   let i = 0;
   const d = modal('', true); d.classList.add('tutorial');
@@ -5443,7 +5451,7 @@ function showTitle(then){
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
     <div class="twho">${titleBadgesHtml()}${who}</div>
-    <button class="tpress" data-t="start">PRESS START</button>
+    <button class="tpress" data-t="start">TAP TO PLAY</button>
     <div class="tmenu" hidden role="menu">
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
@@ -5463,8 +5471,11 @@ function showTitle(then){
   const leave = () => {
     if(!titleEl) return;
     titleEl = null; document.removeEventListener('keydown', onKey, true);
-    /* v41: the pokéball wipe carries you from the title into the game */
-    wipe(() => { d.remove(); document.body.classList.remove('titled'); }).then(() => { if(then) then(); });
+    /* 5.4.0: the title fades into the stadium (the pokéball wipe was the Game Boy style) */
+    const done = () => { d.remove(); document.body.classList.remove('titled'); if(then) then(); };
+    if(motionOff() || !wipeWanted()){ done(); return; }
+    SFX.play('wipeOut', true);
+    d.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(1.06)' }], { duration: 420, easing: 'ease-in', fill: 'forwards' }).finished.then(done, done);
   };
   const act = t => {
     SFX.play(t === 'start' ? 'start' : t === 'new-no' ? 'back' : 'select');
