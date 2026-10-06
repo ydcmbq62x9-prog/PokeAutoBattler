@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.4', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.5', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3523,18 +3523,30 @@ function shopCamera(){
 function placeSlots(){
   const fs = document.querySelector('.pfield .formation'), st = WORLD.cam && WORLD.cam.firstElementChild;
   if(!fs || !st) return;
-  const F = fs.getBoundingClientRect();
+  /* 5.3.5: measure everything first, then place (no layout changes in between), then check each spot really landed
+     where it was aimed and nudge it if not. iPhones were dropping every spot after the first one about 40px low;
+     whatever the cause, a spot's own (flat) box is reported correctly, so the check catches it. */
+  const F = fs.getBoundingClientRect(), vw = document.documentElement.clientWidth, vert = st.classList.contains('vert');
+  const plan = [];
   for(const el of fs.querySelectorAll('.slot[data-i]')){
     const i = +el.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.min(2, Math.floor(i / RANK_W))}.f${i % RANK_W}`);
     if(!m) continue;
     const r = planeRect(m);
     // the same size and footing as the fighter that will stand there (measured off the battle's own pieces)
-    const vert = st.classList.contains('vert'), sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
+    const sp = Math.round(Math.min(r.width * .9, r.height * (vert ? .66 : .48)));
     // a tap target around the pokémon, kept on screen where the close-up crops the field's edges
-    const vw = document.documentElement.clientWidth;
     let sw = Math.min(r.width, Math.max(sp * 1.7, 64)), sl = r.left + r.width / 2 - sw / 2;
     sl = Math.max(2, Math.min(vw - sw - 2, sl));
-    el.style.cssText = `left:${(sl - F.left).toFixed(1)}px;top:${(r.top - F.top).toFixed(1)}px;width:${sw.toFixed(1)}px;height:${r.height.toFixed(1)}px;--mh:${r.height.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%`;
+    plan.push({ el, x: sl, y: r.top, w: sw, h: r.height, sp });
+  }
+  const put = (q, dx, dy) => { q.el.style.cssText = `left:${(q.x - F.left + dx).toFixed(1)}px;top:${(q.y - F.top + dy).toFixed(1)}px;width:${q.w.toFixed(1)}px;height:${q.h.toFixed(1)}px;--mh:${q.h.toFixed(1)}px;--sp:${q.sp}px;--ab:${vert ? 22 : 13.5}%`; };
+  for(const q of plan){ q.dx = 0; q.dy = 0; put(q, 0, 0); }
+  for(let pass = 0; pass < 2; pass++){
+    let moved = false;
+    for(const q of plan){ const b = q.el.getBoundingClientRect(), ex = q.x - b.left, ey = q.y - b.top;
+      if(Math.abs(ex) > 1.5 || Math.abs(ey) > 1.5){ q.dx += ex; q.dy += ey; moved = true; } }
+    if(!moved) break;
+    for(const q of plan) put(q, q.dx, q.dy);
   }
 }
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
@@ -3879,6 +3891,8 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.5', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots line up on iPhone', items:[
+    'The party\u2019s spots are now placed all at once, then checked: if a spot did not land exactly where it was aimed, it is nudged into place. On iPhones every spot after the first was landing too low, which is why the rings sat off the grid when picking where to put a pok\u00e9mon.' ] },
   { v:'5.3.4', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots on iPhone, for real this time', items:[
     'On iPhones the shop\u2019s field now lies flat, a straight-down close-up of your half. iPhones drew the tilted field somewhere other than where they reported it, so the empty-spot rings never lined up. Flat, every spot sits exactly under its ring. The field still tilts into the stadium as the camera pulls back for a battle.',
     'Phones on their side: the next trainer\u2019s picture fits its box in the BATTLE bar instead of being zoomed in.' ] },
