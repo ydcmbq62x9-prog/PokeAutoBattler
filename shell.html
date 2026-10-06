@@ -2667,6 +2667,26 @@ html.bc .panel.arena > .bosstag{position:absolute;left:10px;top:10px;z-index:6;m
 .walkout.elite .wname{box-shadow:0 0 0 2px #a98bff}.walkout.champion .wname{box-shadow:0 0 0 2px #ff9d6e}.walkout.rival .wname{box-shadow:0 0 0 2px #7fc4ff}
 .wball2{position:absolute;width:16px;height:16px;border-radius:50%;z-index:26;pointer-events:none;background:linear-gradient(#e0473f 0 44%,#222 44% 56%,#f4f1e6 56%);box-shadow:0 0 0 2px #22262f}
 .wflash{position:absolute;border-radius:50%;z-index:24;pointer-events:none;background:radial-gradient(closest-side,#fff,rgba(255,255,255,.6) 50%,transparent)}
+
+/* ---- 5.2.0 · fainted pokémon lose their name plate; no shadows waiting on empty spots; boss lines and the badge ceremony ---- */
+.bstage.board.stadium .ftr.down .fhead{display:none}
+.bstage.board .ftr.incoming::before,.bstage.board .ftr.incoming .fshadow{opacity:0!important;transition:none}
+.bstage.board .ftr::before{transition:opacity .3s ease}
+.walkout .wsay{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);width:max-content;max-width:min(240px,46cqw);z-index:3;
+  background:#fff;color:#1d2230;font-size:clamp(11px,1.6cqw,14px);line-height:1.25;padding:6px 10px;border-radius:10px;box-shadow:0 0 0 2px var(--navy,#11182c),0 6px 14px rgba(0,0,0,.35);text-align:center}
+.walkout .wsay::after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:7px solid transparent;border-top-color:#fff;filter:drop-shadow(0 2px 0 var(--navy,#11182c))}
+.bstage.vert .walkout .wsay{max-width:62cqw;font-size:max(11px,3.2cqw)}
+.walkout .wbadge{position:absolute;left:50%;bottom:calc(100% + 34px);width:42px;height:42px;display:grid;place-items:center;z-index:4}
+.walkout .wbadge .bdg,.walkout .wbadge > span,.walkout .wbadge > i:first-child{transform:scale(1.6)}
+.walkout .wbadge .wglow{position:absolute;inset:-60%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(255,230,120,.9),rgba(255,210,58,.35) 55%,transparent);animation:wglow 1s ease-in-out infinite alternate}
+@keyframes wglow{from{opacity:.6;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
+.wflash.gold{background:radial-gradient(closest-side,#fff6c0,rgba(255,210,58,.7) 50%,transparent)}
+html.bc body[data-phase=battle] .stagewrap .big.ribbon{top:17%;transform:translateY(-50%)}
+@media (max-width:700px){
+  html.bc .arenanotes .bossart{display:none}
+  html.bc .arenanotes .award,html.bc .arenanotes .gnote{padding:6px 10px;font-size:13px}
+  html.bc .arenanotes .award .dim{display:none}
+}
 </style>
 </head>
 <body>

@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.1.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.2.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1657,6 +1657,7 @@ function syncStage(S, i){
   S.el.querySelectorAll('.introban').forEach(e => e.remove());
   const live = snapMap(st);
   for(const [k, F] of S.f){
+    F.el.classList.remove('incoming');
     const u = live.get(k);
     if(u){ F.down = false; F.el.classList.remove('down'); paintFighter(F, u, false); }
     else { F.down = true; F.el.classList.add('down');   // 4.17.1: an empty bar after a skip, not the HP it last showed
@@ -2075,29 +2076,73 @@ function animateStep(S, i){
    in the middle, and throw out their team: a pokéball arcs to each spot and
    the pokémon appear in a flash. Then the "wants to battle!" banner. */
 const WALK_KINDS = ['gym', 'elite', 'champion', 'red', 'rival'];
-function walkOut(S, b){
-  if(!b.boss || !WALK_KINDS.includes(b.kind) || !SPRITES[b.boss.id] || motionOff()) return null;
-  const f = speed >= 4 ? .45 : speed >= 2 ? .7 : 1, ms = x => x * f;
+/* 5.2.0: what each boss says when they reach the middle of their half */
+const BOSS_LINES = {
+  brock: 'Solid as stone. Let’s see you move me.', misty: 'Hope you can swim — this is my pool.',
+  surge: 'Ten-hut! Let’s see if you’ve got any spark.', erika: 'Mind the flowers. They bite back.',
+  koga: 'You won’t see my next move coming.', sabrina: 'I already know how this ends.',
+  blaine: 'Hot enough for you? It’s about to get hotter!', giovanni: 'Last gym, last chance. Make it count.',
+  lorelei: 'A cold welcome to the League.', bruno: 'No tricks. Just strength. Ready?',
+  agatha: 'Back in my day, trainers had real nerve.', lance: 'Dragons don’t hold back. Neither will I.',
+  blue: 'Took you long enough. I’m the Champion now.',
+  falkner: 'Clip my wings? Catch them first.', bugsy: 'I’ve studied every one of your moves. Probably.',
+  whitney: 'Don’t you dare make me cry!', morty: 'I’ve seen this battle before. In a dream.',
+  chuck: 'Fists up! Let’s train!', jasmine: 'Um… I’ll do my best. Steel never bends.',
+  pryce: 'Patience. The ice always wins in the end.', clair: 'Dragon masters don’t lose to beginners.',
+  will: 'You’ll feel my power before you move.', karen: 'Love your team and they’ll fight for you. Show me.',
+  red: '…', oak: 'Show me how much you’ve grown!',
+};
+const KIND_LINES = { gym: 'Let’s see if you’ve earned my badge.', elite: 'Welcome to the Elite Four.', champion: 'This is the last fight.', red: '…' };
+function bossLine(b){
+  if(b.kind === 'rival'){ const rv = b.opp && rivalLines(G, b.opp.meeting); return rv ? rv.hi : 'Smell ya later!'; }
+  return BOSS_LINES[b.boss.id] || KIND_LINES[b.kind] || '';
+}
+const walkPace = () => speed >= 4 ? .45 : speed >= 2 ? .7 : 1;
+/** A boss walks from the far edge onto the field and stops at `where` ('half' = the middle of their half, 'mid' = by the halfway line). */
+function leaderWalk(S, b, where){
+  const ms = x => x * walkPace();
   const E = S.el.getBoundingClientRect(), vert = S.el.classList.contains('vert');
-  const foes = [...S.f.values()].filter(F => F.side === 'e');
   const marks = [...S.el.querySelectorAll('.slotmark.e')].map(m => m.getBoundingClientRect());
   if(!marks.length) return null;
   const U = rectUnion(marks);
   const size = Math.round(Math.min(E.width * (vert ? .26 : .13), E.height * (vert ? .2 : .34)));
-  const x = U.cx - E.left, y = U.cy - E.top + size * .15;
+  let x = U.cx - E.left, y = U.cy - E.top + size * .15;
+  if(where === 'mid'){ if(vert) y = U.b - E.top + size * .1; else x = U.l - E.left + size * .2; }
   const w = document.createElement('div');
   w.className = 'walkout ' + b.kind;
   w.style.cssText = `left:${x.toFixed(0)}px;top:${y.toFixed(0)}px;width:${size}px;height:${size}px`;
   w.innerHTML = `<div class="wbody"><img src="${SPRITES[b.boss.id]}" alt=""></div><span class="wname">${esc(b.boss.name)}</span><i class="wspot"></i>`;
   S.fx.appendChild(w);
   const from = vert ? `translate(-50%,-100%) translateY(${-(y + size).toFixed(0)}px)` : `translate(-50%,-100%) translateX(${(E.width - x + size).toFixed(0)}px)`;
-  const at = 'translate(-50%,-100%)';
-  const walkMs = ms(950), holdMs = ms(450), throwMs = ms(380);
+  const at = 'translate(-50%,-100%)', walkMs = ms(where === 'mid' ? 1150 : 950);
   anim(w, [{ transform: from, opacity: 1 }, { transform: at, opacity: 1, offset: .82 }, { transform: at, opacity: 1 }], { duration: walkMs, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' });
   const body = w.querySelector('.wbody');
   anim(body, [{ translate: '0 0' }, { translate: '0 -7%' }, { translate: '0 0' }], { duration: ms(240), iterations: Math.ceil(walkMs * .82 / ms(240)), easing: 'ease-in-out' });
+  return { w, body, x, y, size, vert, at, walkMs, ms };
+}
+/** A speech bubble over a walking boss. */
+function leaderSay(L, text, dur){
+  if(!text) return;
+  const sb = document.createElement('div'); sb.className = 'wsay'; sb.textContent = text;
+  L.w.appendChild(sb);
+  anim(sb, [{ opacity: 0, transform: 'translate(-50%,6px) scale(.8)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .12 },
+    { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: .9 }, { opacity: 0, transform: 'translate(-50%,-4px) scale(.95)' }], { duration: dur, easing: 'ease-out', fill: 'both', remove: true });
+}
+/* ---- 5.1.0 · THE WALK-OUT --------------------------------------------
+   Before a leader, an Elite Four member, the Champion, a secret boss or your
+   rival fights, they walk out onto their half of the field to a cheer, stop
+   in the middle and say their piece (5.2.0), then throw out their team: a
+   pokéball arcs to each spot and the pokémon appear in a flash. Then the
+   "wants to battle!" banner. */
+function walkOut(S, b){
+  if(!b.boss || !WALK_KINDS.includes(b.kind) || !SPRITES[b.boss.id] || motionOff()) return null;
+  const L = leaderWalk(S, b, 'half'); if(!L) return null;
+  const { w, body, x, y, size, vert, at, walkMs, ms } = L;
+  const foes = [...S.f.values()].filter(F => F.side === 'e');
+  const line = bossLine(b), holdMs = ms(line ? 1500 : 450), throwMs = ms(380);
   setTimeout(() => { if(battle && battle.stage === S){ crowdReact(S, true);
-    anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' }); } }, walkMs);
+    anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
+    leaderSay(L, line, holdMs + ms(150)); } }, walkMs);
   // the throw: one ball to each spot, the leader steps back off the field
   const throwAt = walkMs + holdMs;
   setTimeout(() => {
@@ -2126,6 +2171,40 @@ function walkOut(S, b){
   }, popAt);
   return { total: popAt + ms(380), popAt };
 }
+/* ---- 5.2.0 · THE BADGE CEREMONY ----------------------------------------
+   Beat a gym leader (or a secret boss) and they walk back out to the halfway
+   line, say so, and hand the badge over: it rises over them, glowing, then
+   flies across to your side with a sparkle. They stay on the field until you
+   Continue. */
+function badgeCeremony(S){
+  const b = battle;
+  if(!b || !b.boss || !SPRITES[b.boss.id] || motionOff() || b.result !== 'win') return;
+  const gym = b.kind === 'gym', red = b.kind === 'red';
+  if(!gym && !red) return;
+  const L = leaderWalk(S, b, 'mid'); if(!L) return;
+  const { w, body, size, walkMs, ms } = L;
+  const name = gym ? `${b.boss.badge} Badge` : `${b.boss.name}’s Badge`;
+  const html = gym ? `<i class="bdg ${badgeCls(G, G.badges % 8)} on big"></i>` : secretBadge(b.boss.id, 'big');
+  setTimeout(() => {
+    if(battle !== b || !S.el.isConnected) return;
+    leaderSay(L, gym ? `You’ve earned it. The ${name}!` : (b.boss.id === 'oak' ? 'Splendid! Take this.' : '…'), ms(2600));
+    anim(body, [{ scale: '1' }, { scale: '1.1' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
+    const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
+    w.appendChild(bd);
+    SFX.play('sparkle');
+    const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
+    const tgt = mine.length ? artCentre(S, mine[0]) : null, me = w.getBoundingClientRect(), E = S.el.getBoundingClientRect();
+    const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top - E.top - size * .35) : 0;
+    anim(bd, [{ transform: 'translate(-50%,0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-40%) scale(1.25)', opacity: 1, offset: .2 },
+      { transform: 'translate(-50%,-40%) scale(1)', opacity: 1, offset: .62 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.5)`, opacity: 1, offset: .92 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.2)`, opacity: 0 }], { duration: ms(2300), easing: 'cubic-bezier(.4,0,.3,1)', fill: 'both', remove: true });
+    setTimeout(() => { if(battle !== b || !S.el.isConnected || !tgt) return; SFX.play('levelup');
+      const fl = document.createElement('div'); fl.className = 'wflash gold'; fl.style.left = tgt.x + 'px'; fl.style.top = tgt.y + 'px';
+      fl.style.width = fl.style.height = (tgt.w * 1.8) + 'px'; S.fx.appendChild(fl);
+      anim(fl, [{ transform: 'translate(-50%,-50%) scale(.2)', opacity: 1 }, { transform: 'translate(-50%,-50%) scale(1.3)', opacity: 0 }], { duration: ms(520), easing: 'ease-out', remove: true }); }, ms(2120));
+  }, walkMs);
+}
 function playIntro(S){
   const b = battle, still = motionOff();
   const wo = walkOut(S, b);
@@ -2147,7 +2226,7 @@ function playIntro(S){
   S.el.appendChild(ban);
   const sting = () => { if(b.kind === 'rival'){ SFX.play('alert'); setTimeout(() => SFX.play('encounter'), 200); } else SFX.play('encounter'); };
   if(still){ sting(); setTimeout(() => ban.remove(), introMs); return introMs; }
-  if(lead) setTimeout(sting, lead); else sting();
+  sting();                                       // the sting plays as the boss walks out
   const hold = introMs * 0.72;
   anim(ban, [{ transform: 'translate(-110%,-50%)', opacity: 0, easing: 'cubic-bezier(.2,.8,.3,1)' },
              { transform: 'translate(0,-50%)', opacity: 1, offset: .15 },
@@ -2157,6 +2236,9 @@ function playIntro(S){
   for(const F of S.f.values()){
     if(b.camIn && F.side === 'p') continue;      // 5.0.0: the camera already has your side in place
     const mv = F.el.querySelector('.fmove'), sh = F.el.querySelector('.fshadow');
+    // 5.2.0: no shadow waiting on an empty spot — it comes with the pokémon
+    const arrive = wo && F.side === 'e' ? wo.popAt : lead + hold * 0.5 + (k % 6) * introMs * 0.035;
+    F.el.classList.add('incoming'); setTimeout(() => F.el.classList.remove('incoming'), arrive + 60);
     if(wo && F.side === 'e'){                    // 5.0.0: thrown out by the leader — they appear in the flash
       anim(mv, [{ transform: 'scale(.15)', opacity: 0, filter: 'brightness(4)' }, { transform: 'scale(1.08)', opacity: 1, filter: 'brightness(2)', offset: .6 }, { transform: 'scale(1)', opacity: 1, filter: 'none' }],
         { duration: 380 * (speed >= 4 ? .45 : speed >= 2 ? .7 : 1), delay: wo.popAt, easing: 'ease-out', fill: 'backwards' });
@@ -2184,7 +2266,7 @@ function stageOutro(S){
       { transform: 'translateY(0)', offset: .5 }, { transform: 'translateY(-9px)', offset: .72 }, { transform: 'translateY(0)' }],
       { duration: 900, delay: k++ * 90, easing: 'ease-out' });
   }
-  if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)) victorySweep(S);
+  if(r === 'win' && battle.boss && ['gym', 'elite', 'champion', 'red'].includes(battle.kind)){ victorySweep(S); setTimeout(() => { if(battle && battle.stage === S) badgeCeremony(S); }, 1300 * walkPace()); }
   else if(r === 'win') crowdReact(S, true);
 }
 
@@ -3547,6 +3629,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.2.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'Bosses speak when they walk out, and leaders hand over their badge on the field', items:[
+    'Walk-out lines: when a gym leader, Elite Four member, the Champion, a secret boss or your rival reaches the middle of the field, they say something before throwing out their team.',
+    'Badge ceremony: beat a gym leader (or a secret boss) and they walk back out to the halfway line and hand you the badge. It rises over them, glowing, and flies across to your team.',
+    'A fainted pok\u00e9mon\u2019s name plate now disappears with it.',
+    'No more shadows sitting on empty spots while the pok\u00e9mon are still coming in: each shadow arrives with its pok\u00e9mon.' ] },
   { v:'5.1.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'One stadium behind every screen, and bosses walk out before they fight', items:[
     'The game now sits on a single stadium. The shop is the camera close on your half of the real battle field, with the menus floating over it, and BATTLE pulls that same camera back to the whole stadium. Nothing is swapped: the field you set up on is the field you fight on.',
     'The field in the shop is already your next opponent\u2019s stadium: a gym leader\u2019s type floor, the League, or your rival\u2019s dusk.',

@@ -18,6 +18,9 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     check(a.w && a.img && a.name === (await p.evaluate(() => battle.boss.name)), `${tag}: the leader walks out onto the field (${a.name})`);
     check(a.foesHidden, `${tag}: the leader's pokémon aren't out yet`);
     check(a.ban.every(o => o < .1), `${tag}: the banner waits for the walk-out`);
+    check(await p.evaluate(() => [...document.querySelectorAll('#world .ftr.e')].every(f => getComputedStyle(f, '::before').opacity === '0')), `${tag}: no shadows waiting on the empty spots`);
+    await p.waitForTimeout(1100);
+    check(await p.evaluate(() => { const b = document.querySelector('#world .walkout .wsay'); return !!b && b.textContent === BOSS_LINES[battle.boss.id]; }), `${tag}: the leader says their line`);
     await p.waitForTimeout(1250);
     check(await p.evaluate(() => document.querySelectorAll('#world .wball2').length > 0), `${tag}: pokéballs fly to each spot`);
     await p.waitForTimeout(900);
@@ -25,7 +28,14 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     check(c.foes.every(o => o > .9) && c.ban.some(o => o > .5), `${tag}: the team is out and the banner plays`);
     await p.waitForFunction(() => battle && battle.i > 0, null, { timeout: 8000 });
     check(!(await p.evaluate(() => document.querySelector('#world .walkout'))), `${tag}: the leader has left the field when the fight starts`);
-    await p.evaluate(() => { finishPlayback(); handle('afterbattle'); }); await p.waitForTimeout(400);
+    /* a won gym: the leader walks back out and hands over the badge; fainted pokémon have no name plate */
+    await p.evaluate(() => { battle.result = 'win'; battle.outroPlayed = false; finishPlayback(); });
+    await p.waitForTimeout(3300);
+    const cer = await p.evaluate(() => ({ walk: !!document.querySelector('#world .walkout'), say: (document.querySelector('#world .walkout .wsay') || {}).textContent || '', badge: !!document.querySelector('#world .wbadge'),
+      downPlates: [...document.querySelectorAll('#world .ftr.down .fhead')].map(e => getComputedStyle(e).display) }));
+    check(cer.walk && cer.badge && /Badge/.test(cer.say), `${tag}: after the win the leader hands over the badge ("${cer.say}")`);
+    check(cer.downPlates.every(d => d === 'none'), `${tag}: fainted pokémon have no name plate (${cer.downPlates.length})`);
+    await p.evaluate(() => { handle('afterbattle'); }); await p.waitForTimeout(400);
     await setup(null);
     await p.evaluate(() => startBattle()); await p.waitForTimeout(300);
     check(!(await p.evaluate(() => document.querySelector('#world .walkout'))), `${tag}: a plain trainer just sends out the team`);
