@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.3', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3529,7 +3529,7 @@ function placeSlots(){
     const vw = document.documentElement.clientWidth;
     let sw = Math.min(r.width, Math.max(sp * 1.7, 64)), sl = r.left + r.width / 2 - sw / 2;
     sl = Math.max(2, Math.min(vw - sw - 2, sl));
-    el.style.cssText = `left:${(sl - F.left).toFixed(1)}px;top:${(r.top - F.top).toFixed(1)}px;width:${sw.toFixed(1)}px;height:${r.height.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%`;
+    el.style.cssText = `left:${(sl - F.left).toFixed(1)}px;top:${(r.top - F.top).toFixed(1)}px;width:${sw.toFixed(1)}px;height:${r.height.toFixed(1)}px;--mh:${r.height.toFixed(1)}px;--sp:${sp}px;--ab:${vert ? 22 : 13.5}%`;
   }
 }
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
@@ -3870,6 +3870,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.3', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Empty-spot rings on iPhone, and the sideways shop column', items:[
+    'The party\u2019s empty-spot rings are laid out a simpler way that iPhones can\u2019t get wrong, so the rings line up when you pick a pok\u00e9mon to place.',
+    'Phones on their side: a pok\u00e9mon\u2019s summary only covers the shop column while you are choosing what to do with it. Cancel or finish and the shop is back.' ] },
   { v:'5.3.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'iPhone placement fixed, and a tidy sideways layout', items:[
     'iPhones measured the tilted field wrongly, which put your party\u2019s spots in the wrong places (most visible when picking a spot) and walked bosses off-centre. The game now works out where everything sits on the field itself, so spots and bosses line up on every phone.',
     'If anything nudges the field or the party after drawing, the spots now follow straight away.',
