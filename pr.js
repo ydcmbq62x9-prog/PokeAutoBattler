@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
   await p.addInitScript(() => { window.PKB_TITLE = false; });
   await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
   console.log(vp.width, await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); render();
-    let worst = 0; for(const m of document.querySelectorAll('#world .slotmark')){ const a = m.getBoundingClientRect(), c = planeRect(m); worst = Math.max(worst, Math.abs(a.left-c.left), Math.abs(a.top-c.top), Math.abs(a.width-c.width), Math.abs(a.height-c.height)); } return worst.toFixed(2); }));
+    let worst = 0; for(const m of document.querySelectorAll('.wcam .slotmark')){ const a = m.getBoundingClientRect(), c = planeRect(m); worst = Math.max(worst, Math.abs(a.left-c.left), Math.abs(a.top-c.top), Math.abs(a.width-c.width), Math.abs(a.height-c.height)); } return worst.toFixed(2); }));
   await p.close(); }
   await b.close();
 })();

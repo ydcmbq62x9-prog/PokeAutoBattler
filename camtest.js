@@ -15,11 +15,11 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     const a = await p.evaluate(() => { const o = [...document.querySelectorAll('.bcR, .speechflow, #inspect')].map(e => +getComputedStyle(e).opacity); return { phase, fading: o.some(x => x < 0.95), wipe: !!document.querySelector('.wipe') }; });
     check(a.phase === 'shop' && a.fading && !a.wipe, `${tag}: BATTLE first drops the shop panels away (no pokéball wipe)`);
     await p.waitForTimeout(330);
-    const z = await p.evaluate(() => { const S = battle && battle.stage; if(!S) return null; const t = getComputedStyle(document.querySelector('#world .wcam')).transform; const m = t.match(/matrix\(([^,]+)/);
+    const z = await p.evaluate(() => { const S = battle && battle.stage; if(!S) return null; const t = getComputedStyle(document.querySelector('.wcam')).transform; const m = t.match(/matrix\(([^,]+)/);
       return { phase, scale: m ? +m[1] : 1, cam: document.body.classList.contains('cam'), foeHidden: [...S.el.querySelectorAll('.ftr.e')].every(e => +getComputedStyle(e).opacity < .1) }; });
     check(z && z.phase === 'battle' && z.scale > 1.05 && z.cam && z.foeHidden, `${tag}: the stadium starts zoomed in on your side (×${z && z.scale.toFixed(2)}), the other side not there yet`);
     await p.waitForFunction(() => !wiping, null, { timeout: 5000 });
-    const done = await p.evaluate(() => { const S = battle.stage; return { t: getComputedStyle(document.querySelector('#world .wcam')).transform, foes: [...S.el.querySelectorAll('.ftr.e')].length, ban: !!document.querySelector('.introban'), camIn: battle.camIn }; });
+    const done = await p.evaluate(() => { const S = battle.stage; return { t: getComputedStyle(document.querySelector('.wcam')).transform, foes: [...S.el.querySelectorAll('.ftr.e')].length, ban: !!document.querySelector('.introban'), camIn: battle.camIn }; });
     check(done.t === 'none' && done.ban && done.camIn, `${tag}: it settles on the whole stadium and the "wants to battle!" banner plays`);
     await p.waitForTimeout(1500);
     check(await p.evaluate(() => [...battle.stage.el.querySelectorAll('.ftr.e')].every(e => +getComputedStyle(e).opacity > .9) && !document.body.classList.contains('cam')), `${tag}: the other side has walked on and the chrome is back`);

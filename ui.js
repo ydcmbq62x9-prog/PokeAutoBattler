@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.6', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.7', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1159,7 +1159,7 @@ function renderShop(){
   const inc = incomeFor(G);
 
   /* --- the party, as the formation it will fight in --- */
-  const partyGrid = '<div class="pfield">' + rankHeaderHtml(COLS_OWN) + formationHtml(COLS_OWN, i => {
+  const partyGrid = '<div class="pfield"><div class="pfclip" data-keep aria-hidden="true"></div>' + rankHeaderHtml(COLS_OWN) + formationHtml(COLS_OWN, i => {
     const u = teamAt(G, i);
     return `<div class="slot ${u ? '' : 'empty'} ${slotClass(i)} pr${Math.floor(i / RANK_W)} pf${i % RANK_W}" data-act="team" data-i="${i}"
       ${u ? `data-pop="team:${i}"` : ''}>
@@ -2737,6 +2737,7 @@ function morphNode(f, t){
   morphKids(f, t);
 }
 function morphKids(from, to){
+  if(from.hasAttribute && from.hasAttribute('data-keep')) return;   // 5.3.7: the field the party stands on lives in here
   let f = from.firstChild, t = to.firstChild;
   while(t){
     const tn = t.nextSibling;
@@ -3549,6 +3550,18 @@ function placeSlots(){
     for(const q of plan) put(q, q.dx, q.dy);
   }
 }
+/* 5.3.7: the page around the field takes the field's own colours (a deep shade of its floor), in the shop and in battle,
+   so the surround always matches whatever stadium is showing */
+const PAGE_TONE = { route:['#3a8840','#43974a'], gym:['#3a8840','#43974a'], dusk:['#2c5a34','#326538'], league:['#241e4a','#2a2356'],
+  summit:['#6f8296','#7a8ea3'], Water:['#1f4f86','#235a95'], Fire:['#3a1e18','#44241c'], Rock:['#5e5442','#685d4a'], Ground:['#7a5e32','#866838'],
+  Grass:['#2f6e35','#357a3b'], Bug:['#3b5226','#435c2b'], Psychic:['#4a2556','#532a60'], Electric:['#3e4452','#454c5b'], Ice:['#4f8aa6','#5795b2'],
+  Fighting:['#6e4e2e','#785634'], Ghost:['#1d1630','#221a38'], Dragon:['#24226a','#2a2776'], Flying:['#3f7aa6','#4684b2'], Normal:['#9a6e7e','#a57888'],
+  Steel:['#59616d','#626a77'], Poison:['#3e2150','#45255a'], Dark:['#1a0f14','#21141a'] };
+function setPageTone(stageEl){
+  const f = stageEl && [...stageEl.classList].find(c => c.startsWith('fl-'));
+  const t = PAGE_TONE[f ? f.slice(3) : 'route'] || PAGE_TONE.route, r = document.documentElement.style;
+  if(r.getPropertyValue('--pg1') !== t[0]){ r.setProperty('--pg1', t[0]); r.setProperty('--pg2', t[1]); }
+}
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
   const w = worldEl(); if(!w || fieldPicking) return;
@@ -3558,21 +3571,35 @@ function layoutWorld(){
   if(!on) return;
   const box = WORLD.box = worldBox();
   w.classList.toggle('wide', box.wide);
+  /* 5.3.7: on an upright phone the shop's field lives inside the party panel itself (in .pfclip), so the field and the
+     party's spots share one parent and can never drift apart, whatever the page or the phone does. Battles, and the
+     wide layouts, keep it in #world. */
+  const clip = phase === 'shop' && !box.wide ? document.querySelector('.pfield > .pfclip') : null;
+  const host = clip || w;
+  if(WORLD.cam.parentNode !== host) host.appendChild(WORLD.cam);
+  if(clip){
+    const pf = clip.parentElement.getBoundingClientRect(), pp = document.querySelector('.panel.party'), pb = pp ? pp.getBoundingClientRect().bottom : pf.bottom;
+    Object.assign(clip.style, { left: (-pf.left) + 'px', top: (-pf.top - scrollY) + 'px', width: document.documentElement.clientWidth + 'px', height: Math.max(0, pb - pf.top + pf.top + scrollY + 6) + 'px' });
+    Object.assign(WORLD.cam.style, { left: box.l + 'px', top: (box.t) + 'px', width: box.w + 'px', height: box.h + 'px' });
+  } else
   Object.assign(WORLD.cam.style, { left: box.l + 'px', top: box.t + 'px', width: box.w + 'px', height: box.h + 'px' });
   const root = document.documentElement.style;
   root.setProperty('--sbW', box.w + 'px'); root.setProperty('--sbH', box.h + 'px');
   const stage = phase === 'battle' && battle && battle.stage ? battle.stage.el : shopStage();
   if(stage.parentNode !== WORLD.cam) WORLD.cam.replaceChildren(stage);
+  setPageTone(stage);
   stage.classList.toggle('vert', box.w < BOARD_VERT_BELOW && !matchMedia('(orientation:landscape) and (max-height:520px) and (min-width:640px)').matches);
+  if(!clip && !box.wide && phase === 'battle') w.style.height = (box.t + box.h + 8) + 'px';   // 5.3.7: the field may have just come out of the party panel
   if(WORLD.anim) return;                       // the camera is mid-move; it settles itself
   w.classList.toggle('shopview', phase === 'shop');
+  if(clip) clip.classList.add('shopview');
   if(phase === 'shop'){
     WORLD.shopCam = shopCamera();
     WORLD.cam.style.transform = WORLD.shopCam;
     placeSlots();
     WORLD.key = worldKey();
     const pp = document.querySelector('.panel.party');
-    w.style.height = box.wide ? '' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
+    w.style.height = box.wide ? '' : clip ? '0px' : Math.round((pp ? pp.getBoundingClientRect().bottom + scrollY : box.t + box.h) + 6) + 'px';
   } else {
     WORLD.cam.style.transform = 'none';
     w.style.height = box.wide ? '' : (box.t + box.h + 8) + 'px';
@@ -3618,13 +3645,14 @@ async function camera(mid, onOpen, dir){
   worldEl();
   try{
     if(dir !== 'back'){
-      const from = WORLD.shopCam;
+      let from = WORLD.shopCam;
       if(!from || !WORLD.cam){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       const away = shopAway();
       if(scrollY) window.scrollTo({ top: 0, behavior: 'smooth' });   // 5.3.1: a fight always starts at the top of the page
       await Promise.all(away.map(e => go(e, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: awayFrame(e) }], 340, { easing: 'ease-in' })));
       if(scrollY) window.scrollTo(0, 0);
+      { const se = WORLD.cam.firstElementChild, q = se && se.getBoundingClientRect(); WORLD.shopRect = q ? { left: q.left, top: q.top, width: q.width, height: q.height } : null; }   // 5.3.7
       body.add('cam', 'cam-hide', 'cam-foe');
       WORLD.anim = true;
       await mid();                                 // the battle draws; its field goes into the world under the same camera,
@@ -3633,6 +3661,8 @@ async function camera(mid, onOpen, dir){
       WORLD.el.classList.remove('shopview');
       if(battle) battle.camIn = true;
       WORLD.cam.style.transform = 'none';
+      { const W0 = WORLD.cam.getBoundingClientRect(), q = WORLD.shopRect;   // the battle field starts exactly where the shop's was
+        if(q && W0.width) from = `translate(${(q.left - W0.left).toFixed(1)}px,${(q.top - W0.top).toFixed(1)}px) scale(${(q.width / W0.width).toFixed(4)})`; }
       const bst = battle && battle.stage && battle.stage.el;
       if(bst && flatShop()){ bst.classList.add('flatshop'); void bst.offsetWidth; requestAnimationFrame(() => bst.classList.remove('flatshop')); }   // 5.3.4: tilt in as we pull back
       const zoom = go(WORLD.cam, [{ transform: from }, { transform: from, offset: .08 }, { transform: 'none' }], 1150);
@@ -3647,7 +3677,7 @@ async function camera(mid, onOpen, dir){
       if(onOpen) onOpen();
       setTimeout(() => body.remove('cam'), T(600));
     } else {
-      const to = WORLD.shopCam;
+      let to = WORLD.shopCam;
       if(!to || !WORLD.cam || !WORLD.cam.firstElementChild || (!battle && !fieldPicking)){ wiping = false; return wipe(mid, onOpen); }
       SFX.play('wipeIn', true);
       body.add('cam');
@@ -3656,6 +3686,8 @@ async function camera(mid, onOpen, dir){
       await wait(320);
       if(scrollY) window.scrollTo(0, 0);
       WORLD.anim = true;
+      { const W0 = WORLD.cam.getBoundingClientRect(), q = WORLD.shopRect;   // 5.3.7: back to exactly where the shop's field was
+        if(q && W0.width) to = `translate(${(q.left - W0.left).toFixed(1)}px,${(q.top - W0.top).toFixed(1)}px) scale(${(q.width / W0.width).toFixed(4)})`; }
       const bst = WORLD.cam.firstElementChild;
       if(bst && flatShop()) bst.classList.add('flatshop');   // 5.3.4: and flatten again on the way back in
       await go(WORLD.cam, [{ transform: 'none' }, { transform: to }], 820);
@@ -3891,6 +3923,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.7', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'The party stays put on the field when you pick a pok\u00e9mon', items:[
+    'On an upright phone the shop\u2019s field now lives inside the party\u2019s own panel instead of behind the whole page, so the field and your pok\u00e9mon move as one. Picking a pok\u00e9mon, closing a tip or scrolling can no longer slide the field out from under them.',
+    'The page around the field now takes the colours of whatever stadium is showing (sky blue for Falkner, purple for the League, deep green on routes), in the shop and in battle, so the background always matches the field.' ] },
   { v:'5.3.6', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Every spot\u2019s ring sits where a pok\u00e9mon stands', items:[
     'The rings on empty party spots now sit exactly where a pok\u00e9mon\u2019s feet go, so empty and filled spots line up row by row.',
     'On phones the field sits a little lower, so the front row\u2019s numbers no longer run into the halfway line and the Formations button.' ] },

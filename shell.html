@@ -2867,6 +2867,17 @@ body.cam .bstage .table,body.cam .bstage .ftr .fbody{transition:transform 1s cub
 
 /* 5.3.6 · an empty spot's ring is centred where a pokémon's feet go (the same footing as the sprite and its shadow) */
 html.bc .pfield .slot.empty::after{top:calc(var(--mh,80px) * (1 - var(--abf,.22)) - min(var(--mh,80px) * .22, 22px) / 2)!important}
+
+/* ---- 5.3.7 · the shop's field inside the party panel on upright phones ---- */
+html.bc .pfield{position:relative}
+.pfield > .pfclip{position:absolute;z-index:-1;overflow:hidden;pointer-events:none}
+.pfclip .wcam{position:absolute;transform-origin:0 0}
+.pfclip .bstage{width:100%!important;height:100%!important;aspect-ratio:auto!important;min-height:0!important;max-height:none!important;border:0;border-radius:14px;box-shadow:none}
+.pfclip .bstage .ground,.pfclip .bstage .slotmark{opacity:0}
+
+/* 5.3.7 · the page around the field matches the stadium that is showing */
+html.bc body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,0),rgba(0,0,0,.3)),repeating-linear-gradient(0deg,var(--pg1,#3a8840) 0 34px,var(--pg2,#43974a) 34px 68px)!important;background-attachment:fixed!important}
+html.bc.dark body{background:radial-gradient(130% 70% at 50% 0%,rgba(0,0,0,.15),rgba(0,0,0,.55)),repeating-linear-gradient(0deg,var(--pg1,#2c6a32) 0 34px,var(--pg2,#337838) 34px 68px)!important;background-attachment:fixed!important}
 </style>
 </head>
 <body>

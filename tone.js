@@ -1,0 +1,22 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  const ctx = await b.newContext({ viewport:{ width:393, height:740 }, hasTouch:true, isMobile:true, deviceScaleFactor:2 });
+  const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
+  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; window.PKB_TIPS = true; });
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.stage = runPlan().findIndex(s => s.kind === 'gym'); sessionBattles = 9;
+    G.team = ['hoothoot','ledyba','cyndaquil','bayleef','pichu'].map((id, i) => { const u = makeUnit(id, 1); u.pos = [1,3,5,2,4][i]; return u; }); render(); });
+  await p.waitForTimeout(400); await p.screenshot({ path:'tn_1.png' });
+  const pos = () => p.evaluate(() => [...document.querySelectorAll('.pfield .slot .artwrap')].map(a => Math.round(a.getBoundingClientRect().top)).join(','));
+  const before = await pos();
+  await p.locator('.drow[data-act="dc"][data-i="0"]').tap(); await p.waitForTimeout(80);
+  const mid = await pos(); await p.waitForTimeout(600); const after = await pos();
+  const drift = await p.evaluate(() => { const st = document.querySelector('.wcam .bstage'); let w = 0; for(const s of document.querySelectorAll('.pfield .slot')){ const i = +s.dataset.i, m = st.querySelector(`.slotmark.p.r${Math.floor(i/2)}.f${i%2}`); w = Math.max(w, Math.abs(s.getBoundingClientRect().top - planeRect(m).top)); } return w.toFixed(1); });
+  console.log({ before, mid, after, drift });
+  await p.screenshot({ path:'tn_2.png' });
+  await p.evaluate(() => { sel = null; render(); document.querySelector('[data-act=endturn]').click(); });
+  await p.waitForTimeout(700); await p.screenshot({ path:'tn_3.png' });
+  await p.waitForTimeout(2600); await p.screenshot({ path:'tn_4.png' });
+  console.log(errs); await b.close();
+})();

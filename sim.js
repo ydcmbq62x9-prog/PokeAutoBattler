@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   await p.addInitScript(() => { window.PKB_TITLE = false; });
   await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(600);
   const r = await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); render();
-    const st = document.querySelector('#world .bstage'), tv = st.querySelector('.tview'), cs = getComputedStyle(tv);
+    const st = document.querySelector('.wcam .bstage'), tv = st.querySelector('.tview'), cs = getComputedStyle(tv);
     const out = { persp: cs.perspective, po: cs.perspectiveOrigin, real: {}, sim: {} };
     const orig = window.getComputedStyle;
     for(const m of st.querySelectorAll('.slotmark.p')){ const k = m.className.replace('slotmark p ',''); const q = planeRect(m); out.real[k] = Math.round((q.bottom - q.height*.06) * 3); }
