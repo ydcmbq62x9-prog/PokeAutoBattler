@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.3.9', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.3.10', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2279,8 +2279,8 @@ function handBadge(S, b, L){
   w.appendChild(bd);
   SFX.play('sparkle');
   const mine = [...S.f.values()].filter(F => F.side === 'p' && !F.down);
-  const tgt = mine.length ? artCentre(S, mine[0]) : null, me = w.getBoundingClientRect(), E = S.el.getBoundingClientRect();
-  const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top - E.top - size * .35) : 0;
+  const tgt = mine.length ? artCentre(S, mine[0]) : null, me = bd.getBoundingClientRect(), E = S.el.getBoundingClientRect();   // 5.3.10: from the badge's own spot
+  const dx = tgt ? tgt.x - (me.left + me.width / 2 - E.left) : -size * 2, dy = tgt ? tgt.y - (me.top + me.height / 2 - E.top) : 0;
   anim(bd, [{ transform: 'translate(-50%,0) scale(.2)', opacity: 0 }, { transform: 'translate(-50%,-40%) scale(1.25)', opacity: 1, offset: .2 },
     { transform: 'translate(-50%,-40%) scale(1)', opacity: 1, offset: .62 },
     { transform: `translate(calc(-50% + ${dx}px), calc(-40% + ${dy}px)) scale(.5)`, opacity: 1, offset: .92 },
@@ -2371,7 +2371,7 @@ function showFieldCards(S, L){
   const E = S.el.getBoundingClientRect(), bx = box.getBoundingClientRect();
   let ox = 0, oy = 0;
   if(L && L.w.isConnected){ const lw = L.w.getBoundingClientRect(); ox = lw.left + lw.width / 2 - (bx.left + bx.width / 2); oy = lw.top + lw.height * .45 - (bx.top + bx.height / 2);
-    if(!S.el.classList.contains('vert')) leaderSay(L, 'Pick one. It’s yours for the rest of the run.', 2600); }
+  }   // 5.3.10 iron-out: the cards' own header says it; a bubble only collided with it
   const ms = walkPace();
   anim(box.querySelector('.fchead'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { duration: 300 * ms, delay: 250 * ms, fill: 'both' });
   box.querySelectorAll('.fcard').forEach((c, k) => {
@@ -3973,6 +3973,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.3.10', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Iron-out: tidier boss scenes', items:[
+    'The badge a leader hands over now rises beside them instead of on top of their speech bubble, and flies to your team from there.',
+    'The extra \u201cPick one\u201d bubble over the reward cards is gone; the cards\u2019 own header already says it, and on a sideways phone the two overlapped.' ] },
   { v:'5.3.9', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'+EXP and Level up show over your pok\u00e9mon again', items:[
     'After a battle each pok\u00e9mon shows +EXP over it again, with what grew (for example \u25c6+1 \u2665+2). Battle EXP grows a pok\u00e9mon\u2019s stats rather than its level, so the pop-up had stopped firing.', 'The +EXP, Level up and evolution pop-ups now ride on the pok\u00e9mon\u2019s own spot, so they appear right over it even while the party is settling back onto the field.' ] },
   { v:'5.3.8', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'Party spots hold still on iPhone, and the camera no longer cuts off', items:[

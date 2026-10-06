@@ -2889,6 +2889,12 @@ body.cam #world{position:fixed!important;inset:0!important;height:auto!important
 html.bc body[data-phase=battle] .panel.arena{background:none!important;box-shadow:none!important}
 body.speaking .panel.arena > .bosstag{opacity:0;transition:opacity .25s}
 .panel.arena > .bosstag{transition:opacity .25s}
+
+/* ---- 5.3.10 iron-out ---- */
+/* the badge rises beside the leader, clear of their speech bubble */
+.walkout .wbadge{bottom:22%!important;left:auto!important;right:-62%}
+.walkout .wbadge .wglow{inset:-30%!important}
+.bstage.vert .walkout .wbadge{right:-70%}
 </style>
 </head>
 <body>

@@ -1,0 +1,23 @@
+const { chromium } = require('playwright');
+const [W,H,tag,touch] = [+process.argv[2], +process.argv[3], process.argv[4], process.argv[5] === '1'];
+(async () => {
+  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
+  const ctx = await b.newContext({ viewport:{ width:W, height:H }, hasTouch:touch, isMobile:touch, deviceScaleFactor:2 });
+  const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
+  await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; });
+  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  const shot = async n => { await p.waitForTimeout(350); await p.screenshot({ path:`ir_${tag}_${n}.png` }); };
+  await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); sessionBattles = 9; G.turn = 6; G.credits = 18; G.badges = 1;
+    G.stage = runPlan().findIndex(s => s.kind === 'gym' && s.badge === 1); if(G.stage < 0) G.stage = runPlan().findIndex(s => s.kind === 'gym');
+    G.team = ['quilava','bayleef','hoothoot','ledian','pichu','azumarill'].map((id, i) => { const u = makeUnit(id, i % 3 ? 0 : 2); u.pos = i; return u; });
+    G.team[0].held = 'claw'; G.pc = [makeUnit('wooper',0)]; fixSlots(G); rollShop(G, false); render(); window.scrollTo(0,0); });
+  await shot('1shop');
+  await p.evaluate(() => { const r = document.querySelector('.drow[data-act="dc"]'); r && r.click(); window.scrollTo(0,0); }); await shot('2pick');
+  await p.evaluate(() => { sel = null; inspect = null; render(); document.querySelector('[data-act=endturn]').click(); });
+  await p.waitForTimeout(3200); await shot('3battle');
+  await p.evaluate(() => { battle.result = 'win'; finishPlayback(); }); await p.waitForTimeout(5500); await shot('4result');
+  await p.evaluate(() => document.querySelector('[data-act=afterbattle]').click()); await p.waitForTimeout(1300); await shot('5reward');
+  await p.evaluate(() => { const c = document.querySelector('.fieldcards .fcard'); c && c.click(); }); await p.waitForTimeout(3200); await shot('6back');
+  await p.evaluate(() => openMenu()); await shot('7menu');
+  console.log(tag, errs); await b.close();
+})();
