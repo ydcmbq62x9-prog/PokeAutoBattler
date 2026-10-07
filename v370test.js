@@ -56,7 +56,7 @@ const check = (c, m) => c ? ok(m) : bad(m);
     G.over = 'lose'; phase = 'over'; render(); });
   await page.waitForTimeout(150);
   const sum = await page.$eval('.runsum', e => e.textContent);
-  check(/RUN MVP/.test(sum) && /Squirtle/.test(sum) && /2W · 1L/.test(sum), 'the run-over screen shows the summary and the MVP');
+  check(/Run MVP/.test(sum) && /Squirtle/.test(sum) && /2W · 1L/.test(sum), 'the run-over screen shows the summary and the MVP');
   check(!!(await page.$('[data-act="runimage"]')), 'there is a Save summary image button');
   const size = await page.evaluate(async () => { const bl = await runImage(); return bl ? bl.size : 0; });
   check(size > 2000, `the summary image is drawn (${size} bytes)`);

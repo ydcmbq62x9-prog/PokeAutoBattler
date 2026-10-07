@@ -187,7 +187,7 @@ const mark = m => console.log('… ' + m);
   await page.click('[data-act="skip"]');
   await page.waitForTimeout(300);
   const bannerText = await page.$eval('.big', e => e.textContent.trim()).catch(()=>null);
-  if(!bannerText || !/BADGE|BLACKED OUT/.test(bannerText))
+  if(!bannerText || !/Badge|Blacked out/.test(bannerText))
     errors.push('the result banner is not badge-aware: ' + bannerText);
   mark('fight banner: ' + bannerText);
   await page.screenshot({ path:'shot-gym.png', fullPage:true });

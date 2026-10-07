@@ -130,7 +130,7 @@ check(NEW.every(k => H[k].boss === 'elite'), '…and marked as Elite Four / Cham
       sel = { kind:'team', idx:1 }; inspect = { kind:'unit', u:G.team[1] }; render();
       const neg = document.querySelector('#inspect .sbon.neg'), negTxt = neg && neg.textContent;
       return { tags, sprites, negTxt, lockTxt }; });
-    check(r.tags.filter(t => t === 'VERY RARE').length === 2, `${tag}: Very rare items carry a gold VERY RARE tag`);
+    check(r.tags.filter(t => t === 'Very rare').length === 2, `${tag}: Very rare items carry a gold VERY RARE tag`);
     check(r.sprites, `${tag}: all four have pixel icons`);
     check(/Choice Band/.test(r.lockTxt || ''), `${tag}: the summary strikes out the locked second move (“${r.lockTxt}”)`);
     check(/^−\d+$/.test(r.negTxt || ''), `${tag}: Heart Scale's Attack cost shows as ${r.negTxt} in the summary`);

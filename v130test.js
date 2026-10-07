@@ -58,7 +58,7 @@ check(E.evoLine('jolteon').join() === 'eevee,jolteon' && E.evoFamily('eevee').le
     const v = await p.evaluate(() => { const vt = document.querySelector('.vtag').textContent; openMenu();
       const sv = document.querySelector('.modal .sver').textContent; const hasX = !!document.querySelector('.smi[data-m="transfer"]');
       document.querySelectorAll('.modal').forEach(m => m.remove()); return { vt, sv, hasX }; });
-    check(v.vt === 'PokéBattler ' + V && v.sv === V, `${tag}: the bottom tag and START show the version without a date (“${v.vt}”, “${v.sv}”)`);
+    check(v.vt === 'PokéArena ' + V && v.sv === V, `${tag}: the bottom tag and START show the version without a date (“${v.vt}”, “${v.sv}”)`);
     check(v.hasX, `${tag}: START has Transfer save`);
 
     /* What's new: 1.3.0, 1.2.0 (dated), then one 1.1.0 beta */

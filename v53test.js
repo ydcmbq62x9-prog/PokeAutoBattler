@@ -64,7 +64,7 @@ check(H.bell.boss === 'none' && H.helmet.boss === 'none', '…and bosses don’t
     const r = await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50;
       G.mart = [{ id:'protein', held:false }, { id:'bell', held:true }, { id:'helmet', held:true }]; render();
       return { tags: [...document.querySelectorAll('.martrow .rar')].map(t => t.textContent), sprites: !!SPRITES.bell && !!SPRITES.helmet }; });
-    check(r.tags.filter(t => t === 'RARE').length === 2, `${tag}: both show a blue RARE tag`);
+    check(r.tags.filter(t => t === 'Rare').length === 2, `${tag}: both show a blue RARE tag`);
     check(r.sprites, `${tag}: both have pixel icons`);
     check(!errs.length, `${tag}: no errors${errs.length ? ' — ' + errs[0] : ''}`);
   }

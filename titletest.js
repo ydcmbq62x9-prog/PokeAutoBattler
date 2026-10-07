@@ -22,7 +22,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     const t0 = await page.evaluate(() => { const t = document.querySelector('#title');
       return t && { txt: t.textContent.replace(/\s+/g, ' '), img: !!t.querySelector('.tmon img[src^="data:"]'), alt: t.querySelector('.tmon img').alt,
         menu: t.querySelector('.tmenu').hidden, v: GAME_VERSION.v, sub: t.querySelector('.tsub').textContent, top: document.elementFromPoint(innerWidth / 2, innerHeight / 2).closest('#title') !== null }; });
-    check(t0 && /POK/.test(t0.txt) && /BATTLER/.test(t0.txt) && /TAP TO PLAY/.test(t0.txt), `${tag}: title shows the logo and TAP TO PLAY`);
+    check(t0 && /Poké/.test(t0.txt) && /Arena/.test(t0.txt) && /Tap to play/.test(t0.txt), `${tag}: title shows the logo and TAP TO PLAY`);
     check(t0 && t0.img && ['Bulbasaur', 'Charmander', 'Squirtle', 'Pikachu'].includes(t0.alt), `${tag}: with no partner yet it shows a starter (${t0 && t0.alt})`);
     check(t0 && t0.menu && t0.top, `${tag}: covers the game, no menu until START`);
     check(t0 && t0.txt.includes(t0.v) && !/Best:/.test(t0.txt), `${tag}: version at the bottom, no best run on a fresh device`);
@@ -46,7 +46,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     await page.keyboard.press('Enter'); await page.waitForTimeout(80);
     const m = await page.evaluate(() => ({ items: [...document.querySelectorAll('.tmi')].map(b => b.textContent.replace(/\s+/g, ' ').trim()),
       cur: document.querySelector('.tmi.cur').dataset.t, press: document.querySelector('.tpress').hidden }));
-    check(m.press && m.items.length === 6 && /^CONTINUE ?Turn 9 · 2 badges · 4 lives$/.test(m.items[0]) && /^NEW RUN/.test(m.items[1]) && /^DAILY CHALLENGE/.test(m.items[2]) && /^POK.DEX/.test(m.items[3]) && /^TRAINER CARD/.test(m.items[4]) && m.items[5] === 'OPTIONS',
+    check(m.press && m.items.length === 6 && /^Continue ?Turn 9 · 2 badges · 4 lives$/.test(m.items[0]) && /^New run/.test(m.items[1]) && /^Daily challenge/.test(m.items[2]) && /^Pok.dex/.test(m.items[3]) && /^Trainer card/.test(m.items[4]) && m.items[5] === 'Options',
       `${tag}: START opens CONTINUE (Turn 9 · 2 badges · 4 lives) / NEW RUN / DAILY CHALLENGE / TRAINER CARD / OPTIONS`);
     check(m.cur === 'continue', `${tag}: cursor starts on CONTINUE`);
     for(let k = 0; k < 6; k++) await page.keyboard.press('ArrowDown');

@@ -25,7 +25,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     const lives = G.lives; applyBattleResult(G, 'lose', opp, null); battle = null; noteRunEnd(); phase = 'over'; render();
     return { html: document.body.innerText, lives, now: G.lives, rec: records().red || null };
   });
-  check(/CHAMPION!/.test(lose.html) && /Red didn.t say a word/.test(lose.html) && !/RED DEFEATED/.test(lose.html), 'losing: Champion screen with the Mt. Silver note');
+  check(/Champion!/.test(lose.html) && /Red didn.t say a word/.test(lose.html) && !/Red defeated/.test(lose.html), 'losing: Champion screen with the Mt. Silver note');
   check(lose.lives === lose.now && !lose.rec, 'losing: no life lost and no badge recorded');
   /* win */
   const win = await p.evaluate(() => {
@@ -36,7 +36,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     noteRunEnd(); const again = records().red.count;
     return { first, again };
   });
-  check(/RED DEFEATED!/.test(win.first.html) && /MT\. SILVER/.test(win.first.html) && win.first.badge, 'winning: Red Defeated screen with badge');
+  check(/Red defeated!/.test(win.first.html) && /Mt\. Silver/i.test(win.first.html) && win.first.badge, 'winning: Red Defeated screen with badge');
   check(win.first.rec.count === 1 && win.first.isNew && win.again === 1, 'badge recorded once, flagged NEW once');
   const card = await p.evaluate(() => { openTrainerCard(false); const b = document.querySelector('.sbt[data-sb="red"]'); b.click(); const t = (b.classList.contains('on') ? 'ON ' : '') + document.querySelector('.sbinfo').textContent; document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
   check(/^ON /.test(card) && /Red.s Badge/.test(card) && !/Not earned yet/.test(card), 'Trainer Card shows Red’s Badge as earned');

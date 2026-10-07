@@ -1,4 +1,4 @@
-/* 5.5.0: the home-screen icon — "PB" in the game's sports lettering, on the pitch with the halfway circle.
+/* 5.5.0: the home-screen icon — "PA" (PokéArena) in the game's sports lettering, on the pitch with the halfway circle.
    (v48's pixel PB in a Game Boy box is kept in icon.v48.js.) Drawn as HTML so it can use Barlow Condensed,
    and screenshotted at every size the platforms ask for. */
 const { chromium } = require('playwright');
@@ -14,7 +14,7 @@ function page({ maskable, size }){
 .pb{position:absolute;left:50%;top:50%;transform:translate(-52%,-53%);font:italic 800 ${190*k*pad}px/1 'Barlow Condensed',sans-serif;letter-spacing:${-2*k}px;white-space:nowrap}
 .pb .p{color:#fff;text-shadow:${5*k}px ${6*k}px 0 #d9463f}
 .pb .b{color:#ffd23a;text-shadow:${5*k}px ${6*k}px 0 #a07a10}
-</style></head><body><div class="i"><i class="line"></i><i class="circ"></i><i class="badge"></i><div class="pb"><span class="p">P</span><span class="b">B</span></div></div></body></html>`;
+</style></head><body><div class="i"><i class="line"></i><i class="circ"></i><i class="badge"></i><div class="pb"><span class="p">P</span><span class="b">A</span></div></div></body></html>`;
 }
 (async () => {
   const fs = require('fs');

@@ -22,14 +22,14 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     const opp = opponentFor0(G); applyBattleResult(G, 'win', opp, null); noteRunEnd(); phase = 'over'; render();
     return { html: document.body.innerText, rec: records().oak, red: records().red || null, badge: !!document.querySelector('.redend .rdb') };
   });
-  check(/OAK DEFEATED!/.test(w.html) && /PALLET TOWN/.test(w.html) && w.badge && w.rec.count === 1 && !w.red, 'winning: Oak Defeated screen, Oak’s Badge recorded (not Red’s)');
+  check(/Oak defeated!/.test(w.html) && /Pallet Town/i.test(w.html) && w.badge && w.rec.count === 1 && !w.red, 'winning: Oak Defeated screen, Oak’s Badge recorded (not Red’s)');
   const card = await p.evaluate(() => { openTrainerCard(false); const t = [...document.querySelectorAll('.sbt[data-sb="red"], .sbt[data-sb="oak"]')].map(b => b.getAttribute('aria-label') + (b.classList.contains('on') ? ':on' : '')).join(); document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
   check(/Red.s Badge/.test(card) && /Oak.s Badge:on/.test(card), 'Trainer Card shows both secret badges (' + card + ')');
   check((await p.evaluate(async () => (await runImage()).size)) > 5000, 'summary image renders for Oak');
   const lose = await p.evaluate(() => {
     G = newGame(12, { gens: [1] }); G.redFlag = 'oak'; G.redOpen = true; G.stage = runPlan(G).length - 1;
     applyBattleResult(G, 'lose', opponentFor0(G), null); noteRunEnd(); phase = 'over'; render(); return document.body.innerText; });
-  check(/CHAMPION!/.test(lose) && /professor smiled/.test(lose), 'losing: Champion screen with the professor’s note');
+  check(/Champion!/.test(lose) && /professor smiled/.test(lose), 'losing: Champion screen with the professor’s note');
   /* Porygon2 in a Gen 2 run */
   const py = await p.evaluate(() => { G = newGame(5, { gens: [2] }); rollShop(G, false); const u = makeUnit('porygon', 0); u.exp = TUNING.expForLevel2; G.team = [u]; phase = 'shop'; render();
     const h = evoLineHtml('porygon').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' '); const cardOk = (() => { try{ popupHtml(makeUnit('porygon2', 0)); return true; }catch(e){ return false; } })();

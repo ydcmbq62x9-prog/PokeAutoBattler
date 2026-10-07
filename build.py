@@ -1,5 +1,5 @@
 import re, pathlib
-shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text().replace('<title>PokéBattler Gen 2 Preview</title>', '<title>PokéBattler</title>')
+shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text().replace('<title>PokéArena Gen 2 Preview</title>', '<title>PokéArena</title>')
 if '<!--BUILT-->' in shell:
     shell = pathlib.Path('shell.html').read_text()
 else:
@@ -15,7 +15,7 @@ js = engine + "\n\n" + ui
 assert '</script>' not in js, 'JS contains a literal closing script tag'
 out = shell.replace('<script>\n"use strict";\n</script>', '<!--BUILT-->\n<script>\n"use strict";\n' + js + '\n</script>')
 assert '<!--BUILT-->' in out, 'injection point not found'
-pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out.replace('<title>PokéBattler</title>', '<title>PokéBattler Gen 2 Preview</title>', 1))   # gen2 branch: its own page title
+pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out.replace('<title>PokéArena</title>', '<title>PokéArena Gen 2 Preview</title>', 1))   # gen2 branch: its own page title
 print('built', len(out), 'bytes')
 
 # ---- v48: the home-screen app (GitHub Pages) ----
@@ -28,23 +28,23 @@ if appdir.exists(): shutil.rmtree(appdir)
 (appdir / 'icons').mkdir(parents=True)
 for f in ['icon-192.png', 'icon-512.png', 'maskable-192.png', 'maskable-512.png', 'apple-touch-icon.png', 'favicon-32.png']:
     shutil.copy('app/icons/' + f, appdir / 'icons' / f)
-head = '''<meta name="description" content="PokéBattler — a Pokémon auto battler for you and your friends.">
+head = '''<meta name="description" content="PokéArena — a Pokémon auto battler for you and your friends.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#11182c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PokéBattler">
+<meta name="apple-mobile-web-app-title" content="PokéArena">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 '''
 vp_old = '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">'
-assert vp_old in out and '<title>PokéBattler</title>' in out
+assert vp_old in out and '<title>PokéArena</title>' in out
 app_html = out.replace(vp_old, vp_old.replace('user-scalable=no', 'user-scalable=no, viewport-fit=cover'), 1)
-app_html = app_html.replace('<title>PokéBattler</title>', '<title>PokéBattler</title>\n' + head, 1)
+app_html = app_html.replace('<title>PokéArena</title>', '<title>PokéArena</title>\n' + head, 1)
 (appdir / 'index.html').write_text(app_html)
 manifest = {
-  "name": "PokéBattler", "short_name": "PokéBattler",
+  "name": "PokéArena", "short_name": "PokéArena",
   "description": "A Pokémon auto battler for you and your friends.",
   "id": "./", "start_url": "./", "scope": "./",
   "display": "standalone", "orientation": "any",

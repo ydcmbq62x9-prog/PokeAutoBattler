@@ -117,7 +117,7 @@ const S = E.SPECIES, T = E.TUNING;
       const panel = document.querySelector('.panel.legend'); const txt = panel && panel.textContent.replace(/\s+/g, ' ');
       document.querySelector('[data-act="legend"]').click();
       return { txt, joined: G.team.some(u => u.id === 'mewtwo'), credits: G.credits, gone: !document.querySelector('.panel.legend'), undo: !!document.querySelector('.btn.undo') }; });
-    check(/A wild MEWTWO appeared/.test(lg.txt || '') && /Recruit 12₽/.test(lg.txt), `${tag}: the encounter panel shows (${(lg.txt || '').slice(0, 60)}…)`);
+    check(/A wild Mewtwo appeared/.test(lg.txt || '') && /Recruit 12₽/.test(lg.txt), `${tag}: the encounter panel shows (${(lg.txt || '').slice(0, 60)}…)`);
     check(lg.joined && lg.credits === 18 && lg.gone && lg.undo, `${tag}: Recruit adds it for 12₽ (and can be undone)`);
 
     /* new run with rules */
@@ -150,7 +150,7 @@ const S = E.SPECIES, T = E.TUNING;
     check(dy.daily.d === dy.today && dy.daily.key && /Daily Challenge/.test(dy.daily.bar), `${tag}: Start today’s makes a daily run in its own save (${dy.daily.d})`);
     check(dy.mainStill.seed === dy.mainSeed && dy.mainStill.turn === 9, `${tag}: …and your normal run is untouched`);
     check(dy.back.seed === dy.mainSeed && dy.back.turn === 9 && dy.again.turn === 4 && dy.again.daily === dy.today, `${tag}: switching between the two keeps both`);
-    check(/^PokéBattler Daily · .* — /.test(dy.share), `${tag}: a shareable result line (“${dy.share}”)`);
+    check(/^PokéArena Daily · .* — /.test(dy.share), `${tag}: a shareable result line (“${dy.share}”)`);
 
     /* title: the new menu */
     const tl = await p.evaluate(async () => { showTitle(afterTitle); const t = document.getElementById('title');

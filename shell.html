@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>PokéBattler</title>
+<title>PokéArena</title>
 <script>
 /* v37: the theme is applied before anything paints, so a dark-theme player
    never sees a flash of cream. Light (default) · Dark · System. */
@@ -2992,6 +2992,8 @@ body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
 .career .ct.fav{grid-column:1/-1;display:flex;align-items:center;gap:10px;text-align:left;padding:6px 10px}
 .career .ct.fav b{font-size:20px}
 .career .ct.fav .sprite{flex:none}
+/* ---- 5.5.1 · no all-caps: words keep their own capitals (Sean: "you don't have to capitalize the entire word") ---- */
+html.bc *,html.bc *::before,html.bc *::after{text-transform:none!important}
 </style>
 </head>
 <body>

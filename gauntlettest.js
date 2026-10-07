@@ -199,7 +199,7 @@ check(!!w, 'found a Lorelei win that fainted one pokémon and hurt another');
   await page.click('[data-act="skip"]'); await page.waitForTimeout(300);
   const big = await page.$eval('.big', e => e.textContent.trim()).catch(() => '');
   const note = await page.$eval('.gnote', e => e.textContent.replace(/\s+/g, ' ').trim()).catch(() => '');
-  check(/LORELEI FALLS/.test(big) && /Next: Bruno/.test(note) && /nobody heals/.test(note),
+  check(/Lorelei falls/.test(big) && /Next: Bruno/.test(note) && /nobody heals/.test(note),
     `the win reads "${big}" — "${note}"`);
 
   // continue into the interlude

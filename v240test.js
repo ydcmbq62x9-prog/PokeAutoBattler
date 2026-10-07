@@ -47,7 +47,7 @@ const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
     await page.evaluate(() => { G = newGame(7, { mods: { onelife: true } }); G.over = 'won'; G.hcNew = false; phase = 'over'; render(); });
     await page.waitForTimeout(150);
     const win = await page.evaluate(() => { const a = document.querySelector('.hcaward'); return a && a.textContent.replace(/\s+/g, ' '); });
-    check(win && /HARDCORE BADGE/.test(win) && /Another One Life clear/.test(win), `${tag}: victory screen shows the badge (${win})`);
+    check(win && /Hardcore Badge/.test(win) && /Another One Life clear/.test(win), `${tag}: victory screen shows the badge (${win})`);
     await page.evaluate(() => { G = newGame(7, { mods: {} }); G.over = 'won'; phase = 'over'; render(); });
     check(!(await page.$('.hcaward')), `${tag}: a plain win shows no badge panel`);
 

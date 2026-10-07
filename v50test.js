@@ -54,13 +54,13 @@ check(/max HP/.test(E.HELD_ITEMS.sitrus.text) && !/round of battle EXP/.test(E.H
       return rows; });
     const by = Object.fromEntries(r.map(x => [x.name, x.tag]));
     check(by['Protein'] === '' && by['Muscle Band'] === '', `${tag}: common items carry no tag`);
-    check(by['Rare Candy'] === 'UNCOMMON' && by['Leftovers'] === 'UNCOMMON', `${tag}: uncommon items say so`);
-    check(by['Exp. Share'] === 'RARE' && by['Lucky Egg'] === 'RARE', `${tag}: rare items say so`);
+    check(by['Rare Candy'] === 'Uncommon' && by['Leftovers'] === 'Uncommon', `${tag}: uncommon items say so`);
+    check(by['Exp. Share'] === 'Rare' && by['Lucky Egg'] === 'Rare', `${tag}: rare items say so`);
     check(r.every(x => x.inside), `${tag}: the tags fit inside their rows`);
     const dex = await p.evaluate(() => { openDex(); const tags = [...document.querySelectorAll('.modal .dexrow .rar')].map(t => t.textContent);
       document.querySelectorAll('.modal').forEach(m => m.remove()); return tags; });
     { const want = r => [...Object.values(ITEMS_N), ...Object.values(HELD_N)].filter(d => d.rarity === r).length;
-      check(dex.filter(t => t === 'RARE').length === want('rare') && dex.filter(t => t === 'UNCOMMON').length === want('uncommon'), `${tag}: the Pokédex item pages show the tags (${dex.length})`); }
+      check(dex.filter(t => t === 'Rare').length === want('rare') && dex.filter(t => t === 'Uncommon').length === want('uncommon'), `${tag}: the Pokédex item pages show the tags (${dex.length})`); }
     check(!errs.length, `${tag}: no errors${errs.length ? ' — ' + errs[0] : ''}`);
   }
   await b.close();

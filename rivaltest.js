@@ -105,7 +105,7 @@ const meet = (seed, team, m, turn) => { const G = E.newGame(seed); E.rollShop(G,
     check(/Blue: “Hey! Wait up!/.test(log), `${w}px: he says hello in the battle log`);
     await page.click('[data-act="skip"]'); await page.waitForTimeout(200);
     const res = await page.evaluate(() => ({ big: (document.querySelector('.big') || {}).textContent, note: (document.querySelector('.rivalwin') || {}).textContent || '' }));
-    check(/RIVAL BEATEN/.test(res.big) && /next turn/.test(res.note), `${w}px: the win screen shows the prize: "${res.note.replace(/\s+/g,' ').trim().slice(0, 90)}"`);
+    check(/Rival beaten/.test(res.big) && /next turn/.test(res.note), `${w}px: the win screen shows the prize: "${res.note.replace(/\s+/g,' ').trim().slice(0, 90)}"`);
     const sw = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
     check(sw, `${w}px: no sideways scrolling`);
     await page.click('[data-act="afterbattle"]'); await page.waitForTimeout(250);

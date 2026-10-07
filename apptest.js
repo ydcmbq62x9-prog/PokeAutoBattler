@@ -18,7 +18,7 @@ const ROOT = '/mnt/user-data/outputs/gen2';   // gen2 branch
     const cdp = await ctx.newCDPSession(page);
     const man = await cdp.send('Page.getAppManifest');
     const parsed = JSON.parse(man.data || '{}');
-    check(man.errors.length === 0 && parsed.name === 'PokéBattler' && parsed.display === 'standalone', `the manifest loads with no errors (${parsed.name}, ${parsed.display})`);
+    check(man.errors.length === 0 && parsed.name === 'PokéArena' && parsed.display === 'standalone', `the manifest loads with no errors (${parsed.name}, ${parsed.display})`);
     const icons = await page.evaluate(async () => { const out = [];
       for(const h of ['icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png', 'sw.js', 'manifest.webmanifest']){
         const r = await fetch(h); out.push(r.ok); } return out; });

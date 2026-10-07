@@ -67,7 +67,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
                fx: document.querySelectorAll('.fxl > *').length, sw: document.documentElement.scrollWidth <= innerWidth + 1 };
     });
     check(end.downOk, `${w}px: after a skip, exactly the fainted pokémon are down ${end.bad.join('; ')} at=${end.at}/${end.n}`);
-    check(end.result === 'win' ? /VICTORY|BADGE|BEATEN|FALLS|CHAMPION/.test(end.ribbon) : end.ribbon.trim().length > 0, `${w}px: the result ribbon reads "${end.ribbon.trim()}" (${end.result})`);
+    check(end.result === 'win' ? /Victory|Badge|beaten|falls|Champion/.test(end.ribbon) : end.ribbon.trim().length > 0, `${w}px: the result ribbon reads "${end.ribbon.trim()}" (${end.result})`);
     check(end.sw, `${w}px: no sideways scrolling`);
     await page.click('[data-act="afterbattle"]'); await page.waitForTimeout(300);
     await page.evaluate(() => document.querySelectorAll('.modal').forEach(x => x.remove()));

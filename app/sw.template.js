@@ -1,4 +1,4 @@
-/* PokéBattler __VERSION__ — service worker for the home-screen app.
+/* PokéArena __VERSION__ — service worker for the home-screen app.
    The game page is fetched fresh whenever there's a connection (so a new
    version shows up the next time the app is opened) and served from the cache
    when there isn't. Icons and the manifest come from the cache; the fonts are
