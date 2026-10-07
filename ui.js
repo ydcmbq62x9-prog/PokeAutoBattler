@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.8.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.8.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -440,7 +440,7 @@ function unitHtml(u, opts){
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
     <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}" title="Attack">${SI('a')}${eA}</span><span class="h ${hs.hp?'xup':''}" title="HP">${SI('h')}${eH}</span></div>
     <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}" title="Speed">${SI('s')}${eS}</span></div>
-    ${(c => statTri(eA, eH, eS, c ? { cmp: c } : null))(triCmpFor(u, opts))}
+    ${(c => statTri(eA, eH, eS, c ? { cmp: c } : null))(triCmpFor(u, opts))}${TRI_BEST && u.uid === TRI_BEST && !opts.price ? '<i class="ibest" title="Gains the most from this item">★</i>' : ''}
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
@@ -452,8 +452,20 @@ const SI = k => `<i class="si si-${k}" aria-hidden="true"></i>`;
 const TRI_C = 23, TRI_R = 18.5;
 function triPt(k, r){ const ang = -Math.PI / 2 + k * 2 * Math.PI / 3; return (TRI_C + Math.cos(ang) * TRI_R * r).toFixed(1) + ',' + (TRI_C + Math.sin(ang) * TRI_R * r).toFixed(1); }
 const triFrac = (v, m) => Math.max(.12, Math.min(1, v / m));
+/* 5.8.1: the triangles scale with your team. Each corner's full length is the larger of the starting bar and 1.15× the
+   best on your team (party and PC, and a Daycare pick being compared), so levelled and evolved pokémon don't all fill
+   their triangles: the shapes keep showing each one's build, and stay comparable with each other on the same screen. */
+let TRI_SCALE = null;
+function triScale(extra){
+  const sc = { atk: BAR_MAX.atk, hp: BAR_MAX.hp, spd: BAR_MAX.spd };
+  const all = G ? [...(G.team || []), ...(G.pc || [])].filter(Boolean) : [];
+  for(const u of all){ sc.atk = Math.max(sc.atk, effAtk(u) * 1.15); sc.hp = Math.max(sc.hp, effHp(u) * 1.15); sc.spd = Math.max(sc.spd, effSpd(u) * 1.15); }
+  if(extra){ sc.atk = Math.max(sc.atk, extra.a * 1.15); sc.hp = Math.max(sc.hp, extra.h * 1.15); sc.spd = Math.max(sc.spd, extra.s * 1.15); }
+  return sc;
+}
 /** The gold shape's points for these stats. */
-const triShape = (a, h, sp) => [triPt(0, triFrac(a, BAR_MAX.atk)), triPt(1, triFrac(sp, BAR_MAX.spd)), triPt(2, triFrac(h, BAR_MAX.hp))].join(' ');
+const triShape = (a, h, sp) => { const S = TRI_SCALE || triScale();
+  return [triPt(0, triFrac(a, S.atk)), triPt(1, triFrac(sp, S.spd)), triPt(2, triFrac(h, S.hp))].join(' '); };
 /* 5.7.0: while a Daycare pokémon is picked, every party triangle also shows that pokémon's shape (dashed), to compare.
    5.8.0: the same for a vitamin or a held item: each pokémon it can go on shows its shape with the item (dashed). */
 let TRI_CMP = null;
@@ -468,6 +480,23 @@ function triWithItem(u, id, held){
   }
   const c = { a: effAtk(v), h: effHp(v), s: effSpd(v) };
   return c.a === effAtk(u) && c.h === effHp(u) && c.s === effSpd(u) ? null : c;
+}
+/* 5.8.1: Options → Item hints. With a vitamin or held item picked, the party pokémon that gains the most from it
+   (measured on the triangle: each stat's gain as a share of its bar) gets a gold star. */
+let TRI_BEST = null;
+function bestForItem(){
+  if(!G || !sel || PREF.get('itemhint', 'on') === 'off') return null;
+  let id = null, held = false;
+  if(sel.kind === 'mart'){ const m = G.mart[sel.idx]; if(!m || m.bought) return null; id = m.id; held = !!m.held; }
+  else if(sel.kind === 'bag'){ id = G.bag[sel.idx]; held = true; }
+  if(!id) return null;
+  let best = null, top = 0;
+  for(const u of G.team){
+    const c = triWithItem(u, id, held); if(!c) continue;
+    const g = (c.a - effAtk(u)) / BAR_MAX.atk + (c.h - effHp(u)) / BAR_MAX.hp + (c.s - effSpd(u)) / BAR_MAX.spd;
+    if(g > top + 1e-9){ top = g; best = u.uid; }
+  }
+  return best;
 }
 function triCmpFor(u, opts){
   if(opts && opts.price) return null;
@@ -488,9 +517,11 @@ function statTri(a, h, sp, opts){
 }
 /** 5.7.0: an opponent's summary shows the shape of its stats, not the numbers. */
 function enemyTriHtml(u){
-  return `<div class="etri">${statTri(effAtk(u), effHp(u), effSpd(u), { hide: true, cls: 'big' })}
+  const keep = TRI_SCALE; TRI_SCALE = triScale({ a: effAtk(u), h: effHp(u), s: effSpd(u) });   // measured against your team
+  const tri = statTri(effAtk(u), effHp(u), effSpd(u), { hide: true, cls: 'big' }); TRI_SCALE = keep;
+  return `<div class="etri">${tri}
     <div class="etl"><span class="ca">${SI('a')} Attack</span><span class="ch">${SI('h')} HP</span><span class="cs">${SI('s')} Speed</span>
-    <small>The gold shape leans towards what it’s good at. Opponents’ exact numbers stay hidden.</small></div></div>`;
+    <small>The gold shape leans towards what it’s good at, measured against your own team. Opponents’ exact numbers stay hidden.</small></div></div>`;
 }
 /** 5.7.0: after a battle, a triangle that grew shows its old shape shrinking away and pulses the corner that grew. */
 function triGrow(el, was, now){
@@ -2894,7 +2925,7 @@ function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cl
 
 function render(){
   { const dc = sel && sel.kind === 'dc' && G && G.daycare && G.daycare[sel.idx], cu = dc && dc.unit;   // 5.7.0
-    TRI_CMP = cu ? { a: effAtk(cu), h: effHp(cu), s: effSpd(cu) } : null; }
+    TRI_CMP = cu ? { a: effAtk(cu), h: effHp(cu), s: effSpd(cu) } : null; TRI_BEST = bestForItem(); TRI_SCALE = triScale(TRI_CMP); }
   if(fieldPicking) return;                   // 5.3.0: the reward cards are up on the field; the shop draws when one is picked
   if(SFX.held && !(battle && battle.paused)) SFX.hold(false);   // 4.17.3: nothing is paused, so nothing should be held
   if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
@@ -4108,6 +4139,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.8.1', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Item hints, and stat triangles that keep their shape as your team grows', items:[
+    'Pick a vitamin or a held item and the party pok\u00e9mon that gains the most from it gets a gold star beside its triangle. Turn it off in Options \u2192 Item hints.',
+    'Stat triangles now scale with your team instead of a fixed cap, so pok\u00e9mon that have levelled up or evolved no longer fill their whole triangle. Each corner reaches as far as that stat goes compared with the best on your team, so you can still see each pok\u00e9mon\u2019s build (and what grew) all run long. Opponents\u2019 triangles are measured against your team too.' ] },
   { v:'5.8.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Vitamins and held items show what they would do on each triangle', items:[
     'Pick a vitamin in the Mart, or a held item in the Mart or your Bag, and every pok\u00e9mon it can go on shows its triangle with the item as a dashed outline over its own shape. You can see who gains the most before you use or buy it. Pok\u00e9mon it would do nothing for (a full vitamin, the item it already holds) show no outline.',
     'Iron-out: on a computer the crowd in the stands is drawn as small, close dots instead of a grid of big circles, the Your Party header sits on a dark strip so the field\u2019s edge no longer runs through it, and the stat triangles are a little bigger. On a sideways phone the summary card is solid and its stat rows no longer squash the labels. The \u201ctap a slot\u201d pill no longer sits on top of the summary card there.' ] },
@@ -5012,11 +5046,13 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
+    <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
+      Item hints puts a gold star on the party pokémon that gains the most from the vitamin or held item you have picked.
       Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
   d.classList.add('options');

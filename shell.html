@@ -3097,6 +3097,14 @@ html.bc .pfield .slot .stri.cmp{transform:scale(1.5);transform-origin:100% 100%;
 }
 /* sideways phone: the "tap a slot" pill hides while the summary card is open (the bar under it already says what to do) */
 @media (orientation:landscape) and (max-height:520px) and (min-width:640px){ body.picking.inspecting .carry.pinned{display:none!important} }
+/* ---- 5.8.1 · item hints: a gold star on the pokémon that gains the most ---- */
+.ibest{display:none}
+html.bc .pfield .slot .ibest{display:grid;place-items:center;position:absolute;z-index:4;pointer-events:none;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:14px;line-height:1;
+  background:radial-gradient(circle at 40% 35%,#fff3b0,#ffd23a 55%,#c9971a);color:#3a2a00;box-shadow:0 0 0 2px #11182c,0 0 12px rgba(255,210,58,.85);
+  right:calc(50% + var(--sp,64px) * .34 + clamp(40px,calc(var(--sp,64px) * .7),56px) - 4px);bottom:calc(var(--ab,13%) + clamp(40px,calc(var(--sp,64px) * .7),56px) + 10px);animation:ibest 1.4s ease-in-out infinite}
+@keyframes ibest{50%{transform:scale(1.15)}}
+body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:none}
+@media (prefers-reduced-motion:reduce){html.bc .pfield .slot .ibest{animation:none}}
 </style>
 </head>
 <body>
