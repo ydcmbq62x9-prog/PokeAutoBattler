@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>PokéBattler</title>
-<meta name="description" content="PokéBattler — a Pokémon auto battler for you and your friends.">
+<title>PokéArena</title>
+<meta name="description" content="PokéArena — a Pokémon auto battler for you and your friends.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#11182c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PokéBattler">
+<meta name="apple-mobile-web-app-title" content="PokéArena">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 
@@ -3002,6 +3002,8 @@ body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
 .career .ct.fav{grid-column:1/-1;display:flex;align-items:center;gap:10px;text-align:left;padding:6px 10px}
 .career .ct.fav b{font-size:20px}
 .career .ct.fav .sprite{flex:none}
+/* ---- 5.5.1 · no all-caps: words keep their own capitals (Sean: "you don't have to capitalize the entire word") ---- */
+html.bc *,html.bc *::before,html.bc *::after{text-transform:none!important}
 </style>
 </head>
 <body>
@@ -7546,8 +7548,8 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.5.0', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
-const versionTag = () => `<div class="vtag">PokéBattler ${GAME_VERSION.v}</div>`;
+const GAME_VERSION = { v:'5.5.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -7729,14 +7731,14 @@ const APP = (() => {
     async install(){
       if(prompt){
         const p = prompt; prompt = null;
-        try{ p.prompt(); const c = await p.userChoice; if(c && c.outcome === 'accepted') say('PokéBattler is on your home screen.'); }catch(e){}
+        try{ p.prompt(); const c = await p.userChoice; if(c && c.outcome === 'accepted') say('PokéArena is on your home screen.'); }catch(e){}
         return;
       }
-      const d = modal(`<h3>Install PokéBattler</h3>
+      const d = modal(`<h3>Install PokéArena</h3>
         ${ios() ? `<ol class="ihelp">
           <li>Tap the <b>Share</b> button <span class="ishare" aria-hidden="true">⬆︎</span> in Safari's toolbar.</li>
           <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-          <li>Tap <b>Add</b>. PokéBattler appears on your home screen with its own icon.</li></ol>`
+          <li>Tap <b>Add</b>. PokéArena appears on your home screen with its own icon.</li></ol>`
         : `<ol class="ihelp"><li>Open your browser's menu (<b>⋮</b>).</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li></ol>`}
         <p>Opened from the home screen it fills the whole screen, plays offline, and keeps your run on this phone.</p>
         <div class="btnrow"><button class="btn primary" data-m="close">Got it</button></div>`);
@@ -7925,7 +7927,7 @@ const roleChip = id => { const r = roleOf(id), R = ROLES[r];
 function rarityTag(def){
   const r = rarityOf(def); if(r === 'common') return '';
   const R = TUNING.rarity[r], pct = Math.round(R.weight * 100);
-  return `<i class="rar r-${r}" title="${esc(R.name)} — turns up about ${pct}% as often as a common item">${esc(R.name.toUpperCase())}</i>`;
+  return `<i class="rar r-${r}" title="${esc(R.name)} — turns up about ${pct}% as often as a common item">${esc(R.name)}</i>`;
 }
 /** Inline item artwork for running text (the evolution line, the inspector). */
 function itemGlyph(id, fallback){
@@ -8863,7 +8865,7 @@ function renderShop(){
     ${closed ? '' : `<div class="stat next" title="carry ${inc.carry} + base ${inc.base} + result ${inc.result} + streak ${inc.streak}${inc.items ? ` + items ${inc.items}` : ''}${inc.badges ? ` + badges ${inc.badges}` : ''}${inc.rival ? ` + rival ${inc.rival}` : ''}">
       <span class="lbl">Next turn</span>+${inc.total}₽</div>`}
     </div>
-    <button class="iconbtn start" data-act="menu" aria-label="Menu"><i class="burger" aria-hidden="true"></i>MENU${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
+    <button class="iconbtn start" data-act="menu" aria-label="Menu"><i class="burger" aria-hidden="true"></i>Menu${hasUnseen() ? '<i class="menudot" title="What’s new"></i>' : ''}</button>
   </div>
 
   <div class="bcwrap"><div class="bcL">
@@ -8965,12 +8967,12 @@ function renderBattle(){
   const fresh = done && !battle.ribbonShown;
   if(done) battle.ribbonShown = true;
   const ribbon = done ? `<div class="big ribbon ${won ? 'win' : r === 'lose' ? 'lose' : 'draw'} ${fresh ? 'anim' : ''} ${battle.ribbonGone ? 'gone' : ''}"><span>
-      ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge).toUpperCase()} BADGE!`
-              : battle.kind === 'champion' ? 'CHAMPION!'
-              : battle.kind === 'red' ? `${esc(battle.boss.name).toUpperCase()} BEATEN!`
-              : battle.kind === 'elite' ? `${esc(battle.boss.name).toUpperCase()} FALLS`
-              : battle.kind === 'rival' ? 'RIVAL BEATEN!' : 'VICTORY!')
-        : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'BLACKED OUT' : 'DEFEAT') : 'DRAW'}</span></div>` : '';
+      ${won ? (battle.kind === 'gym' ? `${esc(battle.boss.badge)} Badge!`
+              : battle.kind === 'champion' ? 'Champion!'
+              : battle.kind === 'red' ? `${esc(battle.boss.name)} beaten!`
+              : battle.kind === 'elite' ? `${esc(battle.boss.name)} falls`
+              : battle.kind === 'rival' ? 'Rival beaten!' : 'Victory!')
+        : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'Blacked out' : 'Defeat') : 'Draw'}</span></div>` : '';
   const redNote = !done ? '' : battle.kind === 'red'
     ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge(battle.boss.id, 'big')}
         <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${G.secrets && (G.secIdx || 0) < G.secrets.length - 1 ? `${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].name)} is next, at ${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].place)}. You are healed and the shops are open for one turn.` : battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
@@ -9893,7 +9895,7 @@ function championPhoto(S, b, L){
   const frame = document.createElement('div'); frame.className = 'photoframe';
   const fw = Math.max(back, front) * gap + size * .7, fh = (front ? size * 1.84 : size * 1.25) + 28;
   frame.style.cssText = `left:${cx}px;top:${cy + (front ? size * .3 : size * .1)}px;width:${fw}px;height:${fh}px`;
-  frame.innerHTML = `<span class="phcap">CHAMPION · ${esc(playerName())}</span>`;
+  frame.innerHTML = `<span class="phcap">Champion · ${esc(playerName())}</span>`;
   mine.forEach((F, k) => {
     const c = artCentre(S, F), img = F.el.querySelector('.fart img');
     const m = document.createElement('div'); m.className = 'phmon'; m.style.zIndex = 30 + spots[k].z;
@@ -10179,7 +10181,7 @@ function runSummaryHtml(){
   const mvp = top[0];
   return `<div class="runsum">
     <div class="rsfacts">${facts.map(([k, v]) => `<span><b>${esc(String(v))}</b><i>${esc(k)}</i></span>`).join('')}</div>
-    ${mvp ? `<div class="rsmvp"><span class="rsart">${SPRITES[mvp.id] ? `<img src="${SPRITES[mvp.id]}" alt="">` : ""}</span><div><i class="rtag rt-mvp">RUN MVP</i>
+    ${mvp ? `<div class="rsmvp"><span class="rsart">${SPRITES[mvp.id] ? `<img src="${SPRITES[mvp.id]}" alt="">` : ""}</span><div><i class="rtag rt-mvp">Run MVP</i>
       <b>${esc(SPECIES[mvp.id].name)}</b><span class="dim">${mvp.dealt} damage · ${mvp.kos} KO${mvp.kos === 1 ? '' : 's'}${mvp.healed ? ` · ${mvp.healed} healed` : ''} over ${mvp.fights} battle${mvp.fights === 1 ? '' : 's'}</span></div></div>` : ''}
     ${runNoteHtml(G)}
     ${top.length > 1 ? `<div class="rsrest">${top.slice(1).map((m, k) => `<span>${k === 0 ? '🥈' : '🥉'} ${miniSprite(m.id)}${esc(SPECIES[m.id].name)} <i class="dim">${m.dealt} dmg · ${m.kos} KO</i></span>`).join('')}</div>` : ''}
@@ -10195,8 +10197,8 @@ async function runImage(){
   x.fillStyle = dark; x.fillRect(0, 0, W, 150); x.fillRect(0, H - 70, W, 70);
   x.strokeStyle = dark; x.lineWidth = 10; x.strokeRect(5, 5, W - 10, H - 10);
   const font = (px, w) => `${w >= 700 || !w ? 500 : 400} ${px}px "Barlow Condensed", Nunito, system-ui, sans-serif`;
-  x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéBattler', W / 2, 70);
-  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `CHAMPION · ${secretBoss().name.toUpperCase()} DEFEATED` : won ? 'CHAMPION!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
+  x.textAlign = 'center'; x.fillStyle = '#f0b830'; x.font = font(40); x.fillText('PokéArena', W / 2, 70);
+  x.fillStyle = cream; x.font = font(22, 400); x.fillText(G.redResult === 'won' ? `Champion · ${secretBoss().name} defeated` : won ? 'Champion!' : `Run over · ${G.badges} badge${G.badges === 1 ? '' : 's'}`, W / 2, 118);
   x.fillStyle = dark; x.font = font(24); x.fillText(playerName(), W / 2, 205);
   x.font = font(16, 400); x.fillStyle = '#6b6f7a';
   x.fillText(`Turn ${G.turn} · ${G.badges}/8 badges${G.runStats ? ` · ${G.runStats.wins} wins` : ''}${modList(G).length ? ' · ' + modsLabel(G) : ''}`, W / 2, 240);
@@ -10248,7 +10250,7 @@ async function runImage(){
     x.fillStyle = w ? '#f0b830' : '#ece4c8'; x.fillRect(60, by, W - 120, 38); x.strokeStyle = dark; x.lineWidth = 3; x.strokeRect(60, by, W - 120, 38);
     x.fillStyle = dark; x.font = font(16); x.fillText(w ? `\u26A1 ${secretBoss().name}\u2019s Badge · ${secretBoss().place} cleared` : `Faced ${secretBoss().name} in ${secretBoss().place}`, W / 2, by + 25);
   }
-  x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéBattler ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
+  x.fillStyle = cream; x.font = font(14, 400); x.fillText(`PokéArena ${GAME_VERSION.v}${G.daily ? ' · Daily ' + G.daily : ''}`, W / 2, H - 28);
   return new Promise(r => c.toBlob(r, 'image/png'));
 }
 let runPhoto = { key: '', url: '' };
@@ -10263,7 +10265,7 @@ async function shareRunImage(){
   try{
     const blob = await runImage(); if(!blob) throw new Error('no image');
     const file = new File([blob], 'pokebattler-run.png', { type:'image/png' });
-    if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'My PokéBattler run' }); return; }
+    if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'My PokéArena run' }); return; }
     // inside the claude.ai viewer a page can only hand over a file through its downloads capability
     if(window.claude && typeof window.claude.use === 'function'){
       const dl = await window.claude.use('downloads').catch(() => null);
@@ -10279,7 +10281,7 @@ async function shareRunImage(){
 function redOverHtml(){
   const w = G.redResult === 'won', sb = secretBoss(), team = sb.lineup.map(u => SPECIES[u.id].name);
   return `<div class="redend ${w ? 'won' : 'lost'}">${bossArt(sb, 'redart')}
-    <div><b>${esc(sb.place.toUpperCase())}${w && G.redNew ? ' <i class="newdot">NEW</i>' : ''}</b>
+    <div><b>${esc(sb.place)}${w && G.redNew ? ' <i class="newdot">New</i>' : ''}</b>
     <span>${w ? `You beat ${esc(sb.name)} and his whole team: ${team.slice(0, -1).join(', ')} and ${team[team.length - 1]}.${(() => { const h = secretRec(sb.id); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
       : sb.id === 'oak' ? 'The professor smiled and sent you home. Nothing was lost.' : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
     ${w ? `<span class="rpika">${miniSprite(sb.id === 'oak' ? 'bulbasaur' : 'pikachu')}</span>${secretBadge(sb.id, 'big')}` : ''}</div>`;
@@ -10287,7 +10289,7 @@ function redOverHtml(){
 function renderOver(){
   const won = G.over === 'won';
   return `<div class="panel" style="text-align:center;padding:26px 18px">
-    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? `${esc(secretBoss().name.toUpperCase())} DEFEATED!` : won ? 'CHAMPION!' : 'RUN OVER'}</div>
+    <div class="big ${won ? 'win':'lose'}">${G.redResult === 'won' ? `${esc(secretBoss().name)} defeated!` : won ? 'Champion!' : 'Run over'}</div>
     ${G.redResult ? redOverHtml() : ''}
     ${won ? '' : `<div class="badgerow">${badgeCase()}</div>`}
     <p style="color:var(--muted)">${won
@@ -10451,7 +10453,7 @@ function recapHtml(){
   const mvp = top('dealt'), wall = top('taken'), medic = top('healed');
   const maxD = Math.max(1, ...mine.map(x => x.dealt)), maxT = Math.max(1, ...mine.map(x => x.taken));
   const rows = mine.slice().sort((a, b) => b.dealt - a.dealt).map(x => {
-    const tags = [x.uid === mvp ? '<i class="rtag rt-mvp">MVP</i>' : '', x.uid === wall ? '<i class="rtag rt-wall">WALL</i>' : '', x.uid === medic ? '<i class="rtag rt-medic">MEDIC</i>' : ''].join('');
+    const tags = [x.uid === mvp ? '<i class="rtag rt-mvp">MVP</i>' : '', x.uid === wall ? '<i class="rtag rt-wall">Wall</i>' : '', x.uid === medic ? '<i class="rtag rt-medic">Medic</i>' : ''].join('');
     return `<div class="rrow ${x.fainted ? 'down' : ''}"><span class="rname">${miniSprite(x.id)}${esc(SPECIES[x.id].name)}${tags}</span>
       <span class="rbar dealt" title="damage dealt"><u style="width:${Math.round(x.dealt / maxD * 100)}%"></u><b>${x.dealt}</b></span>
       <span class="rbar taken" title="damage taken"><u style="width:${Math.round(x.taken / maxT * 100)}%"></u><b>${x.taken}</b></span>
@@ -10478,8 +10480,8 @@ function encounterHtml(){
   const can = G.credits >= e.cost;
   return `<section class="panel legend">
     <div class="legart" style="--tcol:${typeColor(e.id)}">${SPRITES[e.id] ? `<img src="${SPRITES[e.id]}" alt="">` : ''}</div>
-    <div class="legtext"><b>A wild ${esc(sp.name.toUpperCase())} appeared!</b>
-      <span><span class="poptype" style="background:${typeColor(e.id)}">${esc(sp.type)}</span> ${roleChip(e.id)} <i class="rar r-veryrare">LEGENDARY</i></span>
+    <div class="legtext"><b>A wild ${esc(sp.name)} appeared!</b>
+      <span><span class="poptype" style="background:${typeColor(e.id)}">${esc(sp.type)}</span> ${roleChip(e.id)} <i class="rar r-veryrare">Legendary</i></span>
       <span class="dim">◆${u.atk} ♥${u.hp} »${u.spd} · never levels · grows +${Math.round((TUNING.legend.growth - 1) * 100)}% · yours to keep once recruited; the offer is gone after the next battle</span></div>
     <div class="legbtns"><button class="btn primary" data-act="legend" ${can ? '' : 'disabled'}>Recruit ${e.cost}₽</button>
       <button class="btn ghost" data-act="legendpass">Let it go</button></div>
@@ -10610,7 +10612,7 @@ function openNewRun(onStart){
 function dailyShareText(date){
   const t = dailyResults()[date]; if(!t) return '';
   const mods = dailyMods(date), gl = genLabel({ gens: dailyGens(date) }), label = [gl, Object.keys(mods).length ? modsLabel({ mods }) : (gl ? '' : 'no special rules')].filter(Boolean).join(' · ');
-  return `PokéBattler Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.secret ? ' · Beat ' + t.secret : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
+  return `PokéArena Daily · ${prettyDate(date)} · ${label} — ${t.cleared ? `Champion! 🏆${t.secret ? ' · Beat ' + t.secret : ''}${t.hardcore ? ' · Hardcore' : ''}` : `${bestRunLabel(t.best)} · ${t.badges || 0} badge${t.badges === 1 ? '' : 's'}`}`;
 }
 async function copyDailyResult(date){
   const text = dailyShareText(date || (G && G.daily) || localDate());
@@ -11557,6 +11559,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.5.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A new name, PokéArena, and no more all-caps lettering', items:[
+    'The game has a new name: Pok\u00e9Arena, on the title screen, the browser tab, the share image and the home-screen app (with a PA icon). Your saves, records and Trainer Card carry over untouched.',
+    'No more shouting: words keep their own capitals across the game. Menu, Tap to play, the title menu, tags, buttons, ribbons (\u201cVictory!\u201d, \u201cBoulder Badge!\u201d) and labels are written normally instead of in all caps.' ] },
   { v:'5.5.0', date:'Oct 6, 2026', title:'Minor gameplay changes', sub:'The stadium comes alive: floodlights for your badges, home fields to unlock and a career on your Trainer Card', items:[
     'The stands are back, redrawn: a dark bowl behind the field with eight floodlights along the top. One more light comes on for every badge you hold (you see it switch on as the leader hands the badge over), and the crowd fills up as you go. The Elite Four, the Champion and the secret bosses play to a full house with every light on.',
     'Home fields: beat a gym leader or Elite Four member and their floor is yours. So are your rival\u2019s dusk pitch, the League hall and Mt. Silver. Pick one on the Trainer Card and your ordinary trainer battles, and the shop before them, are played on it. Boss fights keep their own floors.',
@@ -11973,7 +11978,7 @@ function openMenu(){
     ['transfer','Transfer save', 'Move this run to another device or the home-screen app with a code.'],
     ['news',    'What’s new', `What changed in ${GAME_VERSION.v}.`],
     ['help',    'How to play', 'Rules, roles and statuses.'],
-    ...(APP.canInstall() ? [['install', 'Install app', 'Put PokéBattler on your home screen and play it full screen, even offline.']] : []),
+    ...(APP.canInstall() ? [['install', 'Install app', 'Put PokéArena on your home screen and play it full screen, even offline.']] : []),
     ['options', 'Options', 'Your name, theme, speed, sound, transitions and more.'],
     ['title',   'Title screen', 'Back to the title: your run, the Daily Challenge, a new run.'],
     ['restart', 'Restart', G && G.daily ? 'Start today’s Daily Challenge again from turn 1.' : 'Start a new run from turn 1, with rules if you like.'],
@@ -11981,7 +11986,7 @@ function openMenu(){
   ];
   const d = modal(`<div class="smenu" role="menu" aria-label="Menu">
     ${items.map(([id, label, desc], k) => `${id === 'restart' ? '<hr>' : ''}<button class="smi ${k === 0 ? 'cur' : ''} ${id === 'restart' ? 'red' : ''}"
-      role="menuitem" data-m="${id}" data-d="${esc(desc)}">${label}${id === 'trainer' && sbEarned().length ? ` <i class="sbpill">${sbEarned().length}</i>` : ''}${id === 'news' && hasUnseen() ? ' <i class="newdot">NEW</i>' : ''}</button>`).join('')}
+      role="menuitem" data-m="${id}" data-d="${esc(desc)}">${label}${id === 'trainer' && sbEarned().length ? ` <i class="sbpill">${sbEarned().length}</i>` : ''}${id === 'news' && hasUnseen() ? ' <i class="newdot">New</i>' : ''}</button>`).join('')}
     <div class="sdesc">${esc(items[0][2])}</div>
     <div class="yesno" hidden>${G.daily ? 'Restart today’s challenge?' : 'Start over?'} Turn ${G.turn} and ${G.badges} badge${G.badges === 1 ? '' : 's'} will be lost.
       <div class="btnrow"><button class="btn" data-m="restart-no">No</button><button class="btn danger" data-m="restart-yes">Yes</button></div></div>
@@ -12305,10 +12310,10 @@ function chalAwardsHtml(){
   const L = G.chNew || chalActive(G).map(id => ({ id, isNew:false, goldNew:false })), gold = G.chNew ? !!G.chGold : chalActive(G).length >= GOLD_AT;   // a run won before 4.12.0 has no chNew
   if(!L.length) return '';
   if(L.length === 1){ const { id, isNew, goldNew } = L[0], c = chalById(id), h = chalRec(id);
-    return `<div class="hcaward ${gold ? 'gold' : ''}">${chalBadge(id, 'big')}<div><b>${esc(c.name.toUpperCase())}${isNew ? ' <i class="newdot">NEW</i>' : ''}</b>
+    return `<div class="hcaward ${gold ? 'gold' : ''}">${chalBadge(id, 'big')}<div><b>${esc(c.name)}${isNew ? ' <i class="newdot">New</i>' : ''}</b>
       <span>${isNew ? esc(c.how.replace(/^Clear/, 'You cleared')) : `Another ${esc(modName(G, id))} clear${h ? ` · ${h.count} in all` : ''}.`}</span></div></div>`; }
   return `<div class="hcaward multi ${gold ? 'gold' : ''}"><div class="chhead"><b>${L.length} CHALLENGE BADGES</b><span>${gold ? `★ Gold clear: ${L.length} challenges at once` : 'Cleared with all of them on'}</span></div>
-    <div class="chrow">${L.map(({ id, isNew, goldNew }) => `<div class="chone">${chalBadge(id, gold ? 'gold' : '')}<span>${esc(chalById(id).short)}</span>${isNew ? '<i class="newdot">NEW</i>' : goldNew ? '<i class="newdot gold">GOLD</i>' : ''}</div>`).join('')}</div></div>`;
+    <div class="chrow">${L.map(({ id, isNew, goldNew }) => `<div class="chone">${chalBadge(id, gold ? 'gold' : '')}<span>${esc(chalById(id).short)}</span>${isNew ? '<i class="newdot">New</i>' : goldNew ? '<i class="newdot gold">Gold</i>' : ''}</div>`).join('')}</div></div>`;
 }
 
 const secretStages = () => G.redOpen ? (G.secrets ? G.secrets.length : 1) : 0;
@@ -12596,7 +12601,7 @@ function applyTransfer(data){
 const runSummary = (g, name) => `${esc(name || 'Trainer')} · turn ${g.turn || 1} · ${g.badges || 0} badge${g.badges === 1 ? '' : 's'}${g.over ? (g.over === 'won' ? ' · cleared' : ' · run over') : ''}`;
 function openTransfer(){
   const d = modal(`<h3>Transfer save</h3>
-    <p>Each copy of PokéBattler keeps its own save: this link, the home-screen app, another phone or computer. A transfer code moves your run between them, with your records and name.</p>
+    <p>Each copy of PokéArena keeps its own save: this link, the home-screen app, another phone or computer. A transfer code moves your run between them, with your records and name.</p>
     <h4>Send this run</h4>
     <p class="dim">${runSummary(G, playerName())}</p>
     <div class="xout" hidden><textarea readonly class="xcode"></textarea><p class="dim xlen"></p></div>
@@ -12625,7 +12630,7 @@ function openTransfer(){
       try{ navigator.clipboard ? await navigator.clipboard.writeText(code) : document.execCommand('copy'); }catch(e){ try{ document.execCommand('copy'); }catch(_){} }
       b.textContent = 'Copied!'; return;
     }
-    if(x === 'share'){ try{ await navigator.share({ title:'PokéBattler save', text: code }); }catch(e){} return; }
+    if(x === 'share'){ try{ await navigator.share({ title:'PokéArena save', text: code }); }catch(e){} return; }
     if(x === 'read'){
       $$('.xconfirm').hidden = true; pending = null;
       const r = await readTransferCode($$('.xin').value);
@@ -12674,7 +12679,7 @@ function typeRingHtml(){
 function openTutorial(){
   const T = TUNING;
   const pages = [
-    { ids:['bulbasaur','charmander','squirtle'], title:'Welcome to PokéBattler',
+    { ids:['bulbasaur','charmander','squirtle'], title:'Welcome to PokéArena',
       text:`Build a team of up to ${T.maxTeam} pokémon and beat ${T.badgesToWin} gym leaders, the Elite Four and the Champion. Battles play out on their own: your job is the team you bring to each one.` },
     { ids:['onix','pikachu'], title:'Buy, then place',
       text:'Tap a pokémon in the Daycare, then tap an empty spot in your party. Where they stand matters: the front rank takes the hits and the back rank deals damage safely. The little badge on each is its role, and “Line up by role” sorts your party for you.' },
@@ -12932,7 +12937,7 @@ function openDex(){
     return `<div class="dcard">
       <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
         <div><h3>${esc(s.name)}</h3>
-          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">LEGENDARY</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
+          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
           <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
       <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
@@ -13105,23 +13110,23 @@ function showTitle(then){
   const who = PREF.get('name', '') ? `Welcome back, ${esc(playerName())}!` : 'Ready to battle, Trainer?';
   const d = document.createElement('div');
   d.id = 'title'; d.className = 'title' + (motionOff() ? ' still' : '');
-  d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'PokéBattler title screen');
+  d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'PokéArena title screen');
   d.innerHTML = `<div class="tscreen">
-    <h1 class="tlogo" aria-label="PokéBattler"><span class="t1">POKé<i class="pball"></i></span><span class="t2">BATTLER</span></h1>
+    <h1 class="tlogo" aria-label="PokéArena"><span class="t1">Poké<i class="pball"></i></span><span class="t2">Arena</span></h1>
     <div class="tsub">A Pokémon Auto Battler</div>
     <div class="tver">${GAME_VERSION.v}</div>
     <div class="tfield"><i class="tcloud c1"></i><i class="tcloud c2"></i><i class="tcloud c3"></i>
       ${flank.map((k, n) => `<div class="tside ${n ? 'r' : 'l'}"><img src="${SPRITES[k]}" alt=""></div>`).join('')}
       <div class="tmon"><img src="${SPRITES[mon]}" alt="${esc(SPECIES[mon] ? SPECIES[mon].name : '')}"></div></div>
     <div class="twho">${titleBadgesHtml()}${who}</div>
-    <button class="tpress" data-t="start">TAP TO PLAY</button>
+    <button class="tpress" data-t="start">Tap to play</button>
     <div class="tmenu" hidden role="menu">
-      ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">CONTINUE<small>${runLine}</small></button>` : ''}
-      <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">NEW RUN<small>with rules, if you like</small></button>
-      <button class="tmi" role="menuitem" data-t="daily">DAILY CHALLENGE<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
-      <button class="tmi" role="menuitem" data-t="dex">POKéDEX<small>${dexHave} / ${dexTotal} seen · cards, trainers, items</small></button>
-      <button class="tmi" role="menuitem" data-t="trainer">TRAINER CARD<small>${sbEarned().length ? `${sbEarned().length} special badge${sbEarned().length === 1 ? '' : 's'} · records` : 'your badges and records'}</small></button>
-      <button class="tmi" role="menuitem" data-t="options">OPTIONS</button>
+      ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">Continue<small>${runLine}</small></button>` : ''}
+      <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">New run<small>with rules, if you like</small></button>
+      <button class="tmi" role="menuitem" data-t="daily">Daily challenge<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="dex">Pokédex<small>${dexHave} / ${dexTotal} seen · cards, trainers, items</small></button>
+      <button class="tmi" role="menuitem" data-t="trainer">Trainer card<small>${sbEarned().length ? `${sbEarned().length} special badge${sbEarned().length === 1 ? '' : 's'} · records` : 'your badges and records'}</small></button>
+      <button class="tmi" role="menuitem" data-t="options">Options</button>
     </div>
     <div class="tfoot">${best > 0 ? `<span>Best: ${esc(bestRunLabel(best))}${R.cleared ? ` · ${R.cleared} cleared` : ''}</span>` : ''}
       </div>

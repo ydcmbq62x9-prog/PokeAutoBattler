@@ -1,6 +1,6 @@
 {
-  "name": "PokéBattler",
-  "short_name": "PokéBattler",
+  "name": "PokéArena",
+  "short_name": "PokéArena",
   "description": "A Pokémon auto battler for you and your friends.",
   "id": "./",
   "start_url": "./",
