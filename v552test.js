@@ -8,7 +8,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
   const r = await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove());
     G.team = ['charizard','pikachu','snorlax'].map((id,i)=>{const u=makeUnit(id,2); u.pos=i; return u;}); fixSlots(G); render();
-    const o = { icons: document.querySelectorAll('.pfield .stats .si').length, dc: document.querySelectorAll('.dnums .si').length, pg1: getComputedStyle(document.documentElement).getPropertyValue('--pg1').trim() };
+    const o = { icons: document.querySelectorAll('.pfield .stri').length * 3, dc: document.querySelectorAll('.dnums .si').length, pg1: getComputedStyle(document.documentElement).getPropertyValue('--pg1').trim() };
     return o; });
   check(r.icons === 9 && r.dc > 0, `stat icons on the field and in the Daycare (${r.icons}, ${r.dc})`);
   check(r.pg1 === '#0a0d15', 'the page is the dark stadium');

@@ -3040,6 +3040,27 @@ html.bc body,html.bc.dark body{background:
   body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum{display:block}
   body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum .pcol + .pcol{margin-top:10px}
 }
+/* ---- 5.6.0 · stat triangles on the field, stat bars in the summary ---- */
+.stri{display:none}
+html.bc .pfield .slot .stri{display:block;position:absolute;z-index:3;pointer-events:none;width:clamp(40px,calc(var(--sp,64px) * .7),56px);height:auto;aspect-ratio:1;
+  right:calc(50% + var(--sp,64px) * .34);bottom:calc(var(--ab,13%) - 4px);filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.stri .o{fill:rgba(9,13,24,.84);stroke:rgba(255,255,255,.4);stroke-width:1.2;stroke-linejoin:round}
+.stri .m{fill:none;stroke:rgba(255,255,255,.14);stroke-width:1}
+.stri .f{fill:rgba(255,210,58,.6);stroke:#ffd23a;stroke-width:1.4;stroke-linejoin:round}
+html.bc .pfield .slot .stats{display:none!important}
+/* the level sits over the head */
+html.bc .pfield .slot .lvl{right:auto!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 3px)!important}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  html.bc body[data-phase=shop] .pfield .slot .lvl{bottom:calc(var(--ab,13%) + var(--sp,64px) + 1px)!important}
+}
+/* the summary: an icon, a thin bar and the number, all in the stat's colour */
+.sb.sbi{grid-template-columns:52px 1fr 44px}
+.sb.sbi label{display:inline-flex;align-items:center;gap:4px;color:var(--c);font-family:var(--pix);font-weight:700;font-size:13px;letter-spacing:.03em}
+.sb.sbi label .si{width:1.05em;height:1.05em}
+.sb.sbi .sbar{height:7px;border-radius:4px}
+.sb.sbi .sbar u{border-radius:4px}
+.sb.sbi > b{color:var(--c);font-family:var(--pix);font-weight:800;font-size:15px;text-align:right;font-variant-numeric:tabular-nums}
+.sb.sbi > b .sbon{font-size:11px}
 </style>
 </head>
 <body>

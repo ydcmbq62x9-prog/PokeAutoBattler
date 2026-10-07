@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.5.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.6.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -440,12 +440,24 @@ function unitHtml(u, opts){
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
     <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}" title="Attack">${SI('a')}${eA}</span><span class="h ${hs.hp?'xup':''}" title="HP">${SI('h')}${eH}</span></div>
     <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}" title="Speed">${SI('s')}${eS}</span></div>
+    ${statTri(eA, eH, eS)}
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
 
 /** 5.5.2: a stat's icon (sword = Attack, heart = HP, bolt = Speed), drawn in CSS in the stat's colour. */
 const SI = k => `<i class="si si-${k}" aria-hidden="true"></i>`;
+/** 5.6.0: the stat triangle on the field. One corner per stat (Attack up top, HP bottom-left, Speed bottom-right);
+    the gold shape reaches towards a corner as far as that stat goes, so a pokémon's build shows at a glance. */
+function statTri(a, h, sp){
+  const c = 23, R = 18.5, f = (v, m) => Math.max(.12, Math.min(1, v / m));
+  const pt = (k, r) => { const ang = -Math.PI / 2 + k * 2 * Math.PI / 3; return (c + Math.cos(ang) * R * r).toFixed(1) + ',' + (c + Math.sin(ang) * R * r).toFixed(1); };
+  const shape = [pt(0, f(a, BAR_MAX.atk)), pt(1, f(sp, BAR_MAX.spd)), pt(2, f(h, BAR_MAX.hp))].join(' ');
+  const out = [pt(0, 1), pt(1, 1), pt(2, 1)].join(' '), mid = [pt(0, .5), pt(1, .5), pt(2, .5)].join(' ');
+  const dot = (k, col) => { const [x, y] = pt(k, 1).split(','); return `<circle cx="${x}" cy="${y}" r="3" fill="${col}"/>`; };
+  return `<svg class="stri" viewBox="0 0 46 46" role="img" aria-label="Attack ${a}, HP ${h}, Speed ${sp}"><title>Attack ${a} · HP ${h} · Speed ${sp}</title>
+    <polygon points="${out}" class="o"/><polygon points="${mid}" class="m"/><polygon points="${shape}" class="f"/>${dot(0, '#ff8a70')}${dot(1, '#7fbaff')}${dot(2, '#6fe39a')}</svg>`;
+}
 function martHtml(s, i){
   const def = ITEMS[s.id];
   return `<div class="slot ${sel && sel.kind==='mart' && sel.idx===i ? 'selected':''}" data-act="mart" data-i="${i}">
@@ -633,12 +645,12 @@ const BAR_MAX = (() => {
            spd: Math.round(top('spd') * 1.12) };
 })();
 
-function statBar(label, value, max, colour, bonus){
+function statBar(label, value, max, colour, bonus, icon){
   const w = Math.max(3, Math.min(100, Math.round(value / max * 100)));
   // the slice of the bar that comes from an item, drawn lighter on the end
   const bw = bonus > 0 ? Math.max(2, Math.min(w, Math.round(bonus / max * 100))) : 0;
   // v51: an item can cost a stat too (Choice Band's Speed) — shown in red, no hatching
-  return `<div class="sb"><label>${label}</label>
+  return `<div class="sb${icon ? ' sbi' : ''}" style="--c:${colour}"><label>${icon ? SI(icon) : ''}${label}</label>
     <i class="sbar"><u style="width:${w}%;background:${colour}"></u>${
       bw ? `<em style="width:${bw}%;left:${w - bw}%"></em>` : ''}</i><b>${value}${
       bonus > 0 ? `<i class="sbon">+${bonus}</i>` : bonus < 0 ? `<i class="sbon neg">−${-bonus}</i>` : ''}</b></div>`;
@@ -741,9 +753,9 @@ function popupHtml(u){
         ${sp.legendary ? '<span class="poplv legend">★ Legendary</span>' : `<span class="poplv">Lv ${l}</span>${popPipsHtml(u)}`}</div>
     </div>
     <div class="popbars">
-      ${statBar('HP',  effHp(u),  BAR_MAX.hp,  'var(--hp)',  hs.hp)}
-      ${statBar('ATK', effAtk(u), BAR_MAX.atk, 'var(--atk)', hs.atk + (u.tmpAtk||0))}
-      ${statBar('SPD', effSpd(u), BAR_MAX.spd, 'var(--spd)', hs.spd + (u.tmpSpd||0))}
+      ${statBar('Atk', effAtk(u), BAR_MAX.atk, 'var(--atk)', hs.atk + (u.tmpAtk||0), 'a')}
+      ${statBar('HP',  effHp(u),  BAR_MAX.hp,  'var(--hp)',  hs.hp, 'h')}
+      ${statBar('Spd', effSpd(u), BAR_MAX.spd, 'var(--spd)', hs.spd + (u.tmpSpd||0), 's')}
     </div>
     ${paceLineHtml(u)}
     ${woundLineHtml(u)}
@@ -4042,7 +4054,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
-  { v:'5.5.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A dark stadium behind every field, stat icons, a proper summary on computers and a calmer gym win', items:[
+  { v:'5.6.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Stat triangles on the field, stat bars in the summary', items:[
+    'Your party on the field now shows a small stat triangle beside each pok\u00e9mon instead of number tags. Each corner is a stat (red sword Attack at the top, green heart HP bottom-left, blue bolt Speed bottom-right) and the gold shape stretches towards what it is good at: Snorlax leans to the heart, Pikachu to the bolt. The level sits over its head.',
+    'The exact numbers are one tap away: the summary now has a bar for each stat with its icon, in Attack, HP, Speed order, coloured like the triangle.' ] },
+  { v:'5.5.2', date:'Oct 7, 2026', title:'Visual bug fixes', sub:'A dark stadium behind every field, stat icons, a proper summary on computers and a calmer gym win', items:[
     'The page behind the field is now the dark stadium with its crowd, and it stays the same on every stage instead of changing colour with the floor.',
     'Stats have icons: a red sword for Attack, a green heart for HP and a blue bolt for Speed, on little dark tags over your party and in the Daycare, the Pok\u00e9dex and How to play, instead of plain numbers.',
     'On a computer, a pok\u00e9mon\u2019s or item\u2019s summary opens as a full card in the shop column, under the PC and Bag (so you can still drop things there), instead of a squashed strip in the bottom-left corner.',
