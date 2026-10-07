@@ -2951,6 +2951,8 @@ html.bc .tfield::before,html.bc .tfield::after,html.bc .tcloud{display:none!impo
 .bstage.board.stadium .crowd.c3{background:radial-gradient(circle at 50% 50%,#5b95ee 0 .34cqw,transparent .46cqw) .6cqw .3cqw/2.3cqw 1.9cqw}
 .bstage.board.stadium .crowd.c4{background:radial-gradient(circle at 50% 50%,#ffd23a 0 .3cqw,transparent .42cqw) 1.75cqw 1.25cqw/4.6cqw 3.8cqw,radial-gradient(circle at 50% 50%,#e9edf5 0 .3cqw,transparent .42cqw) .3cqw 1.4cqw/4.6cqw 3.8cqw}
 .bstage.board.stadium .crowd{opacity:.82}
+/* 5.8.0 iron-out: on a big screen the crowd stays a crowd (small, close dots) instead of a grid of big circles */
+@container (min-width:900px){.bstage.board.stadium .crowd{opacity:.7}}
 .bstage.board.stadium .ground.crowd1 :is(.c2,.c3,.c4),.bstage.board.stadium .ground.crowd2 :is(.c3,.c4),.bstage.board.stadium .ground.crowd3 .c4{display:none}
 /* a full house twinkles with camera flashes */
 .bstage.board.stadium .ground.full .stands::after{content:'';position:absolute;inset:2.4cqw 0 0;pointer-events:none;
@@ -3004,6 +3006,115 @@ body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
 .career .ct.fav .sprite{flex:none}
 /* ---- 5.5.1 · no all-caps: words keep their own capitals (Sean: "you don't have to capitalize the entire word") ---- */
 html.bc *,html.bc *::before,html.bc *::after{text-transform:none!important}
+/* ---- 5.5.2 ---- */
+/* stat icons: a sword (Attack), a heart (HP) and a bolt (Speed), coloured by the stat */
+.si{display:inline-block;width:1.05em;height:1.05em;flex:none;vertical-align:-.16em;background:currentColor;-webkit-mask:var(--sim) center/contain no-repeat;mask:var(--sim) center/contain no-repeat}
+.si-a{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20.5 2 22 3.5l-1 4.6-9.3 9.3 1.8 1.8-1.4 1.4-1.9-1.9-3.3 3.3a1.5 1.5 0 0 1-2.1-2.1l3.3-3.3-1.9-1.9 1.4-1.4 1.8 1.8L18.7 4.8z'/%3E%3C/svg%3E")}
+.si-h{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.2s-8.4-5-10-10.1C.9 7.5 3.1 4 6.6 4c2.2 0 3.9 1.2 5.4 3 1.5-1.8 3.2-3 5.4-3 3.5 0 5.7 3.5 4.6 7.1-1.6 5.1-10 10.1-10 10.1z'/%3E%3C/svg%3E")}
+.si-s{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.2 1.5 4 13.6h6.6L9 22.5l11-12.8h-6.8z'/%3E%3C/svg%3E")}
+.stats span,.dstat span{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+/* on the field: little dark tags instead of loose numbers */
+html.bc .pfield .slot .stats{gap:3px}
+html.bc .pfield .slot .stats span{background:rgba(9,13,24,.84);border-radius:999px;padding:1px 6px 1px 4px;box-shadow:0 0 0 1px rgba(255,255,255,.14),0 2px 4px rgba(0,0,0,.35);line-height:1.25;font-family:var(--pix);font-weight:700;letter-spacing:.02em;text-shadow:none}
+html.bc .pfield .slot .stats .si{width:1em;height:1em}
+html.bc .pfield .slot .stats .xup{box-shadow:0 0 0 1px var(--gold),0 2px 4px rgba(0,0,0,.35)}
+html.bc .pfield .slot .stats .xdown{box-shadow:0 0 0 1px #ff8e96,0 2px 4px rgba(0,0,0,.35)}
+/* the level tag sits beside the Speed tag (second row), clear of the Attack and HP tags */
+html.bc .pfield .slot .lvl{right:calc(50% + 27px)!important;left:auto!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 1px)!important;transform:none!important;line-height:1.25!important;padding:1px 5px!important;border-radius:999px!important}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  html.bc body[data-phase=shop] .pfield .slot .lvl{right:auto!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 20px)!important}
+}
+/* the Daycare: three small tags in a row */
+.dnums .dstat{display:flex;gap:3px;justify-content:flex-end;flex-wrap:wrap}
+html.bc .dnums .dstat span{background:rgba(0,0,0,.32);border-radius:6px;padding:1px 5px 1px 3px;font-weight:800;font-size:11.5px;line-height:1.3}
+html.bc .dnums .dstat .a{color:#ffb19c} html.bc .dnums .dstat .h{color:#9ff0b4} html.bc .dnums .dstat .s{color:#a9d4ff}
+.legend .si,.cbar .si{margin-right:2px}
+
+/* the page behind the field: the dark stadium, the same on every stage, with the crowd in the stands above */
+html.bc body,html.bc.dark body{background:
+  radial-gradient(120% 60% at 50% 0%,rgba(255,250,220,.07),transparent 60%),
+  radial-gradient(circle at 50% 50%,rgba(241,207,168,.16) 0 1.4px,transparent 2px) 0 0/16px 13px,
+  radial-gradient(circle at 50% 50%,rgba(232,80,90,.14) 0 1.4px,transparent 2px) 8px 6.5px/16px 13px,
+  radial-gradient(circle at 50% 50%,rgba(91,149,238,.14) 0 1.4px,transparent 2px) 4px 3px/32px 26px,
+  repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 13px),
+  linear-gradient(180deg,#0d111b,#07090f 70%)!important;background-attachment:fixed!important}
+.bstage.board.stadium .stands{background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 1.9cqw),linear-gradient(180deg,#05070d 0%,#0e1322 100%)!important}
+
+/* the Champion's photo: everyone posing has left their spot, the fainted included */
+.bstage.board .ftr.posing,.bstage.board .ftr.posing *,.bstage.board .ftr.posing::before,.bstage.board .ftr.posing::after{visibility:hidden!important}
+
+/* computer: the summary is a full card over the shop column while you have something picked */
+@media (min-width:1000px) and (min-height:521px){
+  body[data-phase=shop] .bcL > #inspect{display:none}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect{display:block;position:fixed;left:auto;right:16px;top:var(--insTop,74px);bottom:150px;width:clamp(330px,36vw,480px);box-sizing:border-box;
+    max-height:none!important;overflow:auto;z-index:60;background:#0e1424;border-radius:12px;box-shadow:0 0 0 2px rgba(255,210,58,.5),0 12px 34px rgba(0,0,0,.55);font-size:14px;line-height:1.45;padding:14px 16px}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect::after{content:none}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum{display:block}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum .pcol + .pcol{margin-top:10px}
+}
+/* ---- 5.6.0 · stat triangles on the field, stat bars in the summary ---- */
+.stri{display:none}
+html.bc .pfield .slot .stri{display:block;position:absolute;z-index:3;pointer-events:none;width:clamp(40px,calc(var(--sp,64px) * .7),56px);height:auto;aspect-ratio:1;
+  right:calc(50% + var(--sp,64px) * .34);bottom:calc(var(--ab,13%) - 4px);filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.stri .o{fill:rgba(9,13,24,.84);stroke:rgba(255,255,255,.4);stroke-width:1.2;stroke-linejoin:round}
+.stri .m{fill:none;stroke:rgba(255,255,255,.14);stroke-width:1}
+.stri .f{fill:rgba(255,210,58,.6);stroke:#ffd23a;stroke-width:1.4;stroke-linejoin:round}
+html.bc .pfield .slot .stats{display:none!important}
+/* the level sits over the head */
+html.bc .pfield .slot .lvl{right:auto!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 3px)!important}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  html.bc body[data-phase=shop] .pfield .slot .lvl{bottom:calc(var(--ab,13%) + var(--sp,64px) + 1px)!important}
+}
+/* the summary: an icon, a thin bar and the number, all in the stat's colour */
+.sb.sbi{grid-template-columns:52px 1fr 44px}
+.sb.sbi label{display:inline-flex;align-items:center;gap:4px;color:var(--c);font-family:var(--pix);font-weight:700;font-size:13px;letter-spacing:.03em}
+.sb.sbi label .si{width:1.05em;height:1.05em}
+.sb.sbi .sbar{height:7px;border-radius:4px}
+.sb.sbi .sbar u{border-radius:4px}
+.sb.sbi > b{color:var(--c);font-family:var(--pix);font-weight:800;font-size:15px;text-align:right;font-variant-numeric:tabular-nums}
+.sb.sbi > b .sbon{font-size:11px}
+/* ---- 5.7.0 · compare, growth and opponents' triangles ---- */
+.stri circle{transform-box:fill-box;transform-origin:center}
+.stri .c{fill:rgba(255,255,255,.16);stroke:#fff;stroke-width:1.4;stroke-dasharray:2.4 1.8;stroke-linejoin:round}
+.stri .was{fill:none;stroke:#fff6c8;stroke-width:1.6;stroke-linejoin:round}
+html.bc .pfield .slot .stri.cmp{transform:scale(1.5);transform-origin:100% 100%;transition:transform .2s;filter:drop-shadow(0 0 4px rgba(255,255,255,.55)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.etri{display:flex;align-items:center;gap:14px;margin-top:10px;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.22)}
+.etri .stri.big{display:block;width:96px;height:96px;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.etl{display:grid;gap:3px;font-family:var(--pix);font-weight:700;font-size:15px;min-width:0}
+.etl span{display:inline-flex;align-items:center;gap:5px}
+.etl .ca{color:var(--atk)} .etl .ch{color:var(--hp)} .etl .cs{color:var(--spd)}
+.etl small{font-family:var(--font,inherit);font-weight:600;font-size:12px;color:var(--dim);line-height:1.3}
+.sfloat .ca{color:#ffb19c!important}.sfloat .ch{color:#9ff0b4!important}.sfloat .cs{color:#a9d4ff!important}
+.sfloat .si{width:1em!important;height:1em!important;background:currentColor!important;vertical-align:-.12em}
+/* ---- 5.8.0 iron-out ---- */
+/* crowd dots keep to a small, crowd-like size on a big field */
+@container (min-width:900px){
+  .bstage.board.stadium .crowd.c1{background:radial-gradient(circle,#f1cfa8 0 2.4px,transparent 3.2px) 0 0/15px 12px!important}
+  .bstage.board.stadium .crowd.c2{background:radial-gradient(circle,#e8505a 0 2.4px,transparent 3.2px) 7.5px 6px/15px 12px!important}
+  .bstage.board.stadium .crowd.c3{background:radial-gradient(circle,#5b95ee 0 2.4px,transparent 3.2px) 4px 2px/15px 12px!important}
+  .bstage.board.stadium .crowd.c4{background:radial-gradient(circle,#ffd23a 0 2.2px,transparent 3px) 11px 8px/30px 24px,radial-gradient(circle,#e9edf5 0 2.2px,transparent 3px) 2px 9px/30px 24px!important}
+  .bstage.board.stadium .stands{background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 12px),linear-gradient(180deg,#05070d 0%,#0e1322 100%)!important}
+}
+/* computer: the party's header sits on a dark strip so the field's edge doesn't run through its words */
+@media (min-width:1000px) and (min-height:521px){
+  html.bc body[data-phase=shop] .panel.party > h2{background:rgba(10,14,26,.88);border-radius:10px;padding:5px 8px 5px 5px;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+  html.bc .pfield .slot .stri{width:clamp(40px,calc(var(--sp,64px) * .6),66px)}
+}
+/* sideways phone: the summary card is solid and its stat rows keep room for the icon and label */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body.inspecting[data-phase=shop] .bcL > #inspect{background:#0e1424!important}
+  body.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb.sbi{grid-template-columns:48px 1fr 34px}
+}
+/* sideways phone: the "tap a slot" pill hides while the summary card is open (the bar under it already says what to do) */
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){ body.picking.inspecting .carry.pinned{display:none!important} }
+/* ---- 5.8.1 · item hints: a gold star on the pokémon that gains the most ---- */
+.ibest{display:none}
+html.bc .pfield .slot .ibest{display:grid;place-items:center;position:absolute;z-index:4;pointer-events:none;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:14px;line-height:1;
+  background:radial-gradient(circle at 40% 35%,#fff3b0,#ffd23a 55%,#c9971a);color:#3a2a00;box-shadow:0 0 0 2px #11182c,0 0 12px rgba(255,210,58,.85);
+  right:calc(50% + var(--sp,64px) * .34 + clamp(40px,calc(var(--sp,64px) * .7),56px) - 4px);bottom:calc(var(--ab,13%) + clamp(40px,calc(var(--sp,64px) * .7),56px) + 10px);animation:ibest 1.4s ease-in-out infinite}
+@keyframes ibest{50%{transform:scale(1.15)}}
+body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:none}
+@media (prefers-reduced-motion:reduce){html.bc .pfield .slot .ibest{animation:none}}
 </style>
 </head>
 <body>
@@ -7548,7 +7659,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.5.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.8.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -7970,12 +8081,107 @@ function unitHtml(u, opts){
     <div class="artwrap">${spriteHtml(u.id)}${roleBadge(u.id)}${opts.held === false ? '' : heldBadge(u, opts.where, opts.idx)}</div>
     <div class="uname">${esc(SPECIES[u.id].name)}</div>
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
-    <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}">◆${eA}</span><span class="h ${hs.hp?'xup':''}">♥${eH}</span></div>
-    <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}">»${eS}</span></div>
+    <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}" title="Attack">${SI('a')}${eA}</span><span class="h ${hs.hp?'xup':''}" title="HP">${SI('h')}${eH}</span></div>
+    <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}" title="Speed">${SI('s')}${eS}</span></div>
+    ${(c => statTri(eA, eH, eS, c ? { cmp: c } : null))(triCmpFor(u, opts))}${TRI_BEST && u.uid === TRI_BEST && !opts.price ? '<i class="ibest" title="Gains the most from this item">★</i>' : ''}
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
 
+/** 5.5.2: a stat's icon (sword = Attack, heart = HP, bolt = Speed), drawn in CSS in the stat's colour. */
+const SI = k => `<i class="si si-${k}" aria-hidden="true"></i>`;
+/** 5.6.0: the stat triangle on the field. One corner per stat (Attack up top, Speed bottom-right, HP bottom-left);
+    the gold shape reaches towards a corner as far as that stat goes, so a pokémon's build shows at a glance. */
+const TRI_C = 23, TRI_R = 18.5;
+function triPt(k, r){ const ang = -Math.PI / 2 + k * 2 * Math.PI / 3; return (TRI_C + Math.cos(ang) * TRI_R * r).toFixed(1) + ',' + (TRI_C + Math.sin(ang) * TRI_R * r).toFixed(1); }
+const triFrac = (v, m) => Math.max(.12, Math.min(1, v / m));
+/* 5.8.1: the triangles scale with your team. Each corner's full length is the larger of the starting bar and 1.15× the
+   best on your team (party and PC, and a Daycare pick being compared), so levelled and evolved pokémon don't all fill
+   their triangles: the shapes keep showing each one's build, and stay comparable with each other on the same screen. */
+let TRI_SCALE = null;
+function triScale(extra){
+  const sc = { atk: BAR_MAX.atk, hp: BAR_MAX.hp, spd: BAR_MAX.spd };
+  const all = G ? [...(G.team || []), ...(G.pc || [])].filter(Boolean) : [];
+  for(const u of all){ sc.atk = Math.max(sc.atk, effAtk(u) * 1.15); sc.hp = Math.max(sc.hp, effHp(u) * 1.15); sc.spd = Math.max(sc.spd, effSpd(u) * 1.15); }
+  if(extra){ sc.atk = Math.max(sc.atk, extra.a * 1.15); sc.hp = Math.max(sc.hp, extra.h * 1.15); sc.spd = Math.max(sc.spd, extra.s * 1.15); }
+  return sc;
+}
+/** The gold shape's points for these stats. */
+const triShape = (a, h, sp) => { const S = TRI_SCALE || triScale();
+  return [triPt(0, triFrac(a, S.atk)), triPt(1, triFrac(sp, S.spd)), triPt(2, triFrac(h, S.hp))].join(' '); };
+/* 5.7.0: while a Daycare pokémon is picked, every party triangle also shows that pokémon's shape (dashed), to compare.
+   5.8.0: the same for a vitamin or a held item: each pokémon it can go on shows its shape with the item (dashed). */
+let TRI_CMP = null;
+function triWithItem(u, id, held){
+  if(!u) return null;
+  let v = null;
+  if(held){ if(!HELD_ITEMS[id] || u.held === id) return null; v = { ...u, held: id }; }
+  else {
+    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u)) return null;
+    v = { ...u }; const fake = { boost: (x, d) => { for(const k of ['hp', 'atk', 'spd']) if(d[k]) x[k] = (x[k] || 0) + d[k]; } };
+    try{ def.apply(v, fake); }catch(e){ return null; }
+  }
+  const c = { a: effAtk(v), h: effHp(v), s: effSpd(v) };
+  return c.a === effAtk(u) && c.h === effHp(u) && c.s === effSpd(u) ? null : c;
+}
+/* 5.8.1: Options → Item hints. With a vitamin or held item picked, the party pokémon that gains the most from it
+   (measured on the triangle: each stat's gain as a share of its bar) gets a gold star. */
+let TRI_BEST = null;
+function bestForItem(){
+  if(!G || !sel || PREF.get('itemhint', 'on') === 'off') return null;
+  let id = null, held = false;
+  if(sel.kind === 'mart'){ const m = G.mart[sel.idx]; if(!m || m.bought) return null; id = m.id; held = !!m.held; }
+  else if(sel.kind === 'bag'){ id = G.bag[sel.idx]; held = true; }
+  if(!id) return null;
+  let best = null, top = 0;
+  for(const u of G.team){
+    const c = triWithItem(u, id, held); if(!c) continue;
+    const g = (c.a - effAtk(u)) / BAR_MAX.atk + (c.h - effHp(u)) / BAR_MAX.hp + (c.s - effSpd(u)) / BAR_MAX.spd;
+    if(g > top + 1e-9){ top = g; best = u.uid; }
+  }
+  return best;
+}
+function triCmpFor(u, opts){
+  if(opts && opts.price) return null;
+  if(TRI_CMP) return TRI_CMP;
+  if(!sel || !G) return null;
+  if(sel.kind === 'mart'){ const m = G.mart[sel.idx]; return m && !m.bought ? triWithItem(u, m.id, m.held) : null; }
+  if(sel.kind === 'bag'){ const id = G.bag[sel.idx]; return id ? triWithItem(u, id, true) : null; }
+  return null;
+}
+function statTri(a, h, sp, opts){
+  opts = opts || {};
+  const out = [triPt(0, 1), triPt(1, 1), triPt(2, 1)].join(' '), mid = [triPt(0, .5), triPt(1, .5), triPt(2, .5)].join(' ');
+  const dot = (k, col, key) => { const [x, y] = triPt(k, 1).split(','); return `<circle cx="${x}" cy="${y}" r="3" fill="${col}" data-k="${key}"/>`; };
+  const cmp = opts.cmp ? `<polygon points="${triShape(opts.cmp.a, opts.cmp.h, opts.cmp.s)}" class="c"/>` : '';
+  const label = opts.hide ? 'Stat shape' : `Attack ${a}, HP ${h}, Speed ${sp}`;
+  return `<svg class="stri${opts.cls ? ' ' + opts.cls : ''}${cmp ? ' cmp' : ''}" viewBox="0 0 46 46" role="img" aria-label="${label}">${opts.hide ? '' : `<title>Attack ${a} · HP ${h} · Speed ${sp}</title>`}
+    <polygon points="${out}" class="o"/><polygon points="${mid}" class="m"/><polygon points="${triShape(a, h, sp)}" class="f"/>${cmp}${dot(0, '#ff8a70', 'a')}${dot(1, '#7fbaff', 's')}${dot(2, '#6fe39a', 'h')}</svg>`;
+}
+/** 5.7.0: an opponent's summary shows the shape of its stats, not the numbers. */
+function enemyTriHtml(u){
+  const keep = TRI_SCALE; TRI_SCALE = triScale({ a: effAtk(u), h: effHp(u), s: effSpd(u) });   // measured against your team
+  const tri = statTri(effAtk(u), effHp(u), effSpd(u), { hide: true, cls: 'big' }); TRI_SCALE = keep;
+  return `<div class="etri">${tri}
+    <div class="etl"><span class="ca">${SI('a')} Attack</span><span class="ch">${SI('h')} HP</span><span class="cs">${SI('s')} Speed</span>
+    <small>The gold shape leans towards what it’s good at, measured against your own team. Opponents’ exact numbers stay hidden.</small></div></div>`;
+}
+/** 5.7.0: after a battle, a triangle that grew shows its old shape shrinking away and pulses the corner that grew. */
+function triGrow(el, was, now){
+  const t = el && el.querySelector('.stri'); if(!t || motionOff()) return;
+  const f = t.querySelector('.f'), d = { a: now.atk - was.atk, h: now.hp - was.hp, s: now.spd - was.spd };
+  const cur = { a: 0, h: 0, s: 0 };   // read the drawn values back off the label: they include held items
+  const m = /Attack (\d+), HP (\d+), Speed (\d+)/.exec(t.getAttribute('aria-label') || '');
+  if(m){ cur.a = +m[1]; cur.h = +m[2]; cur.s = +m[3]; }
+  const old = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  old.setAttribute('points', triShape(cur.a - d.a, cur.h - d.h, cur.s - d.s)); old.setAttribute('class', 'was');
+  f.parentNode.insertBefore(old, f.nextSibling);
+  anim(old, [{ opacity: 1 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: 1500, easing: 'ease-out', remove: true });
+  anim(f, [{ opacity: .25 }, { opacity: .25, offset: .3 }, { opacity: 1 }], { duration: 1200, easing: 'ease-out' });
+  anim(t, [{ transform: 'scale(1)' }, { transform: 'scale(1.35)', offset: .45 }, { transform: 'scale(1)' }], { duration: 1100, easing: 'cubic-bezier(.3,1.4,.5,1)' });
+  for(const k of ['a', 'h', 's']) if(d[k] > 0){ const c = t.querySelector(`circle[data-k="${k}"]`);
+    if(c) anim(c, [{ transform: 'scale(1)' }, { transform: 'scale(2.2)', offset: .4 }, { transform: 'scale(1)' }], { duration: 900, delay: 300, iterations: 2, easing: 'ease-in-out' }); }
+}
 function martHtml(s, i){
   const def = ITEMS[s.id];
   return `<div class="slot ${sel && sel.kind==='mart' && sel.idx===i ? 'selected':''}" data-act="mart" data-i="${i}">
@@ -8163,12 +8369,12 @@ const BAR_MAX = (() => {
            spd: Math.round(top('spd') * 1.12) };
 })();
 
-function statBar(label, value, max, colour, bonus){
+function statBar(label, value, max, colour, bonus, icon){
   const w = Math.max(3, Math.min(100, Math.round(value / max * 100)));
   // the slice of the bar that comes from an item, drawn lighter on the end
   const bw = bonus > 0 ? Math.max(2, Math.min(w, Math.round(bonus / max * 100))) : 0;
   // v51: an item can cost a stat too (Choice Band's Speed) — shown in red, no hatching
-  return `<div class="sb"><label>${label}</label>
+  return `<div class="sb${icon ? ' sbi' : ''}" style="--c:${colour}"><label>${icon ? SI(icon) : ''}${label}</label>
     <i class="sbar"><u style="width:${w}%;background:${colour}"></u>${
       bw ? `<em style="width:${bw}%;left:${w - bw}%"></em>` : ''}</i><b>${value}${
       bonus > 0 ? `<i class="sbon">+${bonus}</i>` : bonus < 0 ? `<i class="sbon neg">−${-bonus}</i>` : ''}</b></div>`;
@@ -8245,7 +8451,7 @@ function popPipsHtml(u){
   for(let i = 0; i < p.need; i++) h += `<i class="${i < p.have ? 'on' : ''}"></i>`;
   return `<span class="poppips" title="${left} more cop${left === 1 ? 'y' : 'ies'} (or Rare Cand${left === 1 ? 'y' : 'ies'}) to reach Lv ${l + 1}">${h}</span>`;
 }
-function popupHtml(u){
+function popupHtml(u, enemy){
   const sp = SPECIES[u.id], l = unitLevel(u), t = TYPES[sp.type];
   const hs = heldStats(u);
   const h = heldOf(u);
@@ -8270,12 +8476,12 @@ function popupHtml(u){
         ${roleChip(u.id)}
         ${sp.legendary ? '<span class="poplv legend">★ Legendary</span>' : `<span class="poplv">Lv ${l}</span>${popPipsHtml(u)}`}</div>
     </div>
-    <div class="popbars">
-      ${statBar('HP',  effHp(u),  BAR_MAX.hp,  'var(--hp)',  hs.hp)}
-      ${statBar('ATK', effAtk(u), BAR_MAX.atk, 'var(--atk)', hs.atk + (u.tmpAtk||0))}
-      ${statBar('SPD', effSpd(u), BAR_MAX.spd, 'var(--spd)', hs.spd + (u.tmpSpd||0))}
-    </div>
-    ${paceLineHtml(u)}
+    ${enemy ? enemyTriHtml(u) : `<div class="popbars">
+      ${statBar('Atk', effAtk(u), BAR_MAX.atk, 'var(--atk)', hs.atk + (u.tmpAtk||0), 'a')}
+      ${statBar('HP',  effHp(u),  BAR_MAX.hp,  'var(--hp)',  hs.hp, 'h')}
+      ${statBar('Spd', effSpd(u), BAR_MAX.spd, 'var(--spd)', hs.spd + (u.tmpSpd||0), 's')}
+    </div>`}
+    ${enemy ? '' : paceLineHtml(u)}
     ${woundLineHtml(u)}
     ${itemBlock}
     ${vitLineHtml(u)}
@@ -8330,10 +8536,10 @@ const TIPS = (() => {
 /* 3.7.0 · TAP TO INSPECT, EVERYWHERE — the same summary card for pokémon
    that aren't yours: the scouting report, both sides of a battle, and the
    team on the run-over screen. */
-function openUnitCard(u, note){
+function openUnitCard(u, note, enemy){
   if(!u || !SPECIES[u.id]) return;
   SFX.play('open');
-  const d = modal(`${note ? `<p class="ucnote">${note}</p>` : ''}<div class="isum ucard">${popupHtml(u)}</div>
+  const d = modal(`${note ? `<p class="ucnote">${note}</p>` : ''}<div class="isum ucard">${popupHtml(u, enemy)}</div>
     <div class="btnrow"><button class="btn primary" data-m="close">Close</button></div>`);
   d.classList.add('unitcard');
   d.querySelector('[data-m="close"]').onclick = () => { SFX.play('back'); d.remove(); };
@@ -8344,7 +8550,7 @@ function openFighterCard(F){
   const src = mine ? (G.team || []).concat(G.pc || []).find(x => x && x.uid === F.uid)
                    : ((battle.opp && battle.opp.team) || []).find(x => x && x.uid === F.uid);
   const u = src || { id:F.id, exp:0, hp:F.maxHp, atk:F.atk, spd:F.spd };
-  openUnitCard(u, mine ? 'Your pokémon' : esc(battle.oppName || 'Opponent'));
+  openUnitCard(u, mine ? 'Your pokémon' : esc(battle.oppName || 'Opponent'), !mine);
 }
 
 /* ===================================================================
@@ -8531,7 +8737,7 @@ function nextUpHtml(){
     <div class="scout">
       <b>Scouting report <span class="ndim">— what ${esc(b.name)} fielded last time</span></b>
       <div class="scoutrow">${n.scouted.map(u => `
-        <span class="smon" data-act="scoutcard" data-i="${n.scouted.indexOf(u)}" role="button" tabindex="0" title="${esc(u.nm)} · ◆${u.atk} ♥${u.hp} »${u.spd}${
+        <span class="smon" data-act="scoutcard" data-i="${n.scouted.indexOf(u)}" role="button" tabindex="0" title="${esc(u.nm)}${
           u.held && HELD_ITEMS[u.held] ? ' · ' + esc(HELD_ITEMS[u.held].name) : ''}">
           ${SPRITES[u.id] ? `<img src="${SPRITES[u.id]}" alt="${esc(u.nm)}">`
                           : esc(u.nm.slice(0,2))}
@@ -8746,7 +8952,7 @@ function renderShop(){
         <span class="dtype" style="background:${typeColor(u.id)}">${esc(sp.type)}</span>${roleChip(u.id)}
       </div>
       <div class="dnums">
-        <span class="a">◆${u.atk}</span><span class="h">♥${u.hp}</span><span class="s">»${u.spd}</span>
+        <span class="dstat"><span class="a" title="Attack">${SI('a')}${u.atk}</span><span class="h" title="HP">${SI('h')}${u.hp}</span><span class="s" title="Speed">${SI('s')}${u.spd}</span></span>
         ${dcPaceHtml(u)}
       </div>
       <span class="dprice">${TUNING.costBuy}₽</span>
@@ -9421,7 +9627,7 @@ function victorySweep(S){
   mine.forEach((F, k) => frames.push({ transform: 'scale(1.22)', transformOrigin: at(F), offset: 0.1 + 0.75 * k / Math.max(1, mine.length - 1 || 1) }));
   frames.push({ transform: 'scale(1)', transformOrigin: at(mine[mine.length - 1]), offset: 1 });
   frames.forEach((f, k) => { if(k && f.offset <= frames[k - 1].offset) f.offset = Math.min(1, frames[k - 1].offset + 0.01); });
-  anim(view, frames, { duration: Math.min(3600, 900 + mine.length * 520), easing: 'ease-in-out' });
+  /* 5.5.2: the camera no longer sweeps along the team (Sean: it moved around weirdly); the crowd and the confetti stay */
   crowdReact(S, true);
   const cols = ['#ffd23a', '#e0473f', '#3fa8e0', '#5ad17a', '#f06090', '#fff'];
   const W = S.el.clientWidth, H = S.el.clientHeight;
@@ -10070,7 +10276,7 @@ function shopFloat(el, text, cls){
   const r = el.getBoundingClientRect();
   const e = document.createElement('div');
   e.className = 'sfloat ' + (cls || '');
-  e.textContent = text;
+  if(/<i class="si/.test(text)) e.innerHTML = text; else e.textContent = text;   // 5.7.0: stat icons in the growth pop-up
   const slot = el.closest && el.closest('.pfield .slot');
   if(slot){   // 5.3.9: follows the party spot every frame, so it stays over the pokémon while the field settles (and survives redraws)
     const sel = `.pfield .slot[data-i="${slot.dataset.i}"] .artwrap`;
@@ -10115,8 +10321,10 @@ function shopFx(){
     if(n.id !== w.id){ replay(el, 'fx-evo'); shopFloat(el, `${SPECIES[u.id].name}!`, 'evo'); snd.add('evolve'); }
     else if(n.lvl > w.lvl){ replay(el, 'fx-lvl'); shopFloat(el, `Level ${n.lvl}!`, 'lvl'); snd.add('levelup'); }
     else if(n.exp > w.exp){ replay(el, 'fx-exp'); shopFloat(el, '+EXP', 'exp'); snd.add('up'); }
+    if(w.st && n.id === w.id && (n.st.hp > w.st.hp || n.st.atk > w.st.atk || n.st.spd > w.st.spd)) triGrow(el, w.st, n.st);   // 5.7.0
+    if(n.id !== w.id || n.lvl > w.lvl || n.exp > w.exp){}
     else if(w.st && (n.st.hp > w.st.hp || n.st.atk > w.st.atk || n.st.spd > w.st.spd)){   // 5.3.9: battle EXP grows the stats, so say what grew
-      const g = [n.st.atk > w.st.atk ? `\u25c6+${n.st.atk - w.st.atk}` : '', n.st.hp > w.st.hp ? `\u2665+${n.st.hp - w.st.hp}` : '', n.st.spd > w.st.spd ? `\u00bb+${n.st.spd - w.st.spd}` : ''].filter(Boolean).join(' ');
+      const g = [n.st.atk > w.st.atk ? `<span class="ca">${SI('a')}+${n.st.atk - w.st.atk}</span>` : '', n.st.hp > w.st.hp ? `<span class="ch">${SI('h')}+${n.st.hp - w.st.hp}</span>` : '', n.st.spd > w.st.spd ? `<span class="cs">${SI('s')}+${n.st.spd - w.st.spd}</span>` : ''].filter(Boolean).join(' ');
       replay(el, 'fx-exp'); shopFloat(el, `+EXP ${g}`, 'exp'); snd.add('up'); }
   }
   const dc = now.credits - was.credits;
@@ -10359,6 +10567,8 @@ let drawnPhase = null;
 function replay(el, cls){ if(el.classList.contains(cls)){ el.classList.remove(cls); void el.offsetWidth; } el.classList.add(cls); }
 
 function render(){
+  { const dc = sel && sel.kind === 'dc' && G && G.daycare && G.daycare[sel.idx], cu = dc && dc.unit;   // 5.7.0
+    TRI_CMP = cu ? { a: effAtk(cu), h: effHp(cu), s: effSpd(cu) } : null; TRI_BEST = bestForItem(); TRI_SCALE = triScale(TRI_CMP); }
   if(fieldPicking) return;                   // 5.3.0: the reward cards are up on the field; the shop draws when one is picked
   if(SFX.held && !(battle && battle.paused)) SFX.hold(false);   // 4.17.3: nothing is paused, so nothing should be held
   if(G) useGens(G);   // 4.0.0: the engine follows the run's gens
@@ -10929,7 +11139,7 @@ function handle(act, i, data){
       return;
     }
     case 'scoutcard': { const n = nextUp(G), u = n.scouted && n.scouted[i];
-      if(u) openUnitCard(u, `Scouting report · ${esc(n.boss ? n.boss.name : '')}`); return; }
+      if(u) openUnitCard(u, `Scouting report · ${esc(n.boss ? n.boss.name : '')}`, true); return; }
     case 'overcard': openUnitCard(G.team[i]); return;
     case 'runimage': shareRunImage(); return;
     case 'tipok':   SFX.play('select'); TIPS.dismiss(data.tip); break;
@@ -11180,18 +11390,31 @@ function placeSlots(){
 }
 /* 5.3.7: the page around the field takes the field's own colours (a deep shade of its floor), in the shop and in battle,
    so the surround always matches whatever stadium is showing */
+const STADIUM_TONE = ['#0a0d15', '#0d111b'];
 const PAGE_TONE = { route:['#3a8840','#43974a'], gym:['#3a8840','#43974a'], dusk:['#2c5a34','#326538'], league:['#241e4a','#2a2356'],
   summit:['#6f8296','#7a8ea3'], Water:['#1f4f86','#235a95'], Fire:['#3a1e18','#44241c'], Rock:['#5e5442','#685d4a'], Ground:['#7a5e32','#866838'],
   Grass:['#2f6e35','#357a3b'], Bug:['#3b5226','#435c2b'], Psychic:['#4a2556','#532a60'], Electric:['#3e4452','#454c5b'], Ice:['#4f8aa6','#5795b2'],
   Fighting:['#6e4e2e','#785634'], Ghost:['#1d1630','#221a38'], Dragon:['#24226a','#2a2776'], Flying:['#3f7aa6','#4684b2'], Normal:['#9a6e7e','#a57888'],
   Steel:['#59616d','#626a77'], Poison:['#3e2150','#45255a'], Dark:['#1a0f14','#21141a'] };
 function setPageTone(stageEl){
-  const f = stageEl && [...stageEl.classList].find(c => c.startsWith('fl-'));
-  const t = PAGE_TONE[f ? f.slice(3) : 'route'] || PAGE_TONE.route, r = document.documentElement.style;
+  /* 5.5.2: the page behind the field is always the dark stadium with its crowd (Sean: black, the same on every stage) */
+  const t = STADIUM_TONE, r = document.documentElement.style;
   if(r.getPropertyValue('--pg1') !== t[0]){ r.setProperty('--pg1', t[0]); r.setProperty('--pg2', t[1]); }
 }
+/** 5.5.2: on a computer the summary card sits over the lower shop column (the Daycare and the Mart), leaving the PC
+    and the Bag above it free to tap while something is picked. */
+function placeInspect(){
+  const r = document.documentElement.style;
+  if(!(innerWidth >= 1000 && innerHeight >= 521) || phase !== 'shop'){ r.removeProperty('--insTop'); return; }
+  const bag = document.querySelector('.bcR .wall.bag'), bp = bag && (bag.closest('.panel') || bag);
+  const vh = document.documentElement.clientHeight, minH = 300;
+  const top = bp ? Math.round(bp.getBoundingClientRect().bottom + 8) : 74;
+  r.setProperty('--insTop', Math.max(74, Math.min(top, vh - 150 - minH)) + 'px');
+}
+document.addEventListener('scroll', e => { if(e.target && e.target.classList && e.target.classList.contains('shelves')) placeInspect(); }, true);
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
+  placeInspect();
   const w = worldEl(); if(!w || fieldPicking) return;
   const on = (phase === 'shop' && !!G) || phase === 'battle';
   document.body.classList.toggle('inworld', on);
@@ -11559,6 +11782,25 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.8.1', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Item hints, and stat triangles that keep their shape as your team grows', items:[
+    'Pick a vitamin or a held item and the party pok\u00e9mon that gains the most from it gets a gold star beside its triangle. Turn it off in Options \u2192 Item hints.',
+    'Stat triangles now scale with your team instead of a fixed cap, so pok\u00e9mon that have levelled up or evolved no longer fill their whole triangle. Each corner reaches as far as that stat goes compared with the best on your team, so you can still see each pok\u00e9mon\u2019s build (and what grew) all run long. Opponents\u2019 triangles are measured against your team too.' ] },
+  { v:'5.8.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Vitamins and held items show what they would do on each triangle', items:[
+    'Pick a vitamin in the Mart, or a held item in the Mart or your Bag, and every pok\u00e9mon it can go on shows its triangle with the item as a dashed outline over its own shape. You can see who gains the most before you use or buy it. Pok\u00e9mon it would do nothing for (a full vitamin, the item it already holds) show no outline.',
+    'Iron-out: on a computer the crowd in the stands is drawn as small, close dots instead of a grid of big circles, the Your Party header sits on a dark strip so the field\u2019s edge no longer runs through it, and the stat triangles are a little bigger. On a sideways phone the summary card is solid and its stat rows no longer squash the labels. The \u201ctap a slot\u201d pill no longer sits on top of the summary card there.' ] },
+  { v:'5.7.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Compare triangles when buying, triangles that grow, and opponents shown by shape', items:[
+    'Pick a pok\u00e9mon in the Daycare and every party triangle also shows its shape as a dashed outline, so you can see at a glance who it beats on Attack, HP or Speed before you buy.',
+    'After a battle, a pok\u00e9mon whose stats grew shows it on its triangle: the old shape fades out under the new one, the triangle pops and the corner that grew pulses.',
+    'Opponents\u2019 summaries (tapping one in battle or in the scouting report) show a large stat triangle instead of exact numbers, so you can read their build without the precise figures.' ] },
+  { v:'5.6.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Stat triangles on the field, stat bars in the summary', items:[
+    'Your party on the field now shows a small stat triangle beside each pok\u00e9mon instead of number tags. Each corner is a stat (red sword Attack at the top, green heart HP bottom-left, blue bolt Speed bottom-right) and the gold shape stretches towards what it is good at: Snorlax leans to the heart, Pikachu to the bolt. The level sits over its head.',
+    'The exact numbers are one tap away: the summary now has a bar for each stat with its icon, in Attack, HP, Speed order, coloured like the triangle.' ] },
+  { v:'5.5.2', date:'Oct 7, 2026', title:'Visual bug fixes', sub:'A dark stadium behind every field, stat icons, a proper summary on computers and a calmer gym win', items:[
+    'The page behind the field is now the dark stadium with its crowd, and it stays the same on every stage instead of changing colour with the floor.',
+    'Stats have icons: a red sword for Attack, a green heart for HP and a blue bolt for Speed, on little dark tags over your party and in the Daycare, the Pok\u00e9dex and How to play, instead of plain numbers.',
+    'On a computer, a pok\u00e9mon\u2019s or item\u2019s summary opens as a full card in the shop column, under the PC and Bag (so you can still drop things there), instead of a squashed strip in the bottom-left corner.',
+    'After a gym win the camera no longer sweeps around the team. The crowd still cheers and the confetti still falls.',
+    'The Champion\u2019s photo: fainted pok\u00e9mon no longer stay greyed out on the field while the team lines up for the picture.' ] },
   { v:'5.5.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A new name, PokéArena, and no more all-caps lettering', items:[
     'The game has a new name: Pok\u00e9Arena, on the title screen, the browser tab, the share image and the home-screen app (with a PA icon). Your saves, records and Trainer Card carry over untouched.',
     'No more shouting: words keep their own capitals across the game. Menu, Tap to play, the title menu, tags, buttons, ribbons (\u201cVictory!\u201d, \u201cBoulder Badge!\u201d) and labels are written normally instead of in all caps.' ] },
@@ -12447,11 +12689,13 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
+    <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
+      Item hints puts a gold star on the party pokémon that gains the most from the vitamin or held item you have picked.
       Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
   d.classList.add('options');
@@ -12721,9 +12965,9 @@ function openHelp(){
   const T = TUNING;
   const d = modal(`<h3>How to Play</h3>
     <button class="btn replay" data-m="tutorial">Replay the tutorial</button>
-    <p class="legend"><span style="color:var(--atk)">◆ Attack</span>
-       <span style="color:var(--hp)">♥ HP</span>
-       <span style="color:var(--spd)">» Speed</span></p>
+    <p class="legend"><span style="color:var(--atk)">${SI('a')} Attack</span>
+       <span style="color:var(--hp)">${SI('h')} HP</span>
+       <span style="color:var(--spd)">${SI('s')} Speed</span></p>
 
     <h4>The formation</h4>
     <p>Your party fights as <b>three ranks, two abreast</b> — Front, Middle, Back. Attacks land on a random
@@ -12779,9 +13023,9 @@ function openHelp(){
 
     <h4>What the three stats do</h4>
     <p class="legend" style="flex-direction:column;align-items:flex-start;gap:4px">
-      <span><b style="color:var(--hp)">♥ HP</b> — how long you stay in the fight.</span>
-      <span><b style="color:var(--atk)">◆ Attack</b> — how much each action is worth.</span>
-      <span><b style="color:var(--spd)">» Speed</b> — <b>how often you act</b>.</span></p>
+      <span><b style="color:var(--hp)">${SI('h')} HP</b> — how long you stay in the fight.</span>
+      <span><b style="color:var(--atk)">${SI('a')} Attack</b> — how much each action is worth.</span>
+      <span><b style="color:var(--spd)">${SI('s')} Speed</b> — <b>how often you act</b>.</span></p>
     <p>There is no threshold and no ceiling: every point of speed is more actions, at every value. A slow
     pokémon isn't merely last any more — it genuinely swings less often, so leaving speed alone is a real
     cost rather than a free saving.</p>
@@ -12939,7 +13183,7 @@ function openDex(){
         <div><h3>${esc(s.name)}</h3>
           <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
           <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
-      <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
+      <div class="cbars">${barRow(SI('h') + ' HP', s.hp, MAXS.hp, 'hp')}${barRow(SI('a') + ' Atk', s.atk, MAXS.atk, 'atk')}${barRow(SI('s') + ' Spd', s.spd, MAXS.spd, 'spd')}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}</div>
       ${fam.length > 1 ? `<h4>Evolution</h4><div class="cchain">${chain}</div>` : ''}
