@@ -1,4 +1,4 @@
-# PokéBattler (3.7.0)
+# PokéArena (5.5.1)
 
 A Pokémon auto battler for me and my friends. This folder is the home-screen
 app version: the game (`index.html`) plus what a phone needs to install it
