@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.7.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.8.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -440,7 +440,7 @@ function unitHtml(u, opts){
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
     <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}" title="Attack">${SI('a')}${eA}</span><span class="h ${hs.hp?'xup':''}" title="HP">${SI('h')}${eH}</span></div>
     <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}" title="Speed">${SI('s')}${eS}</span></div>
-    ${statTri(eA, eH, eS, TRI_CMP && !opts.price ? { cmp: TRI_CMP } : null)}
+    ${(c => statTri(eA, eH, eS, c ? { cmp: c } : null))(triCmpFor(u, opts))}
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
@@ -454,8 +454,29 @@ function triPt(k, r){ const ang = -Math.PI / 2 + k * 2 * Math.PI / 3; return (TR
 const triFrac = (v, m) => Math.max(.12, Math.min(1, v / m));
 /** The gold shape's points for these stats. */
 const triShape = (a, h, sp) => [triPt(0, triFrac(a, BAR_MAX.atk)), triPt(1, triFrac(sp, BAR_MAX.spd)), triPt(2, triFrac(h, BAR_MAX.hp))].join(' ');
-/* 5.7.0: while a Daycare pokémon is picked, every party triangle also shows that pokémon's shape (dashed), to compare */
+/* 5.7.0: while a Daycare pokémon is picked, every party triangle also shows that pokémon's shape (dashed), to compare.
+   5.8.0: the same for a vitamin or a held item: each pokémon it can go on shows its shape with the item (dashed). */
 let TRI_CMP = null;
+function triWithItem(u, id, held){
+  if(!u) return null;
+  let v = null;
+  if(held){ if(!HELD_ITEMS[id] || u.held === id) return null; v = { ...u, held: id }; }
+  else {
+    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u)) return null;
+    v = { ...u }; const fake = { boost: (x, d) => { for(const k of ['hp', 'atk', 'spd']) if(d[k]) x[k] = (x[k] || 0) + d[k]; } };
+    try{ def.apply(v, fake); }catch(e){ return null; }
+  }
+  const c = { a: effAtk(v), h: effHp(v), s: effSpd(v) };
+  return c.a === effAtk(u) && c.h === effHp(u) && c.s === effSpd(u) ? null : c;
+}
+function triCmpFor(u, opts){
+  if(opts && opts.price) return null;
+  if(TRI_CMP) return TRI_CMP;
+  if(!sel || !G) return null;
+  if(sel.kind === 'mart'){ const m = G.mart[sel.idx]; return m && !m.bought ? triWithItem(u, m.id, m.held) : null; }
+  if(sel.kind === 'bag'){ const id = G.bag[sel.idx]; return id ? triWithItem(u, id, true) : null; }
+  return null;
+}
 function statTri(a, h, sp, opts){
   opts = opts || {};
   const out = [triPt(0, 1), triPt(1, 1), triPt(2, 1)].join(' '), mid = [triPt(0, .5), triPt(1, .5), triPt(2, .5)].join(' ');
@@ -4087,6 +4108,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.8.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Vitamins and held items show what they would do on each triangle', items:[
+    'Pick a vitamin in the Mart, or a held item in the Mart or your Bag, and every pok\u00e9mon it can go on shows its triangle with the item as a dashed outline over its own shape. You can see who gains the most before you use or buy it. Pok\u00e9mon it would do nothing for (a full vitamin, the item it already holds) show no outline.',
+    'Iron-out: on a computer the crowd in the stands is drawn as small, close dots instead of a grid of big circles, the Your Party header sits on a dark strip so the field\u2019s edge no longer runs through it, and the stat triangles are a little bigger. On a sideways phone the summary card is solid and its stat rows no longer squash the labels. The \u201ctap a slot\u201d pill no longer sits on top of the summary card there.' ] },
   { v:'5.7.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Compare triangles when buying, triangles that grow, and opponents shown by shape', items:[
     'Pick a pok\u00e9mon in the Daycare and every party triangle also shows its shape as a dashed outline, so you can see at a glance who it beats on Attack, HP or Speed before you buy.',
     'After a battle, a pok\u00e9mon whose stats grew shows it on its triangle: the old shape fades out under the new one, the triangle pops and the corner that grew pulses.',
