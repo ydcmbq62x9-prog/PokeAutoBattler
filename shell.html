@@ -3105,6 +3105,54 @@ html.bc .pfield .slot .ibest{display:grid;place-items:center;position:absolute;z
 @keyframes ibest{50%{transform:scale(1.15)}}
 body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:none}
 @media (prefers-reduced-motion:reduce){html.bc .pfield .slot .ibest{animation:none}}
+/* ---- 5.9.0 · move effects and particles, redone ----
+   Everything on the effects layer is sized from --u (set each step from the size of the pokémon on screen), so the
+   effects read the same on a phone and on a big monitor. Each type has its own shot. */
+.fxl{--u:1}
+.fx.shot,.fx.burst,.fx.ring,.fx.slash,.fx.punch,.fx.impact,.fx.pt,.fx.crescent,.fx.quakering{will-change:transform,opacity}
+.fx.pt{transform:translate(-50%,-50%)}
+.fx.pt.ember{width:calc(9px * var(--u));height:calc(9px * var(--u))}
+.fx.pt.drop{width:calc(7px * var(--u));height:calc(10px * var(--u))}
+.fx.pt.leaf{width:calc(11px * var(--u));height:calc(6px * var(--u))}
+.fx.pt.spark{width:calc(9px * var(--u));height:calc(14px * var(--u))}
+.fx.pt.ishard{width:calc(6px * var(--u));height:calc(12px * var(--u))}
+.fx.pt.chunk{width:calc(9px * var(--u));height:calc(8px * var(--u))}
+.fx.pt.dust{width:calc(20px * var(--u));height:calc(13px * var(--u))}
+.fx.pt.glint{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.pt.wisp{width:calc(13px * var(--u));height:calc(13px * var(--u))}
+.fx.pt.bubble{width:calc(9px * var(--u));height:calc(9px * var(--u))}
+.fx.pt.star{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.pt.feather{width:calc(5px * var(--u));height:calc(14px * var(--u))}
+.fx.pt.trail{z-index:6;mix-blend-mode:screen}
+.fx.shard{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.burst{width:calc(52px * var(--u))!important}
+.fx.impact{width:calc(64px * var(--u))!important}
+.fx.ring{width:calc(60px * var(--u))!important;border-width:calc(3px * var(--u))!important}
+.fx.slash{width:calc(54px * var(--u))!important;border-top-width:calc(4px * var(--u))!important}
+.fx.slash.dark{border-top-color:#2a1830!important;filter:drop-shadow(0 0 calc(4px * var(--u)) #c060ff) drop-shadow(0 0 2px #000)!important}
+.fx.punch{width:calc(48px * var(--u))!important}
+/* shots */
+.fx.shot{z-index:8}
+.fx.shot.fireball{width:calc(18px * var(--u));height:calc(18px * var(--u));border-radius:50%;background:radial-gradient(circle at 60% 45%,#fff 0 18%,#ffe27a 30%,#ff8a2a 55%,rgba(224,64,26,.7) 70%,transparent 74%);box-shadow:0 0 calc(12px * var(--u)) calc(4px * var(--u)) rgba(255,120,30,.75)}
+.fx.shot.dragonball{width:calc(20px * var(--u));height:calc(20px * var(--u));border-radius:50%;background:radial-gradient(circle,#fff 0 15%,#c8b0ff 32%,#7a50f0 58%,rgba(74,48,176,.6) 70%,transparent 74%);box-shadow:0 0 calc(14px * var(--u)) calc(4px * var(--u)) rgba(122,80,240,.75)}
+.fx.shot.shadowball{width:calc(20px * var(--u));height:calc(20px * var(--u));border-radius:50%;background:radial-gradient(circle at 40% 35%,#d8c8ff 0 10%,#6a4ac0 35%,#2a1650 62%,transparent 72%);box-shadow:0 0 calc(12px * var(--u)) calc(3px * var(--u)) rgba(120,80,220,.7)}
+.fx.shot.drop{width:calc(9px * var(--u));height:calc(9px * var(--u));border-radius:50% 50% 50% 0;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#9fd2ff 40%,#3a86d8 75%);box-shadow:0 0 calc(5px * var(--u)) rgba(120,190,255,.8)}
+.fx.shot.icicle{width:calc(20px * var(--u));height:calc(7px * var(--u));border-radius:0;clip-path:polygon(0 50%,25% 0,100% 50%,25% 100%);background:linear-gradient(90deg,#8cc8e0,#fff);box-shadow:none;filter:drop-shadow(0 0 3px #bfe8ff)}
+.fx.shot.leafshot{width:calc(15px * var(--u));height:calc(8px * var(--u));border-radius:0 100% 0 100%;background:linear-gradient(135deg,#c6f59a,#5cb84a 60%,#3e8e34);box-shadow:0 0 calc(5px * var(--u)) rgba(120,220,90,.6)}
+.fx.shot.pinshot{width:calc(16px * var(--u));height:calc(4px * var(--u));border-radius:2px;background:linear-gradient(90deg,transparent,#d8e880 40%,#fff);box-shadow:0 0 calc(4px * var(--u)) rgba(200,216,96,.8)}
+.fx.shot.steelshot{width:calc(16px * var(--u));height:calc(16px * var(--u));border-radius:2px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(135deg,#fff,#c8d0dc 50%,#8a94a4);box-shadow:none;filter:drop-shadow(0 0 4px #fff)}
+.fx.shot.sludgeball{width:calc(15px * var(--u));height:calc(13px * var(--u));border-radius:50% 50% 45% 55%;background:radial-gradient(circle at 35% 30%,#f0c8ff 0 12%,#b05ad0 45%,#6a2a8a 80%);box-shadow:0 0 calc(6px * var(--u)) rgba(176,90,208,.7)}
+.fx.shot.rockshot{width:calc(17px * var(--u));height:calc(15px * var(--u));border-radius:3px;clip-path:polygon(15% 0,85% 8%,100% 65%,62% 100%,0 82%);background:linear-gradient(135deg,#d8c8a8,#8e7e62 55%,#5e5040);box-shadow:none}
+.fx.shot.boon{width:calc(13px * var(--u));height:calc(13px * var(--u))}
+/* lightning */
+.fx.bolt{position:absolute;height:auto;aspect-ratio:auto;transform-origin:0 50%;z-index:9;pointer-events:none}
+.fx.bolt svg{display:block;width:100%;height:calc(40px * var(--u));overflow:visible}
+.fx.bolt .g{fill:none;stroke:rgba(255,236,110,.55);stroke-width:calc(7px * var(--u));stroke-linejoin:round;stroke-linecap:round;filter:blur(2px)}
+.fx.bolt .c{fill:none;stroke:#fffbe0;stroke-width:calc(2.4px * var(--u));stroke-linejoin:round;stroke-linecap:round}
+/* wind */
+.fx.crescent{width:calc(26px * var(--u));height:calc(26px * var(--u));border-radius:50%;border-right:calc(3px * var(--u)) solid rgba(255,255,255,.95);border-top:calc(1.5px * var(--u)) solid transparent;filter:drop-shadow(0 0 3px #fff);z-index:8}
+/* ground */
+.fx.quakering{width:calc(70px * var(--u));height:calc(70px * var(--u));border-radius:50%;border:calc(3px * var(--u)) solid #c8a060;box-shadow:0 0 0 calc(2px * var(--u)) rgba(90,60,30,.4),inset 0 0 calc(10px * var(--u)) rgba(120,80,30,.5);z-index:5}
 </style>
 </head>
 <body>

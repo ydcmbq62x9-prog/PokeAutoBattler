@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.8.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.9.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1644,8 +1644,9 @@ try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change'
 const ARENA_X = { p:[38, 24, 10], e:[62, 76, 90] };   // by rank: front, middle, back (% across)
 const ARENA_Y = [60, 87];                              // the two files, where the feet are (% down)
 // how each card type's attacks look in flight
+/* 5.9.0: every type has its own move effect (before, several types borrowed the nearest one) */
 const FX_OF = { Fire:'fire', Water:'water', Electric:'elec', Grass:'grass', Psychic:'psy', Fighting:'fight', Normal:'slash',
-  Ice:'water', Poison:'grass', Ghost:'psy', Dragon:'fire', Bug:'grass', Rock:'fight', Ground:'fight', Flying:'slash' };   // 3.0.0: the new types borrow the nearest effect
+  Ice:'ice', Poison:'sludge', Ghost:'shadow', Dragon:'dragon', Bug:'pin', Rock:'rock', Ground:'quake', Flying:'gust', Steel:'steel', Dark:'dark' };
 // a gym's floor takes the colour of its speciality (Gen 1 type names)
 const GEN1_COL = { Rock:'#b8a038', Ground:'#d8b460', Water:'#5a8ff0', Electric:'#f0c830', Grass:'#62b85a',
   Poison:'#a45ab8', Psychic:'#f06090', Fire:'#f07830', Ice:'#88d0e0', Fighting:'#c04830', Ghost:'#6a5a9a', Dragon:'#7050e8' };
@@ -1906,6 +1907,22 @@ function floatText(S, F, text, cls, lift){
        { opacity: 0, transform: 'translate(-50%,-175%) scale(1)' }],
     { duration: still ? 900 : 1050, easing: 'ease-out', remove: true });
 }
+/** 5.9.0: a status shown as its own particles instead of an emoji: flames rise off a burn, bubbles off poison, sparks
+    crackle round paralysis, pink stars circle confusion, white stars for a flinch. Sleep keeps its drifting Zs. */
+const ST_PT = { brn: { sh:'ember', c:['#fff3a0','#ff9a2a','#e0401a'], rise:1 }, psn: { sh:'bubble', c:['#e0a8ff','#b05ad0'], rise:1 },
+  par: { sh:'spark', c:['#fff6a0','#ffe14a'], jitter:1 }, cnf: { sh:'glint', c:['#ffd0f0','#ff8ac8'], circle:1 }, fln: { sh:'star', c:['#ffffff','#fff2b0'], jitter:1 } };
+function statusPuff(S, F, st, n){
+  if(motionOff()) return;
+  const d = ST_PT[st]; if(!d){ puff(S, F, st === 'slp' ? 'z' : ((TUNING.status[st] || {}).icon || '•'), n); return; }
+  const c = artCentre(S, F), cnt = (n || 3) + 3;
+  for(let k = 0; k < cnt; k++){
+    const e = fxEl(S, 'pt ' + d.sh, c.x + (Math.random() - .5) * c.w * .7, c.y + (Math.random() - .2) * c.w * .4); e.style.setProperty('--c', d.c[k % d.c.length]);
+    const fr = d.circle ? [0, .25, .5, .75, 1].map(t => ({ transform: `translate(calc(-50% + ${Math.cos(t * 6.28 + k) * c.w * .45}px), calc(-50% - ${c.w * .45 + Math.sin(t * 6.28 + k) * c.w * .12}px)) scale(${t === 0 || t === 1 ? .4 : 1})`, opacity: t === 0 || t === 1 ? 0 : 1 }))
+      : d.jitter ? [{ transform: 'translate(-50%,-50%) scale(.4)', opacity: 0 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 12}px), calc(-50% + ${(Math.random() - .5) * 12}px)) scale(1.1) rotate(${Math.random() * 90}deg)`, opacity: 1, offset: .3 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 18}px), calc(-50% + ${(Math.random() - .5) * 18}px)) scale(.5)`, opacity: 0 }]
+      : [{ transform: 'translate(-50%,-50%) scale(.5)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 10}px), calc(-50% - ${c.w * (.5 + Math.random() * .4)}px)) scale(.6)`, opacity: 0 }];
+    anim(e, fr, { duration: (d.circle ? 1100 : 760) + Math.random() * 200, delay: k * 70, easing: 'ease-out', fill: 'backwards', remove: true });
+  }
+}
 /** A few of a status icon drifting up — flames, bubbles, Zs. */
 function puff(S, F, glyph, n){
   if(motionOff()) return;
@@ -2032,9 +2049,9 @@ const HIT_FX = {
   Steel:    { sh:'spark',   c:['#ffffff','#c8d0dc'] },
   Dark:     { sh:'wisp',    c:['#6a4a6a','#2a1a2a'], up:true, slow:true },
 };
-function hitBurst(S, F, type){
+function hitBurst(S, F, type, big){
   if(motionOff()) return;
-  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = d.sh === 'dust' ? 5 : 8;
+  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = (d.sh === 'dust' ? 5 : 8) + (big ? 6 : 0);
   for(let k = 0; k < n; k++){
     const e = fxEl(S, 'pt ' + d.sh, c.x, c.y); e.style.setProperty('--c', d.c[k % d.c.length]);
     const a = (k / n) * Math.PI * 2 + Math.random() * 0.6, r = c.w * (0.35 + Math.random() * 0.45);
@@ -2046,43 +2063,89 @@ function hitBurst(S, F, type){
       { duration: (d.slow ? 820 : 560) + Math.random() * 160, easing: d.fall ? 'cubic-bezier(.3,.4,.7,1)' : 'ease-out', remove: true });
   }
 }
-/** What an attack looks like on its way over. Resolves when it lands. */
+/** What an attack looks like on its way over. Resolves when it lands.
+    5.9.0: redone. Every type has its own look, everything is sized to the pokémon on screen (the --u scale on the
+    effects layer), and shots leave a short trail. */
+const fin = a => a.finished.catch(() => {});
+function trail(S, a, dx, dy, dur, cls, n, arc, col){
+  for(let k = 1; k <= n; k++){
+    const t = k / (n + 1), lift = arc ? Math.sin(Math.PI * t) * Math.max(26, Math.hypot(dx, dy) * 0.38) : 0;
+    const e = fxEl(S, 'pt trail ' + cls, a.x + dx * t, a.y + dy * t - lift); if(col) e.style.setProperty('--c', col);
+    anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.9)' }, { opacity: .9, offset: .15 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }],
+      { duration: dur * 0.9, delay: dur * t, fill: 'backwards', remove: true });
+  }
+}
+function straightFrames(dx, dy, wob){
+  const fr = [];
+  for(let k = 0; k <= 6; k++){ const t = k / 6, w = (wob || 0) * Math.sin(t * Math.PI * 2);
+    const nx = -dy / (Math.hypot(dx, dy) || 1), ny = dx / (Math.hypot(dx, dy) || 1);
+    fr.push({ transform: `translate(calc(-50% + ${dx * t + nx * w}px), calc(-50% + ${dy * t + ny * w}px)) rotate(${Math.atan2(dy, dx)}rad)` }); }
+  return fr;
+}
 function projectile(S, A, T, kind, dur){
   const a = artCentre(S, A), b = artCentre(S, T), col = typeColor(A.id);
-  const dx = b.x - a.x, dy = b.y - a.y;
-  if(kind === 'slash' || kind === 'fight'){
-    const e = fxEl(S, kind === 'slash' ? 'slash' : 'punch', b.x, b.y);
-    return anim(e, kind === 'slash'
-      ? [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-70deg) scale(.4)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(30deg) scale(1.05)', offset: .6 },
-         { opacity: 0, transform: 'translate(-50%,-50%) rotate(70deg) scale(1.15)' }]
-      : [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.15)', offset: .55 },
-         { opacity: 0, transform: 'translate(-50%,-50%) scale(1.4)' }],
-      { duration: dur, delay: dur * 0.2, easing: 'ease-out', fill: 'backwards', remove: true }).finished.catch(() => {});
+  const dx = b.x - a.x, dy = b.y - a.y, ang = Math.atan2(dy, dx);
+  const at = (cls, x, y) => { const e = fxEl(S, cls, x, y); e.style.setProperty('--c', col); return e; };
+  const pop = (e, d, from, to) => fin(anim(e, [{ opacity: 0, transform: `translate(-50%,-50%) ${from}` }, { opacity: 1, offset: .35 }, { opacity: 0, transform: `translate(-50%,-50%) ${to}` }],
+    { duration: d, delay: dur * 0.15, easing: 'ease-out', fill: 'backwards', remove: true }));
+  switch(kind){
+    case 'slash': case 'dark': {        // two crossing cuts at the target
+      return Promise.all([0, 1].map(k => { const e = at('slash' + (kind === 'dark' ? ' dark' : ''), b.x, b.y);
+        return fin(anim(e, [{ opacity: 0, transform: `translate(-50%,-50%) rotate(${k ? 120 : -70}deg) scale(.5)` }, { opacity: 1, transform: `translate(-50%,-50%) rotate(${k ? 200 : 20}deg) scale(1.05)`, offset: .55 },
+          { opacity: 0, transform: `translate(-50%,-50%) rotate(${k ? 240 : 60}deg) scale(1.15)` }], { duration: dur, delay: dur * (0.15 + k * 0.25), easing: 'ease-out', fill: 'backwards', remove: true })); }));
+    }
+    case 'fight': return pop(at('punch', b.x, b.y), dur, 'scale(.3) rotate(-20deg)', 'scale(1.5) rotate(10deg)');
+    case 'quake': {                     // the ground cracks under the target and throws up dust
+      const g = at('quakering', b.x, b.y + b.w * 0.42);
+      anim(T.el.querySelector('.fart') || T.el, [{ translate: '0 0' }, { translate: '0 -6px', offset: .3 }, { translate: '0 2px', offset: .6 }, { translate: '0 0' }], { duration: dur * 1.1, delay: dur * 0.3 });
+      for(let k = 0; k < 4; k++){ const d = at('pt dust', b.x + (k - 1.5) * b.w * 0.3, b.y + b.w * 0.4); d.style.setProperty('--c', '#d8b878');
+        anim(d, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: .9, offset: .3 }, { opacity: 0, transform: `translate(-50%, calc(-50% - ${b.w * 0.5}px)) scale(1.8)` }], { duration: dur * 1.6, delay: dur * (0.3 + k * 0.08), fill: 'backwards', remove: true }); }
+      return pop(g, dur * 1.2, 'scale(.2,.08)', 'scale(1.6,.6)');
+    }
+    case 'psy': {                       // rings close in on the target, then a pink pulse
+      return Promise.all([0, 1, 2].map(k => fin(anim(at('ring', b.x, b.y), [{ opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }, { opacity: .95, offset: .3 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.25)' }],
+        { duration: dur * 0.9, delay: k * dur * 0.16, easing: 'ease-in', fill: 'backwards', remove: true }))));
+    }
+    case 'elec': {                      // a jagged bolt flickers across, three times
+      const len = Math.hypot(dx, dy), n = 7, pts = [];
+      for(let k = 0; k <= n; k++){ const t = k / n, off = k === 0 || k === n ? 0 : (k % 2 ? 1 : -1) * len * 0.07 * (0.6 + Math.random() * 0.6);
+        pts.push(`${(t * len).toFixed(1)},${off.toFixed(1)}`); }
+      const e = fxEl(S, 'bolt', a.x, a.y);
+      e.style.width = len + 'px'; e.style.transform = `translateY(-50%) rotate(${ang}rad)`;
+      e.innerHTML = `<svg viewBox="0 ${-len * 0.12} ${len} ${len * 0.24}" preserveAspectRatio="none"><polyline points="${pts.join(' ')}" class="g"/><polyline points="${pts.join(' ')}" class="c"/></svg>`;
+      return fin(anim(e, [{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: .2, offset: .25 }, { opacity: 1, offset: .4 }, { opacity: .3, offset: .6 }, { opacity: 1, offset: .75 }, { opacity: 0 }],
+        { duration: dur * 1.2, delay: dur * 0.1, fill: 'backwards', remove: true }));
+    }
+    case 'gust': {                      // three white crescents sweep across
+      return Promise.all([0, 1, 2].map(k => { const e = at('crescent', a.x, a.y);
+        return fin(anim(e, straightFrames(dx, dy, (k - 1) * b.w * 0.25).map((f, j, arr) => ({ ...f, opacity: j === 0 || j === arr.length - 1 ? 0 : 1 })),
+          { duration: dur, delay: k * dur * 0.15, easing: 'ease-in', fill: 'both', remove: true })); }));
+    }
   }
-  if(kind === 'psy'){
-    const rings = [0, 1, 2].map(k => {
-      const e = fxEl(S, 'ring', b.x, b.y); e.style.setProperty('--c', col);
-      return anim(e, [{ opacity: .95, transform: 'translate(-50%,-50%) scale(.2)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)' }],
-        { duration: dur * 0.8, delay: k * dur * 0.13, fill: 'backwards', remove: true }).finished.catch(() => {});
-    });
-    return Promise.all(rings);
-  }
-  const n = kind === 'elec' ? 1 : kind === 'grass' ? 3 : kind === 'water' ? 4 : 3;
+  /* everything else is a shot: what it is, how many, and the path it takes */
+  const SHOT = {
+    fire:   { cls: 'fireball', n: 1, path: 'straight', trail: 'ember', tn: 5, tc: '#ff8a2a' },
+    dragon: { cls: 'dragonball', n: 1, path: 'straight', wob: 6, trail: 'ember', tn: 5, tc: '#9a70ff' },
+    shadow: { cls: 'shadowball', n: 1, path: 'straight', wob: 8, trail: 'wisp', tn: 4, tc: '#8a6ad8' },
+    water:  { cls: 'drop', n: 5, path: 'straight', gap: .09, trail: null },
+    ice:    { cls: 'icicle', n: 3, path: 'straight', gap: .12, trail: 'ishard', tn: 3, tc: '#dff4ff' },
+    grass:  { cls: 'leafshot', n: 3, path: 'arc', jig: 10, gap: .14, trail: null },
+    pin:    { cls: 'pinshot', n: 3, path: 'straight', gap: .1, trail: null },
+    steel:  { cls: 'steelshot', n: 2, path: 'straight', gap: .16, trail: 'spark', tn: 3, tc: '#e8eef6' },
+    sludge: { cls: 'sludgeball', n: 2, path: 'arc', jig: 8, gap: .18, trail: 'bubble', tn: 3, tc: '#c07ae0' },
+    rock:   { cls: 'rockshot', n: 2, path: 'arc', jig: 6, gap: .2, trail: null },
+  }[kind] || { cls: 'fireball', n: 1, path: 'straight' };
   const shots = [];
-  for(let k = 0; k < n; k++){
-    const e = fxEl(S, 'shot ' + kind, a.x, a.y); e.style.setProperty('--c', col);
-    const jig = kind === 'water' ? (k % 2 ? 7 : -7) : kind === 'grass' ? (k - 1) * 10 : 0;
-    const frames = kind === 'elec'
-      ? [0, .2, .4, .6, .8, 1].map((f, j) => ({ transform: `translate(calc(-50% + ${dx * f}px), calc(-50% + ${dy * f + (f > 0 && f < 1 ? (j % 2 ? -12 : 12) : 0)}px))` }))
-      : arcFrames(dx, dy, jig);   // 4.17.0: shots lob up and over in an arc
-    shots.push(anim(e, frames, { duration: dur, delay: k * dur * 0.14, easing: kind === 'elec' ? 'steps(5, end)' : 'linear',
-      fill: 'both', remove: true }).finished.catch(() => {}));
+  for(let k = 0; k < SHOT.n; k++){
+    const e = at('shot ' + SHOT.cls, a.x, a.y);
+    const frames = SHOT.path === 'arc' ? arcFrames(dx, dy, SHOT.jig ? (k - (SHOT.n - 1) / 2) * SHOT.jig : 0) : straightFrames(dx, dy, SHOT.wob || (SHOT.n > 1 ? (k % 2 ? 4 : -4) : 0));
+    shots.push(fin(anim(e, frames, { duration: dur, delay: k * dur * (SHOT.gap || 0.14), easing: SHOT.path === 'arc' ? 'linear' : 'ease-in', fill: 'both', remove: true })));
   }
+  if(SHOT.trail) trail(S, a, dx, dy, dur, SHOT.trail, SHOT.tn || 4, SHOT.path === 'arc', SHOT.tc || col);
   return Promise.all(shots).then(() => {
     if(!T.el.isConnected) return;
-    const e = fxEl(S, 'burst', b.x, b.y); e.style.setProperty('--c', col);
-    anim(e, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.4)' }],
-      { duration: 300, remove: true });
+    const e = at('burst', b.x, b.y);
+    anim(e, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 340, remove: true });
   });
 }
 /** Support moves travel too: a soft sparkle from the user to whoever it helps. */
@@ -2124,6 +2187,8 @@ function animateStep(S, i){
   const lines = st.lines || [];
   const ak = actorKey(st), A = ak ? S.f.get(ak) : null;
   markActing(S, st);
+  { const any = A || [...S.f.values()].find(F => !F.down);   // 5.9.0: effects are sized to the pokémon on screen
+    if(any && !quick){ const w = artCentre(S, any).w; if(w > 0) S.fx.style.setProperty('--u', Math.max(.8, Math.min(2.4, w / 48)).toFixed(2)); } }
 
   // what happened to each pokémon on this step
   const ev = [];
@@ -2176,7 +2241,7 @@ function animateStep(S, i){
     /* 4.13.0: a type-coloured flash where each blow lands, and the field shakes on a super-effective hit or a knockout */
     if(!quick && A){ const col = typeColor(A.id);
       const aType = SPECIES[A.id] ? SPECIES[A.id].type : 'Normal';
-      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
+      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType, e.kinds.has('crit') || e.fainted); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
     const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
     if(bigHit && !quick) camLean(S, bigHit.F);
@@ -2196,7 +2261,7 @@ function animateStep(S, i){
         const dot = !A && e.w && e.w.st && TUNING.status[e.w.st] && TUNING.status[e.w.st].dotPct;
         const took = e.fainted && lines.map(l => l.startsWith(nm + ' took ') && l.match(/took (\d+) damage/)).find(Boolean);
         floatText(S, F, '−' + (took ? took[1] : -e.dhp), se ? 'se' : weak ? 'weak' : dot ? 'st-' + e.w.st : '');
-        if(dot) puff(S, F, TUNING.status[e.w.st].icon, 2);
+        if(dot) statusPuff(S, F, e.w.st, 2);
         else flash(F, se || e.fainted, se ? '#ffd166' : null);
         if(se && !told){ told = true; floatText(S, F, 'Super effective!', 'se note', 26); }
         lift = 22;
@@ -2211,7 +2276,7 @@ function animateStep(S, i){
       if(e.stNew){
         const S0 = TUNING.status[e.stNew];
         floatText(S, F, ST_WORD[e.stNew] || S0.name, 'st-' + e.stNew + ' note', lift); lift += 20;
-        puff(S, F, e.stNew === 'slp' ? 'z' : S0.icon, 3);
+        statusPuff(S, F, e.stNew, 3);
         glow(F, { brn:'#ff7a2e', psn:'#b05ad0', par:'#ffd93a', slp:'#9fb1d6', cnf:'#ff9bd0', fln:'#ffffff' }[e.stNew] || '#fff');
       }
       if(e.shUp){ floatText(S, F, 'Barrier', 'shield note', lift); lift += 20; }
@@ -4139,6 +4204,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.9.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Move effects and particles redone: a look for every type, sized to the screen', items:[
+    'Every type now has its own move effect. Before, several borrowed another type\u2019s. Fire throws a fireball with a trail of embers, Water a spray of droplets, Electric a jagged lightning bolt that flickers across, Grass a volley of leaves, Ice icicles, Poison lobbed sludge, Ghost a wobbling shadow ball, Dragon a purple dragon flame, Bug pins, Rock thrown rocks, Steel spinning shards, Flying three crescents of wind, Psychic rings that close in, Dark a crossing shadow slash, Normal a double slash, Fighting a punch, and Ground cracks the earth under the target and throws up dust.',
+    'Effects and particles are sized to the pok\u00e9mon on screen, so they read the same on a phone and on a big monitor (on computers they were tiny).',
+    'Knockouts and super-effective hits throw more particles.',
+    'Status effects show as particles instead of emoji: flames rise off a burn, bubbles off poison, sparks crackle round paralysis, pink stars circle confusion and white stars flash on a flinch. Sleep keeps its Zs.' ] },
   { v:'5.8.1', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Item hints, and stat triangles that keep their shape as your team grows', items:[
     'Pick a vitamin or a held item and the party pok\u00e9mon that gains the most from it gets a gold star beside its triangle. Turn it off in Options \u2192 Item hints.',
     'Stat triangles now scale with your team instead of a fixed cap, so pok\u00e9mon that have levelled up or evolved no longer fill their whole triangle. Each corner reaches as far as that stat goes compared with the best on your team, so you can still see each pok\u00e9mon\u2019s build (and what grew) all run long. Opponents\u2019 triangles are measured against your team too.' ] },
