@@ -2994,6 +2994,52 @@ body.calm .bstage.board.stadium .ground.full .stands::after{animation:none}
 .career .ct.fav .sprite{flex:none}
 /* ---- 5.5.1 · no all-caps: words keep their own capitals (Sean: "you don't have to capitalize the entire word") ---- */
 html.bc *,html.bc *::before,html.bc *::after{text-transform:none!important}
+/* ---- 5.5.2 ---- */
+/* stat icons: a sword (Attack), a heart (HP) and a bolt (Speed), coloured by the stat */
+.si{display:inline-block;width:1.05em;height:1.05em;flex:none;vertical-align:-.16em;background:currentColor;-webkit-mask:var(--sim) center/contain no-repeat;mask:var(--sim) center/contain no-repeat}
+.si-a{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20.5 2 22 3.5l-1 4.6-9.3 9.3 1.8 1.8-1.4 1.4-1.9-1.9-3.3 3.3a1.5 1.5 0 0 1-2.1-2.1l3.3-3.3-1.9-1.9 1.4-1.4 1.8 1.8L18.7 4.8z'/%3E%3C/svg%3E")}
+.si-h{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.2s-8.4-5-10-10.1C.9 7.5 3.1 4 6.6 4c2.2 0 3.9 1.2 5.4 3 1.5-1.8 3.2-3 5.4-3 3.5 0 5.7 3.5 4.6 7.1-1.6 5.1-10 10.1-10 10.1z'/%3E%3C/svg%3E")}
+.si-s{--sim:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.2 1.5 4 13.6h6.6L9 22.5l11-12.8h-6.8z'/%3E%3C/svg%3E")}
+.stats span,.dstat span{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+/* on the field: little dark tags instead of loose numbers */
+html.bc .pfield .slot .stats{gap:3px}
+html.bc .pfield .slot .stats span{background:rgba(9,13,24,.84);border-radius:999px;padding:1px 6px 1px 4px;box-shadow:0 0 0 1px rgba(255,255,255,.14),0 2px 4px rgba(0,0,0,.35);line-height:1.25;font-family:var(--pix);font-weight:700;letter-spacing:.02em;text-shadow:none}
+html.bc .pfield .slot .stats .si{width:1em;height:1em}
+html.bc .pfield .slot .stats .xup{box-shadow:0 0 0 1px var(--gold),0 2px 4px rgba(0,0,0,.35)}
+html.bc .pfield .slot .stats .xdown{box-shadow:0 0 0 1px #ff8e96,0 2px 4px rgba(0,0,0,.35)}
+/* the level tag sits beside the Speed tag (second row), clear of the Attack and HP tags */
+html.bc .pfield .slot .lvl{right:calc(50% + 27px)!important;left:auto!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 1px)!important;transform:none!important;line-height:1.25!important;padding:1px 5px!important;border-radius:999px!important}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  html.bc body[data-phase=shop] .pfield .slot .lvl{right:auto!important;left:50%!important;transform:translateX(-50%)!important;bottom:calc(var(--ab,13%) + var(--sp,64px) + 20px)!important}
+}
+/* the Daycare: three small tags in a row */
+.dnums .dstat{display:flex;gap:3px;justify-content:flex-end;flex-wrap:wrap}
+html.bc .dnums .dstat span{background:rgba(0,0,0,.32);border-radius:6px;padding:1px 5px 1px 3px;font-weight:800;font-size:11.5px;line-height:1.3}
+html.bc .dnums .dstat .a{color:#ffb19c} html.bc .dnums .dstat .h{color:#9ff0b4} html.bc .dnums .dstat .s{color:#a9d4ff}
+.legend .si,.cbar .si{margin-right:2px}
+
+/* the page behind the field: the dark stadium, the same on every stage, with the crowd in the stands above */
+html.bc body,html.bc.dark body{background:
+  radial-gradient(120% 60% at 50% 0%,rgba(255,250,220,.07),transparent 60%),
+  radial-gradient(circle at 50% 50%,rgba(241,207,168,.16) 0 1.4px,transparent 2px) 0 0/16px 13px,
+  radial-gradient(circle at 50% 50%,rgba(232,80,90,.14) 0 1.4px,transparent 2px) 8px 6.5px/16px 13px,
+  radial-gradient(circle at 50% 50%,rgba(91,149,238,.14) 0 1.4px,transparent 2px) 4px 3px/32px 26px,
+  repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 13px),
+  linear-gradient(180deg,#0d111b,#07090f 70%)!important;background-attachment:fixed!important}
+.bstage.board.stadium .stands{background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,transparent 1px 1.9cqw),linear-gradient(180deg,#05070d 0%,#0e1322 100%)!important}
+
+/* the Champion's photo: everyone posing has left their spot, the fainted included */
+.bstage.board .ftr.posing,.bstage.board .ftr.posing *,.bstage.board .ftr.posing::before,.bstage.board .ftr.posing::after{visibility:hidden!important}
+
+/* computer: the summary is a full card over the shop column while you have something picked */
+@media (min-width:1000px) and (min-height:521px){
+  body[data-phase=shop] .bcL > #inspect{display:none}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect{display:block;position:fixed;left:auto;right:16px;top:var(--insTop,74px);bottom:150px;width:clamp(330px,36vw,480px);box-sizing:border-box;
+    max-height:none!important;overflow:auto;z-index:60;background:#0e1424;border-radius:12px;box-shadow:0 0 0 2px rgba(255,210,58,.5),0 12px 34px rgba(0,0,0,.55);font-size:14px;line-height:1.45;padding:14px 16px}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect::after{content:none}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum{display:block}
+  body.picking.inspecting[data-phase=shop] .bcL > #inspect .isum .pcol + .pcol{margin-top:10px}
+}
 </style>
 </head>
 <body>

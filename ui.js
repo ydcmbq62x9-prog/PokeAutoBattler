@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.5.1', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.5.2', date:'Oct 6, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -438,12 +438,14 @@ function unitHtml(u, opts){
     <div class="artwrap">${spriteHtml(u.id)}${roleBadge(u.id)}${opts.held === false ? '' : heldBadge(u, opts.where, opts.idx)}</div>
     <div class="uname">${esc(SPECIES[u.id].name)}</div>
     ${pipHtml}${barHtml}${opts.bar ? statusHtml(u) : ''}
-    <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}">◆${eA}</span><span class="h ${hs.hp?'xup':''}">♥${eH}</span></div>
-    <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}">»${eS}</span></div>
+    <div class="stats"><span class="a ${u.tmpAtk||hs.atk?'xup':''}" title="Attack">${SI('a')}${eA}</span><span class="h ${hs.hp?'xup':''}" title="HP">${SI('h')}${eH}</span></div>
+    <div class="stats spd"><span class="s ${(u.tmpSpd||0) + hs.spd < 0 ? 'xdown' : u.tmpSpd||hs.spd?'xup':''}" title="Speed">${SI('s')}${eS}</span></div>
     ${opts.price ? `<div class="price">${opts.price}₽</div>` : ''}
   </div>`;
 }
 
+/** 5.5.2: a stat's icon (sword = Attack, heart = HP, bolt = Speed), drawn in CSS in the stat's colour. */
+const SI = k => `<i class="si si-${k}" aria-hidden="true"></i>`;
 function martHtml(s, i){
   const def = ITEMS[s.id];
   return `<div class="slot ${sel && sel.kind==='mart' && sel.idx===i ? 'selected':''}" data-act="mart" data-i="${i}">
@@ -1214,7 +1216,7 @@ function renderShop(){
         <span class="dtype" style="background:${typeColor(u.id)}">${esc(sp.type)}</span>${roleChip(u.id)}
       </div>
       <div class="dnums">
-        <span class="a">◆${u.atk}</span><span class="h">♥${u.hp}</span><span class="s">»${u.spd}</span>
+        <span class="dstat"><span class="a" title="Attack">${SI('a')}${u.atk}</span><span class="h" title="HP">${SI('h')}${u.hp}</span><span class="s" title="Speed">${SI('s')}${u.spd}</span></span>
         ${dcPaceHtml(u)}
       </div>
       <span class="dprice">${TUNING.costBuy}₽</span>
@@ -1889,7 +1891,7 @@ function victorySweep(S){
   mine.forEach((F, k) => frames.push({ transform: 'scale(1.22)', transformOrigin: at(F), offset: 0.1 + 0.75 * k / Math.max(1, mine.length - 1 || 1) }));
   frames.push({ transform: 'scale(1)', transformOrigin: at(mine[mine.length - 1]), offset: 1 });
   frames.forEach((f, k) => { if(k && f.offset <= frames[k - 1].offset) f.offset = Math.min(1, frames[k - 1].offset + 0.01); });
-  anim(view, frames, { duration: Math.min(3600, 900 + mine.length * 520), easing: 'ease-in-out' });
+  /* 5.5.2: the camera no longer sweeps along the team (Sean: it moved around weirdly); the crowd and the confetti stay */
   crowdReact(S, true);
   const cols = ['#ffd23a', '#e0473f', '#3fa8e0', '#5ad17a', '#f06090', '#fff'];
   const W = S.el.clientWidth, H = S.el.clientHeight;
@@ -3648,18 +3650,31 @@ function placeSlots(){
 }
 /* 5.3.7: the page around the field takes the field's own colours (a deep shade of its floor), in the shop and in battle,
    so the surround always matches whatever stadium is showing */
+const STADIUM_TONE = ['#0a0d15', '#0d111b'];
 const PAGE_TONE = { route:['#3a8840','#43974a'], gym:['#3a8840','#43974a'], dusk:['#2c5a34','#326538'], league:['#241e4a','#2a2356'],
   summit:['#6f8296','#7a8ea3'], Water:['#1f4f86','#235a95'], Fire:['#3a1e18','#44241c'], Rock:['#5e5442','#685d4a'], Ground:['#7a5e32','#866838'],
   Grass:['#2f6e35','#357a3b'], Bug:['#3b5226','#435c2b'], Psychic:['#4a2556','#532a60'], Electric:['#3e4452','#454c5b'], Ice:['#4f8aa6','#5795b2'],
   Fighting:['#6e4e2e','#785634'], Ghost:['#1d1630','#221a38'], Dragon:['#24226a','#2a2776'], Flying:['#3f7aa6','#4684b2'], Normal:['#9a6e7e','#a57888'],
   Steel:['#59616d','#626a77'], Poison:['#3e2150','#45255a'], Dark:['#1a0f14','#21141a'] };
 function setPageTone(stageEl){
-  const f = stageEl && [...stageEl.classList].find(c => c.startsWith('fl-'));
-  const t = PAGE_TONE[f ? f.slice(3) : 'route'] || PAGE_TONE.route, r = document.documentElement.style;
+  /* 5.5.2: the page behind the field is always the dark stadium with its crowd (Sean: black, the same on every stage) */
+  const t = STADIUM_TONE, r = document.documentElement.style;
   if(r.getPropertyValue('--pg1') !== t[0]){ r.setProperty('--pg1', t[0]); r.setProperty('--pg2', t[1]); }
 }
+/** 5.5.2: on a computer the summary card sits over the lower shop column (the Daycare and the Mart), leaving the PC
+    and the Bag above it free to tap while something is picked. */
+function placeInspect(){
+  const r = document.documentElement.style;
+  if(!(innerWidth >= 1000 && innerHeight >= 521) || phase !== 'shop'){ r.removeProperty('--insTop'); return; }
+  const bag = document.querySelector('.bcR .wall.bag'), bp = bag && (bag.closest('.panel') || bag);
+  const vh = document.documentElement.clientHeight, minH = 300;
+  const top = bp ? Math.round(bp.getBoundingClientRect().bottom + 8) : 74;
+  r.setProperty('--insTop', Math.max(74, Math.min(top, vh - 150 - minH)) + 'px');
+}
+document.addEventListener('scroll', e => { if(e.target && e.target.classList && e.target.classList.contains('shelves')) placeInspect(); }, true);
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
+  placeInspect();
   const w = worldEl(); if(!w || fieldPicking) return;
   const on = (phase === 'shop' && !!G) || phase === 'battle';
   document.body.classList.toggle('inworld', on);
@@ -4027,6 +4042,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.5.2', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A dark stadium behind every field, stat icons, a proper summary on computers and a calmer gym win', items:[
+    'The page behind the field is now the dark stadium with its crowd, and it stays the same on every stage instead of changing colour with the floor.',
+    'Stats have icons: a red sword for Attack, a green heart for HP and a blue bolt for Speed, on little dark tags over your party and in the Daycare, the Pok\u00e9dex and How to play, instead of plain numbers.',
+    'On a computer, a pok\u00e9mon\u2019s or item\u2019s summary opens as a full card in the shop column, under the PC and Bag (so you can still drop things there), instead of a squashed strip in the bottom-left corner.',
+    'After a gym win the camera no longer sweeps around the team. The crowd still cheers and the confetti still falls.',
+    'The Champion\u2019s photo: fainted pok\u00e9mon no longer stay greyed out on the field while the team lines up for the picture.' ] },
   { v:'5.5.1', date:'Oct 6, 2026', title:'Visual bug fixes', sub:'A new name, PokéArena, and no more all-caps lettering', items:[
     'The game has a new name: Pok\u00e9Arena, on the title screen, the browser tab, the share image and the home-screen app (with a PA icon). Your saves, records and Trainer Card carry over untouched.',
     'No more shouting: words keep their own capitals across the game. Menu, Tap to play, the title menu, tags, buttons, ribbons (\u201cVictory!\u201d, \u201cBoulder Badge!\u201d) and labels are written normally instead of in all caps.' ] },
@@ -5189,9 +5210,9 @@ function openHelp(){
   const T = TUNING;
   const d = modal(`<h3>How to Play</h3>
     <button class="btn replay" data-m="tutorial">Replay the tutorial</button>
-    <p class="legend"><span style="color:var(--atk)">◆ Attack</span>
-       <span style="color:var(--hp)">♥ HP</span>
-       <span style="color:var(--spd)">» Speed</span></p>
+    <p class="legend"><span style="color:var(--atk)">${SI('a')} Attack</span>
+       <span style="color:var(--hp)">${SI('h')} HP</span>
+       <span style="color:var(--spd)">${SI('s')} Speed</span></p>
 
     <h4>The formation</h4>
     <p>Your party fights as <b>three ranks, two abreast</b> — Front, Middle, Back. Attacks land on a random
@@ -5247,9 +5268,9 @@ function openHelp(){
 
     <h4>What the three stats do</h4>
     <p class="legend" style="flex-direction:column;align-items:flex-start;gap:4px">
-      <span><b style="color:var(--hp)">♥ HP</b> — how long you stay in the fight.</span>
-      <span><b style="color:var(--atk)">◆ Attack</b> — how much each action is worth.</span>
-      <span><b style="color:var(--spd)">» Speed</b> — <b>how often you act</b>.</span></p>
+      <span><b style="color:var(--hp)">${SI('h')} HP</b> — how long you stay in the fight.</span>
+      <span><b style="color:var(--atk)">${SI('a')} Attack</b> — how much each action is worth.</span>
+      <span><b style="color:var(--spd)">${SI('s')} Speed</b> — <b>how often you act</b>.</span></p>
     <p>There is no threshold and no ceiling: every point of speed is more actions, at every value. A slow
     pokémon isn't merely last any more — it genuinely swings less often, so leaving speed alone is a real
     cost rather than a free saving.</p>
@@ -5407,7 +5428,7 @@ function openDex(){
         <div><h3>${esc(s.name)}</h3>
           <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
           <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
-      <div class="cbars">${barRow('♥ HP', s.hp, MAXS.hp, 'hp')}${barRow('◆ ATK', s.atk, MAXS.atk, 'atk')}${barRow('» SPD', s.spd, MAXS.spd, 'spd')}</div>
+      <div class="cbars">${barRow(SI('h') + ' HP', s.hp, MAXS.hp, 'hp')}${barRow(SI('a') + ' Atk', s.atk, MAXS.atk, 'atk')}${barRow(SI('s') + ' Spd', s.spd, MAXS.spd, 'spd')}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}</div>
       ${fam.length > 1 ? `<h4>Evolution</h4><div class="cchain">${chain}</div>` : ''}
