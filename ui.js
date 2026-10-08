@@ -3216,8 +3216,8 @@ function legendWalkIn(id){
   w.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
   w.innerHTML = `<i class="lwglow"></i><img src="${SPRITES[id]}" alt=""><i class="lwshadow"></i>`;
   document.body.appendChild(w);
-  const from = `translate(-50%,-100%) translateX(${Math.round(innerWidth - x + size)}px)`, at = 'translate(-50%,-100%)';
-  anim(w, [{ transform: from, opacity: 1 }, { transform: at, opacity: 1, offset: .32 }, { transform: at, opacity: 1, offset: .78 }, { transform: 'translate(-50%,-100%) scale(.4)', opacity: 0 }],
+  const from = `translate(-50%,-100%) translateX(${Math.max(0, Math.round(innerWidth - x - size / 2 - 4))}px)`, at = 'translate(-50%,-100%)';   // from the screen's right edge, never past it
+  anim(w, [{ transform: from, opacity: 0 }, { transform: from, opacity: 1, offset: .06 }, { transform: at, opacity: 1, offset: .32 }, { transform: at, opacity: 1, offset: .78 }, { transform: 'translate(-50%,-100%) scale(.4)', opacity: 0 }],
     { duration: 3400, easing: 'ease-out', fill: 'both', remove: true });
   anim(w.querySelector('img'), [{ translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }], { duration: 260, iterations: 4, easing: 'ease-in-out' });
   anim(w.querySelector('.lwglow'), [{ opacity: 0, transform: 'scale(.3)' }, { opacity: 0, transform: 'scale(.3)', offset: .3 }, { opacity: 1, transform: 'scale(1.3)', offset: .38 }, { opacity: .55, transform: 'scale(1)', offset: .7 }, { opacity: 0 }],
