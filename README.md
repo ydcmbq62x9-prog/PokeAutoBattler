@@ -1,4 +1,4 @@
-# PokéArena (5.8.1)
+# PokéArena (5.12.0)
 
 A Pokémon auto battler for me and my friends. This folder is the home-screen
 app version: the game (`index.html`) plus what a phone needs to install it

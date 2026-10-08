@@ -3181,6 +3181,101 @@ body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:
 .fx.tint.zap{background:rgba(255,250,180,.7);mix-blend-mode:overlay}
 .fx.puddle{width:calc(44px * var(--u));height:calc(14px * var(--u));border-radius:50%;z-index:2;pointer-events:none;
   background:radial-gradient(closest-side,rgba(170,215,255,.85),rgba(90,150,230,.55) 60%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+/* ---- 5.10.1 · the legendary encounter ---- */
+.legban{position:fixed;left:50%;top:42%;z-index:900;display:flex;align-items:center;gap:14px;padding:12px 22px 12px 12px;border-radius:16px;pointer-events:none;
+  background:linear-gradient(135deg,#1a1430,#11182c 60%,#3a2c10);box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 40px rgba(255,210,58,.45),0 18px 40px rgba(0,0,0,.55);color:#fff;max-width:calc(100vw - 32px)}
+.legban img{width:72px;height:72px;image-rendering:pixelated;flex:none;filter:drop-shadow(0 0 10px rgba(255,210,58,.7))}
+.legban small{display:block;font-family:var(--pix);font-weight:700;letter-spacing:.1em;color:var(--gold,#ffd23a);font-size:13px}
+.legban b{display:block;font-family:var(--pix);font-weight:800;font-size:clamp(20px,5vw,28px);line-height:1.1}
+.legstats{display:flex;align-items:center;gap:8px}
+.legstats .stri{display:block;width:44px;height:44px;flex:none}
+.legstats .dim{font-size:12.5px;line-height:1.35}
+.legstats .ca{color:var(--atk)} .legstats .ch{color:var(--hp)} .legstats .cs{color:var(--spd)}
+.legstats .ca,.legstats .ch,.legstats .cs{display:inline-flex;align-items:center;gap:1px;font-weight:800}
+html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255,210,58,.35)}
+/* computer and sideways phone: the card floats over the top of the field instead of pushing it down */
+@media (min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcL{position:relative}
+  body[data-phase=shop] .bcL > .panel.legend{position:absolute;z-index:8;left:8px;top:44px;margin:0;max-width:min(560px,calc(100% - 16px));flex-wrap:nowrap;padding:10px 12px;background:#0e1424!important}
+  body[data-phase=shop] .bcL > .panel.legend .legart{width:64px;height:64px}
+  body[data-phase=shop] .bcL > .panel.legend .legbtns{display:flex;flex-direction:column;gap:6px}
+}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  /* a sideways phone has no room over the field: the offer sits in the shop column, above the Battle bar */
+  body[data-phase=shop] .bcL > .panel.legend{display:none!important}
+  body[data-phase=shop] .bcR .dock .legdock{display:flex!important;border:2px solid var(--gold,#ffd23a);border-radius:10px;padding:4px 6px;gap:6px;align-items:center;background:#0e1424;box-shadow:0 0 14px rgba(255,210,58,.35)}
+  body[data-phase=shop] .bcR .dock .legdock span{flex:1;min-width:0;font-size:12px;line-height:1.2}
+  body[data-phase=shop] .bcR .dock .legdock .btn{min-height:30px;padding:2px 10px;font-size:12px;width:auto;flex:none}
+}
+/* ---- 5.11.0 · rumours and the legendary walk-in ---- */
+.speech .say .rumour{display:block;font-size:12px;font-weight:700;color:var(--gold,#ffd23a);text-shadow:0 0 8px rgba(255,210,58,.35);margin-top:1px}
+.walkout .wsay.rumour{background:#1a1430;color:#ffe9a0;box-shadow:0 0 0 2px var(--gold,#ffd23a),0 6px 16px rgba(0,0,0,.4)}
+.walkout .wsay.rumour::after{border-top-color:#1a1430}
+.legwalk{position:fixed;z-index:880;pointer-events:none}
+.legwalk img{position:relative;z-index:2;width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25))}
+.legwalk .lwglow{position:absolute;inset:-35%;border-radius:50%;z-index:1;background:radial-gradient(circle,rgba(255,250,210,.95) 0 18%,rgba(255,210,58,.6) 40%,transparent 70%)}
+.legwalk .lwshadow{position:absolute;left:15%;right:15%;bottom:-4%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.4),transparent);z-index:0}
+/* ---- 5.12.0 · the new Pokédex: full screen, numbered grid, trading cards ---- */
+.modal.dexfull{padding:0!important;align-items:stretch!important;justify-content:stretch!important}
+.modal.dexfull > .box{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;margin:0!important;display:flex;flex-direction:column;background:#0e1424!important;box-shadow:none!important}
+.modal.dexfull .boxscroll{flex:1;min-height:0;overflow:auto;padding:0 max(14px,calc((100% - 1100px) / 2)) 18px!important}
+.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:12px 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.modal.dexfull .dextop h3{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-family:var(--pix);font-weight:800;font-style:italic;font-size:28px;color:var(--gold)}
+.modal.dexfull .dextop h3 .dexcount{font-style:normal;font-size:15px;color:var(--dim)}
+.dexx{margin-left:auto;align-self:center;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--text);font-size:16px;cursor:pointer}
+.dexx:hover{background:rgba(255,255,255,.16)}
+.dexprog{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:8px}
+.dexprog u{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffb020);text-decoration:none}
+.modal.dexfull .dexfilt{margin:0}
+.dextypes{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.dextypes::-webkit-scrollbar{display:none}
+.dty{flex:none;display:inline-flex;align-items:center;gap:4px;border:0;border-radius:999px;padding:3px 12px;min-height:34px;background:rgba(255,255,255,.07);color:var(--text);font-family:var(--pix);font-weight:700;font-size:13px;cursor:pointer}
+.dty i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.dty.on{background:var(--gold);color:var(--navy)}
+.dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;margin-top:4px}
+.dexgrid .dextile{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;padding:14px 3px 0;border:0;border-radius:11px;background:#182038;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);overflow:hidden;min-width:0;cursor:pointer;transition:transform .12s}
+.dexgrid .dextile:hover,.dexgrid .dextile:focus-visible{transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--tcol),0 6px 14px rgba(0,0,0,.35);outline:none}
+.dexgrid .dextile .sprite.tile{width:56px;height:56px;background:none!important;border:0!important;box-shadow:none!important}
+.dexgrid .dextile b{display:block;width:100%;font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.15;padding:2px 2px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dexgrid .dextile .dno{position:absolute;left:6px;top:3px;font-family:var(--pix);font-weight:700;font-size:11.5px;color:var(--dim)}
+.dexgrid .dextile .dleg{position:absolute;right:6px;top:3px;font-style:normal;color:var(--gold);font-size:12px}
+.dexgrid .dextile .dband{display:block;align-self:stretch;height:4px;background:var(--tcol)}
+.dexgrid .dextile.unseen .sprite img{filter:brightness(0) opacity(.45)}
+.dexgrid .dextile.unseen b{color:var(--dim)}
+.dexgrid .dextile.unseen .dband{background:#2a3148}
+/* the trading card */
+.modal.dexcardm > .box{max-width:400px!important;background:transparent!important;box-shadow:none!important}
+.modal.dexcardm .boxscroll{padding:6px!important}
+.ccard{border-radius:18px;padding:9px;background:linear-gradient(160deg,var(--tcol),color-mix(in srgb,var(--tcol) 35%,#10131a));box-shadow:0 0 0 2px rgba(255,255,255,.55),0 16px 34px rgba(0,0,0,.55);margin-bottom:10px}
+.ccard .tcin{background:#0e1424;border-radius:12px;padding:10px;display:grid;gap:8px}
+.ccard .tctop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.ccard .tctop b{font-family:var(--pix);font-weight:800;font-size:28px;line-height:1}
+.ccard .tchp{font-family:var(--pix);font-weight:800;font-size:18px;display:inline-flex;align-items:center;gap:3px}
+.ccard .tcwin{position:relative;height:170px;border-radius:10px;display:grid;place-items:center;background:radial-gradient(circle at 50% 62%,color-mix(in srgb,var(--tcol) 45%,transparent),transparent 70%),repeating-linear-gradient(0deg,#16203a 0 12px,#131b33 12px 24px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.15)}
+.ccard .tcwin .sprite.lg{width:150px;height:150px;background:none!important;border:0!important;box-shadow:none!important}
+.ccard .tcwin .sprite.lg img{width:100%;height:100%;image-rendering:pixelated}
+.ccard .tcno{position:absolute;right:8px;bottom:5px;font-family:var(--pix);font-weight:700;font-size:13px;color:var(--dim)}
+.ccard .tctop .tcno{position:static}
+.ccard .chead{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0}
+.ccard .sigtag{background:rgba(255,210,58,.15);color:var(--gold);border:1px solid rgba(255,210,58,.5)}
+.ccard .cmoves{display:grid;gap:6px;border-top:1px solid rgba(255,255,255,.1);padding-top:7px}
+.ccard .cmoves .abil{font-size:13px;color:var(--dim)}
+.ccard .cmoves .abil b{color:var(--text);font-size:14px}
+.ccard .cmoves .abil span{display:block}
+.ccard .tcfoot{display:flex;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+.ccard .tcfoot .stri{display:block;width:58px;height:58px;flex:none}
+.ccard .tcnums{display:grid;gap:1px;font-family:var(--pix);font-weight:800;font-size:15px}
+.ccard .tcnums span{display:inline-flex;align-items:center;gap:3px}
+.ccard .tctier{margin-left:auto;text-align:right;font-family:var(--pix);font-weight:700;color:var(--gold);font-size:14px;line-height:1.2}
+.ccard .tctier small{display:block;color:var(--dim);font-weight:600;font-size:11.5px}
+.ccard.unseen .tcwin img{filter:brightness(0) opacity(.5)}
+.ccard .tchint{margin:0;color:var(--dim);font-size:13.5px;text-align:center}
+.tcmore{background:#121828;border-radius:12px;padding:4px 12px 10px;margin-bottom:8px}
+.tcmore h4{margin:10px 0 4px}
+.cevo.unseen img{filter:brightness(0) opacity(.5)}
+.ccard .chead .tag{font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.3;padding:1px 7px;border-radius:5px}
+.modal.dexfull .dexh{font-size:14px;margin:12px 0 6px;color:var(--dim)}
+.modal.dexfull .dexh .dim{font-size:13px}
 </style>
 </head>
 <body>
@@ -6266,6 +6361,17 @@ function rollEncounter(G){
   makeGameApi(G).log(`A wild ${SPECIES[id].name} appeared!`);
   return G.encounter;
 }
+/** 5.11.0: which legendary (if any) winning the next gym would bring, without rolling it. Same seed and pool as rollEncounter. */
+function peekEncounter(G){
+  const b = (G.badges || 0) + 1;
+  if(b < TUNING.legend.fromBadge || (G.mods && G.mods.nolegend)) return null;
+  const met = G.legendsMet || [], mono = G.mods && G.mods.mono;
+  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || inTypePool(k, mono)));
+  const r = makeRng(mix32(((G.seed || 1) ^ 0x6a09e667) >>> 0, 40 + b));
+  const pity = b === TUNING.legend.pityBadge && !met.length;
+  if(!pool.length || (r() >= TUNING.legend.chance && !pity)) return null;
+  return pool[Math.floor(r() * pool.length)];
+}
 const encounterOpen = G => !!(G.encounter && G.encounter.turn === G.turn && !G.encounter.taken && !inGauntlet(G));
 /** Recruit the waiting legendary: into the party if there's room, else the PC. */
 function recruitLegend(G, pos){
@@ -7414,7 +7520,7 @@ if(typeof module !== 'undefined' && module.exports){
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
@@ -7725,7 +7831,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.10.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.12.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -8913,7 +9019,7 @@ function dockHtml(closed, flowOnly){
     : b ? `Challenge ${esc(b.name)}` : 'Battle';
   const speech = `<div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
       <span class="who">${b ? bossArt(b, 'dockart') : '<i class="pball"></i>'}</span>
-      <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
+      <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span>${n.kind === 'gym' && peekEncounter(G) ? '<span class="rumour">\u2726 Rumour: something rare has been seen near this gym</span>' : ''}<span class="road">${road}</span></div>
       <span class="nstage">${n.stage}/${n.total}</span>
     </div>`;
   if(flowOnly) return speech;
@@ -10110,6 +10216,8 @@ const BOSS_LINES = {
   will: 'You’ll feel my power before you move.', karen: 'Love your team and they’ll fight for you. Show me.',
   red: '…', oak: 'Show me how much you’ve grown!',
 };
+const RUMOURS = ['Between you and me… something rare has been spotted near here.', 'Win this, and you might meet something legendary on your way out.',
+  'Strange lights over the route lately. Something rare is close.'];
 const KIND_LINES = { gym: 'Let’s see if you’ve earned my badge.', elite: 'Welcome to the Elite Four.', champion: 'This is the last fight.', red: '…' };
 function bossLine(b){
   if(b.kind === 'rival'){ const rv = b.opp && rivalLines(G, b.opp.meeting); return rv ? rv.hi : 'Smell ya later!'; }
@@ -10159,11 +10267,14 @@ function walkOut(S, b){
   const { w, body, x, y, size, vert, at, walkMs, ms } = L;
   const foes = [...S.f.values()].filter(F => F.side === 'e');
   const line = bossLine(b), holdMs = line ? Math.max(1100, ms(1500)) : ms(450), throwMs = ms(380);   // a line stays up long enough to read at any speed
+  /* 5.11.0: if beating this leader will bring a legendary, they hint at it */
+  const rumour = b.kind === 'gym' && G && peekEncounter(G) ? RUMOURS[(G.badges || 0) % RUMOURS.length] : null, rumourMs = rumour ? Math.max(1500, ms(1900)) : 0;
   setTimeout(() => { if(battle && battle.stage === S){ crowdReact(S, true);
     anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
     leaderSay(L, line, holdMs + ms(150)); } }, walkMs);
+  if(rumour) setTimeout(() => { if(battle && battle.stage === S){ leaderSay(L, rumour, rumourMs); const sb = L.w.querySelector('.wsay:last-child'); if(sb) sb.classList.add('rumour'); } }, walkMs + holdMs + ms(150));
   // the throw: one ball to each spot, the leader steps back off the field
-  const throwAt = walkMs + holdMs;
+  const throwAt = walkMs + holdMs + rumourMs;
   setTimeout(() => {
     if(!battle || battle.stage !== S || !S.el.isConnected) return;
     SFX.play('move');
@@ -10897,18 +11008,48 @@ function encounterHtml(){
   if(!encounterOpen(G)) return '';
   const e = G.encounter, sp = SPECIES[e.id];
   const u = trainerCatchUp(G, makeUnit(e.id, 0));         // what it would arrive as
-  if(encounterSeen !== G.seed + ':' + e.id){ encounterSeen = G.seed + ':' + e.id; setTimeout(() => SFX.play('alert'), 60); }
+  if(encounterSeen !== G.seed + ':' + e.id){ encounterSeen = G.seed + ':' + e.id; setTimeout(() => SFX.play('alert'), 60); setTimeout(() => legendBanner(e.id), 250); }
   const can = G.credits >= e.cost;
   return `<section class="panel legend">
     <div class="legart" style="--tcol:${typeColor(e.id)}">${SPRITES[e.id] ? `<img src="${SPRITES[e.id]}" alt="">` : ''}</div>
     <div class="legtext"><b>A wild ${esc(sp.name)} appeared!</b>
       <span><span class="poptype" style="background:${typeColor(e.id)}">${esc(sp.type)}</span> ${roleChip(e.id)} <i class="rar r-veryrare">Legendary</i></span>
-      <span class="dim">◆${u.atk} ♥${u.hp} »${u.spd} · never levels · grows +${Math.round((TUNING.legend.growth - 1) * 100)}% · yours to keep once recruited; the offer is gone after the next battle</span></div>
+      <span class="legstats">${statTri(u.atk, u.hp, u.spd)}<span class="dim"><span class="ca">${SI('a')}${u.atk}</span> <span class="ch">${SI('h')}${u.hp}</span> <span class="cs">${SI('s')}${u.spd}</span> · never levels, grows +${Math.round((TUNING.legend.growth - 1) * 100)}%<br>yours to keep once recruited · the offer ends at your next battle</span></span></div>
     <div class="legbtns"><button class="btn primary" data-act="legend" ${can ? '' : 'disabled'}>Recruit ${e.cost}₽</button>
       <button class="btn ghost" data-act="legendpass">Let it go</button></div>
   </section>`;
 }
 
+/** 5.11.0: the legendary walks onto your field from the far side, stops in a flash, then steps away into its card. */
+function legendWalkIn(id){
+  if(motionOff() || fxLevel() === 'off' || !SPRITES[id]) return;
+  const f = document.querySelector('.pfield'); if(!f) return;
+  const r = f.getBoundingClientRect(); if(r.width < 40 || r.bottom < 0 || r.top > innerHeight) return;
+  const size = Math.round(Math.min(150, Math.max(72, r.width * .28)));
+  const x = r.left + r.width * .5, y = Math.min(innerHeight - size * .3, Math.max(size, r.top + r.height * .62));
+  const w = document.createElement('div'); w.className = 'legwalk';
+  w.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+  w.innerHTML = `<i class="lwglow"></i><img src="${SPRITES[id]}" alt=""><i class="lwshadow"></i>`;
+  document.body.appendChild(w);
+  const from = `translate(-50%,-100%) translateX(${Math.max(0, Math.round(innerWidth - x - size / 2 - 4))}px)`, at = 'translate(-50%,-100%)';   // from the screen's right edge, never past it
+  anim(w, [{ transform: from, opacity: 0 }, { transform: from, opacity: 1, offset: .06 }, { transform: at, opacity: 1, offset: .32 }, { transform: at, opacity: 1, offset: .78 }, { transform: 'translate(-50%,-100%) scale(.4)', opacity: 0 }],
+    { duration: 3400, easing: 'ease-out', fill: 'both', remove: true });
+  anim(w.querySelector('img'), [{ translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }], { duration: 260, iterations: 4, easing: 'ease-in-out' });
+  anim(w.querySelector('.lwglow'), [{ opacity: 0, transform: 'scale(.3)' }, { opacity: 0, transform: 'scale(.3)', offset: .3 }, { opacity: 1, transform: 'scale(1.3)', offset: .38 }, { opacity: .55, transform: 'scale(1)', offset: .7 }, { opacity: 0 }],
+    { duration: 3400, fill: 'both' });
+  setTimeout(() => SFX.play('land'), 1100);
+}
+/** 5.10.1: a legendary arriving gets a moment on screen, so it can't be missed. */
+function legendBanner(id){
+  if(!G || phase !== 'shop' || !encounterOpen(G)) return;
+  const d = document.createElement('div'); d.className = 'legban';
+  d.innerHTML = `${SPRITES[id] ? `<img src="${SPRITES[id]}" alt="">` : ''}<div><small>✦ Legendary encounter</small><b>A wild ${esc(SPECIES[id].name)} appeared!</b></div>`;
+  document.body.appendChild(d);
+  legendWalkIn(id);
+  anim(d, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.7)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.04)', offset: .12 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .2 },
+    { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .85 }, { opacity: 0, transform: 'translate(-50%,-60%) scale(.96)' }], { duration: motionOff() ? 2200 : 2800, easing: 'ease-out', fill: 'both', remove: true });
+  SFX.play('sparkle');
+}
 /* ---- 2.0.0 · FORMATION PRESETS ---------------------------------------- */
 function openPresets(){
   G.presets = G.presets || [null, null, null];
@@ -11993,6 +12134,17 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.12.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'A new Pokédex: a full-screen numbered grid with trading cards', items:[
+    'The Pok\u00e9dex opens full-screen with a progress bar for how many you\u2019ve seen. Pok\u00e9mon are a numbered grid of tiles coloured by type (families still sit together, in order), with filters by type as well as by section and gen, and search.',
+    'Pok\u00e9mon you haven\u2019t seen yet are dark silhouettes marked ???, so the Pok\u00e9dex is something to fill in.',
+    'Tap one and it flips open as a trading card framed in its type colour: its art, number, types and role, both moves, its stat triangle and numbers, and its tier. Its evolution line, matchups and the trainers who use it are underneath. Pok\u00e9mon with a signature move say so.' ] },
+  { v:'5.11.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Legendaries are hinted at before they arrive, and walk onto your field', items:[
+    'A hint before a legendary: when beating the next gym leader will bring one, the leader says so as they walk out (\u201cSomething rare has been spotted near here\u201d), and the shop shows a gold \u201cRumour\u201d line under who you\u2019re fighting next. Lose the fight and it never comes.',
+    'When it appears, the legendary walks onto your field from the far side, stops in a gold flash, then steps away into its offer card, along with the banner.' ] },
+  { v:'5.10.1', date:'Oct 7, 2026', title:'Visual bug fixes', sub:'The legendary encounter is easier to see', items:[
+    'When a legendary appears, a banner with it now flashes up in the middle of the screen, so it can\u2019t be missed.',
+    'On a computer and a sideways phone, the encounter card floats over the top of your field instead of pushing the field down, so your party stays where it was.',
+    'The card shows the legendary\u2019s stat triangle and stat icons instead of the old symbols, and says plainly that the offer only lasts until your next battle.' ] },
   { v:'5.10.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Signature moves, field weather and an Effects setting', items:[
     'Signature moves: the big finals and the legendaries have their own effect when they use their main move. Charizard, Typhlosion, the fire dogs and birds wrap the target in a ring of flame; Blastoise, Feraligatr and the water and ice finals fire a thick beam (Venusaur and Meganium a green solar beam, Dragonite and Gyarados a hyper beam); Pikachu, Raichu, Jolteon, Zapdos, Raikou and Ampharos call lightning down from the sky; Gengar and Umbreon open a dark vortex; Alakazam, Espeon, Mew and Mewtwo make the target glow and burst; Machamp, Heracross and Scizor land a three-hit combo; Snorlax, Golem, Tyranitar and Steelix send a shockwave across the field.',
     'Field weather: a super-effective hit or a knockout warms the field for a moment if it was a Fire move, frosts it if Ice, flashes it if Electric, and a Water one leaves puddles under the target that slowly dry.',
@@ -13383,6 +13535,7 @@ function openDex(){
   /* 4.1.0: the Pokémon are a grid of tiles; a tap opens that pokémon's card. */
   const seenSet = dexSeen();
   const allMons = families.flat();
+  const dexNo = k => String(allMons.indexOf(k) + 1).padStart(3, '0');
   const maxOf = f => Math.max(...Object.keys(SPECIES).map(k => SPECIES[k][f] || 0));
   const MAXS = { hp: maxOf('hp'), atk: maxOf('atk'), spd: maxOf('spd') };
   const viaOf = (k, i) => { const from = i > 0 ? evoStep(k) : null; if(!from) return '';
@@ -13393,21 +13546,31 @@ function openDex(){
   const bossesOf = k => {
     if(!bossUse){ bossUse = {}; EVERY_BOSS.forEach(b => { if(!b.theme) return;
       new Set([...themePool(b), ...(b.bossOnly || [])]).forEach(id => (bossUse[id] = bossUse[id] || []).push(b.name)); }); }
-    return bossUse[k] || []; };
+    return [...new Set(bossUse[k] || [])]; };   // 5.12.0: each name once
   const barRow = (label, v, max, cls) => `<div class="cbar"><span>${label}</span><i><u class="${cls}" style="width:${Math.max(4, Math.round(100 * v / max))}%"></u></i><b>${v}</b></div>`;
+  /* 5.12.0: the card is a trading card framed in the pokémon's type colour (art, move, stat triangle), with its
+     evolution line, matchups and who uses it underneath. A pokémon you haven't seen stays a silhouette. */
   const cardHtml = k => {
-    const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type];
-    const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${esc(SPECIES[m].name)}</span></button>`).join('');
+    const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type], seen = seenSet.has(k), no = dexNo(k);
+    if(!seen) return `<div class="dcard ccard unseen" style="--tcol:${typeColor(k)}"><div class="tcin">
+      <div class="tctop"><b>???</b><span class="tcno">#${no}</span></div>
+      <div class="tcwin">${spriteHtml(k, 'lg')}</div>
+      <p class="tchint">Not seen yet. Meet it in a run (in the Daycare, or on a trainer’s team) to fill in its entry.</p></div></div>`;
+    const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''} ${seenSet.has(m) ? '' : 'unseen'}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${seenSet.has(m) ? esc(SPECIES[m].name) : '???'}</span></button>`).join('');
     const sold = s.legendary ? 'Encounter only' : [inGens(k, [1]) ? 'Gen 1 runs' : '', inGens(k, [2]) ? 'Gen 2 runs' : ''].filter(Boolean).join(' · ') || 'Bosses only';
     const bs = bossesOf(k);
-    return `<div class="dcard">
-      <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
-        <div><h3>${esc(s.name)}</h3>
-          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
-          <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
-      <div class="cbars">${barRow(SI('h') + ' HP', s.hp, MAXS.hp, 'hp')}${barRow(SI('a') + ' Atk', s.atk, MAXS.atk, 'atk')}${barRow(SI('s') + ' Spd', s.spd, MAXS.spd, 'spd')}</div>
-      <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
-        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}</div>
+    const keep = TRI_SCALE; TRI_SCALE = { atk: MAXS.atk * 1.02, hp: MAXS.hp * 1.02, spd: MAXS.spd * 1.02 };   // measured against the whole Pokédex
+    const tri = statTri(s.atk, s.hp, s.spd); TRI_SCALE = keep;
+    return `<div class="dcard ccard" style="--tcol:${typeColor(k)}"><div class="tcin">
+      <div class="tctop"><b>${esc(s.name)}</b><span class="tchp ch">${SI('h')} ${s.hp}</span></div>
+      <div class="tcwin">${spriteHtml(k, 'lg')}<span class="tcno">#${no}</span></div>
+      <div class="chead"><span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}${SIG[k] ? ' <span class="tag sigtag">✦ Signature move</span>' : ''}</div>
+      <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> <i class="trig">Main move</i><span>${esc(s.move.text(1))}</span></div>
+        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i><span>${esc(s.move2.text(1))}</span></div>` : ''}</div>
+      <div class="tcfoot">${tri}<div class="tcnums"><span class="ca">${SI('a')} ${s.atk}</span><span class="ch">${SI('h')} ${s.hp}</span><span class="cs">${SI('s')} ${s.spd}</span></div>
+        <div class="tctier">${s.legendary ? '★ Legendary' : '★'.repeat(Math.min(5, s.tier || 1)) + ` Tier ${s.tier}`}<small>${esc(sold)}</small></div></div>
+    </div></div>
+    <div class="tcmore">
       ${fam.length > 1 ? `<h4>Evolution</h4><div class="cchain">${chain}</div>` : ''}
       <h4>Matchups</h4><div class="cmu">${t.weak.length ? `<span class="mu bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}${t.resist.length ? `<span class="mu good">resists ${t.resist.join(', ')} ×½</span>` : ''}</div>
       ${bs.length ? `<h4>Trainers who use it</h4><div class="dim">${bs.slice(0, 6).map(esc).join(' · ')}${bs.length > 6 ? ` · +${bs.length - 6} more` : ''}</div>` : ''}
@@ -13415,13 +13578,13 @@ function openDex(){
   /* 4.1.1: a card is built when you tap its tile, not for all 186 up front (that made the Pokédex take seconds to open on a phone) */
   const cards = {};
   const cardFor = k => { if(!cards[k]){ const before = ACTIVE_GENS.slice(); setActiveGens(GENS_READY); try{ cards[k] = cardHtml(k); } finally { setActiveGens(before); if(G) useGens(G); } } return cards[k]; };
-  const tileHtml = k => { const s = SPECIES[k];
-    return `<button class="dextile ${seenSet.has(k) ? 'seen' : ''}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}">
-      ${spriteHtml(k, 'tile')}<b>${esc(s.name)}</b>
-      <span class="tmeta"><i style="background:${TYPES[s.type].color}"></i>${s.legendary ? '★' : 'T' + s.tier}${genOf(k) > 1 ? ' · G' + genOf(k) : ''}</span>
-      ${seenSet.has(k) ? '<em class="tseen" title="seen"></em>' : ''}</button>`; };
-  /* one box per evolution family, in order, so a line reads left to right */
-  const rows = `<div class="dexfams">` + families.map(line => `<div class="dexfam">${line.map(tileHtml).join('<span class="farrow">›</span>')}</div>`).join('') + `</div>`;
+  /* 5.12.0: one numbered grid (families still sit next to each other, in order), coloured by type; unseen ones are silhouettes */
+  const tileHtml = k => { const s = SPECIES[k], seen = seenSet.has(k);
+    return `<button class="dextile ${seen ? 'seen' : 'unseen'}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" data-type="${esc(s.type)} ${secondTypes(k).map(esc).join(' ')}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}" aria-label="${seen ? esc(s.name) : 'Not seen yet'}">
+      <span class="dno">${dexNo(k)}</span>${spriteHtml(k, 'tile')}<b>${seen ? esc(s.name) : '???'}</b>${s.legendary && seen ? '<i class="dleg">★</i>' : ''}<i class="dband"></i></button>`; };
+  const rows = `<div class="dexgrid">${allMons.map(tileHtml).join('')}</div>`;
+  const dexTypes = Object.keys(TYPES).filter(t => allMons.some(k => SPECIES[k].type === t));
+  const typeChips = `<div class="dextypes"><button class="dty on" data-ty="">All types</button>${dexTypes.map(t => `<button class="dty" data-ty="${esc(t)}" style="--c:${TYPES[t].color}"><i></i>${esc(t)}</button>`).join('')}</div>`;
   const seenCount = allMons.filter(k => seenSet.has(k)).length;
   setActiveGens(gensBefore); if(G) useGens(G);
 
@@ -13491,9 +13654,10 @@ function openDex(){
     ${GENS_READY.length > 1 ? `<div class="dexseg" data-f="gen">${GENF.map(([id, label]) => `<button class="sp" data-v="${id}">${esc(label)}</button>`).join('')}</div>` : ''}
   </div>`;
 
-  const d = modal(`<h3>Pokédex <span class="dim dexcount">${seenCount} / ${allMons.length} seen</span></h3>${jump}
+  const d = modal(`<div class="dextop"><h3>Pokédex <span class="dim dexcount">${seenCount} / ${allMons.length} seen</span><button class="dexx" data-m="close" aria-label="Close">✕</button></h3>
+    <div class="dexprog"><u style="width:${(100 * seenCount / Math.max(1, allMons.length)).toFixed(1)}%"></u></div>${jump}</div>
     <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon <span class="dim">— tap one for its card</span></h3>
-      <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${rows}</section>
+      <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${typeChips}${rows}</section>
     <section data-sec="gym"><h3 class="dexh" id="dex-gym">Trainers <span class="dim">— gym leaders, the Elite Four, Champions and rivals</span></h3>
     <div>${leaders}</div>
     <h3 class="dexh" id="dex-secret">Secret bosses <span class="dim">\u2014 found after a Champion</span></h3><div>${secrets}</div></section>
@@ -13503,8 +13667,10 @@ function openDex(){
     <h3 class="dexh" id="dex-ctr">Battle counter <span class="dim">— next battle only</span></h3><div>${bitems}</div></section>
     <p class="dim dexnone" hidden>Nothing here for that generation.</p>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
-  d.classList.add('dex');
-  d.querySelector('[data-m]').onclick = () => d.remove();
+  d.classList.add('dex', 'dexfull');
+  d.querySelectorAll('[data-m="close"]').forEach(x => x.onclick = () => d.remove());
+  let ty = '';
+  d.querySelectorAll('.dty').forEach(b => b.onclick = () => { SFX.play('tap'); ty = b.dataset.ty; d.querySelectorAll('.dty').forEach(x => x.classList.toggle('on', x === b)); apply(); });
   const apply = () => {
     d.querySelectorAll('.dexseg[data-f="sec"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === sec));
     d.querySelectorAll('.dexseg[data-f="gen"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === gen));
@@ -13512,8 +13678,7 @@ function openDex(){
     const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) !== '0' && (el.hasAttribute('data-g' + gen) || !el.matches('.dexgen'));
     d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
     const q = (d.querySelector('.dexsearch').value || '').trim().toLowerCase();
-    d.querySelectorAll('.dextile').forEach(t => { if(q && !t.dataset.name.includes(q)) t.hidden = true; });
-    d.querySelectorAll('.dexfam').forEach(f => { f.hidden = ![...f.querySelectorAll('.dextile')].some(t => !t.hidden); f.querySelectorAll('.farrow').forEach(a => a.hidden = !(a.previousElementSibling && !a.previousElementSibling.hidden && a.nextElementSibling && !a.nextElementSibling.hidden)); });
+    d.querySelectorAll('.dextile').forEach(t => { if((q && !t.dataset.name.includes(q)) || (ty && !t.dataset.type.split(' ').includes(ty))) t.hidden = true; });
     d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
     const shown = [...d.querySelectorAll('section[data-sec]')].filter(x => !x.hidden);
     d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow,.dextile')].some(r => !r.hidden && !r.closest('[hidden]')));
@@ -13527,6 +13692,7 @@ function openDex(){
   const showCard = k => {
     SFX.play('tap');
     const c = modal(cardFor(k)); c.classList.add('dexcardm');
+    if(!motionOff()){ const card = c.querySelector('.ccard'); if(card) anim(card, [{ transform: 'perspective(600px) rotateY(-70deg) scale(.85)', opacity: 0 }, { transform: 'perspective(600px) rotateY(8deg) scale(1.02)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'ease-out' }); }
     c.querySelector('.boxscroll').insertAdjacentHTML('beforeend', '<div class="btnrow"><button class="btn ghost" data-m="x">Back</button></div>');
     c.querySelector('[data-m="x"]').onclick = () => c.remove();
     c.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { if(b.dataset.jump !== k){ c.remove(); showCard(b.dataset.jump); } });
