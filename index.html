@@ -3115,6 +3115,72 @@ html.bc .pfield .slot .ibest{display:grid;place-items:center;position:absolute;z
 @keyframes ibest{50%{transform:scale(1.15)}}
 body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:none}
 @media (prefers-reduced-motion:reduce){html.bc .pfield .slot .ibest{animation:none}}
+/* ---- 5.9.0 · move effects and particles, redone ----
+   Everything on the effects layer is sized from --u (set each step from the size of the pokémon on screen), so the
+   effects read the same on a phone and on a big monitor. Each type has its own shot. */
+.fxl{--u:1}
+.fx.shot,.fx.burst,.fx.ring,.fx.slash,.fx.punch,.fx.impact,.fx.pt,.fx.crescent,.fx.quakering{will-change:transform,opacity}
+.fx.pt{transform:translate(-50%,-50%)}
+.fx.pt.ember{width:calc(9px * var(--u));height:calc(9px * var(--u))}
+.fx.pt.drop{width:calc(7px * var(--u));height:calc(10px * var(--u))}
+.fx.pt.leaf{width:calc(11px * var(--u));height:calc(6px * var(--u))}
+.fx.pt.spark{width:calc(9px * var(--u));height:calc(14px * var(--u))}
+.fx.pt.ishard{width:calc(6px * var(--u));height:calc(12px * var(--u))}
+.fx.pt.chunk{width:calc(9px * var(--u));height:calc(8px * var(--u))}
+.fx.pt.dust{width:calc(20px * var(--u));height:calc(13px * var(--u))}
+.fx.pt.glint{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.pt.wisp{width:calc(13px * var(--u));height:calc(13px * var(--u))}
+.fx.pt.bubble{width:calc(9px * var(--u));height:calc(9px * var(--u))}
+.fx.pt.star{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.pt.feather{width:calc(5px * var(--u));height:calc(14px * var(--u))}
+.fx.pt.trail{z-index:6;mix-blend-mode:screen}
+.fx.shard{width:calc(11px * var(--u));height:calc(11px * var(--u))}
+.fx.burst{width:calc(52px * var(--u))!important}
+.fx.impact{width:calc(64px * var(--u))!important}
+.fx.ring{width:calc(60px * var(--u))!important;border-width:calc(3px * var(--u))!important}
+.fx.slash{width:calc(54px * var(--u))!important;border-top-width:calc(4px * var(--u))!important}
+.fx.slash.dark{border-top-color:#2a1830!important;filter:drop-shadow(0 0 calc(4px * var(--u)) #c060ff) drop-shadow(0 0 2px #000)!important}
+.fx.punch{width:calc(48px * var(--u))!important}
+/* shots */
+.fx.shot{z-index:8}
+.fx.shot.fireball{width:calc(18px * var(--u));height:calc(18px * var(--u));border-radius:50%;background:radial-gradient(circle at 60% 45%,#fff 0 18%,#ffe27a 30%,#ff8a2a 55%,rgba(224,64,26,.7) 70%,transparent 74%);box-shadow:0 0 calc(12px * var(--u)) calc(4px * var(--u)) rgba(255,120,30,.75)}
+.fx.shot.dragonball{width:calc(20px * var(--u));height:calc(20px * var(--u));border-radius:50%;background:radial-gradient(circle,#fff 0 15%,#c8b0ff 32%,#7a50f0 58%,rgba(74,48,176,.6) 70%,transparent 74%);box-shadow:0 0 calc(14px * var(--u)) calc(4px * var(--u)) rgba(122,80,240,.75)}
+.fx.shot.shadowball{width:calc(20px * var(--u));height:calc(20px * var(--u));border-radius:50%;background:radial-gradient(circle at 40% 35%,#d8c8ff 0 10%,#6a4ac0 35%,#2a1650 62%,transparent 72%);box-shadow:0 0 calc(12px * var(--u)) calc(3px * var(--u)) rgba(120,80,220,.7)}
+.fx.shot.drop{width:calc(9px * var(--u));height:calc(9px * var(--u));border-radius:50% 50% 50% 0;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#9fd2ff 40%,#3a86d8 75%);box-shadow:0 0 calc(5px * var(--u)) rgba(120,190,255,.8)}
+.fx.shot.icicle{width:calc(20px * var(--u));height:calc(7px * var(--u));border-radius:0;clip-path:polygon(0 50%,25% 0,100% 50%,25% 100%);background:linear-gradient(90deg,#8cc8e0,#fff);box-shadow:none;filter:drop-shadow(0 0 3px #bfe8ff)}
+.fx.shot.leafshot{width:calc(15px * var(--u));height:calc(8px * var(--u));border-radius:0 100% 0 100%;background:linear-gradient(135deg,#c6f59a,#5cb84a 60%,#3e8e34);box-shadow:0 0 calc(5px * var(--u)) rgba(120,220,90,.6)}
+.fx.shot.pinshot{width:calc(16px * var(--u));height:calc(4px * var(--u));border-radius:2px;background:linear-gradient(90deg,transparent,#d8e880 40%,#fff);box-shadow:0 0 calc(4px * var(--u)) rgba(200,216,96,.8)}
+.fx.shot.steelshot{width:calc(16px * var(--u));height:calc(16px * var(--u));border-radius:2px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(135deg,#fff,#c8d0dc 50%,#8a94a4);box-shadow:none;filter:drop-shadow(0 0 4px #fff)}
+.fx.shot.sludgeball{width:calc(15px * var(--u));height:calc(13px * var(--u));border-radius:50% 50% 45% 55%;background:radial-gradient(circle at 35% 30%,#f0c8ff 0 12%,#b05ad0 45%,#6a2a8a 80%);box-shadow:0 0 calc(6px * var(--u)) rgba(176,90,208,.7)}
+.fx.shot.rockshot{width:calc(17px * var(--u));height:calc(15px * var(--u));border-radius:3px;clip-path:polygon(15% 0,85% 8%,100% 65%,62% 100%,0 82%);background:linear-gradient(135deg,#d8c8a8,#8e7e62 55%,#5e5040);box-shadow:none}
+.fx.shot.boon{width:calc(13px * var(--u));height:calc(13px * var(--u))}
+/* lightning */
+.fx.bolt{position:absolute;height:auto;aspect-ratio:auto;transform-origin:0 50%;z-index:9;pointer-events:none}
+.fx.bolt svg{display:block;width:100%;height:calc(40px * var(--u));overflow:visible}
+.fx.bolt .g{fill:none;stroke:rgba(255,236,110,.55);stroke-width:calc(7px * var(--u));stroke-linejoin:round;stroke-linecap:round;filter:blur(2px)}
+.fx.bolt .c{fill:none;stroke:#fffbe0;stroke-width:calc(2.4px * var(--u));stroke-linejoin:round;stroke-linecap:round}
+/* wind */
+.fx.crescent{width:calc(26px * var(--u));height:calc(26px * var(--u));border-radius:50%;border-right:calc(3px * var(--u)) solid rgba(255,255,255,.95);border-top:calc(1.5px * var(--u)) solid transparent;filter:drop-shadow(0 0 3px #fff);z-index:8}
+/* ground */
+.fx.quakering{width:calc(70px * var(--u));height:calc(70px * var(--u));border-radius:50%;border:calc(3px * var(--u)) solid #c8a060;box-shadow:0 0 0 calc(2px * var(--u)) rgba(90,60,30,.4),inset 0 0 calc(10px * var(--u)) rgba(120,80,30,.5);z-index:5}
+/* ---- 5.10.0 · signature moves and field weather ---- */
+.fx.beam{position:absolute;height:calc(16px * var(--u));transform-origin:0 50%;border-radius:999px;z-index:8;pointer-events:none;
+  background:linear-gradient(180deg,transparent,var(--c) 22%,#fff 45% 55%,var(--c) 78%,transparent);box-shadow:0 0 calc(14px * var(--u)) var(--c);mix-blend-mode:screen}
+.fx.bolt.sig svg{height:calc(60px * var(--u))}
+.fx.bolt.sig .g{stroke-width:calc(11px * var(--u))}
+.fx.bolt.sig .c{stroke-width:calc(3.5px * var(--u))}
+.fx.skyflash{left:0!important;top:0!important;width:100%;height:100%;background:radial-gradient(80% 60% at 50% 0%,rgba(255,250,200,.85),transparent 70%);z-index:4;pointer-events:none}
+.fx.pt.ember.sig{width:calc(13px * var(--u));height:calc(13px * var(--u));z-index:8}
+.fx.vortex{width:calc(84px * var(--u));height:calc(84px * var(--u));border-radius:50%;z-index:8;pointer-events:none;
+  background:conic-gradient(from 0deg,transparent,var(--c),#1a0d2a,transparent 45%,var(--c) 70%,#1a0d2a,transparent);-webkit-mask:radial-gradient(circle,transparent 18%,#000 22% 66%,transparent 70%);mask:radial-gradient(circle,transparent 18%,#000 22% 66%,transparent 70%);filter:drop-shadow(0 0 calc(6px * var(--u)) var(--c))}
+.fx.psyglow{width:calc(80px * var(--u));height:calc(80px * var(--u));border-radius:50%;z-index:7;pointer-events:none;background:radial-gradient(circle,#fff 0 15%,var(--c) 40%,transparent 70%);mix-blend-mode:screen}
+.fx.quakering.sig{border-color:var(--c);width:calc(60px * var(--u));height:calc(60px * var(--u))}
+.fx.tint{left:0!important;top:0!important;width:100%;height:100%;z-index:3;pointer-events:none;mix-blend-mode:soft-light}
+.fx.tint.warm{background:radial-gradient(90% 80% at 50% 60%,rgba(255,140,40,.75),rgba(255,80,20,.35) 60%,transparent)}
+.fx.tint.frost{background:radial-gradient(90% 80% at 50% 60%,rgba(200,240,255,.85),rgba(140,200,255,.4) 60%,transparent);mix-blend-mode:screen;opacity:.6}
+.fx.tint.zap{background:rgba(255,250,180,.7);mix-blend-mode:overlay}
+.fx.puddle{width:calc(44px * var(--u));height:calc(14px * var(--u));border-radius:50%;z-index:2;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(170,215,255,.85),rgba(90,150,230,.55) 60%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
 </style>
 </head>
 <body>
@@ -7659,7 +7725,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.8.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.10.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -9287,8 +9353,9 @@ try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change'
 const ARENA_X = { p:[38, 24, 10], e:[62, 76, 90] };   // by rank: front, middle, back (% across)
 const ARENA_Y = [60, 87];                              // the two files, where the feet are (% down)
 // how each card type's attacks look in flight
+/* 5.9.0: every type has its own move effect (before, several types borrowed the nearest one) */
 const FX_OF = { Fire:'fire', Water:'water', Electric:'elec', Grass:'grass', Psychic:'psy', Fighting:'fight', Normal:'slash',
-  Ice:'water', Poison:'grass', Ghost:'psy', Dragon:'fire', Bug:'grass', Rock:'fight', Ground:'fight', Flying:'slash' };   // 3.0.0: the new types borrow the nearest effect
+  Ice:'ice', Poison:'sludge', Ghost:'shadow', Dragon:'dragon', Bug:'pin', Rock:'rock', Ground:'quake', Flying:'gust', Steel:'steel', Dark:'dark' };
 // a gym's floor takes the colour of its speciality (Gen 1 type names)
 const GEN1_COL = { Rock:'#b8a038', Ground:'#d8b460', Water:'#5a8ff0', Electric:'#f0c830', Grass:'#62b85a',
   Poison:'#a45ab8', Psychic:'#f06090', Fire:'#f07830', Ice:'#88d0e0', Fighting:'#c04830', Ghost:'#6a5a9a', Dragon:'#7050e8' };
@@ -9549,6 +9616,23 @@ function floatText(S, F, text, cls, lift){
        { opacity: 0, transform: 'translate(-50%,-175%) scale(1)' }],
     { duration: still ? 900 : 1050, easing: 'ease-out', remove: true });
 }
+/** 5.9.0: a status shown as its own particles instead of an emoji: flames rise off a burn, bubbles off poison, sparks
+    crackle round paralysis, pink stars circle confusion, white stars for a flinch. Sleep keeps its drifting Zs. */
+const ST_PT = { brn: { sh:'ember', c:['#fff3a0','#ff9a2a','#e0401a'], rise:1 }, psn: { sh:'bubble', c:['#e0a8ff','#b05ad0'], rise:1 },
+  par: { sh:'spark', c:['#fff6a0','#ffe14a'], jitter:1 }, cnf: { sh:'glint', c:['#ffd0f0','#ff8ac8'], circle:1 }, fln: { sh:'star', c:['#ffffff','#fff2b0'], jitter:1 } };
+function statusPuff(S, F, st, n){
+  if(motionOff() || fxLevel() === 'off') return;
+  if(fxLevel() === 'light') n = 1;
+  const d = ST_PT[st]; if(!d){ puff(S, F, st === 'slp' ? 'z' : ((TUNING.status[st] || {}).icon || '•'), n); return; }
+  const c = artCentre(S, F), cnt = (n || 3) + (fxLevel() === 'light' ? 1 : 3);
+  for(let k = 0; k < cnt; k++){
+    const e = fxEl(S, 'pt ' + d.sh, c.x + (Math.random() - .5) * c.w * .7, c.y + (Math.random() - .2) * c.w * .4); e.style.setProperty('--c', d.c[k % d.c.length]);
+    const fr = d.circle ? [0, .25, .5, .75, 1].map(t => ({ transform: `translate(calc(-50% + ${Math.cos(t * 6.28 + k) * c.w * .45}px), calc(-50% - ${c.w * .45 + Math.sin(t * 6.28 + k) * c.w * .12}px)) scale(${t === 0 || t === 1 ? .4 : 1})`, opacity: t === 0 || t === 1 ? 0 : 1 }))
+      : d.jitter ? [{ transform: 'translate(-50%,-50%) scale(.4)', opacity: 0 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 12}px), calc(-50% + ${(Math.random() - .5) * 12}px)) scale(1.1) rotate(${Math.random() * 90}deg)`, opacity: 1, offset: .3 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 18}px), calc(-50% + ${(Math.random() - .5) * 18}px)) scale(.5)`, opacity: 0 }]
+      : [{ transform: 'translate(-50%,-50%) scale(.5)', opacity: 0 }, { opacity: 1, offset: .25 }, { transform: `translate(calc(-50% + ${(Math.random() - .5) * 10}px), calc(-50% - ${c.w * (.5 + Math.random() * .4)}px)) scale(.6)`, opacity: 0 }];
+    anim(e, fr, { duration: (d.circle ? 1100 : 760) + Math.random() * 200, delay: k * 70, easing: 'ease-out', fill: 'backwards', remove: true });
+  }
+}
 /** A few of a status icon drifting up — flames, bubbles, Zs. */
 function puff(S, F, glyph, n){
   if(motionOff()) return;
@@ -9675,9 +9759,9 @@ const HIT_FX = {
   Steel:    { sh:'spark',   c:['#ffffff','#c8d0dc'] },
   Dark:     { sh:'wisp',    c:['#6a4a6a','#2a1a2a'], up:true, slow:true },
 };
-function hitBurst(S, F, type){
+function hitBurst(S, F, type, big){
   if(motionOff()) return;
-  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = d.sh === 'dust' ? 5 : 8;
+  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = Math.round(((d.sh === 'dust' ? 5 : 8) + (big ? 6 : 0)) * (fxLevel() === 'light' ? 0.5 : 1));
   for(let k = 0; k < n; k++){
     const e = fxEl(S, 'pt ' + d.sh, c.x, c.y); e.style.setProperty('--c', d.c[k % d.c.length]);
     const a = (k / n) * Math.PI * 2 + Math.random() * 0.6, r = c.w * (0.35 + Math.random() * 0.45);
@@ -9689,45 +9773,167 @@ function hitBurst(S, F, type){
       { duration: (d.slow ? 820 : 560) + Math.random() * 160, easing: d.fall ? 'cubic-bezier(.3,.4,.7,1)' : 'ease-out', remove: true });
   }
 }
-/** What an attack looks like on its way over. Resolves when it lands. */
+/** What an attack looks like on its way over. Resolves when it lands.
+    5.9.0: redone. Every type has its own look, everything is sized to the pokémon on screen (the --u scale on the
+    effects layer), and shots leave a short trail. */
+const fin = a => a.finished.catch(() => {});
+function trail(S, a, dx, dy, dur, cls, n, arc, col){
+  if(fxLevel() !== 'full') return;
+  for(let k = 1; k <= n; k++){
+    const t = k / (n + 1), lift = arc ? Math.sin(Math.PI * t) * Math.max(26, Math.hypot(dx, dy) * 0.38) : 0;
+    const e = fxEl(S, 'pt trail ' + cls, a.x + dx * t, a.y + dy * t - lift); if(col) e.style.setProperty('--c', col);
+    anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.9)' }, { opacity: .9, offset: .15 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }],
+      { duration: dur * 0.9, delay: dur * t, fill: 'backwards', remove: true });
+  }
+}
+function straightFrames(dx, dy, wob){
+  const fr = [];
+  for(let k = 0; k <= 6; k++){ const t = k / 6, w = (wob || 0) * Math.sin(t * Math.PI * 2);
+    const nx = -dy / (Math.hypot(dx, dy) || 1), ny = dx / (Math.hypot(dx, dy) || 1);
+    fr.push({ transform: `translate(calc(-50% + ${dx * t + nx * w}px), calc(-50% + ${dy * t + ny * w}px)) rotate(${Math.atan2(dy, dx)}rad)` }); }
+  return fr;
+}
 function projectile(S, A, T, kind, dur){
   const a = artCentre(S, A), b = artCentre(S, T), col = typeColor(A.id);
-  const dx = b.x - a.x, dy = b.y - a.y;
-  if(kind === 'slash' || kind === 'fight'){
-    const e = fxEl(S, kind === 'slash' ? 'slash' : 'punch', b.x, b.y);
-    return anim(e, kind === 'slash'
-      ? [{ opacity: 0, transform: 'translate(-50%,-50%) rotate(-70deg) scale(.4)' }, { opacity: 1, transform: 'translate(-50%,-50%) rotate(30deg) scale(1.05)', offset: .6 },
-         { opacity: 0, transform: 'translate(-50%,-50%) rotate(70deg) scale(1.15)' }]
-      : [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.15)', offset: .55 },
-         { opacity: 0, transform: 'translate(-50%,-50%) scale(1.4)' }],
-      { duration: dur, delay: dur * 0.2, easing: 'ease-out', fill: 'backwards', remove: true }).finished.catch(() => {});
+  const dx = b.x - a.x, dy = b.y - a.y, ang = Math.atan2(dy, dx);
+  const at = (cls, x, y) => { const e = fxEl(S, cls, x, y); e.style.setProperty('--c', col); return e; };
+  const pop = (e, d, from, to) => fin(anim(e, [{ opacity: 0, transform: `translate(-50%,-50%) ${from}` }, { opacity: 1, offset: .35 }, { opacity: 0, transform: `translate(-50%,-50%) ${to}` }],
+    { duration: d, delay: dur * 0.15, easing: 'ease-out', fill: 'backwards', remove: true }));
+  switch(kind){
+    case 'slash': case 'dark': {        // two crossing cuts at the target
+      return Promise.all([0, 1].map(k => { const e = at('slash' + (kind === 'dark' ? ' dark' : ''), b.x, b.y);
+        return fin(anim(e, [{ opacity: 0, transform: `translate(-50%,-50%) rotate(${k ? 120 : -70}deg) scale(.5)` }, { opacity: 1, transform: `translate(-50%,-50%) rotate(${k ? 200 : 20}deg) scale(1.05)`, offset: .55 },
+          { opacity: 0, transform: `translate(-50%,-50%) rotate(${k ? 240 : 60}deg) scale(1.15)` }], { duration: dur, delay: dur * (0.15 + k * 0.25), easing: 'ease-out', fill: 'backwards', remove: true })); }));
+    }
+    case 'fight': return pop(at('punch', b.x, b.y), dur, 'scale(.3) rotate(-20deg)', 'scale(1.5) rotate(10deg)');
+    case 'quake': {                     // the ground cracks under the target and throws up dust
+      const g = at('quakering', b.x, b.y + b.w * 0.42);
+      anim(T.el.querySelector('.fart') || T.el, [{ translate: '0 0' }, { translate: '0 -6px', offset: .3 }, { translate: '0 2px', offset: .6 }, { translate: '0 0' }], { duration: dur * 1.1, delay: dur * 0.3 });
+      for(let k = 0; k < 4; k++){ const d = at('pt dust', b.x + (k - 1.5) * b.w * 0.3, b.y + b.w * 0.4); d.style.setProperty('--c', '#d8b878');
+        anim(d, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: .9, offset: .3 }, { opacity: 0, transform: `translate(-50%, calc(-50% - ${b.w * 0.5}px)) scale(1.8)` }], { duration: dur * 1.6, delay: dur * (0.3 + k * 0.08), fill: 'backwards', remove: true }); }
+      return pop(g, dur * 1.2, 'scale(.2,.08)', 'scale(1.6,.6)');
+    }
+    case 'psy': {                       // rings close in on the target, then a pink pulse
+      return Promise.all([0, 1, 2].map(k => fin(anim(at('ring', b.x, b.y), [{ opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }, { opacity: .95, offset: .3 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.25)' }],
+        { duration: dur * 0.9, delay: k * dur * 0.16, easing: 'ease-in', fill: 'backwards', remove: true }))));
+    }
+    case 'elec': {                      // a jagged bolt flickers across, three times
+      const len = Math.hypot(dx, dy), n = 7, pts = [];
+      for(let k = 0; k <= n; k++){ const t = k / n, off = k === 0 || k === n ? 0 : (k % 2 ? 1 : -1) * len * 0.07 * (0.6 + Math.random() * 0.6);
+        pts.push(`${(t * len).toFixed(1)},${off.toFixed(1)}`); }
+      const e = fxEl(S, 'bolt', a.x, a.y);
+      e.style.width = len + 'px'; e.style.transform = `translateY(-50%) rotate(${ang}rad)`;
+      e.innerHTML = `<svg viewBox="0 ${-len * 0.12} ${len} ${len * 0.24}" preserveAspectRatio="none"><polyline points="${pts.join(' ')}" class="g"/><polyline points="${pts.join(' ')}" class="c"/></svg>`;
+      return fin(anim(e, [{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: .2, offset: .25 }, { opacity: 1, offset: .4 }, { opacity: .3, offset: .6 }, { opacity: 1, offset: .75 }, { opacity: 0 }],
+        { duration: dur * 1.2, delay: dur * 0.1, fill: 'backwards', remove: true }));
+    }
+    case 'gust': {                      // three white crescents sweep across
+      return Promise.all([0, 1, 2].map(k => { const e = at('crescent', a.x, a.y);
+        return fin(anim(e, straightFrames(dx, dy, (k - 1) * b.w * 0.25).map((f, j, arr) => ({ ...f, opacity: j === 0 || j === arr.length - 1 ? 0 : 1 })),
+          { duration: dur, delay: k * dur * 0.15, easing: 'ease-in', fill: 'both', remove: true })); }));
+    }
   }
-  if(kind === 'psy'){
-    const rings = [0, 1, 2].map(k => {
-      const e = fxEl(S, 'ring', b.x, b.y); e.style.setProperty('--c', col);
-      return anim(e, [{ opacity: .95, transform: 'translate(-50%,-50%) scale(.2)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)' }],
-        { duration: dur * 0.8, delay: k * dur * 0.13, fill: 'backwards', remove: true }).finished.catch(() => {});
-    });
-    return Promise.all(rings);
-  }
-  const n = kind === 'elec' ? 1 : kind === 'grass' ? 3 : kind === 'water' ? 4 : 3;
+  /* everything else is a shot: what it is, how many, and the path it takes */
+  const SHOT = {
+    fire:   { cls: 'fireball', n: 1, path: 'straight', trail: 'ember', tn: 5, tc: '#ff8a2a' },
+    dragon: { cls: 'dragonball', n: 1, path: 'straight', wob: 6, trail: 'ember', tn: 5, tc: '#9a70ff' },
+    shadow: { cls: 'shadowball', n: 1, path: 'straight', wob: 8, trail: 'wisp', tn: 4, tc: '#8a6ad8' },
+    water:  { cls: 'drop', n: 5, path: 'straight', gap: .09, trail: null },
+    ice:    { cls: 'icicle', n: 3, path: 'straight', gap: .12, trail: 'ishard', tn: 3, tc: '#dff4ff' },
+    grass:  { cls: 'leafshot', n: 3, path: 'arc', jig: 10, gap: .14, trail: null },
+    pin:    { cls: 'pinshot', n: 3, path: 'straight', gap: .1, trail: null },
+    steel:  { cls: 'steelshot', n: 2, path: 'straight', gap: .16, trail: 'spark', tn: 3, tc: '#e8eef6' },
+    sludge: { cls: 'sludgeball', n: 2, path: 'arc', jig: 8, gap: .18, trail: 'bubble', tn: 3, tc: '#c07ae0' },
+    rock:   { cls: 'rockshot', n: 2, path: 'arc', jig: 6, gap: .2, trail: null },
+  }[kind] || { cls: 'fireball', n: 1, path: 'straight' };
   const shots = [];
-  for(let k = 0; k < n; k++){
-    const e = fxEl(S, 'shot ' + kind, a.x, a.y); e.style.setProperty('--c', col);
-    const jig = kind === 'water' ? (k % 2 ? 7 : -7) : kind === 'grass' ? (k - 1) * 10 : 0;
-    const frames = kind === 'elec'
-      ? [0, .2, .4, .6, .8, 1].map((f, j) => ({ transform: `translate(calc(-50% + ${dx * f}px), calc(-50% + ${dy * f + (f > 0 && f < 1 ? (j % 2 ? -12 : 12) : 0)}px))` }))
-      : arcFrames(dx, dy, jig);   // 4.17.0: shots lob up and over in an arc
-    shots.push(anim(e, frames, { duration: dur, delay: k * dur * 0.14, easing: kind === 'elec' ? 'steps(5, end)' : 'linear',
-      fill: 'both', remove: true }).finished.catch(() => {}));
+  for(let k = 0; k < SHOT.n; k++){
+    const e = at('shot ' + SHOT.cls, a.x, a.y);
+    const frames = SHOT.path === 'arc' ? arcFrames(dx, dy, SHOT.jig ? (k - (SHOT.n - 1) / 2) * SHOT.jig : 0) : straightFrames(dx, dy, SHOT.wob || (SHOT.n > 1 ? (k % 2 ? 4 : -4) : 0));
+    shots.push(fin(anim(e, frames, { duration: dur, delay: k * dur * (SHOT.gap || 0.14), easing: SHOT.path === 'arc' ? 'linear' : 'ease-in', fill: 'both', remove: true })));
   }
+  if(SHOT.trail) trail(S, a, dx, dy, dur, SHOT.trail, SHOT.tn || 4, SHOT.path === 'arc', SHOT.tc || col);
   return Promise.all(shots).then(() => {
     if(!T.el.isConnected) return;
-    const e = fxEl(S, 'burst', b.x, b.y); e.style.setProperty('--c', col);
-    anim(e, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.4)' }],
-      { duration: 300, remove: true });
+    const e = at('burst', b.x, b.y);
+    anim(e, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 340, remove: true });
   });
 }
+/* ---- 5.10.0 · Options → Effects: Full / Light / Off ----
+   Light keeps the shots and hits but drops trails, signature moves, field weather and half the particles; Off shows
+   only the numbers (as the fastest speed does). Reduced motion still turns everything off. */
+const fxLevel = () => { const v = PREF.get('fx', 'full'); return v === 'light' || v === 'off' ? v : 'full'; };
+
+/* ---- 5.10.0 · SIGNATURE MOVES ----
+   The big finals and the legendaries get their own effect when they use their main move. */
+const SIG = {
+  charizard:['spiral','#ff7a2a'], typhlosion:['spiral','#ff8a3a'], moltres:['spiral','#ffb03a'], 'ho-oh':['spiral','#ffc040'], entei:['spiral','#ff6a2a'], ninetales:['spiral','#ffb060'], arcanine:['spiral','#ff8a3a'], houndoom:['spiral','#ff5a3a'],
+  blastoise:['beam','#5aa8ff'], feraligatr:['beam','#4a90e8'], suicune:['beam','#7ad8ff'], kingdra:['beam','#6ab0f0'], starmie:['beam','#c8a8ff'],
+  venusaur:['beam','#b8f080'], meganium:['beam','#d8f8a0'], celebi:['beam','#c8ffb0'],
+  lapras:['beam','#dff4ff'], articuno:['beam','#c8f0ff'], lugia:['beam','#e0e8ff'],
+  dragonite:['beam','#ffd27a'], gyarados:['beam','#ff7070'], tyranitar:['shock','#c8a070'], golem:['shock','#c8b080'], snorlax:['shock','#e0c890'], steelix:['shock','#c8d0dc'],
+  gengar:['vortex','#8a5ad8'], umbreon:['vortex','#e0c050'],
+  alakazam:['psyburst','#f85888'], espeon:['psyburst','#ff8ad8'], mewtwo:['psyburst','#c070ff'], mew:['psyburst','#ffb0e0'],
+  machamp:['combo','#ffb08a'], heracross:['combo','#8ab0ff'], scizor:['combo','#ff6a6a'],
+  pikachu:['sky','#ffe14a'], raichu:['sky','#ffd23a'], jolteon:['sky','#fff070'], zapdos:['sky','#ffe860'], raikou:['sky','#ffe060'], ampharos:['sky','#ffd860'],
+};
+function sigFx(S, A, targets, sig, dur){
+  const [kind, col] = sig, a = artCentre(S, A), out = [];
+  const at = (cls, x, y) => { const e = fxEl(S, cls, x, y); e.style.setProperty('--c', col); return e; };
+  if(kind === 'shock'){   // one shockwave rolls out from the user across the floor
+    const r = at('quakering sig', a.x, a.y + a.w * 0.42);
+    anim(S.el, [{ transform: 'translate(0,0)' }, { transform: 'translate(0,4px)' }, { transform: 'translate(0,-3px)' }, { transform: 'translate(0,0)' }], { duration: 320, delay: dur * 0.3 });
+    out.push(fin(anim(r, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.2,.08)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(5,1.8)' }], { duration: dur * 1.5, easing: 'ease-out', remove: true })));
+  }
+  for(const T of targets){
+    const b = artCentre(S, T), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+    if(kind === 'beam'){        // a thick beam with a white core, from user to target
+      const e = at('beam', a.x, a.y); e.style.width = len + 'px'; e.style.transform = `translateY(-50%) rotate(${ang}rad)`;
+      out.push(fin(anim(e, [{ opacity: 0, transform: `translateY(-50%) rotate(${ang}rad) scaleX(0)` }, { opacity: 1, transform: `translateY(-50%) rotate(${ang}rad) scaleX(1)`, offset: .35 },
+        { opacity: 1, transform: `translateY(-50%) rotate(${ang}rad) scale(1,1.3)`, offset: .7 }, { opacity: 0, transform: `translateY(-50%) rotate(${ang}rad) scale(1,.2)` }], { duration: dur * 1.5, easing: 'ease-out', remove: true })));
+    } else if(kind === 'sky'){  // lightning from the sky onto the target
+      const top = Math.max(0, b.y - S.el.clientHeight * 0.6), h = b.y - top, n = 8, pts = [];
+      for(let k = 0; k <= n; k++){ const off = k === 0 || k === n ? 0 : (k % 2 ? 1 : -1) * h * 0.06 * (0.6 + Math.random() * 0.6); pts.push(`${(k / n * h).toFixed(1)},${off.toFixed(1)}`); }
+      const e = fxEl(S, 'bolt sig', b.x, top); e.style.width = h + 'px'; e.style.transform = 'translateY(-50%) rotate(90deg)';
+      e.innerHTML = `<svg viewBox="0 ${-h * 0.12} ${h} ${h * 0.24}" preserveAspectRatio="none"><polyline points="${pts.join(' ')}" class="g"/><polyline points="${pts.join(' ')}" class="c"/></svg>`;
+      const fl = fxEl(S, 'skyflash', 0, 0);
+      anim(fl, [{ opacity: 0 }, { opacity: .55, offset: .2 }, { opacity: 0 }], { duration: dur * 1.2, delay: dur * 0.2, fill: 'backwards', remove: true });
+      out.push(fin(anim(e, [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: .3, offset: .3 }, { opacity: 1, offset: .45 }, { opacity: 0 }], { duration: dur * 1.3, delay: dur * 0.15, fill: 'backwards', remove: true })));
+    } else if(kind === 'spiral'){   // a ring of flame closes round the target
+      for(let k = 0; k < 12; k++){ const e = at('pt ember sig', b.x, b.y), a0 = k / 12 * Math.PI * 2;
+        const fr = [0, .25, .5, .75, 1].map(t => { const r = b.w * (1 - t * 0.6), ang2 = a0 + t * Math.PI * 1.6;
+          return { transform: `translate(calc(-50% + ${Math.cos(ang2) * r}px), calc(-50% + ${Math.sin(ang2) * r * 0.55}px)) scale(${1.4 - t * 0.6})`, opacity: t === 1 ? 0 : 1 }; });
+        out.push(fin(anim(e, fr, { duration: dur * 1.4, delay: k * 18, easing: 'ease-in', fill: 'backwards', remove: true }))); }
+    } else if(kind === 'vortex'){   // a dark swirl opens on the target
+      const e = at('vortex', b.x, b.y);
+      out.push(fin(anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.2) rotate(0deg)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.1) rotate(220deg)', offset: .5 },
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.6) rotate(480deg)' }], { duration: dur * 1.6, easing: 'ease-in-out', remove: true })));
+    } else if(kind === 'psyburst'){ // the target glows, then a flash and rings burst out of it
+      const g = at('psyglow', b.x, b.y);
+      out.push(fin(anim(g, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .5 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.8)' }], { duration: dur * 1.5, remove: true })));
+      [0, 1, 2].forEach(k => anim(at('ring', b.x, b.y), [{ opacity: .9, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(2.2)' }], { duration: dur * 1.1, delay: dur * (0.5 + k * 0.15), fill: 'backwards', remove: true }));
+    } else if(kind === 'combo'){    // three quick blows
+      for(let k = 0; k < 3; k++){ const e = at('punch', b.x + (k - 1) * b.w * 0.3, b.y + (k % 2 ? -1 : 1) * b.w * 0.15);
+        out.push(fin(anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.2)', offset: .5 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }],
+          { duration: dur * 0.7, delay: k * dur * 0.3, fill: 'backwards', remove: true }))); }
+    }
+  }
+  return Promise.all(out);
+}
+
+/* ---- 5.10.0 · FIELD WEATHER ----
+   A big Fire hit warms the field for a moment, a Water one leaves a puddle that dries, Ice frosts the field,
+   an Electric one flashes it. */
+function fieldWeather(S, type, T){
+  if(fxLevel() !== 'full' || motionOff()) return;
+  if(type === 'Water' && T){ const b = artCentre(S, T); for(let k = 0; k < 2; k++){ const e = fxEl(S, 'puddle', b.x + (k ? b.w * 0.35 : -b.w * 0.2), b.y + b.w * (0.42 + k * 0.06));
+      anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3,.3)' }, { opacity: .85, transform: 'translate(-50%,-50%) scale(1,1)', offset: .1 }, { opacity: .7, offset: .6 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.6,.6)' }],
+        { duration: 4200, delay: k * 120, fill: 'backwards', remove: true }); } return; }
+  const cls = { Fire: 'warm', Ice: 'frost', Electric: 'zap' }[type]; if(!cls) return;
+  const e = fxEl(S, 'tint ' + cls, 0, 0);
+  anim(e, [{ opacity: 0 }, { opacity: .65, offset: .2 }, { opacity: .5, offset: .6 }, { opacity: 0 }], { duration: cls === 'zap' ? 600 : 1800, easing: 'ease-out', remove: true });
+}
+
 /** Support moves travel too: a soft sparkle from the user to whoever it helps. */
 function boon(S, A, T, dur){
   const a = artCentre(S, A), b = artCentre(S, T);
@@ -9756,7 +9962,7 @@ function animateStep(S, i){
   S.at = i;
   const gen = S.gen;
   const beat = stepDelay();                       // how long this step is on screen
-  const quick = beat < 300 || motionOff();        // at 4× there is only time for the numbers
+  const quick = beat < 300 || motionOff() || fxLevel() === 'off';   // at 4× there is only time for the numbers; 5.10.0: or Effects: Off
   const was = snapMap(prev), now = snapMap(st);
   const fxBy = new Map();
   for(const x of st.fx || []){
@@ -9767,6 +9973,8 @@ function animateStep(S, i){
   const lines = st.lines || [];
   const ak = actorKey(st), A = ak ? S.f.get(ak) : null;
   markActing(S, st);
+  { const any = A || [...S.f.values()].find(F => !F.down);   // 5.9.0: effects are sized to the pokémon on screen
+    if(any && !quick){ const w = artCentre(S, any).w; if(w > 0) S.fx.style.setProperty('--u', Math.max(.8, Math.min(2.4, w / 48)).toFixed(2)); } }
 
   // what happened to each pokémon on this step
   const ev = [];
@@ -9797,7 +10005,9 @@ function animateStep(S, i){
     const kind = FX_OF[SPECIES[A.id] ? SPECIES[A.id].type : ''] || 'slash';
     setTimeout(() => {
       if(S.gen !== gen) return;
-      foes.slice(0, 6).forEach(e => projectile(S, A, e.F, kind, flyMs));
+      const sp = SPECIES[A.id], sig = fxLevel() === 'full' && SIG[A.id] && sp && lines.some(l => l === `${A.nm} used ${sp.move.name}!`) ? SIG[A.id] : null;   // 5.10.0
+      if(sig && foes.length) sigFx(S, A, foes.slice(0, 6).map(e => e.F), sig, flyMs);
+      else foes.slice(0, 6).forEach(e => projectile(S, A, e.F, kind, flyMs));
       pals.slice(0, 6).forEach(e => boon(S, A, e.F, flyMs));
     }, lungeMs * 0.45);
   }
@@ -9819,9 +10029,10 @@ function animateStep(S, i){
     /* 4.13.0: a type-coloured flash where each blow lands, and the field shakes on a super-effective hit or a knockout */
     if(!quick && A){ const col = typeColor(A.id);
       const aType = SPECIES[A.id] ? SPECIES[A.id].type : 'Normal';
-      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
+      for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType, e.kinds.has('crit') || e.fainted); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
     const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
+    if(bigHit && A && !quick && SPECIES[A.id]) fieldWeather(S, SPECIES[A.id].type, bigHit.F);   // 5.10.0
     if(bigHit && !quick) camLean(S, bigHit.F);
     if(bigHit) crowdReact(S, bigHit.F.side === 'e' || bigHit.fainted);
     if(!motionOff() && bigHit)
@@ -9839,7 +10050,7 @@ function animateStep(S, i){
         const dot = !A && e.w && e.w.st && TUNING.status[e.w.st] && TUNING.status[e.w.st].dotPct;
         const took = e.fainted && lines.map(l => l.startsWith(nm + ' took ') && l.match(/took (\d+) damage/)).find(Boolean);
         floatText(S, F, '−' + (took ? took[1] : -e.dhp), se ? 'se' : weak ? 'weak' : dot ? 'st-' + e.w.st : '');
-        if(dot) puff(S, F, TUNING.status[e.w.st].icon, 2);
+        if(dot) statusPuff(S, F, e.w.st, 2);
         else flash(F, se || e.fainted, se ? '#ffd166' : null);
         if(se && !told){ told = true; floatText(S, F, 'Super effective!', 'se note', 26); }
         lift = 22;
@@ -9854,7 +10065,7 @@ function animateStep(S, i){
       if(e.stNew){
         const S0 = TUNING.status[e.stNew];
         floatText(S, F, ST_WORD[e.stNew] || S0.name, 'st-' + e.stNew + ' note', lift); lift += 20;
-        puff(S, F, e.stNew === 'slp' ? 'z' : S0.icon, 3);
+        statusPuff(S, F, e.stNew, 3);
         glow(F, { brn:'#ff7a2e', psn:'#b05ad0', par:'#ffd93a', slp:'#9fb1d6', cnf:'#ff9bd0', fln:'#ffffff' }[e.stNew] || '#fff');
       }
       if(e.shUp){ floatText(S, F, 'Barrier', 'shield note', lift); lift += 20; }
@@ -11782,6 +11993,15 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.10.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Signature moves, field weather and an Effects setting', items:[
+    'Signature moves: the big finals and the legendaries have their own effect when they use their main move. Charizard, Typhlosion, the fire dogs and birds wrap the target in a ring of flame; Blastoise, Feraligatr and the water and ice finals fire a thick beam (Venusaur and Meganium a green solar beam, Dragonite and Gyarados a hyper beam); Pikachu, Raichu, Jolteon, Zapdos, Raikou and Ampharos call lightning down from the sky; Gengar and Umbreon open a dark vortex; Alakazam, Espeon, Mew and Mewtwo make the target glow and burst; Machamp, Heracross and Scizor land a three-hit combo; Snorlax, Golem, Tyranitar and Steelix send a shockwave across the field.',
+    'Field weather: a super-effective hit or a knockout warms the field for a moment if it was a Fire move, frosts it if Ice, flashes it if Electric, and a Water one leaves puddles under the target that slowly dry.',
+    'Options \u2192 Effects: Full, Light or Off. Light keeps the move effects but drops trails, signature moves, weather and half the particles, for older phones. Off shows only the numbers.' ] },
+  { v:'5.9.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Move effects and particles redone: a look for every type, sized to the screen', items:[
+    'Every type now has its own move effect. Before, several borrowed another type\u2019s. Fire throws a fireball with a trail of embers, Water a spray of droplets, Electric a jagged lightning bolt that flickers across, Grass a volley of leaves, Ice icicles, Poison lobbed sludge, Ghost a wobbling shadow ball, Dragon a purple dragon flame, Bug pins, Rock thrown rocks, Steel spinning shards, Flying three crescents of wind, Psychic rings that close in, Dark a crossing shadow slash, Normal a double slash, Fighting a punch, and Ground cracks the earth under the target and throws up dust.',
+    'Effects and particles are sized to the pok\u00e9mon on screen, so they read the same on a phone and on a big monitor (on computers they were tiny).',
+    'Knockouts and super-effective hits throw more particles.',
+    'Status effects show as particles instead of emoji: flames rise off a burn, bubbles off poison, sparks crackle round paralysis, pink stars circle confusion and white stars flash on a flinch. Sleep keeps its Zs.' ] },
   { v:'5.8.1', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Item hints, and stat triangles that keep their shape as your team grows', items:[
     'Pick a vitamin or a held item and the party pok\u00e9mon that gains the most from it gets a gold star beside its triangle. Turn it off in Options \u2192 Item hints.',
     'Stat triangles now scale with your team instead of a fixed cap, so pok\u00e9mon that have levelled up or evolved no longer fill their whole triangle. Each corner reaches as far as that stat goes compared with the best on your team, so you can still see each pok\u00e9mon\u2019s build (and what grew) all run long. Opponents\u2019 triangles are measured against your team too.' ] },
@@ -12689,12 +12909,14 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
+    <div class="optrow"><span>Effects</span>${seg('fx', fxLevel(), [['full', 'Full'], ['light', 'Light'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
+      Effects: Light keeps the move effects but drops trails, signature moves, field weather and half the particles, for older phones; Off shows only the numbers.
       Item hints puts a gold star on the party pokémon that gains the most from the vitamin or held item you have picked.
       Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
