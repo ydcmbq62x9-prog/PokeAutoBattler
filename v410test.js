@@ -62,5 +62,5 @@ check(okMono, 'a daily Mono type always exists in that day\u2019s gens');
 const dg = E.newGame(E.dailySeed('x7'), { mods: E.dailyMods('x7'), daily: 'x7', gens: E.dailyGens('x7') });
 check(JSON.stringify(dg.gens) === JSON.stringify(E.dailyGens('x7')), 'a daily run plays the day\u2019s gens');
 check(/\$\{runNoteHtml\(G\)\}\s*\n\s*\$\{top\.length/.test(ui) && /Open evolutions: ' \+ pl/.test(ui) && /Pool of the day/.test(ui), 'the summary, the summary image and the daily show Focus and evolutions');
-check(/class="dexfam"/.test(ui) && /farrow/.test(ui), 'the Pokédex groups tiles by evolution line');
+check(/class="dexgrid"/.test(ui) && /evoFamily/.test(ui), "the Pokédex is a numbered grid in family order (5.12.0)");
 console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);

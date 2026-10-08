@@ -23,7 +23,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   await p.evaluate(() => { document.querySelector('.modal.history [data-m="close"]').click(); });
   check(await p.evaluate(() => !!document.querySelector('.modal.trainer .tcard')), 'Back returns to the Trainer Card');
   await p.evaluate(() => document.querySelectorAll('.modal').forEach(x => x.remove()));
-  const d = await p.evaluate(() => { openDex(); const t = document.querySelector('.dextile[data-id="geodude"]'); t.click();
+  const d = await p.evaluate(() => { PREF.set('dexseen', JSON.stringify(['geodude'])); openDex(); const t = document.querySelector('.dextile[data-id="geodude"]'); t.click();
     const card = document.querySelector('.dcard').innerText, tags = [...document.querySelectorAll('.dcard .chead .tag')].map(x => x.textContent);
     return { tags, hasEvo: !!document.querySelector('.dcard') }; });
   check(d.tags.includes('Rock') && d.tags.includes('Ground'), 'Geodude’s card shows Rock and Ground: ' + d.tags.join());

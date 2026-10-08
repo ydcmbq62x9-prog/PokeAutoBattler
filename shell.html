@@ -3205,6 +3205,67 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .legwalk img{position:relative;z-index:2;width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(0 6px 0 rgba(0,0,0,.25))}
 .legwalk .lwglow{position:absolute;inset:-35%;border-radius:50%;z-index:1;background:radial-gradient(circle,rgba(255,250,210,.95) 0 18%,rgba(255,210,58,.6) 40%,transparent 70%)}
 .legwalk .lwshadow{position:absolute;left:15%;right:15%;bottom:-4%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.4),transparent);z-index:0}
+/* ---- 5.12.0 · the new Pokédex: full screen, numbered grid, trading cards ---- */
+.modal.dexfull{padding:0!important;align-items:stretch!important;justify-content:stretch!important}
+.modal.dexfull > .box{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;margin:0!important;display:flex;flex-direction:column;background:#0e1424!important;box-shadow:none!important}
+.modal.dexfull .boxscroll{flex:1;min-height:0;overflow:auto;padding:0 max(14px,calc((100% - 1100px) / 2)) 18px!important}
+.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:12px 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
+.modal.dexfull .dextop h3{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-family:var(--pix);font-weight:800;font-style:italic;font-size:28px;color:var(--gold)}
+.modal.dexfull .dextop h3 .dexcount{font-style:normal;font-size:15px;color:var(--dim)}
+.dexx{margin-left:auto;align-self:center;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--text);font-size:16px;cursor:pointer}
+.dexx:hover{background:rgba(255,255,255,.16)}
+.dexprog{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:8px}
+.dexprog u{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffb020);text-decoration:none}
+.modal.dexfull .dexfilt{margin:0}
+.dextypes{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.dextypes::-webkit-scrollbar{display:none}
+.dty{flex:none;display:inline-flex;align-items:center;gap:4px;border:0;border-radius:999px;padding:3px 12px;min-height:34px;background:rgba(255,255,255,.07);color:var(--text);font-family:var(--pix);font-weight:700;font-size:13px;cursor:pointer}
+.dty i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.dty.on{background:var(--gold);color:var(--navy)}
+.dexgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;margin-top:4px}
+.dexgrid .dextile{position:relative;display:flex;flex-direction:column;align-items:center;gap:0;padding:14px 3px 0;border:0;border-radius:11px;background:#182038;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);overflow:hidden;min-width:0;cursor:pointer;transition:transform .12s}
+.dexgrid .dextile:hover,.dexgrid .dextile:focus-visible{transform:translateY(-2px);box-shadow:inset 0 0 0 2px var(--tcol),0 6px 14px rgba(0,0,0,.35);outline:none}
+.dexgrid .dextile .sprite.tile{width:56px;height:56px;background:none!important;border:0!important;box-shadow:none!important}
+.dexgrid .dextile b{display:block;width:100%;font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.15;padding:2px 2px 5px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dexgrid .dextile .dno{position:absolute;left:6px;top:3px;font-family:var(--pix);font-weight:700;font-size:11.5px;color:var(--dim)}
+.dexgrid .dextile .dleg{position:absolute;right:6px;top:3px;font-style:normal;color:var(--gold);font-size:12px}
+.dexgrid .dextile .dband{display:block;align-self:stretch;height:4px;background:var(--tcol)}
+.dexgrid .dextile.unseen .sprite img{filter:brightness(0) opacity(.45)}
+.dexgrid .dextile.unseen b{color:var(--dim)}
+.dexgrid .dextile.unseen .dband{background:#2a3148}
+/* the trading card */
+.modal.dexcardm > .box{max-width:400px!important;background:transparent!important;box-shadow:none!important}
+.modal.dexcardm .boxscroll{padding:6px!important}
+.ccard{border-radius:18px;padding:9px;background:linear-gradient(160deg,var(--tcol),color-mix(in srgb,var(--tcol) 35%,#10131a));box-shadow:0 0 0 2px rgba(255,255,255,.55),0 16px 34px rgba(0,0,0,.55);margin-bottom:10px}
+.ccard .tcin{background:#0e1424;border-radius:12px;padding:10px;display:grid;gap:8px}
+.ccard .tctop{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.ccard .tctop b{font-family:var(--pix);font-weight:800;font-size:28px;line-height:1}
+.ccard .tchp{font-family:var(--pix);font-weight:800;font-size:18px;display:inline-flex;align-items:center;gap:3px}
+.ccard .tcwin{position:relative;height:170px;border-radius:10px;display:grid;place-items:center;background:radial-gradient(circle at 50% 62%,color-mix(in srgb,var(--tcol) 45%,transparent),transparent 70%),repeating-linear-gradient(0deg,#16203a 0 12px,#131b33 12px 24px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.15)}
+.ccard .tcwin .sprite.lg{width:150px;height:150px;background:none!important;border:0!important;box-shadow:none!important}
+.ccard .tcwin .sprite.lg img{width:100%;height:100%;image-rendering:pixelated}
+.ccard .tcno{position:absolute;right:8px;bottom:5px;font-family:var(--pix);font-weight:700;font-size:13px;color:var(--dim)}
+.ccard .tctop .tcno{position:static}
+.ccard .chead{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0}
+.ccard .sigtag{background:rgba(255,210,58,.15);color:var(--gold);border:1px solid rgba(255,210,58,.5)}
+.ccard .cmoves{display:grid;gap:6px;border-top:1px solid rgba(255,255,255,.1);padding-top:7px}
+.ccard .cmoves .abil{font-size:13px;color:var(--dim)}
+.ccard .cmoves .abil b{color:var(--text);font-size:14px}
+.ccard .cmoves .abil span{display:block}
+.ccard .tcfoot{display:flex;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+.ccard .tcfoot .stri{display:block;width:58px;height:58px;flex:none}
+.ccard .tcnums{display:grid;gap:1px;font-family:var(--pix);font-weight:800;font-size:15px}
+.ccard .tcnums span{display:inline-flex;align-items:center;gap:3px}
+.ccard .tctier{margin-left:auto;text-align:right;font-family:var(--pix);font-weight:700;color:var(--gold);font-size:14px;line-height:1.2}
+.ccard .tctier small{display:block;color:var(--dim);font-weight:600;font-size:11.5px}
+.ccard.unseen .tcwin img{filter:brightness(0) opacity(.5)}
+.ccard .tchint{margin:0;color:var(--dim);font-size:13.5px;text-align:center}
+.tcmore{background:#121828;border-radius:12px;padding:4px 12px 10px;margin-bottom:8px}
+.tcmore h4{margin:10px 0 4px}
+.cevo.unseen img{filter:brightness(0) opacity(.5)}
+.ccard .chead .tag{font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.3;padding:1px 7px;border-radius:5px}
+.modal.dexfull .dexh{font-size:14px;margin:12px 0 6px;color:var(--dim)}
+.modal.dexfull .dexh .dim{font-size:13px}
 </style>
 </head>
 <body>

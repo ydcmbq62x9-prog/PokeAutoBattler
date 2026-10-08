@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.11.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.12.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4319,6 +4319,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.12.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'A new Pokédex: a full-screen numbered grid with trading cards', items:[
+    'The Pok\u00e9dex opens full-screen with a progress bar for how many you\u2019ve seen. Pok\u00e9mon are a numbered grid of tiles coloured by type (families still sit together, in order), with filters by type as well as by section and gen, and search.',
+    'Pok\u00e9mon you haven\u2019t seen yet are dark silhouettes marked ???, so the Pok\u00e9dex is something to fill in.',
+    'Tap one and it flips open as a trading card framed in its type colour: its art, number, types and role, both moves, its stat triangle and numbers, and its tier. Its evolution line, matchups and the trainers who use it are underneath. Pok\u00e9mon with a signature move say so.' ] },
   { v:'5.11.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Legendaries are hinted at before they arrive, and walk onto your field', items:[
     'A hint before a legendary: when beating the next gym leader will bring one, the leader says so as they walk out (\u201cSomething rare has been spotted near here\u201d), and the shop shows a gold \u201cRumour\u201d line under who you\u2019re fighting next. Lose the fight and it never comes.',
     'When it appears, the legendary walks onto your field from the far side, stops in a gold flash, then steps away into its offer card, along with the banner.' ] },
@@ -5716,6 +5720,7 @@ function openDex(){
   /* 4.1.0: the Pokémon are a grid of tiles; a tap opens that pokémon's card. */
   const seenSet = dexSeen();
   const allMons = families.flat();
+  const dexNo = k => String(allMons.indexOf(k) + 1).padStart(3, '0');
   const maxOf = f => Math.max(...Object.keys(SPECIES).map(k => SPECIES[k][f] || 0));
   const MAXS = { hp: maxOf('hp'), atk: maxOf('atk'), spd: maxOf('spd') };
   const viaOf = (k, i) => { const from = i > 0 ? evoStep(k) : null; if(!from) return '';
@@ -5726,21 +5731,31 @@ function openDex(){
   const bossesOf = k => {
     if(!bossUse){ bossUse = {}; EVERY_BOSS.forEach(b => { if(!b.theme) return;
       new Set([...themePool(b), ...(b.bossOnly || [])]).forEach(id => (bossUse[id] = bossUse[id] || []).push(b.name)); }); }
-    return bossUse[k] || []; };
+    return [...new Set(bossUse[k] || [])]; };   // 5.12.0: each name once
   const barRow = (label, v, max, cls) => `<div class="cbar"><span>${label}</span><i><u class="${cls}" style="width:${Math.max(4, Math.round(100 * v / max))}%"></u></i><b>${v}</b></div>`;
+  /* 5.12.0: the card is a trading card framed in the pokémon's type colour (art, move, stat triangle), with its
+     evolution line, matchups and who uses it underneath. A pokémon you haven't seen stays a silhouette. */
   const cardHtml = k => {
-    const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type];
-    const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${esc(SPECIES[m].name)}</span></button>`).join('');
+    const s = SPECIES[k], fam = evoFamily(k), t = TYPES[s.type], seen = seenSet.has(k), no = dexNo(k);
+    if(!seen) return `<div class="dcard ccard unseen" style="--tcol:${typeColor(k)}"><div class="tcin">
+      <div class="tctop"><b>???</b><span class="tcno">#${no}</span></div>
+      <div class="tcwin">${spriteHtml(k, 'lg')}</div>
+      <p class="tchint">Not seen yet. Meet it in a run (in the Daycare, or on a trainer’s team) to fill in its entry.</p></div></div>`;
+    const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''} ${seenSet.has(m) ? '' : 'unseen'}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${seenSet.has(m) ? esc(SPECIES[m].name) : '???'}</span></button>`).join('');
     const sold = s.legendary ? 'Encounter only' : [inGens(k, [1]) ? 'Gen 1 runs' : '', inGens(k, [2]) ? 'Gen 2 runs' : ''].filter(Boolean).join(' · ') || 'Bosses only';
     const bs = bossesOf(k);
-    return `<div class="dcard">
-      <div class="chead" style="--tcol:${typeColor(k)}">${spriteHtml(k, 'lg')}
-        <div><h3>${esc(s.name)}</h3>
-          <span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}
-          <div class="dim">${s.legendary ? 'encounter only' : 'Tier ' + s.tier} · ${esc(sold)}</div></div></div>
-      <div class="cbars">${barRow(SI('h') + ' HP', s.hp, MAXS.hp, 'hp')}${barRow(SI('a') + ' Atk', s.atk, MAXS.atk, 'atk')}${barRow(SI('s') + ' Spd', s.spd, MAXS.spd, 'spd')}</div>
-      <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> — ${esc(s.move.text(1))}</div>
-        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i> — ${esc(s.move2.text(1))}</div>` : ''}</div>
+    const keep = TRI_SCALE; TRI_SCALE = { atk: MAXS.atk * 1.02, hp: MAXS.hp * 1.02, spd: MAXS.spd * 1.02 };   // measured against the whole Pokédex
+    const tri = statTri(s.atk, s.hp, s.spd); TRI_SCALE = keep;
+    return `<div class="dcard ccard" style="--tcol:${typeColor(k)}"><div class="tcin">
+      <div class="tctop"><b>${esc(s.name)}</b><span class="tchp ch">${SI('h')} ${s.hp}</span></div>
+      <div class="tcwin">${spriteHtml(k, 'lg')}<span class="tcno">#${no}</span></div>
+      <div class="chead"><span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}${SIG[k] ? ' <span class="tag sigtag">✦ Signature move</span>' : ''}</div>
+      <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> <i class="trig">Main move</i><span>${esc(s.move.text(1))}</span></div>
+        ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i><span>${esc(s.move2.text(1))}</span></div>` : ''}</div>
+      <div class="tcfoot">${tri}<div class="tcnums"><span class="ca">${SI('a')} ${s.atk}</span><span class="ch">${SI('h')} ${s.hp}</span><span class="cs">${SI('s')} ${s.spd}</span></div>
+        <div class="tctier">${s.legendary ? '★ Legendary' : '★'.repeat(Math.min(5, s.tier || 1)) + ` Tier ${s.tier}`}<small>${esc(sold)}</small></div></div>
+    </div></div>
+    <div class="tcmore">
       ${fam.length > 1 ? `<h4>Evolution</h4><div class="cchain">${chain}</div>` : ''}
       <h4>Matchups</h4><div class="cmu">${t.weak.length ? `<span class="mu bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}${t.resist.length ? `<span class="mu good">resists ${t.resist.join(', ')} ×½</span>` : ''}</div>
       ${bs.length ? `<h4>Trainers who use it</h4><div class="dim">${bs.slice(0, 6).map(esc).join(' · ')}${bs.length > 6 ? ` · +${bs.length - 6} more` : ''}</div>` : ''}
@@ -5748,13 +5763,13 @@ function openDex(){
   /* 4.1.1: a card is built when you tap its tile, not for all 186 up front (that made the Pokédex take seconds to open on a phone) */
   const cards = {};
   const cardFor = k => { if(!cards[k]){ const before = ACTIVE_GENS.slice(); setActiveGens(GENS_READY); try{ cards[k] = cardHtml(k); } finally { setActiveGens(before); if(G) useGens(G); } } return cards[k]; };
-  const tileHtml = k => { const s = SPECIES[k];
-    return `<button class="dextile ${seenSet.has(k) ? 'seen' : ''}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}">
-      ${spriteHtml(k, 'tile')}<b>${esc(s.name)}</b>
-      <span class="tmeta"><i style="background:${TYPES[s.type].color}"></i>${s.legendary ? '★' : 'T' + s.tier}${genOf(k) > 1 ? ' · G' + genOf(k) : ''}</span>
-      ${seenSet.has(k) ? '<em class="tseen" title="seen"></em>' : ''}</button>`; };
-  /* one box per evolution family, in order, so a line reads left to right */
-  const rows = `<div class="dexfams">` + families.map(line => `<div class="dexfam">${line.map(tileHtml).join('<span class="farrow">›</span>')}</div>`).join('') + `</div>`;
+  /* 5.12.0: one numbered grid (families still sit next to each other, in order), coloured by type; unseen ones are silhouettes */
+  const tileHtml = k => { const s = SPECIES[k], seen = seenSet.has(k);
+    return `<button class="dextile ${seen ? 'seen' : 'unseen'}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" data-type="${esc(s.type)} ${secondTypes(k).map(esc).join(' ')}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}" aria-label="${seen ? esc(s.name) : 'Not seen yet'}">
+      <span class="dno">${dexNo(k)}</span>${spriteHtml(k, 'tile')}<b>${seen ? esc(s.name) : '???'}</b>${s.legendary && seen ? '<i class="dleg">★</i>' : ''}<i class="dband"></i></button>`; };
+  const rows = `<div class="dexgrid">${allMons.map(tileHtml).join('')}</div>`;
+  const dexTypes = Object.keys(TYPES).filter(t => allMons.some(k => SPECIES[k].type === t));
+  const typeChips = `<div class="dextypes"><button class="dty on" data-ty="">All types</button>${dexTypes.map(t => `<button class="dty" data-ty="${esc(t)}" style="--c:${TYPES[t].color}"><i></i>${esc(t)}</button>`).join('')}</div>`;
   const seenCount = allMons.filter(k => seenSet.has(k)).length;
   setActiveGens(gensBefore); if(G) useGens(G);
 
@@ -5824,9 +5839,10 @@ function openDex(){
     ${GENS_READY.length > 1 ? `<div class="dexseg" data-f="gen">${GENF.map(([id, label]) => `<button class="sp" data-v="${id}">${esc(label)}</button>`).join('')}</div>` : ''}
   </div>`;
 
-  const d = modal(`<h3>Pokédex <span class="dim dexcount">${seenCount} / ${allMons.length} seen</span></h3>${jump}
+  const d = modal(`<div class="dextop"><h3>Pokédex <span class="dim dexcount">${seenCount} / ${allMons.length} seen</span><button class="dexx" data-m="close" aria-label="Close">✕</button></h3>
+    <div class="dexprog"><u style="width:${(100 * seenCount / Math.max(1, allMons.length)).toFixed(1)}%"></u></div>${jump}</div>
     <section data-sec="mon"><h3 class="dexh" id="dex-mon">Pokémon <span class="dim">— tap one for its card</span></h3>
-      <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${rows}</section>
+      <input class="dexsearch" type="search" placeholder="Search by name…" aria-label="Search pokémon" autocomplete="off">${typeChips}${rows}</section>
     <section data-sec="gym"><h3 class="dexh" id="dex-gym">Trainers <span class="dim">— gym leaders, the Elite Four, Champions and rivals</span></h3>
     <div>${leaders}</div>
     <h3 class="dexh" id="dex-secret">Secret bosses <span class="dim">\u2014 found after a Champion</span></h3><div>${secrets}</div></section>
@@ -5836,8 +5852,10 @@ function openDex(){
     <h3 class="dexh" id="dex-ctr">Battle counter <span class="dim">— next battle only</span></h3><div>${bitems}</div></section>
     <p class="dim dexnone" hidden>Nothing here for that generation.</p>
     <div class="btnrow"><button class="btn ghost" data-m="close">Close</button></div>`);
-  d.classList.add('dex');
-  d.querySelector('[data-m]').onclick = () => d.remove();
+  d.classList.add('dex', 'dexfull');
+  d.querySelectorAll('[data-m="close"]').forEach(x => x.onclick = () => d.remove());
+  let ty = '';
+  d.querySelectorAll('.dty').forEach(b => b.onclick = () => { SFX.play('tap'); ty = b.dataset.ty; d.querySelectorAll('.dty').forEach(x => x.classList.toggle('on', x === b)); apply(); });
   const apply = () => {
     d.querySelectorAll('.dexseg[data-f="sec"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === sec));
     d.querySelectorAll('.dexseg[data-f="gen"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === gen));
@@ -5845,8 +5863,7 @@ function openDex(){
     const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) !== '0' && (el.hasAttribute('data-g' + gen) || !el.matches('.dexgen'));
     d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
     const q = (d.querySelector('.dexsearch').value || '').trim().toLowerCase();
-    d.querySelectorAll('.dextile').forEach(t => { if(q && !t.dataset.name.includes(q)) t.hidden = true; });
-    d.querySelectorAll('.dexfam').forEach(f => { f.hidden = ![...f.querySelectorAll('.dextile')].some(t => !t.hidden); f.querySelectorAll('.farrow').forEach(a => a.hidden = !(a.previousElementSibling && !a.previousElementSibling.hidden && a.nextElementSibling && !a.nextElementSibling.hidden)); });
+    d.querySelectorAll('.dextile').forEach(t => { if((q && !t.dataset.name.includes(q)) || (ty && !t.dataset.type.split(' ').includes(ty))) t.hidden = true; });
     d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
     const shown = [...d.querySelectorAll('section[data-sec]')].filter(x => !x.hidden);
     d.querySelector('.dexnone').hidden = shown.some(x => [...x.querySelectorAll('.dexrow,.dextile')].some(r => !r.hidden && !r.closest('[hidden]')));
@@ -5860,6 +5877,7 @@ function openDex(){
   const showCard = k => {
     SFX.play('tap');
     const c = modal(cardFor(k)); c.classList.add('dexcardm');
+    if(!motionOff()){ const card = c.querySelector('.ccard'); if(card) anim(card, [{ transform: 'perspective(600px) rotateY(-70deg) scale(.85)', opacity: 0 }, { transform: 'perspective(600px) rotateY(8deg) scale(1.02)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: 'ease-out' }); }
     c.querySelector('.boxscroll').insertAdjacentHTML('beforeend', '<div class="btnrow"><button class="btn ghost" data-m="x">Back</button></div>');
     c.querySelector('[data-m="x"]').onclick = () => c.remove();
     c.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { if(b.dataset.jump !== k){ c.remove(); showCard(b.dataset.jump); } });
