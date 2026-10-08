@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.9.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.10.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1912,9 +1912,10 @@ function floatText(S, F, text, cls, lift){
 const ST_PT = { brn: { sh:'ember', c:['#fff3a0','#ff9a2a','#e0401a'], rise:1 }, psn: { sh:'bubble', c:['#e0a8ff','#b05ad0'], rise:1 },
   par: { sh:'spark', c:['#fff6a0','#ffe14a'], jitter:1 }, cnf: { sh:'glint', c:['#ffd0f0','#ff8ac8'], circle:1 }, fln: { sh:'star', c:['#ffffff','#fff2b0'], jitter:1 } };
 function statusPuff(S, F, st, n){
-  if(motionOff()) return;
+  if(motionOff() || fxLevel() === 'off') return;
+  if(fxLevel() === 'light') n = 1;
   const d = ST_PT[st]; if(!d){ puff(S, F, st === 'slp' ? 'z' : ((TUNING.status[st] || {}).icon || '•'), n); return; }
-  const c = artCentre(S, F), cnt = (n || 3) + 3;
+  const c = artCentre(S, F), cnt = (n || 3) + (fxLevel() === 'light' ? 1 : 3);
   for(let k = 0; k < cnt; k++){
     const e = fxEl(S, 'pt ' + d.sh, c.x + (Math.random() - .5) * c.w * .7, c.y + (Math.random() - .2) * c.w * .4); e.style.setProperty('--c', d.c[k % d.c.length]);
     const fr = d.circle ? [0, .25, .5, .75, 1].map(t => ({ transform: `translate(calc(-50% + ${Math.cos(t * 6.28 + k) * c.w * .45}px), calc(-50% - ${c.w * .45 + Math.sin(t * 6.28 + k) * c.w * .12}px)) scale(${t === 0 || t === 1 ? .4 : 1})`, opacity: t === 0 || t === 1 ? 0 : 1 }))
@@ -2051,7 +2052,7 @@ const HIT_FX = {
 };
 function hitBurst(S, F, type, big){
   if(motionOff()) return;
-  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = (d.sh === 'dust' ? 5 : 8) + (big ? 6 : 0);
+  const d = HIT_FX[type] || HIT_FX.Normal, c = artCentre(S, F), n = Math.round(((d.sh === 'dust' ? 5 : 8) + (big ? 6 : 0)) * (fxLevel() === 'light' ? 0.5 : 1));
   for(let k = 0; k < n; k++){
     const e = fxEl(S, 'pt ' + d.sh, c.x, c.y); e.style.setProperty('--c', d.c[k % d.c.length]);
     const a = (k / n) * Math.PI * 2 + Math.random() * 0.6, r = c.w * (0.35 + Math.random() * 0.45);
@@ -2068,6 +2069,7 @@ function hitBurst(S, F, type, big){
     effects layer), and shots leave a short trail. */
 const fin = a => a.finished.catch(() => {});
 function trail(S, a, dx, dy, dur, cls, n, arc, col){
+  if(fxLevel() !== 'full') return;
   for(let k = 1; k <= n; k++){
     const t = k / (n + 1), lift = arc ? Math.sin(Math.PI * t) * Math.max(26, Math.hypot(dx, dy) * 0.38) : 0;
     const e = fxEl(S, 'pt trail ' + cls, a.x + dx * t, a.y + dy * t - lift); if(col) e.style.setProperty('--c', col);
@@ -2148,6 +2150,81 @@ function projectile(S, A, T, kind, dur){
     anim(e, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 340, remove: true });
   });
 }
+/* ---- 5.10.0 · Options → Effects: Full / Light / Off ----
+   Light keeps the shots and hits but drops trails, signature moves, field weather and half the particles; Off shows
+   only the numbers (as the fastest speed does). Reduced motion still turns everything off. */
+const fxLevel = () => { const v = PREF.get('fx', 'full'); return v === 'light' || v === 'off' ? v : 'full'; };
+
+/* ---- 5.10.0 · SIGNATURE MOVES ----
+   The big finals and the legendaries get their own effect when they use their main move. */
+const SIG = {
+  charizard:['spiral','#ff7a2a'], typhlosion:['spiral','#ff8a3a'], moltres:['spiral','#ffb03a'], 'ho-oh':['spiral','#ffc040'], entei:['spiral','#ff6a2a'], ninetales:['spiral','#ffb060'], arcanine:['spiral','#ff8a3a'], houndoom:['spiral','#ff5a3a'],
+  blastoise:['beam','#5aa8ff'], feraligatr:['beam','#4a90e8'], suicune:['beam','#7ad8ff'], kingdra:['beam','#6ab0f0'], starmie:['beam','#c8a8ff'],
+  venusaur:['beam','#b8f080'], meganium:['beam','#d8f8a0'], celebi:['beam','#c8ffb0'],
+  lapras:['beam','#dff4ff'], articuno:['beam','#c8f0ff'], lugia:['beam','#e0e8ff'],
+  dragonite:['beam','#ffd27a'], gyarados:['beam','#ff7070'], tyranitar:['shock','#c8a070'], golem:['shock','#c8b080'], snorlax:['shock','#e0c890'], steelix:['shock','#c8d0dc'],
+  gengar:['vortex','#8a5ad8'], umbreon:['vortex','#e0c050'],
+  alakazam:['psyburst','#f85888'], espeon:['psyburst','#ff8ad8'], mewtwo:['psyburst','#c070ff'], mew:['psyburst','#ffb0e0'],
+  machamp:['combo','#ffb08a'], heracross:['combo','#8ab0ff'], scizor:['combo','#ff6a6a'],
+  pikachu:['sky','#ffe14a'], raichu:['sky','#ffd23a'], jolteon:['sky','#fff070'], zapdos:['sky','#ffe860'], raikou:['sky','#ffe060'], ampharos:['sky','#ffd860'],
+};
+function sigFx(S, A, targets, sig, dur){
+  const [kind, col] = sig, a = artCentre(S, A), out = [];
+  const at = (cls, x, y) => { const e = fxEl(S, cls, x, y); e.style.setProperty('--c', col); return e; };
+  if(kind === 'shock'){   // one shockwave rolls out from the user across the floor
+    const r = at('quakering sig', a.x, a.y + a.w * 0.42);
+    anim(S.el, [{ transform: 'translate(0,0)' }, { transform: 'translate(0,4px)' }, { transform: 'translate(0,-3px)' }, { transform: 'translate(0,0)' }], { duration: 320, delay: dur * 0.3 });
+    out.push(fin(anim(r, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.2,.08)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(5,1.8)' }], { duration: dur * 1.5, easing: 'ease-out', remove: true })));
+  }
+  for(const T of targets){
+    const b = artCentre(S, T), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+    if(kind === 'beam'){        // a thick beam with a white core, from user to target
+      const e = at('beam', a.x, a.y); e.style.width = len + 'px'; e.style.transform = `translateY(-50%) rotate(${ang}rad)`;
+      out.push(fin(anim(e, [{ opacity: 0, transform: `translateY(-50%) rotate(${ang}rad) scaleX(0)` }, { opacity: 1, transform: `translateY(-50%) rotate(${ang}rad) scaleX(1)`, offset: .35 },
+        { opacity: 1, transform: `translateY(-50%) rotate(${ang}rad) scale(1,1.3)`, offset: .7 }, { opacity: 0, transform: `translateY(-50%) rotate(${ang}rad) scale(1,.2)` }], { duration: dur * 1.5, easing: 'ease-out', remove: true })));
+    } else if(kind === 'sky'){  // lightning from the sky onto the target
+      const top = Math.max(0, b.y - S.el.clientHeight * 0.6), h = b.y - top, n = 8, pts = [];
+      for(let k = 0; k <= n; k++){ const off = k === 0 || k === n ? 0 : (k % 2 ? 1 : -1) * h * 0.06 * (0.6 + Math.random() * 0.6); pts.push(`${(k / n * h).toFixed(1)},${off.toFixed(1)}`); }
+      const e = fxEl(S, 'bolt sig', b.x, top); e.style.width = h + 'px'; e.style.transform = 'translateY(-50%) rotate(90deg)';
+      e.innerHTML = `<svg viewBox="0 ${-h * 0.12} ${h} ${h * 0.24}" preserveAspectRatio="none"><polyline points="${pts.join(' ')}" class="g"/><polyline points="${pts.join(' ')}" class="c"/></svg>`;
+      const fl = fxEl(S, 'skyflash', 0, 0);
+      anim(fl, [{ opacity: 0 }, { opacity: .55, offset: .2 }, { opacity: 0 }], { duration: dur * 1.2, delay: dur * 0.2, fill: 'backwards', remove: true });
+      out.push(fin(anim(e, [{ opacity: 0 }, { opacity: 1, offset: .15 }, { opacity: .3, offset: .3 }, { opacity: 1, offset: .45 }, { opacity: 0 }], { duration: dur * 1.3, delay: dur * 0.15, fill: 'backwards', remove: true })));
+    } else if(kind === 'spiral'){   // a ring of flame closes round the target
+      for(let k = 0; k < 12; k++){ const e = at('pt ember sig', b.x, b.y), a0 = k / 12 * Math.PI * 2;
+        const fr = [0, .25, .5, .75, 1].map(t => { const r = b.w * (1 - t * 0.6), ang2 = a0 + t * Math.PI * 1.6;
+          return { transform: `translate(calc(-50% + ${Math.cos(ang2) * r}px), calc(-50% + ${Math.sin(ang2) * r * 0.55}px)) scale(${1.4 - t * 0.6})`, opacity: t === 1 ? 0 : 1 }; });
+        out.push(fin(anim(e, fr, { duration: dur * 1.4, delay: k * 18, easing: 'ease-in', fill: 'backwards', remove: true }))); }
+    } else if(kind === 'vortex'){   // a dark swirl opens on the target
+      const e = at('vortex', b.x, b.y);
+      out.push(fin(anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.2) rotate(0deg)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.1) rotate(220deg)', offset: .5 },
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.6) rotate(480deg)' }], { duration: dur * 1.6, easing: 'ease-in-out', remove: true })));
+    } else if(kind === 'psyburst'){ // the target glows, then a flash and rings burst out of it
+      const g = at('psyglow', b.x, b.y);
+      out.push(fin(anim(g, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.4)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .5 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.8)' }], { duration: dur * 1.5, remove: true })));
+      [0, 1, 2].forEach(k => anim(at('ring', b.x, b.y), [{ opacity: .9, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(2.2)' }], { duration: dur * 1.1, delay: dur * (0.5 + k * 0.15), fill: 'backwards', remove: true }));
+    } else if(kind === 'combo'){    // three quick blows
+      for(let k = 0; k < 3; k++){ const e = at('punch', b.x + (k - 1) * b.w * 0.3, b.y + (k % 2 ? -1 : 1) * b.w * 0.15);
+        out.push(fin(anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.2)', offset: .5 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }],
+          { duration: dur * 0.7, delay: k * dur * 0.3, fill: 'backwards', remove: true }))); }
+    }
+  }
+  return Promise.all(out);
+}
+
+/* ---- 5.10.0 · FIELD WEATHER ----
+   A big Fire hit warms the field for a moment, a Water one leaves a puddle that dries, Ice frosts the field,
+   an Electric one flashes it. */
+function fieldWeather(S, type, T){
+  if(fxLevel() !== 'full' || motionOff()) return;
+  if(type === 'Water' && T){ const b = artCentre(S, T); for(let k = 0; k < 2; k++){ const e = fxEl(S, 'puddle', b.x + (k ? b.w * 0.35 : -b.w * 0.2), b.y + b.w * (0.42 + k * 0.06));
+      anim(e, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.3,.3)' }, { opacity: .85, transform: 'translate(-50%,-50%) scale(1,1)', offset: .1 }, { opacity: .7, offset: .6 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.6,.6)' }],
+        { duration: 4200, delay: k * 120, fill: 'backwards', remove: true }); } return; }
+  const cls = { Fire: 'warm', Ice: 'frost', Electric: 'zap' }[type]; if(!cls) return;
+  const e = fxEl(S, 'tint ' + cls, 0, 0);
+  anim(e, [{ opacity: 0 }, { opacity: .65, offset: .2 }, { opacity: .5, offset: .6 }, { opacity: 0 }], { duration: cls === 'zap' ? 600 : 1800, easing: 'ease-out', remove: true });
+}
+
 /** Support moves travel too: a soft sparkle from the user to whoever it helps. */
 function boon(S, A, T, dur){
   const a = artCentre(S, A), b = artCentre(S, T);
@@ -2176,7 +2253,7 @@ function animateStep(S, i){
   S.at = i;
   const gen = S.gen;
   const beat = stepDelay();                       // how long this step is on screen
-  const quick = beat < 300 || motionOff();        // at 4× there is only time for the numbers
+  const quick = beat < 300 || motionOff() || fxLevel() === 'off';   // at 4× there is only time for the numbers; 5.10.0: or Effects: Off
   const was = snapMap(prev), now = snapMap(st);
   const fxBy = new Map();
   for(const x of st.fx || []){
@@ -2219,7 +2296,9 @@ function animateStep(S, i){
     const kind = FX_OF[SPECIES[A.id] ? SPECIES[A.id].type : ''] || 'slash';
     setTimeout(() => {
       if(S.gen !== gen) return;
-      foes.slice(0, 6).forEach(e => projectile(S, A, e.F, kind, flyMs));
+      const sp = SPECIES[A.id], sig = fxLevel() === 'full' && SIG[A.id] && sp && lines.some(l => l === `${A.nm} used ${sp.move.name}!`) ? SIG[A.id] : null;   // 5.10.0
+      if(sig && foes.length) sigFx(S, A, foes.slice(0, 6).map(e => e.F), sig, flyMs);
+      else foes.slice(0, 6).forEach(e => projectile(S, A, e.F, kind, flyMs));
       pals.slice(0, 6).forEach(e => boon(S, A, e.F, flyMs));
     }, lungeMs * 0.45);
   }
@@ -2244,6 +2323,7 @@ function animateStep(S, i){
       for(const e of ev) if(e.dhp < 0 && e.F.side !== A.side){ hitBurst(S, e.F, aType, e.kinds.has('crit') || e.fainted); const c = artCentre(S, e.F), x = fxEl(S, 'impact', c.x, c.y); x.style.setProperty('--c', col);
         anim(x, [{ opacity: 1, transform: 'translate(-50%,-50%) scale(.3)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 360, easing: 'ease-out', remove: true }); } }
     const bigHit = ev.find(e => e.dhp < 0 && (e.kinds.has('crit') || e.fainted));
+    if(bigHit && A && !quick && SPECIES[A.id]) fieldWeather(S, SPECIES[A.id].type, bigHit.F);   // 5.10.0
     if(bigHit && !quick) camLean(S, bigHit.F);
     if(bigHit) crowdReact(S, bigHit.F.side === 'e' || bigHit.fainted);
     if(!motionOff() && bigHit)
@@ -4204,6 +4284,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.10.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Signature moves, field weather and an Effects setting', items:[
+    'Signature moves: the big finals and the legendaries have their own effect when they use their main move. Charizard, Typhlosion, the fire dogs and birds wrap the target in a ring of flame; Blastoise, Feraligatr and the water and ice finals fire a thick beam (Venusaur and Meganium a green solar beam, Dragonite and Gyarados a hyper beam); Pikachu, Raichu, Jolteon, Zapdos, Raikou and Ampharos call lightning down from the sky; Gengar and Umbreon open a dark vortex; Alakazam, Espeon, Mew and Mewtwo make the target glow and burst; Machamp, Heracross and Scizor land a three-hit combo; Snorlax, Golem, Tyranitar and Steelix send a shockwave across the field.',
+    'Field weather: a super-effective hit or a knockout warms the field for a moment if it was a Fire move, frosts it if Ice, flashes it if Electric, and a Water one leaves puddles under the target that slowly dry.',
+    'Options \u2192 Effects: Full, Light or Off. Light keeps the move effects but drops trails, signature moves, weather and half the particles, for older phones. Off shows only the numbers.' ] },
   { v:'5.9.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Move effects and particles redone: a look for every type, sized to the screen', items:[
     'Every type now has its own move effect. Before, several borrowed another type\u2019s. Fire throws a fireball with a trail of embers, Water a spray of droplets, Electric a jagged lightning bolt that flickers across, Grass a volley of leaves, Ice icicles, Poison lobbed sludge, Ghost a wobbling shadow ball, Dragon a purple dragon flame, Bug pins, Rock thrown rocks, Steel spinning shards, Flying three crescents of wind, Psychic rings that close in, Dark a crossing shadow slash, Normal a double slash, Fighting a punch, and Ground cracks the earth under the target and throws up dust.',
     'Effects and particles are sized to the pok\u00e9mon on screen, so they read the same on a phone and on a big monitor (on computers they were tiny).',
@@ -5116,12 +5200,14 @@ function openOptions(){
     <div class="optrow"><span>Tips</span>${seg('tips', PREF.get('tips', 'on'), [['on', 'Show'], ['off', 'Hide'], ['reset', 'Show again']])}</div>
     <div class="optrow"><span>Volume</span>${seg('volume', PREF.get('sound', 'on') === 'off' ? 'off' : PREF.get('volume', 'mid'), [['off', 'Mute'], ['low', 'Low'], ['mid', 'Mid'], ['high', 'High']])}</div>
     <div class="optrow"><span>Battle look</span>${seg('look', PREF.get('look', 'stadium'), [['stadium', 'Stadium'], ['mini', 'Miniatures'], ['paper', 'Paper']])}</div>
+    <div class="optrow"><span>Effects</span>${seg('fx', fxLevel(), [['full', 'Full'], ['light', 'Light'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
     <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
+      Effects: Light keeps the move effects but drops trails, signature moves, field weather and half the particles, for older phones; Off shows only the numbers.
       Item hints puts a gold star on the party pokémon that gains the most from the vitamin or held item you have picked.
       Skip to result plays trainer battles instantly — gym leaders, the Elite Four, the Champion and your rival are always shown.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Done</button></div>`);
