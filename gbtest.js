@@ -24,7 +24,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     check(dock.text.includes(dock.name + ' wants to battle!'), `${tag}: dock says "${dock.name} wants to battle!"`);
     check(/Trainer battle/.test(dock.text) && /to the gym/.test(dock.text), `${tag}: and that it's a trainer battle before the gym`);
     check(dock.dots === 3 && dock.done === 1 && dock.now === 1 && dock.gem === 1, `${tag}: road shows 3 trainers (1 done, this one lit) then the badge (${dock.dots}/${dock.done}/${dock.now}/${dock.gem})`);
-    check(dock.btn && dock.pinned === 'sticky' && dock.bottom <= dock.vh + 1, `${tag}: Battle button sits in the pinned dock, on screen (bottom ${dock.bottom}/${dock.vh})`);
+    check(dock.btn && /sticky|fixed/.test(dock.pinned) && dock.bottom <= dock.vh + 1, `${tag}: Battle button sits in the pinned dock, on screen (bottom ${dock.bottom}/${dock.vh})`);
     await page.evaluate(() => { G.stage = 3; save(); render(); });
     const gym = await page.evaluate(() => ({ t: document.querySelector('.dock').textContent.replace(/\s+/g, ' '), art: !!document.querySelector('.dock .bossart img'),
       lit: !!document.querySelector('.dock .road .bdg.on'), cta: document.querySelector('[data-act="endturn"]').textContent.trim(), panel: !!document.querySelector('.nextup.boss') }));

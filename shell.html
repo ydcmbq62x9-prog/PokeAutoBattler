@@ -3266,6 +3266,13 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .ccard .chead .tag{font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.3;padding:1px 7px;border-radius:5px}
 .modal.dexfull .dexh{font-size:14px;margin:12px 0 6px;color:var(--dim)}
 .modal.dexfull .dexh .dim{font-size:13px}
+/* ---- 5.12.1 · phone: a pinned Battle bar and no page jumps ---- */
+.inspgap{display:none}
+@media (max-width:700px) and (orientation:portrait){
+  html.bc body[data-phase=shop] .dock{position:fixed!important;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:0;margin:0;z-index:40}
+  body[data-phase=shop] #app,body.picking[data-phase=shop] #app{padding-bottom:calc(max(var(--dockH,84px),112px) + 16px)!important}
+  html,body{overflow-anchor:none}   /* the game keeps its own anchor (render), so the browser's own anchoring doesn't add a second jump */
+}
 </style>
 </head>
 <body>
