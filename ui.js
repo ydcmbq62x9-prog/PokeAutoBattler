@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.10.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.11.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1204,7 +1204,7 @@ function dockHtml(closed, flowOnly){
     : b ? `Challenge ${esc(b.name)}` : 'Battle';
   const speech = `<div class="speech ${b ? 'boss ' + n.kind : 'nextup'}">
       <span class="who">${b ? bossArt(b, 'dockart') : '<i class="pball"></i>'}</span>
-      <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span><span class="road">${road}</span></div>
+      <div class="say"><b>${esc(line)}</b><span class="ssub">${esc(sub)}</span>${n.kind === 'gym' && peekEncounter(G) ? '<span class="rumour">\u2726 Rumour: something rare has been seen near this gym</span>' : ''}<span class="road">${road}</span></div>
       <span class="nstage">${n.stage}/${n.total}</span>
     </div>`;
   if(flowOnly) return speech;
@@ -2401,6 +2401,8 @@ const BOSS_LINES = {
   will: 'You’ll feel my power before you move.', karen: 'Love your team and they’ll fight for you. Show me.',
   red: '…', oak: 'Show me how much you’ve grown!',
 };
+const RUMOURS = ['Between you and me… something rare has been spotted near here.', 'Win this, and you might meet something legendary on your way out.',
+  'Strange lights over the route lately. Something rare is close.'];
 const KIND_LINES = { gym: 'Let’s see if you’ve earned my badge.', elite: 'Welcome to the Elite Four.', champion: 'This is the last fight.', red: '…' };
 function bossLine(b){
   if(b.kind === 'rival'){ const rv = b.opp && rivalLines(G, b.opp.meeting); return rv ? rv.hi : 'Smell ya later!'; }
@@ -2450,11 +2452,14 @@ function walkOut(S, b){
   const { w, body, x, y, size, vert, at, walkMs, ms } = L;
   const foes = [...S.f.values()].filter(F => F.side === 'e');
   const line = bossLine(b), holdMs = line ? Math.max(1100, ms(1500)) : ms(450), throwMs = ms(380);   // a line stays up long enough to read at any speed
+  /* 5.11.0: if beating this leader will bring a legendary, they hint at it */
+  const rumour = b.kind === 'gym' && G && peekEncounter(G) ? RUMOURS[(G.badges || 0) % RUMOURS.length] : null, rumourMs = rumour ? Math.max(1500, ms(1900)) : 0;
   setTimeout(() => { if(battle && battle.stage === S){ crowdReact(S, true);
     anim(body, [{ scale: '1' }, { scale: '1.12' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
     leaderSay(L, line, holdMs + ms(150)); } }, walkMs);
+  if(rumour) setTimeout(() => { if(battle && battle.stage === S){ leaderSay(L, rumour, rumourMs); const sb = L.w.querySelector('.wsay:last-child'); if(sb) sb.classList.add('rumour'); } }, walkMs + holdMs + ms(150));
   // the throw: one ball to each spot, the leader steps back off the field
-  const throwAt = walkMs + holdMs;
+  const throwAt = walkMs + holdMs + rumourMs;
   setTimeout(() => {
     if(!battle || battle.stage !== S || !S.el.isConnected) return;
     SFX.play('move');
@@ -3200,12 +3205,32 @@ function encounterHtml(){
   </section>`;
 }
 
+/** 5.11.0: the legendary walks onto your field from the far side, stops in a flash, then steps away into its card. */
+function legendWalkIn(id){
+  if(motionOff() || fxLevel() === 'off' || !SPRITES[id]) return;
+  const f = document.querySelector('.pfield'); if(!f) return;
+  const r = f.getBoundingClientRect(); if(r.width < 40 || r.bottom < 0 || r.top > innerHeight) return;
+  const size = Math.round(Math.min(150, Math.max(72, r.width * .28)));
+  const x = r.left + r.width * .5, y = Math.min(innerHeight - size * .3, Math.max(size, r.top + r.height * .62));
+  const w = document.createElement('div'); w.className = 'legwalk';
+  w.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+  w.innerHTML = `<i class="lwglow"></i><img src="${SPRITES[id]}" alt=""><i class="lwshadow"></i>`;
+  document.body.appendChild(w);
+  const from = `translate(-50%,-100%) translateX(${Math.round(innerWidth - x + size)}px)`, at = 'translate(-50%,-100%)';
+  anim(w, [{ transform: from, opacity: 1 }, { transform: at, opacity: 1, offset: .32 }, { transform: at, opacity: 1, offset: .78 }, { transform: 'translate(-50%,-100%) scale(.4)', opacity: 0 }],
+    { duration: 3400, easing: 'ease-out', fill: 'both', remove: true });
+  anim(w.querySelector('img'), [{ translate: '0 0' }, { translate: '0 -6%' }, { translate: '0 0' }], { duration: 260, iterations: 4, easing: 'ease-in-out' });
+  anim(w.querySelector('.lwglow'), [{ opacity: 0, transform: 'scale(.3)' }, { opacity: 0, transform: 'scale(.3)', offset: .3 }, { opacity: 1, transform: 'scale(1.3)', offset: .38 }, { opacity: .55, transform: 'scale(1)', offset: .7 }, { opacity: 0 }],
+    { duration: 3400, fill: 'both' });
+  setTimeout(() => SFX.play('land'), 1100);
+}
 /** 5.10.1: a legendary arriving gets a moment on screen, so it can't be missed. */
 function legendBanner(id){
   if(!G || phase !== 'shop' || !encounterOpen(G)) return;
   const d = document.createElement('div'); d.className = 'legban';
   d.innerHTML = `${SPRITES[id] ? `<img src="${SPRITES[id]}" alt="">` : ''}<div><small>✦ Legendary encounter</small><b>A wild ${esc(SPECIES[id].name)} appeared!</b></div>`;
   document.body.appendChild(d);
+  legendWalkIn(id);
   anim(d, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.7)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.04)', offset: .12 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .2 },
     { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .85 }, { opacity: 0, transform: 'translate(-50%,-60%) scale(.96)' }], { duration: motionOff() ? 2200 : 2800, easing: 'ease-out', fill: 'both', remove: true });
   SFX.play('sparkle');
@@ -4294,6 +4319,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.11.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Legendaries are hinted at before they arrive, and walk onto your field', items:[
+    'A hint before a legendary: when beating the next gym leader will bring one, the leader says so as they walk out (\u201cSomething rare has been spotted near here\u201d), and the shop shows a gold \u201cRumour\u201d line under who you\u2019re fighting next. Lose the fight and it never comes.',
+    'When it appears, the legendary walks onto your field from the far side, stops in a gold flash, then steps away into its offer card, along with the banner.' ] },
   { v:'5.10.1', date:'Oct 7, 2026', title:'Visual bug fixes', sub:'The legendary encounter is easier to see', items:[
     'When a legendary appears, a banner with it now flashes up in the middle of the screen, so it can\u2019t be missed.',
     'On a computer and a sideways phone, the encounter card floats over the top of your field instead of pushing the field down, so your party stays where it was.',

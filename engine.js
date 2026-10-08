@@ -3075,6 +3075,17 @@ function rollEncounter(G){
   makeGameApi(G).log(`A wild ${SPECIES[id].name} appeared!`);
   return G.encounter;
 }
+/** 5.11.0: which legendary (if any) winning the next gym would bring, without rolling it. Same seed and pool as rollEncounter. */
+function peekEncounter(G){
+  const b = (G.badges || 0) + 1;
+  if(b < TUNING.legend.fromBadge || (G.mods && G.mods.nolegend)) return null;
+  const met = G.legendsMet || [], mono = G.mods && G.mods.mono;
+  const pool = LEGENDS().filter(k => !met.includes(k) && (!mono || inTypePool(k, mono)));
+  const r = makeRng(mix32(((G.seed || 1) ^ 0x6a09e667) >>> 0, 40 + b));
+  const pity = b === TUNING.legend.pityBadge && !met.length;
+  if(!pool.length || (r() >= TUNING.legend.chance && !pity)) return null;
+  return pool[Math.floor(r() * pool.length)];
+}
 const encounterOpen = G => !!(G.encounter && G.encounter.turn === G.turn && !G.encounter.taken && !inGauntlet(G));
 /** Recruit the waiting legendary: into the party if there's room, else the PC. */
 function recruitLegend(G, pos){
@@ -4223,7 +4234,7 @@ if(typeof module !== 'undefined' && module.exports){
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
-    expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
+    expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
