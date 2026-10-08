@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.10.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.10.1', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3188,18 +3188,28 @@ function encounterHtml(){
   if(!encounterOpen(G)) return '';
   const e = G.encounter, sp = SPECIES[e.id];
   const u = trainerCatchUp(G, makeUnit(e.id, 0));         // what it would arrive as
-  if(encounterSeen !== G.seed + ':' + e.id){ encounterSeen = G.seed + ':' + e.id; setTimeout(() => SFX.play('alert'), 60); }
+  if(encounterSeen !== G.seed + ':' + e.id){ encounterSeen = G.seed + ':' + e.id; setTimeout(() => SFX.play('alert'), 60); setTimeout(() => legendBanner(e.id), 250); }
   const can = G.credits >= e.cost;
   return `<section class="panel legend">
     <div class="legart" style="--tcol:${typeColor(e.id)}">${SPRITES[e.id] ? `<img src="${SPRITES[e.id]}" alt="">` : ''}</div>
     <div class="legtext"><b>A wild ${esc(sp.name)} appeared!</b>
       <span><span class="poptype" style="background:${typeColor(e.id)}">${esc(sp.type)}</span> ${roleChip(e.id)} <i class="rar r-veryrare">Legendary</i></span>
-      <span class="dim">◆${u.atk} ♥${u.hp} »${u.spd} · never levels · grows +${Math.round((TUNING.legend.growth - 1) * 100)}% · yours to keep once recruited; the offer is gone after the next battle</span></div>
+      <span class="legstats">${statTri(u.atk, u.hp, u.spd)}<span class="dim"><span class="ca">${SI('a')}${u.atk}</span> <span class="ch">${SI('h')}${u.hp}</span> <span class="cs">${SI('s')}${u.spd}</span> · never levels, grows +${Math.round((TUNING.legend.growth - 1) * 100)}%<br>yours to keep once recruited · the offer ends at your next battle</span></span></div>
     <div class="legbtns"><button class="btn primary" data-act="legend" ${can ? '' : 'disabled'}>Recruit ${e.cost}₽</button>
       <button class="btn ghost" data-act="legendpass">Let it go</button></div>
   </section>`;
 }
 
+/** 5.10.1: a legendary arriving gets a moment on screen, so it can't be missed. */
+function legendBanner(id){
+  if(!G || phase !== 'shop' || !encounterOpen(G)) return;
+  const d = document.createElement('div'); d.className = 'legban';
+  d.innerHTML = `${SPRITES[id] ? `<img src="${SPRITES[id]}" alt="">` : ''}<div><small>✦ Legendary encounter</small><b>A wild ${esc(SPECIES[id].name)} appeared!</b></div>`;
+  document.body.appendChild(d);
+  anim(d, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.7)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.04)', offset: .12 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .2 },
+    { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .85 }, { opacity: 0, transform: 'translate(-50%,-60%) scale(.96)' }], { duration: motionOff() ? 2200 : 2800, easing: 'ease-out', fill: 'both', remove: true });
+  SFX.play('sparkle');
+}
 /* ---- 2.0.0 · FORMATION PRESETS ---------------------------------------- */
 function openPresets(){
   G.presets = G.presets || [null, null, null];
@@ -4284,6 +4294,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.10.1', date:'Oct 7, 2026', title:'Visual bug fixes', sub:'The legendary encounter is easier to see', items:[
+    'When a legendary appears, a banner with it now flashes up in the middle of the screen, so it can\u2019t be missed.',
+    'On a computer and a sideways phone, the encounter card floats over the top of your field instead of pushing the field down, so your party stays where it was.',
+    'The card shows the legendary\u2019s stat triangle and stat icons instead of the old symbols, and says plainly that the offer only lasts until your next battle.' ] },
   { v:'5.10.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'Signature moves, field weather and an Effects setting', items:[
     'Signature moves: the big finals and the legendaries have their own effect when they use their main move. Charizard, Typhlosion, the fire dogs and birds wrap the target in a ring of flame; Blastoise, Feraligatr and the water and ice finals fire a thick beam (Venusaur and Meganium a green solar beam, Dragonite and Gyarados a hyper beam); Pikachu, Raichu, Jolteon, Zapdos, Raikou and Ampharos call lightning down from the sky; Gengar and Umbreon open a dark vortex; Alakazam, Espeon, Mew and Mewtwo make the target glow and burst; Machamp, Heracross and Scizor land a three-hit combo; Snorlax, Golem, Tyranitar and Steelix send a shockwave across the field.',
     'Field weather: a super-effective hit or a knockout warms the field for a moment if it was a Fire move, frosts it if Ice, flashes it if Electric, and a Water one leaves puddles under the target that slowly dry.',

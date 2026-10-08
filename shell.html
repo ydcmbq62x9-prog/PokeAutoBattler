@@ -3171,6 +3171,32 @@ body.calm html.bc .pfield .slot .ibest,body.calm .pfield .slot .ibest{animation:
 .fx.tint.zap{background:rgba(255,250,180,.7);mix-blend-mode:overlay}
 .fx.puddle{width:calc(44px * var(--u));height:calc(14px * var(--u));border-radius:50%;z-index:2;pointer-events:none;
   background:radial-gradient(closest-side,rgba(170,215,255,.85),rgba(90,150,230,.55) 60%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+/* ---- 5.10.1 · the legendary encounter ---- */
+.legban{position:fixed;left:50%;top:42%;z-index:900;display:flex;align-items:center;gap:14px;padding:12px 22px 12px 12px;border-radius:16px;pointer-events:none;
+  background:linear-gradient(135deg,#1a1430,#11182c 60%,#3a2c10);box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 40px rgba(255,210,58,.45),0 18px 40px rgba(0,0,0,.55);color:#fff;max-width:calc(100vw - 32px)}
+.legban img{width:72px;height:72px;image-rendering:pixelated;flex:none;filter:drop-shadow(0 0 10px rgba(255,210,58,.7))}
+.legban small{display:block;font-family:var(--pix);font-weight:700;letter-spacing:.1em;color:var(--gold,#ffd23a);font-size:13px}
+.legban b{display:block;font-family:var(--pix);font-weight:800;font-size:clamp(20px,5vw,28px);line-height:1.1}
+.legstats{display:flex;align-items:center;gap:8px}
+.legstats .stri{display:block;width:44px;height:44px;flex:none}
+.legstats .dim{font-size:12.5px;line-height:1.35}
+.legstats .ca{color:var(--atk)} .legstats .ch{color:var(--hp)} .legstats .cs{color:var(--spd)}
+.legstats .ca,.legstats .ch,.legstats .cs{display:inline-flex;align-items:center;gap:1px;font-weight:800}
+html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255,210,58,.35)}
+/* computer and sideways phone: the card floats over the top of the field instead of pushing it down */
+@media (min-width:1000px),(orientation:landscape) and (max-height:520px) and (min-width:640px){
+  body[data-phase=shop] .bcL{position:relative}
+  body[data-phase=shop] .bcL > .panel.legend{position:absolute;z-index:8;left:8px;top:44px;margin:0;max-width:min(560px,calc(100% - 16px));flex-wrap:nowrap;padding:10px 12px;background:#0e1424!important}
+  body[data-phase=shop] .bcL > .panel.legend .legart{width:64px;height:64px}
+  body[data-phase=shop] .bcL > .panel.legend .legbtns{display:flex;flex-direction:column;gap:6px}
+}
+@media (orientation:landscape) and (max-height:520px) and (min-width:640px){
+  /* a sideways phone has no room over the field: the offer sits in the shop column, above the Battle bar */
+  body[data-phase=shop] .bcL > .panel.legend{display:none!important}
+  body[data-phase=shop] .bcR .dock .legdock{display:flex!important;border:2px solid var(--gold,#ffd23a);border-radius:10px;padding:4px 6px;gap:6px;align-items:center;background:#0e1424;box-shadow:0 0 14px rgba(255,210,58,.35)}
+  body[data-phase=shop] .bcR .dock .legdock span{flex:1;min-width:0;font-size:12px;line-height:1.2}
+  body[data-phase=shop] .bcR .dock .legdock .btn{min-height:30px;padding:2px 10px;font-size:12px;width:auto;flex:none}
+}
 </style>
 </head>
 <body>
