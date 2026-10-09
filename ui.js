@@ -16,7 +16,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.12.1', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.12.2', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3947,10 +3947,14 @@ function setPageTone(stageEl){
 function placeInspect(){
   const r = document.documentElement.style;
   if(!(innerWidth >= 1000 && innerHeight >= 521) || phase !== 'shop'){ r.removeProperty('--insTop'); return; }
-  const bag = document.querySelector('.bcR .wall.bag'), bp = bag && (bag.closest('.panel') || bag);
-  const vh = document.documentElement.clientHeight, minH = 300;
-  const top = bp ? Math.round(bp.getBoundingClientRect().bottom + 8) : 74;
-  r.setProperty('--insTop', Math.max(74, Math.min(top, vh - 150 - minH)) + 'px');
+  /* 5.12.2: just under the PC (a pokémon or item being moved never needs the Bag as a target), only as tall as what it
+     shows, and never running under the Battle bar */
+  const pp = document.querySelector('.bcR .wall:not(.bag)');
+  const vh = document.documentElement.clientHeight, dock = document.querySelector('.bcR .dock .btn.fight') || document.querySelector('.bcR .dock');   // it may cover who's next, not the Battle button
+  const bottom = dock && dock.getBoundingClientRect().top > 0 ? dock.getBoundingClientRect().top - 8 : vh - 150;
+  const top = Math.max(74, pp ? Math.round(pp.getBoundingClientRect().bottom + 8) : 74);
+  r.setProperty('--insTop', top + 'px'); r.setProperty('--insMax', Math.max(220, Math.round(bottom - top)) + 'px');
+  document.body.classList.toggle('inscompact', bottom - top < 440);
 }
 document.addEventListener('scroll', e => { if(e.target && e.target.classList && e.target.classList.contains('shelves')) placeInspect(); }, true);
 /* 5.12.1: on an upright phone the Battle bar is pinned to the bottom of the screen (fixed, not sticky: iPhones left a
@@ -4336,6 +4340,8 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.12.2', date:'Oct 8, 2026', title:'Visual bug fixes', sub:'Computer: summaries fit their card without scrolling', items:[
+    'On a computer, the summary card for a pok\u00e9mon or an item is now only as tall as what it shows (an item\u2019s card no longer fills the column with empty space), starts just under the PC, and is laid out tighter, so a pok\u00e9mon\u2019s whole summary fits without scrolling. On short screens the role description is trimmed to fit.' ] },
   { v:'5.12.1', date:'Oct 8, 2026', title:'Visual bug fixes', sub:'Phone: the Battle bar stays at the bottom, and picking or buying no longer makes the page jump', items:[
     'On a phone the Battle bar is now pinned to the bottom of the screen. On iPhones it could get stuck partway up the page after a fast scroll.',
     'Picking or buying something no longer makes the page jump. The game was correcting the scroll position twice on some phones (once itself, once the browser), and measured the page before the pick bar had appeared; the page also keeps the same room at the bottom whether something is picked or not.' ] },

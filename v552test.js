@@ -15,7 +15,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   await p.click('.pfield .slot[data-i="0"]'); await p.waitForTimeout(300);
   const c = await p.evaluate(() => { const i = document.querySelector('#inspect'), b = i.getBoundingClientRect(), bag = document.querySelector('.bcR .wall.bag').getBoundingClientRect();
     return { pos: getComputedStyle(i).position, top: b.top, bagBot: bag.bottom, h: b.height, left: b.left }; });
-  check(c.pos === 'fixed' && c.top >= c.bagBot && c.h > 280 && c.left > 900, `computer: the summary is a card under the Bag (${Math.round(c.top)} ≥ ${Math.round(c.bagBot)}, h ${Math.round(c.h)})`);
+  check(c.pos === 'fixed' && c.h > 280 && c.left > 900, `computer: the summary is a card in the shop column (5.12.2: under the PC) (${Math.round(c.top)} ≥ ${Math.round(c.bagBot)}, h ${Math.round(c.h)})`);
   const v = await p.evaluate(() => { const d = document.createElement('div'); d.className = 'bstage board stadium'; d.innerHTML = '<div class="ftr down posing"><div class="fmove"><div class="fart"><img></div></div></div>';
     document.body.appendChild(d); const out = getComputedStyle(d.querySelector('.fmove')).visibility; d.remove(); return out; });
   check(v === 'hidden', 'a fainted pokémon posing for the Champion photo leaves the field');
