@@ -3276,6 +3276,13 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .ccard .chead .tag{font-family:var(--pix);font-weight:700;font-size:13px;line-height:1.3;padding:1px 7px;border-radius:5px}
 .modal.dexfull .dexh{font-size:14px;margin:12px 0 6px;color:var(--dim)}
 .modal.dexfull .dexh .dim{font-size:13px}
+/* ---- 5.12.1 · phone: a pinned Battle bar and no page jumps ---- */
+.inspgap{display:none}
+@media (max-width:700px) and (orientation:portrait){
+  html.bc body[data-phase=shop] .dock{position:fixed!important;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:0;margin:0;z-index:40}
+  body[data-phase=shop] #app,body.picking[data-phase=shop] #app{padding-bottom:calc(max(var(--dockH,84px),112px) + 16px)!important}
+  html,body{overflow-anchor:none}   /* the game keeps its own anchor (render), so the browser's own anchoring doesn't add a second jump */
+}
 </style>
 </head>
 <body>
@@ -7831,7 +7838,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.12.0', date:'Oct 7, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'5.12.1', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -9260,7 +9267,7 @@ function renderShop(){
 
   <div class="speechflow">${dockHtml(closed, true)}</div>
   ${closed ? nextUpHtml() : ''}
-  <div id="inspect">${inspectHtml()}</div>
+  <div id="inspect">${inspectHtml()}</div><div class="inspgap" aria-hidden="true"></div>
   ${ctx}
   ${closed ? '' : G.redOpen && stageOf(G).kind === 'red' ? redStripHtml() : nextUpHtml()}
   </div>
@@ -10897,6 +10904,7 @@ function render(){
   if(G) fixSlots(G);   // anything added without a slot gets the first free one
   const app = $('#app');
   document.body.dataset.phase = phase;   // 5.0.0: the wide layout is for the shop only
+  document.body.classList.toggle('picking', !!sel);   // 5.12.1: set before the redraw (not after), so the page is measured in its final layout
   document.body.classList.toggle('inspecting', !!inspect);   // 5.3.1: a phone on its side opens the info box only when there is something in it
   const html = (phase === 'battle' ? renderBattle() : phase === 'over' ? renderOver() : renderShop() + toastHtml()) + versionTag();
   /* 4.9.1: Safari has no scroll anchoring, so a panel growing above what you are looking at (the message box on a
@@ -10904,12 +10912,15 @@ function render(){
   const anchor = phase === 'shop' && drawnPhase === 'shop' && window.scrollY > 0 ? (() => {
     for(const e of app.querySelectorAll('[data-act][data-i], .panel > h2')){
       const r = e.getBoundingClientRect(); if(r.top >= 0 && r.top < innerHeight - 100 && r.height > 0 && !e.closest('.dock,.speech'))
-        return { sel: e.matches('h2') ? null : `[data-act="${e.dataset.act}"][data-i="${e.dataset.i}"]`, h: e.matches('h2') ? e.textContent.trim().slice(0, 12) : null, top: r.top }; }
+        return { el: e, sel: e.matches('h2') ? null : `[data-act="${e.dataset.act}"][data-i="${e.dataset.i}"]`, h: e.matches('h2') ? e.textContent.trim().slice(0, 12) : null, top: r.top }; }
     return null; })() : null;
   if(phase === 'shop' && drawnPhase === 'shop' && app.firstChild) morphInto(app, html);   // v49
   else app.innerHTML = html;
   if(anchor){
-    const e = anchor.sel ? app.querySelector(anchor.sel) : [...app.querySelectorAll('.panel > h2')].find(x => x.textContent.trim().slice(0, 12) === anchor.h);
+    /* 5.12.1: the same element if the redraw kept it (it usually does); otherwise the first match outside the field and the bars,
+       since a picked pokémon adds look-alike targets there and the page used to jump to them */
+    const e = anchor.el && anchor.el.isConnected ? anchor.el
+      : anchor.sel ? [...app.querySelectorAll(anchor.sel)].find(x => !x.closest('.dock,.speech,.ctxbar,.pfield')) : [...app.querySelectorAll('.panel > h2')].find(x => x.textContent.trim().slice(0, 12) === anchor.h);
     if(e){ const d = e.getBoundingClientRect().top - anchor.top; if(Math.abs(d) > 1) window.scrollBy(0, d); } }
   drawnPhase = phase;
   const lg = $('#blog'); if(lg) lg.scrollTop = lg.scrollHeight;
@@ -11764,9 +11775,22 @@ function placeInspect(){
   r.setProperty('--insTop', Math.max(74, Math.min(top, vh - 150 - minH)) + 'px');
 }
 document.addEventListener('scroll', e => { if(e.target && e.target.classList && e.target.classList.contains('shelves')) placeInspect(); }, true);
+/* 5.12.1: on an upright phone the Battle bar is pinned to the bottom of the screen (fixed, not sticky: iPhones left a
+   sticky bar stranded mid-screen after a fast scroll), and the page keeps the same room under it whatever is picked,
+   so nothing jumps. A summary opens as a sheet over the shop instead of growing the page; a gap the size of the idle
+   message box holds its place. */
+let barObs = null;
+function syncPhoneBars(){
+  const r = document.documentElement.style, dock = document.querySelector('#app .dock'), ins = document.querySelector('#inspect');
+  if(dock && dock.offsetHeight) r.setProperty('--dockH', dock.offsetHeight + 'px');
+  if(ins && !document.body.classList.contains('inspecting') && ins.offsetHeight) r.setProperty('--inspIdle', ins.offsetHeight + 'px');
+  if(window.ResizeObserver && dock && (!barObs || barObs.el !== dock)){
+    if(barObs) barObs.disconnect();
+    barObs = new ResizeObserver(() => { if(dock.offsetHeight) r.setProperty('--dockH', dock.offsetHeight + 'px'); }); barObs.observe(dock); barObs.el = dock; }
+}
 /** Lay the world out for the current screen. Runs after every draw and on resize. */
 function layoutWorld(){
-  placeInspect();
+  placeInspect(); syncPhoneBars();
   const w = worldEl(); if(!w || fieldPicking) return;
   const on = (phase === 'shop' && !!G) || phase === 'battle';
   document.body.classList.toggle('inworld', on);
@@ -12134,6 +12158,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'5.12.1', date:'Oct 8, 2026', title:'Visual bug fixes', sub:'Phone: the Battle bar stays at the bottom, and picking or buying no longer makes the page jump', items:[
+    'On a phone the Battle bar is now pinned to the bottom of the screen. On iPhones it could get stuck partway up the page after a fast scroll.',
+    'Picking or buying something no longer makes the page jump. The game was correcting the scroll position twice on some phones (once itself, once the browser), and measured the page before the pick bar had appeared; the page also keeps the same room at the bottom whether something is picked or not.' ] },
   { v:'5.12.0', date:'Oct 7, 2026', title:'Minor gameplay changes', sub:'A new Pokédex: a full-screen numbered grid with trading cards', items:[
     'The Pok\u00e9dex opens full-screen with a progress bar for how many you\u2019ve seen. Pok\u00e9mon are a numbered grid of tiles coloured by type (families still sit together, in order), with filters by type as well as by section and gen, and search.',
     'Pok\u00e9mon you haven\u2019t seen yet are dark silhouettes marked ???, so the Pok\u00e9dex is something to fill in.',
