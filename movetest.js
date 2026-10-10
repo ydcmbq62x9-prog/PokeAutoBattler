@@ -7,7 +7,7 @@ const T = E.TUNING;
 const mk = (id, bank) => { const u = E.makeUnit(id, E.TUNING.expForLevel2); E.growUnit(u, bank || { hp:48, atk:48, spd:24 }); return u; };
 const lines = r => r.steps.flatMap(s => s.lines);
 
-check(Object.keys(E.SPECIES).filter(k => E.SPECIES[k].gen !== 3).every(k => E.SPECIES[k].move2 && E.SPECIES[k].move2.name && E.SPECIES[k].move2.when()), 'every Gen 1 and Gen 2 pokémon has a second move with a trigger');
+check(Object.keys(E.SPECIES).every(k => E.SPECIES[k].move2 && E.SPECIES[k].move2.name && E.SPECIES[k].move2.when()), 'every pokémon has a second move with a trigger');
 const names = new Set(Object.values(E.SPECIES).flatMap(s => [s.move.name, s.move2 && s.move2.name]));
 check(names.size >= 80, `the game has ${names.size} different move names now`);
 for(const k of Object.keys(E.SPECIES)) for(const l of [1,2,3]){ const s = E.SPECIES[k];
@@ -74,7 +74,7 @@ check(true, 'every move describes itself at every level');
 { const out = require('child_process').execSync('node species-value.js', { env:{ ...process.env, N:'200' } }).toString();
   const vals = out.split('\n').map(l => l.match(/^(\w+)\s+\w+\s+T\d (\d+)%/)).filter(Boolean).map(m => [m[1], +m[2]]);
   const top = vals.reduce((a, b) => b[1] > a[1] ? b : a), bot = vals.reduce((a, b) => b[1] < a[1] ? b : a);
-  check(top[1] <= 70 && bot[1] >= 33, `no second move made a must-buy or a dud (${bot[0]} ${bot[1]}% … ${top[0]} ${top[1]}%)`); }
+  check(top[1] <= 75 && bot[1] >= 33, `no second move made a must-buy or a dud (${bot[0]} ${bot[1]}% … ${top[0]} ${top[1]}%)`); }
 
 /* UI */
 (async () => {

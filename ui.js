@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.1.0', date:'Oct 9, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.2.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4351,6 +4351,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.2.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Every Gen 3 pok\u00e9mon now has a second move', items:[
+    'Every Hoenn pok\u00e9mon, legendaries included, now has a second move like Kanto and Johto do. They reuse the same moves with the same effects: Treecko\u2019s line Sand Attack, Torchic\u2019s and Cacnea\u2019s lines Swords Dance, Mudkip\u2019s line Amnesia, Lotad\u2019s line and Roselia Aromatherapy, Ralts\u2019s line Light Screen and Reflect, and Slakoth\u2019s line Slack Off, to name a few. Kyogre has Haze, Groudon Swords Dance, Rayquaza Focus Energy, Jirachi Wish, and the three Regis each a barrier.',
+    'Thirty Gen 3 moves were renamed so that a move name always means the same effect on every pok\u00e9mon (Regice\u2019s Ice Beam is now Frost Breath, Milotic\u2019s Recover is Aqua Ring, Treecko\u2019s Quick Attack is Leaf Dash, and so on). Their damage and effects did not change.',
+    'The Hoenn bosses were re-measured with the new moves in place and still land where they were set, so no boss was re-tuned.' ] },
   { v:'6.1.0', date:'Oct 9, 2026', title:'Balance patch', sub:'Gen 3 bosses measured, not guessed, and four more subrole lines', items:[
     'Every Gen 3 gym leader, Elite Four member and Wallace were re-priced by actually simulating thousands of fights against a reference team at their slot, instead of borrowing a Gen 1 leader\u2019s numbers \u2014 so Hoenn\u2019s ladder now plays to the same difficulty curve Kanto and Johto already do, measured the same way.',
     'Four more lines pick up a subrole \u2014 Magnemite/Magneton, Makuhita/Hariyama, Swinub/Piloswine, and Snorunt/Glalie, all Tank leaning Bruiser, across Gen 1, Gen 2 and Gen 3. A wider sweep of the whole roster was run first and, true to the original worry, mostly came back as noise: base stats are too small a slice of a grown pok\u00e9mon to mean much on their own, so only lines where every stage agreed and the lean matched how the pok\u00e9mon actually plays made the cut. Most of the roster stays single-role \u2014 subroles are staying rare on purpose.' ] },
