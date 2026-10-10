@@ -1897,6 +1897,39 @@ const SPECIES = {
    =================================================================== */
 const GENS = { 1: { name:'Gen 1', region:'Kanto' }, 2: { name:'Gen 2', region:'Johto' }, 3: { name:'Gen 3', region:'Hoenn' } };
 /** The gens a player can switch on today. Gen 2 joins when its pack is complete. */
+/* 6.5.0: real National Pokédex numbers (the game only has a subset, so there are gaps). The Pokédex orders and numbers by these. */
+const NATDEX = {
+  bulbasaur:1, ivysaur:2, venusaur:3, charmander:4, charmeleon:5, charizard:6, squirtle:7, wartortle:8, blastoise:9, caterpie:10,
+  metapod:11, butterfree:12, weedle:13, kakuna:14, beedrill:15, pidgey:16, pidgeotto:17, pidgeot:18, rattata:19, raticate:20,
+  spearow:21, fearow:22, pikachu:25, raichu:26, sandshrew:27, sandslash:28, nidoranf:29, nidorina:30, nidoqueen:31, nidoranm:32,
+  nidorino:33, nidoking:34, clefairy:35, clefable:36, vulpix:37, ninetales:38, jigglypuff:39, wigglytuff:40, zubat:41, golbat:42,
+  oddish:43, gloom:44, vileplume:45, paras:46, parasect:47, diglett:50, dugtrio:51, mankey:56, primeape:57, growlithe:58,
+  arcanine:59, poliwag:60, poliwhirl:61, poliwrath:62, abra:63, kadabra:64, alakazam:65, machop:66, machoke:67, machamp:68,
+  bellsprout:69, weepinbell:70, victreebel:71, geodude:74, graveler:75, golem:76, ponyta:77, rapidash:78, slowpoke:79, slowbro:80,
+  magnemite:81, magneton:82, farfetchd:83, doduo:84, dodrio:85, seel:86, dewgong:87, shellder:90, cloyster:91, gastly:92,
+  haunter:93, gengar:94, onix:95, drowzee:96, hypno:97, voltorb:100, electrode:101, exeggcute:102, exeggutor:103, cubone:104,
+  marowak:105, hitmonlee:106, hitmonchan:107, koffing:109, weezing:110, rhyhorn:111, rhydon:112, chansey:113, tangela:114, horsea:116,
+  seadra:117, staryu:120, starmie:121, 'mr-mime':122, scyther:123, jynx:124, electabuzz:125, magmar:126, tauros:128, magikarp:129,
+  gyarados:130, lapras:131, eevee:133, vaporeon:134, jolteon:135, flareon:136, porygon:137, omanyte:138, omastar:139, kabuto:140,
+  kabutops:141, aerodactyl:142, snorlax:143, articuno:144, zapdos:145, moltres:146, dratini:147, dragonair:148, dragonite:149, mewtwo:150,
+  mew:151, chikorita:152, bayleef:153, meganium:154, cyndaquil:155, quilava:156, typhlosion:157, totodile:158, croconaw:159, feraligatr:160,
+  hoothoot:163, noctowl:164, ledyba:165, ledian:166, spinarak:167, ariados:168, crobat:169, chinchou:170, lanturn:171, pichu:172,
+  cleffa:173, igglybuff:174, togepi:175, togetic:176, natu:177, xatu:178, mareep:179, flaaffy:180, ampharos:181, bellossom:182,
+  marill:183, azumarill:184, politoed:186, sunkern:191, sunflora:192, wooper:194, quagsire:195, espeon:196, umbreon:197, murkrow:198,
+  slowking:199, misdreavus:200, wobbuffet:202, girafarig:203, pineco:204, forretress:205, gligar:207, steelix:208, snubbull:209, granbull:210,
+  qwilfish:211, scizor:212, heracross:214, sneasel:215, teddiursa:216, ursaring:217, slugma:218, magcargo:219, swinub:220, piloswine:221,
+  skarmory:227, houndour:228, houndoom:229, kingdra:230, phanpy:231, donphan:232, porygon2:233, tyrogue:236, hitmontop:237, smoochum:238,
+  elekid:239, magby:240, miltank:241, blissey:242, raikou:243, entei:244, suicune:245, larvitar:246, pupitar:247, tyranitar:248,
+  lugia:249, 'ho-oh':250, celebi:251, treecko:252, grovyle:253, sceptile:254, torchic:255, combusken:256, blaziken:257, mudkip:258,
+  marshtomp:259, swampert:260, poochyena:261, mightyena:262, zigzagoon:263, linoone:264, lotad:270, lombre:271, ludicolo:272, seedot:273,
+  nuzleaf:274, shiftry:275, taillow:276, swellow:277, ralts:280, kirlia:281, gardevoir:282, surskit:283, masquerain:284, shroomish:285,
+  breloom:286, slakoth:287, vigoroth:288, slaking:289, makuhita:296, hariyama:297, azurill:298, sableye:302, aron:304, lairon:305,
+  aggron:306, electrike:309, manectric:310, roselia:315, gulpin:316, swalot:317, carvanha:318, sharpedo:319, wailmer:320, wailord:321,
+  numel:322, camerupt:323, torkoal:324, spoink:325, grumpig:326, trapinch:328, vibrava:329, flygon:330, cacnea:331, cacturne:332,
+  swablu:333, altaria:334, anorith:347, armaldo:348, feebas:349, milotic:350, shuppet:353, banette:354, absol:359, snorunt:361,
+  glalie:362, spheal:363, sealeo:364, walrein:365, bagon:371, shelgon:372, salamence:373, beldum:374, metang:375, metagross:376,
+  regirock:377, regice:378, registeel:379, kyogre:382, groudon:383, rayquaza:384, jirachi:385,
+};
 const GENS_READY = [1, 2, 3];   // 6.0.0: Gen 3 (Hoenn) joins Kanto and Johto
 /* Sean: bosses of a Gen 2 run may also field the Gen 1 pokémon of the Johto Pokédex (Morty's
    Gengar, Pryce's Dewgong, Clair's Dragonair) — everything but these Kanto-only ones — though
@@ -4616,7 +4649,7 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { NATDEX, M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
