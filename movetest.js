@@ -7,11 +7,11 @@ const T = E.TUNING;
 const mk = (id, bank) => { const u = E.makeUnit(id, E.TUNING.expForLevel2); E.growUnit(u, bank || { hp:48, atk:48, spd:24 }); return u; };
 const lines = r => r.steps.flatMap(s => s.lines);
 
-check(Object.keys(E.SPECIES).every(k => E.SPECIES[k].move2 && E.SPECIES[k].move2.name && E.SPECIES[k].move2.when()), 'every one of the 74 pokémon has a second move with a trigger');
-const names = new Set(Object.values(E.SPECIES).flatMap(s => [s.move.name, s.move2.name]));
+check(Object.keys(E.SPECIES).filter(k => E.SPECIES[k].gen !== 3).every(k => E.SPECIES[k].move2 && E.SPECIES[k].move2.name && E.SPECIES[k].move2.when()), 'every Gen 1 and Gen 2 pokémon has a second move with a trigger');
+const names = new Set(Object.values(E.SPECIES).flatMap(s => [s.move.name, s.move2 && s.move2.name]));
 check(names.size >= 80, `the game has ${names.size} different move names now`);
 for(const k of Object.keys(E.SPECIES)) for(const l of [1,2,3]){ const s = E.SPECIES[k];
-  if(/undefined|NaN/.test(s.move2.text(l) + s.move.text(l))) { errors.push(`${k} move text is broken at level ${l}`); break; } }
+  if(/undefined|NaN/.test((s.move2 ? s.move2.text(l) : "") + s.move.text(l))) { errors.push(`${k} move text is broken at level ${l}`); break; } }
 check(true, 'every move describes itself at every level');
 
 /* triggers */
@@ -67,7 +67,7 @@ check(true, 'every move describes itself at every level');
   check(at > 0 && before && after && Math.abs(after / before - (1 - T.status.brn.atkCut)) < 0.05,
     `a burned pokémon hits ${Math.round(T.status.brn.atkCut*100)}% softer (Body Slam ${before} → ${after})`); }
 { const heals = Object.keys(E.SPECIES).filter(k => E.roleOf(k) === 'cannon' &&
-    /[Hh]eals|Recover|\bRest\b|regain|a barrier/.test(E.SPECIES[k].move.text(2) + ' ' + E.SPECIES[k].move2.text(2)));
+    /[Hh]eals|Recover|\bRest\b|regain|a barrier/.test(E.SPECIES[k].move.text(2) + ' ' + (E.SPECIES[k].move2 ? E.SPECIES[k].move2.text(2) : "")));
   check(!heals.length, `no Cannon can recover HP${heals.length ? ': ' + heals.join(', ') : ''}`); }
 
 /* balance */

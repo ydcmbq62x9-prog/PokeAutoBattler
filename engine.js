@@ -1677,7 +1677,7 @@ const SPECIES = {
      landed) — pending a real tune2.js-style measurement pass.
      =================================================================== */
   treecko:    { name:'Treecko',    type:'Grass', gen1:'Grass', gen:3, tier:1, role:'cannon', hp:14, atk:16, spd:44,
-                evo:{into:'grovyle', by:'level'},   move:M.fast('Quick Attack', 0.8) },
+                evo:{into:'grovyle', by:'level'},   move:M.fast('Leaf Dash', 0.8) },
   grovyle:    { name:'Grovyle',    type:'Grass', gen1:'Grass', gen:3, tier:1, role:'cannon', hp:24, atk:30, spd:56, token:true,
                 evo:{into:'sceptile', by:'level'},  move:M.fast('Leaf Blade', 1.1) },
   sceptile:   { name:'Sceptile',   type:'Grass', gen1:'Grass', gen:3, tier:1, role:'cannon', hp:40, atk:54, spd:70, token:true,
@@ -1686,7 +1686,7 @@ const SPECIES = {
   torchic:    { name:'Torchic',    type:'Fire', gen1:'Fire', gen:3, tier:1, role:'bruiser', hp:14, atk:18, spd:42,
                 evo:{into:'combusken', by:'level'},  move:M.hit('Peck', 0.8) },
   combusken:  { name:'Combusken',  type:'Fire', gen1:'Fire/Fighting', gen:3, tier:1, role:'bruiser', hp:26, atk:34, spd:52, token:true,
-                evo:{into:'blaziken', by:'level'},   move:M.hit('Double Kick', 1.1) },
+                evo:{into:'blaziken', by:'level'},   move:M.hit('Rock Smash', 1.1) },
   blaziken:   { name:'Blaziken',   type:'Fire', gen1:'Fire/Fighting', gen:3, tier:1, role:'bruiser', hp:44, atk:58, spd:64, token:true,
                 move:M.hit('Blaze Kick', 1.5) },
 
@@ -1700,7 +1700,7 @@ const SPECIES = {
   zigzagoon:  { name:'Zigzagoon',  type:'Normal', gen1:'Normal', gen:3, tier:1, role:'bruiser', hp:16, atk:14, spd:36,
                 evo:{into:'linoone', by:'level'}, move:M.hit('Tackle', 0.8) },
   linoone:    { name:'Linoone',    type:'Normal', gen1:'Normal', gen:3, tier:1, role:'bruiser', hp:42, atk:40, spd:58, token:true,
-                move:M.fast('Extreme Speed', 1.0) },
+                move:M.fast('Swift Slash', 1.0) },
 
   poochyena:  { name:'Poochyena',  type:'Dark', gen1:'Dark', gen:3, tier:2, role:'bruiser', hp:16, atk:20, spd:34,
                 evo:{into:'mightyena', by:'level'}, move:M.hit('Bite', 0.9) },
@@ -1708,11 +1708,11 @@ const SPECIES = {
                 move:M.hit('Crunch', 1.3) },
 
   lotad:      { name:'Lotad',      type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:16, atk:10, spd:22,
-                evo:{into:'lombre', by:'level'},    move:M.mend('Absorb', 0.6, 0.12) },
+                evo:{into:'lombre', by:'level'},    move:M.mend('Nature Power', 0.6, 0.12) },
   lombre:     { name:'Lombre',     type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:28, atk:22, spd:34, token:true,
-                evo:{into:'ludicolo', by:'level'},  move:M.mend('Mega Drain', 0.7, 0.14) },
+                evo:{into:'ludicolo', by:'level'},  move:M.mend('Nature Power', 0.7, 0.14) },
   ludicolo:   { name:'Ludicolo',   type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:48, atk:38, spd:46, token:true,
-                move:M.mend('Hydro Pump', 0.9, 0.16) },
+                move:M.mend('Tropic Dance', 0.9, 0.16) },
 
   seedot:     { name:'Seedot',     type:'Grass', gen1:'Grass/Dark', gen:3, tier:2, role:'cannon', hp:14, atk:16, spd:26,
                 evo:{into:'nuzleaf', by:'level'},   move:M.hit('Bite', 0.8) },
@@ -1722,12 +1722,12 @@ const SPECIES = {
                 move:M.hit('Leaf Tornado', 1.6) },
 
   taillow:    { name:'Taillow',    type:'Flying', gen1:'Normal/Flying', gen:3, tier:1, role:'cannon', hp:14, atk:18, spd:46,
-                evo:{into:'swellow', by:'level'},   move:M.fast('Wing Attack', 0.9) },
+                evo:{into:'swellow', by:'level'},   move:M.fast('Aerial Ace', 0.9) },
   swellow:    { name:'Swellow',    type:'Flying', gen1:'Normal/Flying', gen:3, tier:1, role:'cannon', hp:38, atk:48, spd:72, token:true,
                 move:M.fast('Aerial Ace', 1.4) },
 
   surskit:    { name:'Surskit',    type:'Bug', gen1:'Bug/Flying', gen:3, tier:1, role:'bruiser', hp:14, atk:14, spd:30,
-                evo:{into:'masquerain', by:'level'}, move:M.hit('Bubble', 0.8) },
+                evo:{into:'masquerain', by:'level'}, move:M.hit('Sweet Scent', 0.8) },
   masquerain: { name:'Masquerain', type:'Bug', gen1:'Bug/Flying', gen:3, tier:1, role:'bruiser', hp:36, atk:34, spd:54, token:true,
                 move:M.hit('Air Slash', 1.3) },
 
@@ -1737,7 +1737,7 @@ const SPECIES = {
                 move:M.hit('Sky Uppercut', 1.5) },
 
   electrike:  { name:'Electrike',  type:'Electric', gen1:'Electric', gen:3, tier:3, role:'cannon', hp:18, atk:20, spd:40,
-                evo:{into:'manectric', by:'level'}, move:M.hit('Spark', 1.0) },
+                evo:{into:'manectric', by:'level'}, move:M.hit('Thunder Fang', 1.0) },
   manectric:  { name:'Manectric',  type:'Electric', gen1:'Electric', gen:3, tier:3, role:'cannon', hp:38, atk:52, spd:64, token:true,
                 move:M.hit('Wild Charge', 1.5) },
 
@@ -1752,7 +1752,7 @@ const SPECIES = {
                 move:M.wall('Belly Drum Slam', 1.2, 1.9) },
 
   gulpin:     { name:'Gulpin',     type:'Poison', gen1:'Poison', gen:3, tier:3, role:'tank', hp:20, atk:14, spd:16,
-                evo:{into:'swalot', by:'level'},    move:M.wall('Pound', 0.8, 1.1) },
+                evo:{into:'swalot', by:'level'},    move:M.wall('Stockpile', 0.8, 1.1) },
   swalot:     { name:'Swalot',     type:'Poison', gen1:'Poison', gen:3, tier:3, role:'tank', hp:50, atk:36, spd:34, token:true,
                 move:M.wall('Sludge Bomb', 1.1, 1.6) },
 
@@ -1769,9 +1769,9 @@ const SPECIES = {
                 move:M.hit('Crunch', 1.5) },
 
   wailmer:    { name:'Wailmer',    type:'Water', gen1:'Water', gen:3, tier:3, role:'tank', hp:30, atk:14, spd:16,
-                evo:{into:'wailord', by:'level'},   move:M.wall('Water Gun', 1.0, 1.4) },
+                evo:{into:'wailord', by:'level'},   move:M.wall('Water Spout', 1.0, 1.4) },
   wailord:    { name:'Wailord',    type:'Water', gen1:'Water', gen:3, tier:3, role:'tank', hp:94, atk:40, spd:30, token:true,
-                move:M.wall('Hydro Pump', 1.3, 1.9) },
+                move:M.wall('Water Spout', 1.3, 1.9) },
 
   cacnea:     { name:'Cacnea',     type:'Grass', gen1:'Grass/Dark', gen:3, tier:3, role:'bruiser', hp:18, atk:24, spd:24,
                 evo:{into:'cacturne', by:'level'},  move:M.hit('Needle Arm', 1.0) },
@@ -1779,27 +1779,27 @@ const SPECIES = {
                 move:M.hit('Night Slash', 1.4) },
 
   roselia:    { name:'Roselia',    type:'Grass', gen1:'Grass/Poison', gen:3, tier:3, role:'support', hp:36, atk:38, spd:48,
-                move:M.afflict('Stun Spore', 0.6, 'par', 0.4, 'front') },
+                move:M.afflict('Numb Spore', 0.6, 'par', 0.4, 'front') },
 
   snorunt:    { name:'Snorunt',    type:'Ice', gen1:'Ice', gen:3, tier:3, role:'tank', subrole:{role:'bruiser', weight:0.25}, hp:20, atk:18, spd:28,
-                evo:{into:'glalie', by:'level'},    move:M.wall('Powder Snow', 0.9, 1.3) },
+                evo:{into:'glalie', by:'level'},    move:M.wall('Ice Shard', 0.9, 1.3) },
   glalie:     { name:'Glalie',     type:'Ice', gen1:'Ice', gen:3, tier:3, role:'tank', subrole:{role:'bruiser', weight:0.25}, hp:48, atk:46, spd:40, token:true,
                 move:M.wall('Ice Fang', 1.2, 1.7) },
 
   ralts:      { name:'Ralts',      type:'Psychic', gen1:'Psychic', gen:3, tier:4, role:'support', hp:14, atk:12, spd:26,
-                evo:{into:'kirlia', by:'level'},    move:M.mend('Confusion', 0.6, 0.12) },
+                evo:{into:'kirlia', by:'level'},    move:M.mend('Calm Mind', 0.6, 0.12) },
   kirlia:     { name:'Kirlia',     type:'Psychic', gen1:'Psychic', gen:3, tier:4, role:'support', hp:26, atk:24, spd:40, token:true,
-                evo:{into:'gardevoir', by:'level'},  move:M.mend('Psybeam', 0.8, 0.14) },
+                evo:{into:'gardevoir', by:'level'},  move:M.mend('Calm Mind', 0.8, 0.14) },
   gardevoir:  { name:'Gardevoir',  type:'Psychic', gen1:'Psychic', gen:3, tier:4, role:'support', hp:44, atk:42, spd:62, token:true,
-                move:M.mend('Psychic', 1.0, 0.16) },
+                move:M.mend('Heal Pulse', 1.0, 0.16) },
 
   spoink:     { name:'Spoink',     type:'Psychic', gen1:'Psychic', gen:3, tier:3, role:'support', hp:20, atk:16, spd:28,
-                evo:{into:'grumpig', by:'level'},   move:M.mend('Psybeam', 0.7, 0.12) },
+                evo:{into:'grumpig', by:'level'},   move:M.mend('Calm Mind', 0.7, 0.12) },
   grumpig:    { name:'Grumpig',    type:'Psychic', gen1:'Psychic', gen:3, tier:3, role:'support', hp:46, atk:40, spd:46, token:true,
-                move:M.mend('Psychic', 0.9, 0.15) },
+                move:M.mend('Heal Pulse', 0.9, 0.15) },
 
   anorith:    { name:'Anorith',    type:'Rock', gen1:'Rock/Bug', gen:3, tier:3, role:'bruiser', hp:18, atk:26, spd:24,
-                evo:{into:'armaldo', by:'level'},   move:M.hit('Fury Cutter', 1.0) },
+                evo:{into:'armaldo', by:'level'},   move:M.hit('Metal Claw', 1.0) },
   armaldo:    { name:'Armaldo',    type:'Rock', gen1:'Rock/Bug', gen:3, tier:3, role:'bruiser', hp:48, atk:58, spd:40, token:true,
                 move:M.hit('Rock Blast', 1.4) },
 
@@ -1811,28 +1811,28 @@ const SPECIES = {
   spheal:     { name:'Spheal',     type:'Water', gen1:'Water/Ice', gen:3, tier:4, role:'tank', subrole:{role:'bruiser', weight:0.2}, hp:20, atk:12, spd:16,
                 evo:{into:'sealeo', by:'level'},    move:M.hit('Water Gun', 0.9) },
   sealeo:     { name:'Sealeo',     type:'Water', gen1:'Water/Ice', gen:3, tier:4, role:'tank', subrole:{role:'bruiser', weight:0.2}, hp:38, atk:24, spd:26, token:true,
-                evo:{into:'walrein', by:'level'},   move:M.hit('Body Slam', 1.1) },
+                evo:{into:'walrein', by:'level'},   move:M.hit('Ice Ball', 1.1) },
   walrein:    { name:'Walrein',    type:'Water', gen1:'Water/Ice', gen:3, tier:4, role:'tank', subrole:{role:'bruiser', weight:0.2}, hp:70, atk:38, spd:30, token:true,
-                move:M.wall('Surf', 1.1, 1.7) },
+                move:M.wall('Avalanche', 1.1, 1.7) },
 
   feebas:     { name:'Feebas',     type:'Water', gen1:'Water', gen:3, tier:4, role:'support', subrole:{role:'tank', weight:0.3}, hp:18, atk:8,  spd:20,
                 evo:{into:'milotic', by:'level'},   move:M.hit('Tackle', 0.7) },
   milotic:    { name:'Milotic',    type:'Water', gen1:'Water', gen:3, tier:4, role:'support', subrole:{role:'tank', weight:0.3}, hp:60, atk:26, spd:42, token:true,
-                move:M.mend('Recover', 0.8, 0.18) },
+                move:M.mend('Aqua Ring', 0.8, 0.18) },
 
   absol:      { name:'Absol',      type:'Dark', gen1:'Dark', gen:3, tier:4, role:'cannon', hp:38, atk:54, spd:56,
                 move:M.hit('Night Slash', 1.5) },
 
   shuppet:    { name:'Shuppet',    type:'Ghost', gen1:'Ghost', gen:3, tier:3, role:'cannon', hp:16, atk:24, spd:20,
-                evo:{into:'banette', by:'level'},   move:M.hit('Night Shade', 1.0) },
+                evo:{into:'banette', by:'level'},   move:M.hit('Shadow Sneak', 1.0) },
   banette:    { name:'Banette',    type:'Ghost', gen1:'Ghost', gen:3, tier:3, role:'cannon', hp:38, atk:56, spd:38, token:true,
-                move:M.hit('Shadow Ball', 1.5) },
+                move:M.hit('Shadow Punch', 1.5) },
 
   sableye:    { name:'Sableye',    type:'Dark', gen1:'Dark/Ghost', gen:3, tier:3, role:'tank', hp:38, atk:30, spd:34,
                 move:M.wall('Shadow Claw', 1.0, 1.4) },
 
   torkoal:    { name:'Torkoal',    type:'Fire', gen1:'Fire', gen:3, tier:3, role:'tank', hp:56, atk:34, spd:18,
-                move:M.wall('Body Slam', 1.1, 1.6) },
+                move:M.wall('Ember Shell', 1.1, 1.6) },
 
   slakoth:    { name:'Slakoth',    type:'Normal', gen1:'Normal', gen:3, tier:4, role:'bruiser', hp:24, atk:20, spd:10,
                 evo:{into:'vigoroth', by:'level'},  move:M.hit('Slack Off Slam', 0.9) },
@@ -1842,7 +1842,7 @@ const SPECIES = {
                 move:M.hit('Giga Impact', 1.7) },
 
   azurill:    { name:'Azurill',    type:'Water', gen1:'Water', gen:3, tier:1, role:'bruiser', hp:12, atk:6, spd:18,
-                evo:{into:'marill', by:'level'},    move:M.hit('Splash', 0.5) },
+                evo:{into:'marill', by:'level'},    move:M.hit('Bubble Pop', 0.5) },
 
   /* ---- Gen 3 legendaries (made the same way as every other gen's) ---- */
   kyogre:     { name:'Kyogre',     type:'Water', gen1:'Water', gen:3, role:'cannon', hp:80, atk:78, spd:84, legendary:true,
@@ -1852,13 +1852,13 @@ const SPECIES = {
   rayquaza:   { name:'Rayquaza',   type:'Dragon', gen1:'Dragon/Flying', gen:3, role:'cannon', hp:76, atk:90, spd:90, legendary:true,
                 move:M.big('Dragon Ascent', 1.7) },
   jirachi:    { name:'Jirachi',    type:'Steel', gen1:'Steel/Psychic', gen:3, role:'support', hp:66, atk:44, spd:92, legendary:true,
-                move:M.mend('Wish', 0.8, 0.14) },
+                move:M.mend('Doom Desire', 0.8, 0.14) },
   regirock:   { name:'Regirock',   type:'Rock', gen1:'Rock', gen:3, role:'tank', hp:100, atk:68, spd:54, legendary:true,
                 move:M.wall('Rock Slide', 1.1, 1.8) },
   regice:     { name:'Regice',     type:'Ice', gen1:'Ice', gen:3, role:'tank', hp:92, atk:62, spd:68, legendary:true,
-                move:M.afflict('Ice Beam', 1.3, 'par', 0.3, 'front') },
+                move:M.afflict('Frost Breath', 1.3, 'par', 0.3, 'front') },
   registeel:  { name:'Registeel',  type:'Steel', gen1:'Steel', gen:3, role:'support', subrole:{role:'tank', weight:0.5}, hp:82, atk:42, spd:68, legendary:true,
-                move:M.ward('Iron Defense', 0.9, 0.12) },
+                move:M.ward('Steel Aegis', 0.9, 0.12) },
 };
 
 /* ===================================================================

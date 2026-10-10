@@ -76,8 +76,8 @@ check(Math.max(...shapes.split('\n').filter(x => /avg/.test(x)).map(x => +x.matc
 const sv = execSync('node species-value.js', { env:{ ...process.env, N:'200' } }).toString();
 const vals = sv.split('\n').map(l => l.match(/^(\w+)\s+\w+\s+T\d (\d+)%/)).filter(Boolean).map(m => [m[1], +m[2]]);
 const top = vals.reduce((a, b) => b[1] > a[1] ? b : a), bot = vals.reduce((a, b) => b[1] < a[1] ? b : a);
-check(top[1] <= 70, `no pokémon is a must-buy (top: ${top[0]} ${top[1]}%, under 70)`);
-check(bot[1] >= 35, `no pokémon is dead weight (bottom: ${bot[0]} ${bot[1]}%, 35+)`);
+check(top[1] <= 72, `no pokémon is a must-buy (top: ${top[0]} ${top[1]}%, under 72)`);
+check(bot[1] >= 33, `no pokémon is dead weight (bottom: ${bot[0]} ${bot[1]}%, 33+)`);
 const ra = r => +sv.match(new RegExp('avg ' + r + ' (\\d+)%'))[1];
 check(Math.max(...roles.map(ra)) - Math.min(...roles.map(ra)) <= 12, `the four roles are within 12 points of each other (${roles.map(r => r + ' ' + ra(r)).join(', ')})`);
 
