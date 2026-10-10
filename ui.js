@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.2.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.2.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4351,6 +4351,8 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.2.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Gen 3 pok\u00e9mon are the same size as the rest', items:[
+    'Hoenn pok\u00e9mon were drawn small inside a wide, mostly empty picture, so they looked tiny next to Kanto and Johto. Their art is now trimmed and sized the same way as the others, in the party, the shop, battles, the Pok\u00e9dex and trading cards.' ] },
   { v:'6.2.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Every Gen 3 pok\u00e9mon now has a second move', items:[
     'Every Hoenn pok\u00e9mon, legendaries included, now has a second move like Kanto and Johto do. They reuse the same moves with the same effects: Treecko\u2019s line Sand Attack, Torchic\u2019s and Cacnea\u2019s lines Swords Dance, Mudkip\u2019s line Amnesia, Lotad\u2019s line and Roselia Aromatherapy, Ralts\u2019s line Light Screen and Reflect, and Slakoth\u2019s line Slack Off, to name a few. Kyogre has Haze, Groudon Swords Dance, Rayquaza Focus Energy, Jirachi Wish, and the three Regis each a barrier.',
     'Thirty Gen 3 moves were renamed so that a move name always means the same effect on every pok\u00e9mon (Regice\u2019s Ice Beam is now Frost Breath, Milotic\u2019s Recover is Aqua Ring, Treecko\u2019s Quick Attack is Leaf Dash, and so on). Their damage and effects did not change.',
