@@ -9,14 +9,13 @@
      const SPRITES = { pikachu:'img/pikachu.png', onix:'img/onix.png' };
    ------------------------------------------------------------------- */
 const SPRITES = {};
-
 /* Bump on every publish: testers quote this in bug reports, and the
    project's tester-checklist doc is keyed by it. */
 /* Version numbers (from 1.2.0, Sean's scheme): BIG.MEDIUM.SMALL —
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'5.12.2', date:'Oct 8, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.1.0', date:'Oct 9, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -389,6 +388,18 @@ function roleBadge(id, cls){
 /** A role as a readable chip: icon + name. */
 const roleChip = id => { const r = roleOf(id), R = ROLES[r];
   return `<span class="rchip r-${r}">${R.icon} ${esc(R.name)}</span>`; };
+/** 6.0.0 — subroles: optional flavor text for a species that blends a second
+    role's growth into its own (see growUnit). Below 0.15 the blend is too
+    faint to call out; 0.15–0.45 it "leans" toward the second role; above
+    that it gets equal billing. Never shown as a raw percentage. */
+function subroleTag(id){
+  const sp = SPECIES[id], sub = sp && sp.subrole;
+  if(!sub || !ROLES[sub.role] || sub.weight < 0.15) return '';
+  const R2 = ROLES[sub.role];
+  if(sub.weight < 0.45) return `<span class="subrole">Leans ${R2.icon} ${esc(R2.name)}</span>`;
+  const R1 = ROLES[roleOf(id)];
+  return `<span class="subrole">${R1.icon}${R2.icon} ${esc(R1.name)}/${esc(R2.name)}</span>`;
+}
 
 /* v50: an item's rarity as a small coloured tag. Common items get none, so the
    tag always means "this turns up less often". */
@@ -845,7 +856,7 @@ function popupHtml(u, enemy){
     </div><div class="pcol b">
     <div class="popmove"><b>${esc(sp.move.name)}</b> <i class="trig">Main move</i><p>${esc(sp.move.text(l))}</p></div>
     ${move2Html(sp, l, null, heldOf(u) && heldOf(u).lockMain ? heldOf(u).name : null)}
-    <div class="poprole r-${roleOf(u.id)}"><b>${ROLES[roleOf(u.id)].icon} ${esc(ROLES[roleOf(u.id)].name)} · ${esc(ROLES[roleOf(u.id)].trait)}</b>
+    <div class="poprole r-${roleOf(u.id)}"><b>${ROLES[roleOf(u.id)].icon} ${esc(ROLES[roleOf(u.id)].name)} · ${esc(ROLES[roleOf(u.id)].trait)}</b> ${subroleTag(u.id)}
       <p>${esc(ROLES[roleOf(u.id)].text())}</p></div>
     <div class="popmu">
       ${t.weak.length ? `<span class="bad">weak to ${t.weak.join(', ')} ×2</span>` : ''}
@@ -3296,8 +3307,8 @@ function openNewRun(onStart){
     </div>
     <p class="dim chgold"></p>
     <p class="dim">Runs with rules keep their own records on your Trainer card.</p>
-    ${['red', 'oak'].some(id => ticketCount(id)) ? `<h4>Secret Boss Ticket <span class="dim">one try, this run only</span></h4><div class="mods">
-      ${['red', 'oak'].filter(id => ticketCount(id)).map(id => `<button class="modt" data-tkt="${id}"><b>\uD83C\uDFAB ${SECRETS[id].name} \u00d7${ticketCount(id)}</b><span>${SECRETS[id].name} waits at ${esc(SECRETS[id].place)} after the Champion. Needs ${esc(GENS[SECRETS[id].gen].name)} in the run.</span></button>`).join('')}</div>` : ''}
+    ${['red', 'oak', 'steven'].some(id => ticketCount(id)) ? `<h4>Secret Boss Ticket <span class="dim">one try, this run only</span></h4><div class="mods">
+      ${['red', 'oak', 'steven'].filter(id => ticketCount(id)).map(id => `<button class="modt" data-tkt="${id}"><b>\uD83C\uDFAB ${SECRETS[id].name} \u00d7${ticketCount(id)}</b><span>${SECRETS[id].name} waits at ${esc(SECRETS[id].place)} after the Champion. Needs ${esc(GENS[SECRETS[id].gen].name)} in the run.</span></button>`).join('')}</div>` : ''}
     <div class="btnrow"><button class="btn primary" data-n="go">Start run</button><button class="btn ghost" data-n="close">Cancel</button></div>`);
   d.classList.add('newrun');
   const types$ = d.querySelector('.monotypes'), go = d.querySelector('[data-n="go"]');
@@ -4340,6 +4351,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.1.0', date:'Oct 9, 2026', title:'Balance patch', sub:'Gen 3 bosses measured, not guessed, and four more subrole lines', items:[
+    'Every Gen 3 gym leader, Elite Four member and Wallace were re-priced by actually simulating thousands of fights against a reference team at their slot, instead of borrowing a Gen 1 leader\u2019s numbers \u2014 so Hoenn\u2019s ladder now plays to the same difficulty curve Kanto and Johto already do, measured the same way.',
+    'Four more lines pick up a subrole \u2014 Magnemite/Magneton, Makuhita/Hariyama, Swinub/Piloswine, and Snorunt/Glalie, all Tank leaning Bruiser, across Gen 1, Gen 2 and Gen 3. A wider sweep of the whole roster was run first and, true to the original worry, mostly came back as noise: base stats are too small a slice of a grown pok\u00e9mon to mean much on their own, so only lines where every stage agreed and the lean matched how the pok\u00e9mon actually plays made the cut. Most of the roster stays single-role \u2014 subroles are staying rare on purpose.' ] },
+  { v:'6.0.0', date:'Oct 9, 2026', title:'Major gameplay update', sub:'Gen 3 (Hoenn) joins the game, with a new subrole system', items:[
+    'Gen 3 is here: a curated Hoenn roster (Treecko, Torchic and Mudkip\u2019s lines, Milotic, Flygon, Gardevoir, Absol and more), Kyogre, Groudon, Rayquaza and Jirachi as encounter-only legendaries alongside Regirock, Regice and Registeel, and a full set of Hoenn bosses: Roxanne through Juan, Sidney through Drake, and Champion Wallace. Turn it on from New Run like Gen 1 and Gen 2.',
+    'Steven joins Red and Oak as a secret boss: about one run in six after the Champion, Hoenn runs may find him waiting at Meteor Falls for one chance, no rematch.',
+    'New: subroles. A handful of pok\u00e9mon \u2014 Milotic, Altaria, Camerupt, Walrein and Registeel \u2014 blend a touch of a second role\u2019s growth into their own (Milotic leans Tank on top of its Support growth, for instance). Their role, trait and move legality are unchanged; only how their stats grow shifts, and it shows up as a small tag on their summary and Pok\u00e9dex card. Everyone else grows exactly as before.',
+    'The secret-boss draw is now data-driven instead of hardcoded to two, so Red, Oak and Steven are each offered when their gen is in the run and the odds split evenly across however many are active.' ] },
   { v:'5.12.2', date:'Oct 8, 2026', title:'Visual bug fixes', sub:'Computer: summaries fit their card without scrolling', items:[
     'On a computer, the summary card for a pok\u00e9mon or an item is now only as tall as what it shows (an item\u2019s card no longer fills the column with empty space), starts just under the PC, and is laid out tighter, so a pok\u00e9mon\u2019s whole summary fits without scrolling. On short screens the role description is trimmed to fit.' ] },
   { v:'5.12.1', date:'Oct 8, 2026', title:'Visual bug fixes', sub:'Phone: the Battle bar stays at the bottom, and picking or buying no longer makes the page jump', items:[
@@ -5775,7 +5794,7 @@ function openDex(){
     return `<div class="dcard ccard" style="--tcol:${typeColor(k)}"><div class="tcin">
       <div class="tctop"><b>${esc(s.name)}</b><span class="tchp ch">${SI('h')} ${s.hp}</span></div>
       <div class="tcwin">${spriteHtml(k, 'lg')}<span class="tcno">#${no}</span></div>
-      <div class="chead"><span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}${SIG[k] ? ' <span class="tag sigtag">✦ Signature move</span>' : ''}</div>
+      <div class="chead"><span class="tag" style="background:${TYPES[s.type].color};color:#10131a">${esc(s.type)}</span>${secondTypes(k).map(t => ` <span class="tag t2" title="Also ${esc(t)} — counts for Mono ${esc(t)} runs" style="border:2px solid ${TYPES[t].color};color:${TYPES[t].color};background:transparent">${esc(t)}</span>`).join('')} ${roleChip(k)}${subroleTag(k)}${s.legendary ? ' <i class="rar r-veryrare">Legendary</i>' : ''}${genOf(k) > 1 ? ` <span class="tag gentag">Gen ${genOf(k)}</span>` : ''}${SIG[k] ? ' <span class="tag sigtag">✦ Signature move</span>' : ''}</div>
       <div class="cmoves"><div class="abil"><b>${esc(s.move.name)}</b> <i class="trig">Main move</i><span>${esc(s.move.text(1))}</span></div>
         ${s.move2 ? `<div class="abil"><b>${esc(s.move2.name)}</b> <i class="trig">${esc(s.move2.when())}</i><span>${esc(s.move2.text(1))}</span></div>` : ''}</div>
       <div class="tcfoot">${tri}<div class="tcnums"><span class="ca">${SI('a')} ${s.atk}</span><span class="ch">${SI('h')} ${s.hp}</span><span class="cs">${SI('s')} ${s.spd}</span></div>
@@ -5844,7 +5863,7 @@ function openDex(){
             : `<span class="dim">${esc(GENS[b.gen].name)}</span>`}
       <div class="abil">${met ? esc(b.blurb) : `Turns up after the Champion in about one ${esc(GENS[b.gen].name)} run in six. Meet him to fill this in.`}</div>
       ${met ? `<div class="secteam">${b.lineup.map(m => miniSprite(m.id)).join('')}</div>` : ''}</div></div>`; };
-  const secrets = ['red', 'oak'].filter(id => GENS_READY.includes(SECRETS[id].gen)).map(secretRow).join('');
+  const secrets = ['red', 'oak', 'steven'].filter(id => GENS_READY.includes(SECRETS[id].gen)).map(secretRow).join('');
   /* 4.0.0: one block per gen that can be played */
   const leaders = GENS_READY.map(n => { const g = GEN_BOSSES[n];
     return `<div class="dexgen" data-g${n}="1">` + (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')

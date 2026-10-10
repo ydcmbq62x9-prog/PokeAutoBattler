@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>PokéArena</title>
+
 <script>
 /* v37: the theme is applied before anything paints, so a dark-theme player
    never sees a flash of cream. Light (default) · Dark · System. */
@@ -379,6 +380,8 @@ body.carrying .popup.sheet{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 .r-tank{--rc:#7fb2ff} .r-bruiser{--rc:#ff9e5e} .r-cannon{--rc:#ff5e7a} .r-support{--rc:#6fe3a1}
 .rchip{display:inline-block;font-size:9.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px;
   color:var(--rc);border:1px solid var(--rc);background:color-mix(in srgb, var(--rc) 12%, transparent)}
+.subrole{display:inline-block;font-size:9.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:2px;
+  color:var(--muted);border:1px dashed var(--muted);background:transparent}
 .poprole{margin-top:8px;border-left:3px solid var(--rc);padding:4px 0 2px 8px}
 .poprole b{font-size:11.5px;color:var(--rc)}
 .poprole p{margin:3px 0 0;font-size:11px;color:var(--muted);line-height:1.4}
