@@ -53,9 +53,9 @@ const ui = fs.readFileSync('ui.js', 'utf8');
 check(/class="dextile/.test(ui) && /showCard/.test(ui) && /dexsearch/.test(ui) && /data-t="dex"/.test(ui), 'the Pokédex is a tile grid with cards, search, and a title-menu entry');
 check(/runNoteHtml/.test(ui) && /class="dfocus"/.test(ui), 'the Daycare marks focus lines and shows the open evolutions');
 /* daily */
-let cnt = { '1': 0, '1,2': 0, '2': 0 };
+let cnt = { '1': 0, '1,2': 0, '2': 0, '3': 0, '1,3': 0, '2,3': 0, '1,2,3': 0 };
 for(let d = 1; d <= 120; d++){ const date = '2026-' + String(1 + (d % 12)).padStart(2, '0') + '-' + String(1 + (d % 28)).padStart(2, '0') + '-' + d; cnt[E.dailyGens(date).join()]++; }
-check(cnt['1'] > 30 && cnt['1,2'] > 20 && cnt['2'] > 8, `the daily rotates Gen 1 / Gen 1+2 / Gen 2 (${JSON.stringify(cnt)})`);
+check(Object.values(cnt).every(n => n > 8), `the daily rotates every gen combination, Hoenn included (${JSON.stringify(cnt)})`);
 check(E.dailyGens('2026-10-03').join() === E.dailyGens('2026-10-03').join(), 'a day always plays the same gens');
 let okMono = true; for(let d = 1; d <= 200; d++){ const date = 'x' + d, m = E.dailyMods(date); if(m.mono && !E.monoTypesFor(E.dailyGens(date)).includes(m.mono)) okMono = false; }
 check(okMono, 'a daily Mono type always exists in that day\u2019s gens');

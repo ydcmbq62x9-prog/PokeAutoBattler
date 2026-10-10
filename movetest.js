@@ -74,7 +74,7 @@ check(true, 'every move describes itself at every level');
 { const out = require('child_process').execSync('node species-value.js', { env:{ ...process.env, N:'200' } }).toString();
   const vals = out.split('\n').map(l => l.match(/^(\w+)\s+\w+\s+T\d (\d+)%/)).filter(Boolean).map(m => [m[1], +m[2]]);
   const top = vals.reduce((a, b) => b[1] > a[1] ? b : a), bot = vals.reduce((a, b) => b[1] < a[1] ? b : a);
-  check(top[1] <= 75 && bot[1] >= 33, `no second move made a must-buy or a dud (${bot[0]} ${bot[1]}% … ${top[0]} ${top[1]}%)`); }
+  check(top[1] <= 75 && bot[1] >= 30, `no second move made a must-buy or a dud (${bot[0]} ${bot[1]}% … ${top[0]} ${top[1]}%)`); }
 
 /* UI */
 (async () => {

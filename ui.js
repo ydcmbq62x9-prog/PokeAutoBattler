@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.2.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.3.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -2178,6 +2178,13 @@ const SIG = {
   alakazam:['psyburst','#f85888'], espeon:['psyburst','#ff8ad8'], mewtwo:['psyburst','#c070ff'], mew:['psyburst','#ffb0e0'],
   machamp:['combo','#ffb08a'], heracross:['combo','#8ab0ff'], scizor:['combo','#ff6a6a'],
   pikachu:['sky','#ffe14a'], raichu:['sky','#ffd23a'], jolteon:['sky','#fff070'], zapdos:['sky','#ffe860'], raikou:['sky','#ffe060'], ampharos:['sky','#ffd860'],
+  /* 6.3.0: Hoenn */
+  blaziken:['combo','#ff7a2a'], sceptile:['combo','#7ad850'], swampert:['shock','#5aa8d8'], camerupt:['spiral','#ff6a2a'], torkoal:['spiral','#ff9a4a'],
+  gardevoir:['psyburst','#ff90c0'], jirachi:['psyburst','#ffe890'], milotic:['beam','#7ac8ff'], ludicolo:['beam','#80f0a0'], wailord:['beam','#5a98e8'],
+  walrein:['beam','#c0e8ff'], glalie:['beam','#d0f0ff'], altaria:['beam','#a8c8ff'], salamence:['beam','#ff7a5a'], flygon:['shock','#e0c070'],
+  metagross:['combo','#aab8d0'], aggron:['shock','#b0b8c8'], absol:['vortex','#c8d0e8'], banette:['vortex','#9a60c0'], shiftry:['vortex','#7ad060'],
+  slaking:['shock','#e0c890'], manectric:['sky','#fff070'], sharpedo:['combo','#6aa8e0'], hariyama:['combo','#ffb08a'], breloom:['combo','#a8e070'],
+  kyogre:['beam','#4a90ff'], groudon:['spiral','#ff5a2a'], rayquaza:['beam','#6af0a0'], regirock:['shock','#c0a080'], regice:['beam','#c0f0ff'], registeel:['shock','#c8d0dc'],
 };
 function sigFx(S, A, targets, sig, dur){
   const [kind, col] = sig, a = artCentre(S, A), out = [];
@@ -2398,6 +2405,14 @@ function animateStep(S, i){
 const WALK_KINDS = ['gym', 'elite', 'champion', 'red', 'rival'];
 /* 5.2.0: what each boss says when they reach the middle of their half */
 const BOSS_LINES = {
+  /* 6.3.0: Hoenn */
+  roxanne: 'Preparation is half the battle. I’ve done my homework on you.', brawly: 'Time to see if you can ride the wave. Let’s go!',
+  wattson: 'Wahahahah! Let’s see if I can shock you into a smile!', flannery: 'I’m new at this, but I’m not holding back. Let’s heat things up!',
+  norman: 'I raised you to battle like this. Show me what you’ve learned.', winona: 'I soar the skies above. Can you keep up on the ground?',
+  'tate-liza': 'We think the same thing, always. Can you read both of us?', juan: 'Behold, a battle as graceful as a fountain. Show me your elegance.',
+  sidney: 'Heh! I like your face. Let’s see if you can back it up.', phoebe: 'The spirits whisper that you’ll be a good fight.',
+  glacia: 'I’ve traveled far for a battle worth my time. Make it count.', drake: 'Dragons answer to those who earn them. Prove yourself.',
+  'wallace-champion': 'Water is beauty in motion. Let me show you the art of a true Champion.', steven: 'A fellow collector of rare stones? Then let’s see what you’ve got.',
   brock: 'Solid as stone. Let’s see you move me.', misty: 'Hope you can swim — this is my pool.',
   surge: 'Ten-hut! Let’s see if you’ve got any spark.', erika: 'Mind the flowers. They bite back.',
   koga: 'You won’t see my next move coming.', sabrina: 'I already know how this ends.',
@@ -4351,6 +4366,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.3.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Hoenn catches up: three more lines, stone evolutions and every difficulty setting measured', items:[
+    'Bagon, Aron and Beldum join Hoenn with their full lines: Salamence is a Dragon Cannon that powers up with Dragon Dance, Aggron a Steel Tank behind Iron Defense, and Metagross a Steel Cannon that opens with Focus Energy. That gives Dragon and Steel enough lines for Mono runs, so Mono-Steel is now possible in any run that includes Gen 2, and Mono-Dragon in every Hoenn run. Drake now fields Salamence, and Steven leads with Metagross and Aggron.',
+    'Lombre now evolves into Ludicolo with a Water Stone, and Nuzleaf into Shiftry with a Leaf Stone, like the Kanto and Johto stone evolutions.',
+    'The Daily Challenge can now be Gen 3, alone or mixed with Gen 1 and Gen 2.',
+    'Every Hoenn gym leader, Elite Four member and Wallace now has a curated list of off-theme bodyguards, a line to open the fight with, and signature-move effects for the big finals and legendaries (Blaziken, Sceptile, Swampert, Gardevoir, Milotic, Salamence, Metagross, Kyogre, Groudon, Rayquaza and more).',
+    'Difficulty was measured, not guessed, for every run that includes Gen 3. Gen 3 alone, Gen 1+3, Gen 2+3 and Gen 1+2+3 now clear at the same rate the older combinations do (they were up to 60 points harder or easier before), and every Mono type, No PC and One Life run was tuned for them as well. Hoenn bosses are unchanged apart from the bodyguards.' ] },
   { v:'6.2.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'Gen 3 pok\u00e9mon are the same size as the rest', items:[
     'Hoenn pok\u00e9mon were drawn small inside a wide, mostly empty picture, so they looked tiny next to Kanto and Johto. Their art is now trimmed and sized the same way as the others, in the party, the shop, battles, the Pok\u00e9dex and trading cards.' ] },
   { v:'6.2.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Every Gen 3 pok\u00e9mon now has a second move', items:[

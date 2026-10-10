@@ -198,12 +198,17 @@ const TUNING = {
           monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.162, Bug:0.878, Rock:0.767 },   // 4.12.0 Psychic +0.008 (Mew); 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
             '2':   { Normal:1.052, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.957, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.983, Psychic:1.018, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
+            '3': { Normal:1.188, Fire:0.588, Water:0.774, Grass:0.954, Flying:1.154, Psychic:0.834, Dragon:1, Dark:1.015 },   // 6.3.0: measured at a 75% bot clear
+            '2+3': { Normal:1.155, Fire:0.893, Water:1.06, Electric:1.095, Grass:0.954, Ice:1.151, Fighting:1.218, Ground:0.939, Flying:1.154, Poison:1.078, Psychic:1.077, Bug:1.061, Rock:0.96, Ghost:1.06, Dragon:1.06, Steel:0.88, Dark:1.074 },   // 6.3.0: measured at a 75% bot clear
+            '1+3': { Normal:1.188, Fire:0.981, Water:1, Electric:1.095, Grass:0.984, Ice:1.151, Fighting:1.058, Ground:1.131, Flying:1.154, Poison:1.048, Psychic:1.142, Bug:0.997, Rock:0.908, Ghost:1.03, Dragon:1.12, Dark:1.045 },   // 6.3.0: measured at a 75% bot clear
+            '1+2+3': { Normal:1.188, Fire:1.04, Water:1.06, Electric:1.095, Grass:0.984, Ice:1.299, Fighting:1.088, Ground:1.179, Flying:1.223, Poison:1.139, Psychic:1.142, Bug:1.125, Rock:0.908, Ghost:1.09, Dragon:1.154, Steel:1, Dark:1.104 },   // 6.3.0: measured at a 75% bot clear
             '1+2': { Normal:1.121, Fire:0.981, Water:1, Electric:0.978, Grass:0.984, Ice:1.225, Fighting:0.998, Ground:1.067, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.857, Dark:0.88 } },
-          byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 } } },   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
+          byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 },
+            '3': { nopcFoes:1.064 }, '1+3': { nopcFoes:1.034, onelifeFoes:1.034 }, '2+3': { nopcFoes:1.034 }, '1+2+3': { nopcFoes:1.019 } } },   // 6.3.0: Hoenn combinations measured   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
-  gensFoes: { '1': 0.98, '2': 0.982, '1+2': 0.888 },   // 4.5.0: re-tuned after the 23 fill-in pokémon thinned the Daycare
+  gensFoes: { '1': 0.98, '2': 0.982, '1+2': 0.888, '3': 0.943, '1+3': 0.849, '2+3': 0.857, '1+2+3': 0.825 },   // 6.3.0: Hoenn combinations measured   // 4.5.0: re-tuned after the 23 fill-in pokémon thinned the Daycare
   // 3.6.0: re-measured after the curated bodyguards (3.5.0: counter moves (3.4.0: the gym pass (3.3.0: tank identities and evolved Elite Four (3.2.0: stat pass and new boss pools) (only types with 3+ lines get a Mono run)
   /* 2.0.0 — legendary encounters. Zapdos and Mewtwo are no longer sold in the
      Daycare; after each gym from `fromBadge` on, one may appear for a turn. */
@@ -558,43 +563,43 @@ const GYMS3 = [
   { id:'roxanne', name:'Roxanne', title:'Rustboro Gym', gen:3, theme:['Rock'], guards:['makuhita','hariyama','geodude'],
     signature:['armaldo', 'anorith'],
     badge:'Stone', blurb:'A schoolteacher’s short, sturdy Rock bench, Armaldo in front. Water, Grass and Fighting break it.', calib:1.374, mix:0.954 },
-  { id:'brawly', name:'Brawly', title:'Dewford Gym', gen:3, theme:['Fighting'],
+  { id:'brawly', name:'Brawly', title:'Dewford Gym', gen:3, theme:['Fighting'], guards:['zigzagoon','linoone','slakoth','vigoroth','slaking','machop','machamp','tauros'],
     signature:['hariyama', 'breloom'],
     badge:'Knuckle', blurb:'A surfer’s Fighting crew, Hariyama in front. Flying and Psychic ride over it.', calib:1.594, mix:1.03 },
-  { id:'wattson', name:'Wattson', title:'Mauville Gym', gen:3, theme:['Electric'],
+  { id:'wattson', name:'Wattson', title:'Mauville Gym', gen:3, theme:['Electric'], guards:['makuhita','hariyama','magnemite','magneton','pikachu','raichu','voltorb','electrode','zigzagoon','linoone'],
     signature:['manectric', 'electrike'],
     badge:'Dynamo', blurb:'Manectric leads a wiry Electric bench. Ground shuts it off cold.', calib:1.597, mix:0.981 },
-  { id:'flannery', name:'Flannery', title:'Lavaridge Gym', gen:3, theme:['Fire'], also:['camerupt'],
+  { id:'flannery', name:'Flannery', title:'Lavaridge Gym', gen:3, theme:['Fire'], guards:['zigzagoon','linoone','makuhita','hariyama','machop','tauros'], also:['camerupt'],
     signature:['blaziken', 'camerupt', 'torkoal'],
     badge:'Heat', blurb:'Blaziken leads a Fire bench still finding its feet. Water puts it out.', calib:2.237, mix:1.031 },
-  { id:'norman', name:'Norman', title:'Petalburg Gym', gen:3, theme:['Normal'],
+  { id:'norman', name:'Norman', title:'Petalburg Gym', gen:3, theme:['Normal'], guards:['taillow','swellow','makuhita','hariyama','tauros','snorlax','azurill'],
     signature:['slaking', 'vigoroth', 'linoone'],
     badge:'Balance', blurb:'Your own father’s gym: Slaking hits like a truck and naps like one too. Fighting is the only clean answer.', calib:1.741, mix:0.99 },
-  { id:'winona', name:'Winona', title:'Fortree Gym', gen:3, theme:['Flying'], also:['swellow'],
+  { id:'winona', name:'Winona', title:'Fortree Gym', gen:3, theme:['Flying'], guards:['swablu','altaria','surskit','masquerain','natu','xatu','hoothoot','noctowl'], also:['swellow'],
     signature:['swellow', 'masquerain', 'altaria'],
     badge:'Feather', blurb:'A tree-top aviary led by Swellow. Electric and Rock ground the whole bench.', calib:1.466, mix:0.972 },
-  { id:'tate-liza', name:'Tate & Liza', title:'Mossdeep Gym', gen:3, theme:['Psychic'],
+  { id:'tate-liza', name:'Tate & Liza', title:'Mossdeep Gym', gen:3, theme:['Psychic'], guards:['sableye','absol','makuhita','hariyama','altaria'],
     signature:['gardevoir', 'grumpig'],
     badge:'Mind', blurb:'Twins who finish each other’s sentences and attacks. Dark and Bug catch them off guard.', calib:1.851, mix:0.999 },
-  { id:'juan', name:'Juan', title:'Sootopolis Gym', gen:3, theme:['Water'],
+  { id:'juan', name:'Juan', title:'Sootopolis Gym', gen:3, theme:['Water'], guards:['altaria','swablu','roselia','ralts','kirlia','gardevoir'],
     signature:['milotic', 'walrein', 'wailord'],
     badge:'Rain', blurb:'A showman’s Water bench, Milotic trailing elegant counters. Electric and Grass cut the act short.', calib:2.219, mix:1.021 },
 ];
 const ELITE_FOUR3 = [
-  { id:'sidney', name:'Sidney', title:'Elite Four', gen:3, theme:['Dark'],
+  { id:'sidney', name:'Sidney', title:'Elite Four', gen:3, theme:['Dark'], guards:['cacnea','cacturne','shuppet','banette','houndour','houndoom','sneasel'],
     signature:['absol', 'cacturne', 'mightyena'],
     blurb:'A grin and a Dark bench that hits before you’re ready. Fighting and Bug answer back.', calib:2.402, mix:1.031 },
-  { id:'phoebe', name:'Phoebe', title:'Elite Four', gen:3, theme:['Ghost'], also:['sableye'],
+  { id:'phoebe', name:'Phoebe', title:'Elite Four', gen:3, theme:['Ghost'], guards:['shuppet','banette','sableye','gastly','haunter','gengar','misdreavus','absol','mightyena'], also:['sableye'],
     signature:['banette', 'sableye', 'shuppet'],
     blurb:'A ghost-trainer whose team slips past your front line. Dark and Ghost trade blows evenly.', calib:2.072, mix:1.065 },
-  { id:'glacia', name:'Glacia', title:'Elite Four', gen:3, theme:['Ice'],
+  { id:'glacia', name:'Glacia', title:'Elite Four', gen:3, theme:['Ice'], guards:['spheal','sealeo','walrein','lapras','dewgong','seel','sneasel','jynx'],
     signature:['glalie', 'walrein', 'sealeo'],
     blurb:'An iceberg of a bench, Glalie leading. Fire, Fighting and Steel melt through it.', calib:1.796, mix:1.057 },
-  { id:'drake', name:'Drake', title:'Elite Four', gen:3, theme:['Dragon'], also:['flygon'],
-    signature:['flygon', 'altaria'],
-    blurb:'The sky-pilot of the Elite Four, Flygon leading a thin but dangerous Dragon line. Ice is the lever.', calib:1.672, mix:1.034 },
+  { id:'drake', name:'Drake', title:'Elite Four', gen:3, theme:['Dragon'], also:['flygon', 'salamence'], guards:['salamence','bagon','shelgon','flygon','altaria','dragonair','dragonite','kingdra','charizard','gyarados'], also:['flygon', 'salamence'],
+    signature:['salamence', 'flygon', 'altaria'],
+    blurb:'The sky-pilot of the Elite Four, Salamence and Flygon leading a thin but dangerous Dragon line. Ice is the lever.', calib:1.672, mix:1.034 },
 ];
-const CHAMPION3 = { id:'wallace-champion', person:'wallace', name:'Wallace', title:'Champion', gen:3, theme:['Water'],
+const CHAMPION3 = { id:'wallace-champion', person:'wallace', name:'Wallace', title:'Champion', gen:3, theme:['Water'], guards:['milotic','ludicolo','gardevoir','altaria','walrein','wailord','swampert','sharpedo'],
   also:['milotic', 'kyogre'],
   blurb:'Hoenn’s Champion, with Milotic as elegant and merciless as ever. There is no counter-pick here.', calib:1.246 };
 const RIVAL3 = { id:'may', name:'May', title:'Rival', gen:3, theme:null, bird:'taillow', support:null,
@@ -607,9 +612,9 @@ const STEVEN = { id:'steven', person:'steven', name:'Steven', title:'Pokémon Ma
   lineup:[
     { id:'steelix',  exp:5, held:'band' },
     { id:'armaldo',  exp:5, held:'focus' },
-    { id:'flygon',   exp:5, held:'lefto' },
+    { id:'aggron',   exp:5, held:'lefto' },
     { id:'walrein',  exp:5, held:'sitrus' },
-    { id:'absol',    exp:5, held:'claw' },
+    { id:'metagross', exp:5, held:'claw' },
     { id:'swampert', exp:5, held:'coat' },
   ],
   blurb:'He collects meteorites and reads the sky for falling stars. One chance, no rematch: if you fall here, the run simply ends as it would have.' };
@@ -1710,14 +1715,14 @@ const SPECIES = {
   lotad:      { name:'Lotad',      type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:16, atk:10, spd:22,
                 evo:{into:'lombre', by:'level'},    move:M.mend('Nature Power', 0.6, 0.12) },
   lombre:     { name:'Lombre',     type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:28, atk:22, spd:34, token:true,
-                evo:{into:'ludicolo', by:'level'},  move:M.mend('Nature Power', 0.7, 0.14) },
+                evo:{into:'ludicolo', by:'stone', stone:'waterstone'},  move:M.mend('Nature Power', 0.7, 0.14) },
   ludicolo:   { name:'Ludicolo',   type:'Water', gen1:'Water/Grass', gen:3, tier:2, role:'support', hp:48, atk:38, spd:46, token:true,
                 move:M.mend('Tropic Dance', 0.9, 0.16) },
 
   seedot:     { name:'Seedot',     type:'Grass', gen1:'Grass/Dark', gen:3, tier:2, role:'cannon', hp:14, atk:16, spd:26,
                 evo:{into:'nuzleaf', by:'level'},   move:M.hit('Bite', 0.8) },
   nuzleaf:    { name:'Nuzleaf',    type:'Grass', gen1:'Grass/Dark', gen:3, tier:2, role:'cannon', hp:26, atk:30, spd:38, token:true,
-                evo:{into:'shiftry', by:'level'},   move:M.hit('Razor Leaf', 1.2) },
+                evo:{into:'shiftry', by:'stone', stone:'leafstone'},   move:M.hit('Razor Leaf', 1.2) },
   shiftry:    { name:'Shiftry',    type:'Grass', gen1:'Grass/Dark', gen:3, tier:2, role:'cannon', hp:40, atk:54, spd:56, token:true,
                 move:M.hit('Leaf Tornado', 1.6) },
 
@@ -1838,13 +1843,32 @@ const SPECIES = {
                 evo:{into:'vigoroth', by:'level'},  move:M.hit('Slack Off Slam', 0.9) },
   vigoroth:   { name:'Vigoroth',   type:'Normal', gen1:'Normal', gen:3, tier:4, role:'bruiser', hp:40, atk:40, spd:30, token:true,
                 evo:{into:'slaking', by:'level'},   move:M.hit('Focus Punch', 1.2) },
-  slaking:    { name:'Slaking',    type:'Normal', gen1:'Normal', gen:3, tier4:true, tier:4, role:'bruiser', hp:60, atk:70, spd:26, token:true,
+  slaking:    { name:'Slaking',    type:'Normal', gen1:'Normal', gen:3, tier:4, role:'bruiser', hp:60, atk:70, spd:26, token:true,
                 move:M.hit('Giga Impact', 1.7) },
 
   azurill:    { name:'Azurill',    type:'Water', gen1:'Water', gen:3, tier:1, role:'bruiser', hp:12, atk:6, spd:18,
                 evo:{into:'marill', by:'level'},    move:M.hit('Bubble Pop', 0.5) },
 
   /* ---- Gen 3 legendaries (made the same way as every other gen's) ---- */
+  /* 6.3.0: the three Hoenn lines that had art but no stats (Dragon and Steel finally have enough lines for Mono runs) */
+  bagon:      { name:'Bagon',      type:'Dragon', gen1:'Dragon', gen:3, tier:4, role:'cannon', hp:18, atk:22, spd:28,
+                evo:{into:'shelgon', by:'level'},   move:M.hit('Dragon Breath', 0.9) },
+  shelgon:    { name:'Shelgon',    type:'Dragon', gen1:'Dragon', gen:3, tier:4, role:'cannon', hp:34, atk:34, spd:32, token:true,
+                evo:{into:'salamence', by:'level'}, move:M.hit('Dragon Breath', 1.3) },
+  salamence:  { name:'Salamence',  type:'Dragon', gen1:'Dragon/Flying', gen:3, tier:4, role:'cannon', hp:48, atk:60, spd:62, token:true,
+                move:M.hit('Dragon Claw', 1.7) },
+  aron:       { name:'Aron',       type:'Steel', gen1:'Steel/Rock', gen:3, tier:3, role:'tank', hp:22, atk:16, spd:20,
+                evo:{into:'lairon', by:'level'},    move:M.hit('Tackle', 0.7) },
+  lairon:     { name:'Lairon',     type:'Steel', gen1:'Steel/Rock', gen:3, tier:3, role:'tank', hp:40, atk:28, spd:24, token:true,
+                evo:{into:'aggron', by:'level'},    move:M.wall('Iron Tail', 1.1, 1.8) },
+  aggron:     { name:'Aggron',     type:'Steel', gen1:'Steel/Rock', gen:3, tier:3, role:'tank', hp:68, atk:42, spd:28, token:true,
+                move:M.wall('Heavy Slam', 1.3, 2.0) },
+  beldum:     { name:'Beldum',     type:'Steel', gen1:'Steel/Psychic', gen:3, tier:3, role:'cannon', hp:16, atk:18, spd:28,
+                evo:{into:'metang', by:'level'},    move:M.hit('Take Down', 0.8) },
+  metang:     { name:'Metang',     type:'Steel', gen1:'Steel/Psychic', gen:3, tier:3, role:'cannon', hp:36, atk:38, spd:34, token:true,
+                evo:{into:'metagross', by:'level'}, move:M.hit('Metal Claw', 1.2) },
+  metagross:  { name:'Metagross',  type:'Steel', gen1:'Steel/Psychic', gen:3, tier:3, role:'cannon', hp:56, atk:66, spd:40, token:true,
+                move:M.hit('Meteor Mash', 1.8) },
   kyogre:     { name:'Kyogre',     type:'Water', gen1:'Water', gen:3, role:'cannon', hp:80, atk:78, spd:84, legendary:true,
                 move:M.all('Origin Pulse', 0.6) },
   groudon:    { name:'Groudon',    type:'Ground', gen1:'Ground', gen:3, role:'bruiser', hp:84, atk:88, spd:72, legendary:true,
@@ -2157,6 +2181,15 @@ const MOVE2 = {
   lanturn:    on('every', M.slow('Electroweb', 0.65, 8), { n:3 }),
   togepi:     on('allyLow', M.shield('Wish', 0.08, 'team')),
   togetic:    on('allyLow', M.shield('Wish', 0.14, 'team')),
+  bagon:      on('open',  M.grow('Dragon Dance', 2), { free:true }),
+  shelgon:    on('open',  M.grow('Dragon Dance', 4), { free:true }),
+  salamence:  on('open',  M.grow('Dragon Dance', 6), { free:true }),
+  aron:       on('low',   M.shield('Iron Defense', 0.25, 'self')),
+  lairon:     on('low',   M.shield('Iron Defense', 0.3, 'self')),
+  aggron:     on('open',  M.shield('Iron Defense', 0.5, 'self'), { free:true }),
+  beldum:     on('open',  M.focus('Focus Energy', 0.2), { free:true }),
+  metang:     on('open',  M.focus('Focus Energy', 0.3), { free:true }),
+  metagross:  on('open',  M.focus('Focus Energy', 0.4), { free:true }),
   /* 6.2.0: Gen 3 second moves, same names and effects as Gen 1/2 so a move name still means one thing everywhere */
   treecko:    on('every', M.afflict('Sand Attack', 0, 'cnf', 0.4, 'front'), { n:3 }),
   grovyle:    on('every', M.afflict('Sand Attack', 0, 'cnf', 0.5, 'front'), { n:3 }),
@@ -2341,9 +2374,9 @@ const ITEMS = {
                   eligible:u => stonesFor(u.id).includes('firestone'), apply:(u,G)=>G.evolve(u, 'firestone') },
   moonstone:    { name:'Moon Stone', icon:'🌙', tier:2, cost:4, rarity:'common', text:'Evolves Jigglypuff, Clefairy, Nidorina or Nidorino (and, with Gen 2 on, Eevee into Umbreon).',
                   eligible:u => stonesFor(u.id).includes('moonstone'), apply:(u,G)=>G.evolve(u, 'moonstone') },
-  waterstone:   { name:'Water Stone', icon:'💧', tier:3, cost:4, rarity:'common', text:'Evolves Staryu or Shellder, or Eevee into Vaporeon.',
+  waterstone:   { name:'Water Stone', icon:'💧', tier:3, cost:4, rarity:'common', text:'Evolves Staryu, Shellder or Lombre, or Eevee into Vaporeon.',
                   eligible:u => stonesFor(u.id).includes('waterstone'), apply:(u,G)=>G.evolve(u, 'waterstone') },
-  leafstone:    { name:'Leaf Stone', icon:'🍃', tier:3, cost:4, rarity:'common', text:'Evolves Exeggcute or Weepinbell.',
+  leafstone:    { name:'Leaf Stone', icon:'🍃', tier:3, cost:4, rarity:'common', text:'Evolves Exeggcute, Weepinbell or Nuzleaf.',
                   eligible:u => stonesFor(u.id).includes('leafstone'), apply:(u,G)=>G.evolve(u, 'leafstone') },
   /* 4.0.0 — Gen 2 evolution items. Nobody can use them in a Gen 1 run, so the Mart never stocks them there. */
   sunstone:     { name:'Sun Stone', icon:'☀️', tier:2, cost:4, rarity:'common', text:'Evolves Gloom into Bellossom, or Eevee into Espeon.',
@@ -3567,7 +3600,8 @@ function dailySeed(date){ let h = 2166136261; for(const c of 'pkb-daily-' + date
 /** 4.1.0: which generations the daily plays: Gen 1 half the time, Gen 1+2 three days in ten, Gen 2 the rest. */
 function dailyGens(date){
   const x = makeRng((dailySeed(date) ^ 0x2545f491) >>> 0)();
-  return x < 0.5 ? [1] : x < 0.8 ? [1, 2] : [2];
+  /* 6.3.0: Hoenn joins the daily rotation, alone and mixed */
+  return x < 0.22 ? [1] : x < 0.42 ? [1, 2] : x < 0.57 ? [2] : x < 0.67 ? [3] : x < 0.77 ? [1, 3] : x < 0.88 ? [2, 3] : [1, 2, 3];
 }
 function dailyMods(date){
   const r = makeRng(dailySeed(date) ^ 0x9e3779b9), x = r();
