@@ -1784,7 +1784,7 @@ const SPECIES = {
                 move:M.hit('Night Slash', 1.4) },
 
   roselia:    { name:'Roselia',    type:'Grass', gen1:'Grass/Poison', gen:3, tier:3, role:'support', hp:36, atk:38, spd:48,
-                move:M.afflict('Numb Spore', 0.6, 'par', 0.4, 'front') },
+                move:M.hush('Magical Leaf', 0.4, 6) },   // 6.4.0: was a 40% paralysis, which measured 31% against ~50% for other supports
 
   snorunt:    { name:'Snorunt',    type:'Ice', gen1:'Ice', gen:3, tier:3, role:'tank', subrole:{role:'bruiser', weight:0.25}, hp:20, atk:18, spd:28,
                 evo:{into:'glalie', by:'level'},    move:M.wall('Ice Shard', 0.9, 1.3) },
@@ -2233,7 +2233,7 @@ const MOVE2 = {
   flygon:     on('every', M.afflict('Sand Attack', 0, 'cnf', 0.7, 'front'), { n:3 }),
   cacnea:     on('open',  M.grow('Swords Dance', 3), { free:true }),
   cacturne:   on('open',  M.grow('Swords Dance', 6), { free:true }),
-  roselia:    on('allyLow', M.cleanse('Aromatherapy', 0.08)),
+  roselia:    on('every', M.afflict('Stun Spore', 0.3, 'par', 1, 'random'), { n:3 }),
   snorunt:    on('every', M.hush('Powder Snow', 0.3, 6), { n:3 }),
   glalie:     on('every', M.hush('Powder Snow', 0.45, 8), { n:3 }),
   ralts:      on('allyLow', M.shield('Light Screen', 0.08, 'team')),

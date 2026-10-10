@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.3.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.4.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4366,6 +4366,8 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.4.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Roselia was the weakest pok\u00e9mon in the game; now it holds its own', items:[
+    'Roselia\u2019s main move was a 40% chance to paralyse, which left it winning about 31% of matchups when a typical support wins about 50%. Pok\u00e9mon whose main move only inflicts a status all measured low, and Roselia also had the lowest stats of any support. Its main move is now Magical Leaf, a light hit that slows the target, and its second move is Stun Spore, paralysing a random enemy every third action. It now measures about 51%, in line with the other supports.' ] },
   { v:'6.3.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Hoenn catches up: three more lines, stone evolutions and every difficulty setting measured', items:[
     'Bagon, Aron and Beldum join Hoenn with their full lines: Salamence is a Dragon Cannon that powers up with Dragon Dance, Aggron a Steel Tank behind Iron Defense, and Metagross a Steel Cannon that opens with Focus Energy. That gives Dragon and Steel enough lines for Mono runs, so Mono-Steel is now possible in any run that includes Gen 2, and Mono-Dragon in every Hoenn run. Drake now fields Salamence, and Steven leads with Metagross and Aggron.',
     'Lombre now evolves into Ludicolo with a Water Stone, and Nuzleaf into Shiftry with a Leaf Stone, like the Kanto and Johto stone evolutions.',
