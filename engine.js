@@ -130,6 +130,8 @@ const TUNING = {
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
   eggCap:       10,
+  /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
+  manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
      Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
   red: { chance: 1/6, ratio: { '2': 1.12, '1+2': 1.185 }, oakRatio: { '1': 1.10, '1+2': 1.19 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
@@ -2412,9 +2414,9 @@ const ITEMS = {
                   apply:(u,G)=>G.boost(u,{hp:4, atk:4, spd:4}) },
   /* Training: stat growth shaped by the pokémon's own role (a Tank takes it as HP,
      a Cannon as Attack), without a level. At most 3 per pokémon. */
-  manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost', cap:3,
-                  text:'Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Up to 3 per pokémon.',
-                  eligible:u => ((u && u.manuals) || 0) < 3,
+  manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost',
+                  text:`Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Each pokémon can take ${TUNING.manual.base} at first, and one more for every ${TUNING.manual.badgesPer} badges you win (up to ${TUNING.manual.max}).`,
+                  eligible:(u, G) => ((u && u.manuals) || 0) < manualCap(G),
                   apply:(u,G)=>{ G.train(u, { hp:6, atk:6, spd:6 }); u.manuals = (u.manuals || 0) + 1; } },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
@@ -2445,6 +2447,8 @@ const ITEMS = {
 };
 
 /** How many of a vitamin this pokémon has had. */
+/** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
+const manualCap = G => Math.min(TUNING.manual.max, TUNING.manual.base + Math.floor(((G && G.badges) || 0) / TUNING.manual.badgesPer));
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
 /** What shelf group an item belongs to, so a Mart roll can spread across them (6.5.0). */
 const STONE_IDS = ['thunderstone','firestone','moonstone','waterstone','leafstone','sunstone','kingsrock','dragonscale','metalcoat'];
@@ -3858,10 +3862,10 @@ function evolveUnit(G, u, stone){
   return true;
 }
 
-function canUseItem(itemId, u){
+function canUseItem(itemId, u, G){
   const def = ITEMS[itemId];
   if(!def || !u) return false;
-  return def.eligible ? def.eligible(u) : true;
+  return def.eligible ? def.eligible(u, G) : true;
 }
 
 /* ===================================================================
@@ -4022,7 +4026,7 @@ function rollMart(G, payCost){
   // never stock a stone nobody you own can use
   const owned = ownedUnits(G);
   const pool = Object.keys(ITEMS).filter(k =>
-    ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u))
+    ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u, G))
       // vitamins are for anyone until someone owns a pokémon that has maxed them
       || (ITEMS[k].vitamin && !owned.length && !ITEMS[k].role)));
   const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier
@@ -4457,7 +4461,7 @@ function buyItem(G, idx, slot, where){
   const def = ITEMS[s.id];
   if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
   if(!u) return { ok:false, why:'Pick a pokémon first.' };
-  if(!canUseItem(s.id, u)) return { ok:false, why: def.vitamin
+  if(!canUseItem(s.id, u, G)) return { ok:false, why: s.id === 'manual' ? `${u.nm} has had all ${manualCap(G)} Training Manuals it can take for now (the limit grows with your badges).` : def.vitamin
     ? (def.role && roleOf(u) !== def.role ? `${def.name} is only for ${ROLES[def.role].name}s.` : `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`)
     : `${def.name} does nothing for ${u.nm}.` };
   G.credits -= def.cost; s.bought = true;
@@ -4721,7 +4725,7 @@ if(typeof module !== 'undefined' && module.exports){
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
-    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
+    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
     trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,

@@ -36,7 +36,7 @@ function arrive(seed){
    it is a coin flip again — this measures X items, not the difficulty. */
 // v53: 1.38 → 1.34. The Champion now carries a Very rare item, and at 1.38 the
 // no-X side only won 33% — no longer a coin flip. 1.34 measures 46%.
-const HARDER = Number(process.env.HARDER || 1.34);
+const HARDER = Number(process.env.HARDER || 1.45);   // 6.6.0: was 1.34; Training Manuals grow with badges, so late teams are a little stronger and the old setting saturated at 99%
 const BASE_GR = E.TUNING.gauntletRatio.slice();
 let n = 0, none = 0, maxed = 0, dump = 0;
 for(let s = 1; n < RUNS && s < RUNS * 6; s++){

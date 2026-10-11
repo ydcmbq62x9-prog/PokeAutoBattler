@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.5.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.6.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -497,7 +497,7 @@ function triWithItem(u, id, held){
   let v = null;
   if(held){ if(!HELD_ITEMS[id] || u.held === id) return null; v = { ...u, held: id }; }
   else {
-    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u)) return null;
+    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u, G)) return null;
     v = { ...u }; const fake = { boost: (x, d) => { for(const k of ['hp', 'atk', 'spd']) if(d[k]) x[k] = (x[k] || 0) + d[k]; } };
     try{ def.apply(v, fake); }catch(e){ return null; }
   }
@@ -632,7 +632,7 @@ function slotClass(i){
   if(sel && sel.kind === 'mart'){
     const s = G.mart[sel.idx];
     if(s && s.held) return u ? 'valid' : '';   // buy it straight onto this pokémon
-    return (u && s && canUseItem(s.id, u)) ? 'valid' : '';
+    return (u && s && canUseItem(s.id, u, G)) ? 'valid' : '';
   }
   if(sel && sel.kind === 'bitem') return '';   // party-wide: there is no target to pick
   if(sel && sel.kind === 'team'){
@@ -662,7 +662,7 @@ function pcSlotClass(i){
   }
   if(sel && sel.kind === 'mart'){                // medicine, candy, stones and held items work on the PC too
     const s = G.mart[sel.idx];
-    return (u && s && (s.held || canUseItem(s.id, u))) ? 'valid' : '';
+    return (u && s && (s.held || canUseItem(s.id, u, G))) ? 'valid' : '';
   }
   if(sel && sel.kind === 'team') return (!u && pcRoom(G) > 0) || u ? 'valid' : '';   // store it, or swap with this one
   return '';
@@ -1025,7 +1025,7 @@ const toastHtml = () => toast ? `<div class="toastbox" role="status"><b>${esc(to
 function stonePreview(stone){
   const out = [];
   for(const [where, list] of [['party', G.team || []], ['PC', G.pc || []]]) for(const u of list){
-    if(!u || !canUseItem(stone, u)) continue;
+    if(!u || !canUseItem(stone, u, G)) continue;
     const n = evoNext(u.id).find(x => x.stone === stone);
     if(n) out.push({ u, where, into: n.into });
   }
@@ -4378,6 +4378,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.6.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Training Manuals: the limit grows with your badges', items:[
+    'A pok\u00e9mon can now take 1 Training Manual at the start of a run, and one more for every 2 badges you win, up to 5 with all eight. It used to be a flat 3, so early on you must choose who gets the training, and by the Elite Four you can train your main team much further.',
+    'The Training Manual\u2019s description and the message you get when a pok\u00e9mon is full both show the current limit.',
+  ] },
   { v:'6.5.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The nine new items have their own artwork', items:[
     'Iron, Calcium, Zinc, Energy Root, Training Manual, Bulk Plate, Black Belt, Soothe Bell and Scope Lens now show their own pixel art in the Mart, the Bag, the Pok\u00e9dex and on the pok\u00e9mon holding them, instead of an emoji.',
   ] },

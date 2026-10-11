@@ -12,11 +12,11 @@ let MED = 'first';
 const carryScore = u => E.effAtk(u) * E.effSpd(u) * (/every enemy/.test(E.SPECIES[u.id].move.text(1)) ? 3 : 1);
 function medTarget(G, id){
   if(MED === 'stack' && (id === 'protein' || id === 'carbos')){
-    const ok = G.team.map((u, i) => [u, i]).filter(([u]) => E.canUseItem(id, u));
+    const ok = G.team.map((u, i) => [u, i]).filter(([u]) => E.canUseItem(id, u, G));
     if(ok.length){ ok.sort((a, b) => carryScore(b[0]) - carryScore(a[0])); return ok[0][1]; }
     return -1;
   }
-  return G.team.findIndex(u => E.canUseItem(id, u));
+  return G.team.findIndex(u => E.canUseItem(id, u, G));
 }
 /* SNOW: the snowball player Sean found in v30 testing — buys every Exp. Share
    and Lucky Egg first, and puts eggs on its best hitters. */

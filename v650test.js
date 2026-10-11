@@ -34,8 +34,11 @@ check(roleBad === 0, 'a role item is only stocked when you own a pokémon of tha
   const r = E.buyItem(G, 0, 0); check(r.ok && u.atk === before + 10 && u.vit.protein === 1, 'Calcium gives +10 Attack and counts toward the Protein cap');
   const w = E.makeUnit('abra', 0); w.vit = { protein: E.TUNING.vitaminCap }; check(!E.canUseItem('calcium', w) && !E.canUseItem('protein', w), 'role vitamins share the vitamin cap');
   const m = E.makeUnit('onix', 0); const hp0 = m.hp; G.team = [m]; G.mart = [{ id:'manual', held:false, reserved:false, bought:false }]; E.buyItem(G, 0, 0);
-  check(m.hp > hp0 && m.manuals === 1, 'Training Manual grows a Tank mostly in HP');
-  m.manuals = 3; check(!E.canUseItem('manual', m), 'at most 3 Training Manuals per pokémon'); }
+  check(m.hp > hp0 && m.manuals === 1, 'Training Manual grows a Tank mostly in HP');   // (G.badges is 0 here, cap 1)
+  G.badges = 0; m.manuals = 1; check(!E.canUseItem('manual', m, G), 'with no badges a pokémon takes only one Training Manual');
+  G.badges = 2; check(E.canUseItem('manual', m, G) && E.manualCap(G) === 2, 'two badges raise the limit to 2');
+  G.badges = 8; m.manuals = 4; check(E.canUseItem('manual', m, G) && E.manualCap(G) === 5, 'eight badges: up to 5');
+  m.manuals = 5; check(!E.canUseItem('manual', m, G), '…and never more than 5'); }
 /* role held items */
 { const tank = E.makeUnit('onix', 0), can = E.makeUnit('abra', 0);
   tank.held = 'plate'; can.held = 'plate';
