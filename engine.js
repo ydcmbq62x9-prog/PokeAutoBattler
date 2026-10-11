@@ -2448,11 +2448,11 @@ const ITEMS = {
   /* 4.0.0 — Gen 2 evolution items. Nobody can use them in a Gen 1 run, so the Mart never stocks them there. */
   sunstone:     { name:'Sun Stone', icon:'☀️', tier:2, cost:4, rarity:'common', text:'Evolves Gloom into Bellossom, or Eevee into Espeon.',
                   eligible:u => stonesFor(u.id).includes('sunstone'), apply:(u,G)=>G.evolve(u, 'sunstone') },
-  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
+  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'uncommon', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
                   eligible:u => stonesFor(u.id).includes('kingsrock'), apply:(u,G)=>G.evolve(u, 'kingsrock') },
-  dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'common', text:'Evolves Seadra into Kingdra.',
+  dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'uncommon', text:'Evolves Seadra into Kingdra.',
                   eligible:u => stonesFor(u.id).includes('dragonscale'), apply:(u,G)=>G.evolve(u, 'dragonscale') },
-  metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'common', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
+  metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'uncommon', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
                   eligible:u => stonesFor(u.id).includes('metalcoat'), apply:(u,G)=>G.evolve(u, 'metalcoat') },
 };
 
@@ -2536,7 +2536,7 @@ const HELD_ITEMS = {
             text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
-  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'rare',
             text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
   egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
             text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
@@ -4076,6 +4076,22 @@ function rollMart(G, payCost){
     note(g, id, wantHeld);
     next.push({ id, held: wantHeld, reserved:false, bought:false });
   });
+  /* 6.8.0 — every shelf carries at least one evolution stone, as long as someone
+     you own can use one: the last open medicine slot is swapped for a stone the
+     party can use. Reserved and already-bought slots are never touched. */
+  const stonePool = pool.filter(k => STONE_IDS.includes(k));
+  if(stonePool.length){
+    const cons = next.map((s, i) => ({ s, i })).filter(o => o.s && !o.s.held);
+    if(cons.length && !cons.some(o => STONE_IDS.includes(o.s.id) && !o.s.bought)){
+      const open = cons.filter(o => !o.s.reserved && !o.s.bought).pop();
+      if(open){
+        const have = cons.map(o => o.s.id);
+        const fresh = stonePool.filter(k => !have.includes(k));
+        const pick = pickWeighted(fresh.length ? fresh : stonePool, ITEMS, rnd());
+        next[open.i] = { id: pick, held:false, reserved:false, bought:false };
+      }
+    }
+  }
   G.mart = next;
   return true;
 }

@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.7.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.8.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.8.0', date:'Oct 11, 2026', title:'Minor gameplay changes', sub:'Every Pok\u00e9Mart shelf now has at least one evolution stone', items:[
+    'The Pok\u00e9Mart always stocks at least one evolution stone (or King\u2019s Rock, Dragon Scale, Metal Coat) when someone in your party can use one, on every refresh and reroll. A reserved item is never pushed out to make room.',
+    'If nobody you own can evolve with a stone, none is stocked, as before.',
+    'Rarity pass: King\u2019s Rock, Dragon Scale and Metal Coat are now Uncommon (they only help a couple of pok\u00e9mon) and Focus Band is now Rare.',
+  ] },
   { v:'6.7.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Hoenn bosses can field Kanto and Johto pok\u00e9mon, like Johto bosses always could', items:[
     'Hoenn leaders, the Elite Four and Wallace now field Gen 1 and Gen 2 pok\u00e9mon even when the run does not sell them. Before, a Gen 3-only run quietly dropped most of their hand-picked bodyguards (Glacia\u2019s Lapras and Jynx, Drake\u2019s Dragonite and Charizard, Brawly\u2019s Machamp, Wattson\u2019s Raichu), and a Gen 1+3 run dropped the Gen 2 ones.',
     'Each leader draws on the Gen 1 and Gen 2 pok\u00e9mon that live in Hoenn (the Zubat, Geodude, Machop, Abra, Oddish, Magikarp and Marill lines and a few more) plus the ones that leader was built around. Nobody borrows another leader\u2019s picks, so Flannery does not get a Charizard and Winona does not get a Dragonite. Legendaries stay out of trainer teams.',
