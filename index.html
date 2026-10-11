@@ -803,6 +803,7 @@ kbd{background:var(--panel2);border:1px solid var(--line2);border-radius:5px;pad
 .popvit{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:10.5px;color:var(--muted)}
 .popvit span{border:1px solid var(--line2);border-radius:6px;padding:1px 6px;display:inline-flex;align-items:center;gap:3px}
 .popvit span.full{color:var(--gold);border-color:#5a4a1e}
+.popvit i.vitby{font-style:normal;opacity:.8}
 .popvit img.pix{width:12px;height:12px}
 
 /* version tag — bottom of every screen, in the flow so it never covers a button */
@@ -4003,7 +4004,7 @@ function themePool(themeOrBoss){
      so two leaders don't share a bench (Koga leaves the Ghosts to Agatha). */
   const boss = themeOrBoss && !Array.isArray(themeOrBoss) ? themeOrBoss : null;
   const theme = boss ? boss.theme : themeOrBoss;
-  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && (boss ? inBossPool(k) || !!(boss.bossOnly && boss.bossOnly.includes(k)) : inGens(k)));   // 2.1.0: no trainer fields a legendary; 4.0.0: a leader draws on the run's whole region, the Daycare only on what's sold
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && (boss ? inBossPool(k, null, boss) || !!(boss.bossOnly && boss.bossOnly.includes(k)) : inGens(k)));   // 2.1.0: no trainer fields a legendary; 4.0.0: a leader draws on the run's whole region, the Daycare only on what's sold
   if(!theme) return all;
   const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
@@ -5250,8 +5251,18 @@ const GENS_READY = [1, 2, 3];   // 6.0.0: Gen 3 (Hoenn) joins Kanto and Johto
 const KANTO_ONLY = ['bulbasaur', 'ivysaur', 'venusaur', 'charmander', 'charmeleon', 'charizard', 'squirtle', 'wartortle', 'blastoise',
   'farfetchd', 'porygon', 'tangela', 'zapdos', 'articuno', 'moltres', 'mewtwo'];
 /** Can a boss of this run field it? The run's gens, or the Johto Pokédex when Gen 2 is on. */
-const inBossPool = (id, gens) => { gens = gens || ACTIVE_GENS;
-  return inGens(id, gens) || (gens.includes(2) && genOf(id) === 1 && !KANTO_ONLY.includes(id)); };
+/* 6.7.0 (Sean): Hoenn bosses may likewise field Gen 1 and Gen 2 pokémon the run doesn't sell: the ones that live
+   in Hoenn, plus the handful each leader is hand-built around (Glacia's Lapras and Jynx, Drake's Dragonite and Charizard).
+   Only a Gen 3 boss gets this, so Kanto and Johto benches are untouched. */
+const HOENN_LIVING = ['zubat', 'golbat', 'crobat', 'oddish', 'gloom', 'vileplume', 'bellossom', 'geodude', 'graveler', 'golem',
+  'machop', 'machoke', 'machamp', 'abra', 'kadabra', 'alakazam', 'magikarp', 'gyarados', 'marill', 'azumarill', 'wobbuffet',
+  'magnemite', 'magneton', 'voltorb', 'electrode'];
+/** What this Gen 3 boss may field from outside the run's gens: Hoenn-living species, and its own hand-picked guards, extras and signatures. */
+const hoennBossHas = (boss, id) => HOENN_LIVING.includes(id)
+  || [...(boss.guards || []), ...(boss.also || []), ...(boss.signature || [])].includes(id);
+const inBossPool = (id, gens, boss) => { gens = gens || ACTIVE_GENS;
+  return inGens(id, gens) || (gens.includes(2) && genOf(id) === 1 && !KANTO_ONLY.includes(id))
+    || !!(boss && boss.gen === 3 && gens.includes(3) && genOf(id) < 3 && !SPECIES[id].legendary && hoennBossHas(boss, id)); };
 /* Sean: a Gen 2 run plays ONLY Gen 2 pokémon — plus any Gen 1 line that a Gen 2 pokémon
    belongs to (Onix → Steelix, Magby → Magmar, Pichu → Pikachu…), the whole line. */
 let GEN2_LINKED = null;
@@ -5760,6 +5771,9 @@ const ITEMS = {
 /** How many of a vitamin this pokémon has had. */
 /** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
 const manualCap = G => Math.min(TUNING.manual.max, TUNING.manual.base + Math.floor(((G && G.badges) || 0) / TUNING.manual.badgesPer));
+/** The three vitamin limits, what each is for, and every item that fills it (6.5.2). */
+const VIT_GROUPS = { protein:'Attack', hpup:'HP', carbos:'Speed' };
+const vitMembers = g => Object.keys(ITEMS).filter(k => ITEMS[k].vitamin && (ITEMS[k].group || k) === g);
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
 /** What shelf group an item belongs to, so a Mart roll can spread across them (6.5.0). */
 const STONE_IDS = ['thunderstone','firestone','moonstone','waterstone','leafstone','sunstone','kingsrock','dragonscale','metalcoat'];
@@ -6490,7 +6504,7 @@ function generateAiTeam(spec){
      Giovanni, and so on. A species that evolves is allowed once the run is far
      enough along for this leader to field evolved forms. */
   let offPool = boss && boss.theme
-    ? (boss.guards || []).filter(k => SPECIES[k] && inBossPool(k) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
+    ? (boss.guards || []).filter(k => SPECIES[k] && inBossPool(k, null, boss) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
         && evoDepth(k) <= maxDepth)
     : [];
   if(finalsOnly){ const f = offPool.filter(isFinal); if(f.length >= 2) offPool = f; }
@@ -7532,6 +7546,7 @@ function mergeInto(G, dst, src){
     const n = Math.max(vitaminsTaken(dst, k), vitaminsTaken(src, k));
     if(n){ dst.vit = dst.vit || {}; dst.vit[k] = n; }
   }
+  if(src.vitBy || dst.vitBy){ dst.vitBy = dst.vitBy || {}; for(const k of Object.keys(src.vitBy || {})) dst.vitBy[k] = Math.max(dst.vitBy[k] || 0, src.vitBy[k]); }
   if(src.manuals || dst.manuals) dst.manuals = Math.max(dst.manuals || 0, src.manuals || 0);
   // …and so do the Lucky Egg rounds it has already had
   if(src.eggTicks || dst.eggTicks) dst.eggTicks = Math.max(dst.eggTicks || 0, src.eggTicks || 0);
@@ -7778,7 +7793,8 @@ function buyItem(G, idx, slot, where){
   G.credits -= def.cost; s.bought = true;
   const api = makeGameApi(G);
   def.apply(u, api);
-  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
+  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1;
+    u.vitBy = u.vitBy || {}; u.vitBy[s.id] = (u.vitBy[s.id] || 0) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
   api.log(`Used ${def.name} on ${u.nm}.`);
   return { ok:true };
 }
@@ -8031,12 +8047,12 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, martCatOf, STONE_IDS, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
-    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, endTurnEffects,
+    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
     trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
@@ -8451,7 +8467,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.6.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.7.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -9247,14 +9263,27 @@ function woundLineHtml(u){
 }
 
 /* Vitamins taken, out of the per-pokémon cap. Only shown once it has had some. */
+/** "Counts toward the Speed vitamin limit of 10 per pokémon, shared with Carbos." (6.5.2) */
+function vitLimitText(id){
+  const g = ITEMS[id].group || id, others = vitMembers(g).filter(k => k !== id).map(k => ITEMS[k].name);
+  return ` Counts toward the ${VIT_GROUPS[g]} vitamin limit of ${TUNING.vitaminCap} per pokémon${others.length ? `, shared with ${others.join(' and ')}` : ''}.`;
+}
 function vitLineHtml(u){
-  const ids = ['protein','hpup','carbos'].filter(k => vitaminsTaken(u, k));
-  const egg = u.eggTicks || 0;          // Lucky Egg rounds count toward a cap too
-  if(!ids.length && !egg) return '';
-  return `<div class="popvit">${ids.map(k => {
-    const n = vitaminsTaken(u, k), full = n >= TUNING.vitaminCap;
-    return `<span class="${full ? 'full' : ''}">${itemGlyph(k, ITEMS[k].icon)} ${esc(ITEMS[k].name)} ${n}/${TUNING.vitaminCap}</span>`;
-  }).join('')}${egg ? `<span class="${egg >= TUNING.eggCap ? 'full' : ''}">${itemGlyph('egg', HELD_ITEMS.egg.icon)} Lucky Egg ${egg}/${TUNING.eggCap}</span>` : ''}</div>`;
+  /* 6.5.2: one chip per vitamin LIMIT (Attack, HP, Speed), listing which items filled it, because the role vitamins
+     share the limit of the vitamin they replace: Energy Root counts as a Speed vitamin, Iron and Zinc as HP, Calcium as Attack. */
+  const groups = Object.keys(VIT_GROUPS).filter(k => vitaminsTaken(u, k));
+  const egg = u.eggTicks || 0, man = u.manuals || 0;          // Lucky Egg rounds and Training Manuals have caps too
+  if(!groups.length && !egg && !man) return '';
+  const chips = groups.map(g => {
+    const n = vitaminsTaken(u, g), full = n >= TUNING.vitaminCap, by = u.vitBy || {};
+    const known = vitMembers(g).filter(k => by[k]);
+    const sum = known.reduce((t, k) => t + by[k], 0);
+    const parts = known.map(k => `${esc(ITEMS[k].name)} ×${by[k]}`).concat(n > sum ? [`${esc(ITEMS[g].name)} ×${n - sum}`] : []);   // older saves only know the total
+    return `<span class="${full ? 'full' : ''}" title="${esc(VIT_GROUPS[g])} vitamins share one limit of ${TUNING.vitaminCap}: ${vitMembers(g).map(k => esc(ITEMS[k].name)).join(', ')}">${itemGlyph(g, ITEMS[g].icon)} ${esc(VIT_GROUPS[g])} vitamins ${n}/${TUNING.vitaminCap}${parts.length > 1 || (parts.length && known.length && known[0] !== g) ? ` <i class="vitby">(${parts.join(', ')})</i>` : ''}</span>`;
+  });
+  if(man) chips.push(`<span class="${man >= manualCap(G) ? 'full' : ''}">${itemGlyph('manual', ITEMS.manual.icon)} Training Manuals ${man}/${manualCap(G)}</span>`);
+  if(egg) chips.push(`<span class="${egg >= TUNING.eggCap ? 'full' : ''}">${itemGlyph('egg', HELD_ITEMS.egg.icon)} Lucky Egg ${egg}/${TUNING.eggCap}</span>`);
+  return `<div class="popvit">${chips.join('')}</div>`;
 }
 
 /* 2.2.0 (Sean): the summary shows the EXP pips too — the PC grid has no room
@@ -9483,7 +9512,7 @@ function inspectHtml(){
     const d = ITEMS[inspect.id];
     return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>${rarityTag(d)}<span class="tag">${d.cost}₽</span>
             <span class="tag">permanent</span><br><span class="abil">${esc(d.text)}${
-              d.vitamin ? ` Up to ${TUNING.vitaminCap} per pokémon.` : ''}</span>${stonePreviewHtml(inspect.id)}`;
+              d.vitamin ? vitLimitText(inspect.id) : ''}</span>${stonePreviewHtml(inspect.id)}`;
   }
   if(inspect && inspect.kind === 'held'){
     const d = HELD_ITEMS[inspect.id];
@@ -12814,6 +12843,15 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.7.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Hoenn bosses can field Kanto and Johto pok\u00e9mon, like Johto bosses always could', items:[
+    'Hoenn leaders, the Elite Four and Wallace now field Gen 1 and Gen 2 pok\u00e9mon even when the run does not sell them. Before, a Gen 3-only run quietly dropped most of their hand-picked bodyguards (Glacia\u2019s Lapras and Jynx, Drake\u2019s Dragonite and Charizard, Brawly\u2019s Machamp, Wattson\u2019s Raichu), and a Gen 1+3 run dropped the Gen 2 ones.',
+    'Each leader draws on the Gen 1 and Gen 2 pok\u00e9mon that live in Hoenn (the Zubat, Geodude, Machop, Abra, Oddish, Magikarp and Marill lines and a few more) plus the ones that leader was built around. Nobody borrows another leader\u2019s picks, so Flannery does not get a Charizard and Winona does not get a Dragonite. Legendaries stay out of trainer teams.',
+    'Kanto and Johto bosses are unchanged. Re-measured across all four Gen 3 combinations: every Hoenn boss\u2019s win rate moved by 2 points or less, which is within the noise of the measurement, so no difficulty values needed re-tuning.',
+  ] },
+  { v:'6.6.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The pok\u00e9mon summary shows which vitamin limit each item fills', items:[
+    'A pok\u00e9mon\u2019s summary now shows one line per vitamin limit (Attack, HP and Speed) and lists which items filled it, so Energy Root no longer appears as \u201cCarbos\u201d. Calcium counts as an Attack vitamin, Iron and Zinc as HP vitamins, and Energy Root as a Speed vitamin; the limit of 10 is unchanged.',
+    'The summary also shows Training Manuals against the current limit (it grows with your badges), and a role medicine\u2019s description says which limit it shares and with whom.',
+  ] },
   { v:'6.6.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Training Manuals: the limit grows with your badges', items:[
     'A pok\u00e9mon can now take 1 Training Manual at the start of a run, and one more for every 2 badges you win, up to 5 with all eight. It used to be a flat 3, so early on you must choose who gets the training, and by the Elite Four you can train your main team much further.',
     'The Training Manual\u2019s description and the message you get when a pok\u00e9mon is full both show the current limit.',
@@ -14164,8 +14202,8 @@ function openHelp(){
     <p>The <b>Daycare</b> sells pokémon — nothing is held there, so a reroll always clears the board.
     The <b>PokéMart</b> has three sections. <b>Held items</b> go into your Bag and stay on a pokémon until
     you move them. <b>Medicine &amp; stones</b> are spent the moment you use them, and their boosts stack up
-    all run — but like the real games, a pokémon can take at most <b>${TUNING.vitaminCap} of each vitamin</b>
-    (Protein, HP Up, Carbos). Its summary shows how many it has had. The <b>always in stock</b> X items boost <b>your whole party</b> for the next battle —
+    all run — but like the real games, a pokémon can take at most <b>${TUNING.vitaminCap} vitamins of each kind</b>
+    (Attack, HP and Speed). The role medicines count toward the one they replace: Calcium is an Attack vitamin, Iron and Zinc are HP vitamins, Energy Root is a Speed vitamin. Its summary shows how many it has had, and of which. The <b>always in stock</b> X items boost <b>your whole party</b> for the next battle —
     +${Math.round(TUNING.xItems.pct*100)}% Attack or Speed each, up to ${TUNING.xItems.perBattle} of each per battle. You can
     <b>Reserve</b> a Mart item to keep it through a reroll, and each shop rerolls separately.</p>
 
