@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.6.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.6.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -811,14 +811,27 @@ function woundLineHtml(u){
 }
 
 /* Vitamins taken, out of the per-pokémon cap. Only shown once it has had some. */
+/** "Counts toward the Speed vitamin limit of 10 per pokémon, shared with Carbos." (6.5.2) */
+function vitLimitText(id){
+  const g = ITEMS[id].group || id, others = vitMembers(g).filter(k => k !== id).map(k => ITEMS[k].name);
+  return ` Counts toward the ${VIT_GROUPS[g]} vitamin limit of ${TUNING.vitaminCap} per pokémon${others.length ? `, shared with ${others.join(' and ')}` : ''}.`;
+}
 function vitLineHtml(u){
-  const ids = ['protein','hpup','carbos'].filter(k => vitaminsTaken(u, k));
-  const egg = u.eggTicks || 0;          // Lucky Egg rounds count toward a cap too
-  if(!ids.length && !egg) return '';
-  return `<div class="popvit">${ids.map(k => {
-    const n = vitaminsTaken(u, k), full = n >= TUNING.vitaminCap;
-    return `<span class="${full ? 'full' : ''}">${itemGlyph(k, ITEMS[k].icon)} ${esc(ITEMS[k].name)} ${n}/${TUNING.vitaminCap}</span>`;
-  }).join('')}${egg ? `<span class="${egg >= TUNING.eggCap ? 'full' : ''}">${itemGlyph('egg', HELD_ITEMS.egg.icon)} Lucky Egg ${egg}/${TUNING.eggCap}</span>` : ''}</div>`;
+  /* 6.5.2: one chip per vitamin LIMIT (Attack, HP, Speed), listing which items filled it, because the role vitamins
+     share the limit of the vitamin they replace: Energy Root counts as a Speed vitamin, Iron and Zinc as HP, Calcium as Attack. */
+  const groups = Object.keys(VIT_GROUPS).filter(k => vitaminsTaken(u, k));
+  const egg = u.eggTicks || 0, man = u.manuals || 0;          // Lucky Egg rounds and Training Manuals have caps too
+  if(!groups.length && !egg && !man) return '';
+  const chips = groups.map(g => {
+    const n = vitaminsTaken(u, g), full = n >= TUNING.vitaminCap, by = u.vitBy || {};
+    const known = vitMembers(g).filter(k => by[k]);
+    const sum = known.reduce((t, k) => t + by[k], 0);
+    const parts = known.map(k => `${esc(ITEMS[k].name)} ×${by[k]}`).concat(n > sum ? [`${esc(ITEMS[g].name)} ×${n - sum}`] : []);   // older saves only know the total
+    return `<span class="${full ? 'full' : ''}" title="${esc(VIT_GROUPS[g])} vitamins share one limit of ${TUNING.vitaminCap}: ${vitMembers(g).map(k => esc(ITEMS[k].name)).join(', ')}">${itemGlyph(g, ITEMS[g].icon)} ${esc(VIT_GROUPS[g])} vitamins ${n}/${TUNING.vitaminCap}${parts.length > 1 || (parts.length && known.length && known[0] !== g) ? ` <i class="vitby">(${parts.join(', ')})</i>` : ''}</span>`;
+  });
+  if(man) chips.push(`<span class="${man >= manualCap(G) ? 'full' : ''}">${itemGlyph('manual', ITEMS.manual.icon)} Training Manuals ${man}/${manualCap(G)}</span>`);
+  if(egg) chips.push(`<span class="${egg >= TUNING.eggCap ? 'full' : ''}">${itemGlyph('egg', HELD_ITEMS.egg.icon)} Lucky Egg ${egg}/${TUNING.eggCap}</span>`);
+  return `<div class="popvit">${chips.join('')}</div>`;
 }
 
 /* 2.2.0 (Sean): the summary shows the EXP pips too — the PC grid has no room
@@ -1047,7 +1060,7 @@ function inspectHtml(){
     const d = ITEMS[inspect.id];
     return `<b>${itemGlyph(inspect.id, d.icon)} ${esc(d.name)}</b>${rarityTag(d)}<span class="tag">${d.cost}₽</span>
             <span class="tag">permanent</span><br><span class="abil">${esc(d.text)}${
-              d.vitamin ? ` Up to ${TUNING.vitaminCap} per pokémon.` : ''}</span>${stonePreviewHtml(inspect.id)}`;
+              d.vitamin ? vitLimitText(inspect.id) : ''}</span>${stonePreviewHtml(inspect.id)}`;
   }
   if(inspect && inspect.kind === 'held'){
     const d = HELD_ITEMS[inspect.id];
@@ -4378,6 +4391,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.6.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The pok\u00e9mon summary shows which vitamin limit each item fills', items:[
+    'A pok\u00e9mon\u2019s summary now shows one line per vitamin limit (Attack, HP and Speed) and lists which items filled it, so Energy Root no longer appears as \u201cCarbos\u201d. Calcium counts as an Attack vitamin, Iron and Zinc as HP vitamins, and Energy Root as a Speed vitamin; the limit of 10 is unchanged.',
+    'The summary also shows Training Manuals against the current limit (it grows with your badges), and a role medicine\u2019s description says which limit it shares and with whom.',
+  ] },
   { v:'6.6.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Training Manuals: the limit grows with your badges', items:[
     'A pok\u00e9mon can now take 1 Training Manual at the start of a run, and one more for every 2 badges you win, up to 5 with all eight. It used to be a flat 3, so early on you must choose who gets the training, and by the Elite Four you can train your main team much further.',
     'The Training Manual\u2019s description and the message you get when a pok\u00e9mon is full both show the current limit.',
@@ -5728,8 +5745,8 @@ function openHelp(){
     <p>The <b>Daycare</b> sells pokémon — nothing is held there, so a reroll always clears the board.
     The <b>PokéMart</b> has three sections. <b>Held items</b> go into your Bag and stay on a pokémon until
     you move them. <b>Medicine &amp; stones</b> are spent the moment you use them, and their boosts stack up
-    all run — but like the real games, a pokémon can take at most <b>${TUNING.vitaminCap} of each vitamin</b>
-    (Protein, HP Up, Carbos). Its summary shows how many it has had. The <b>always in stock</b> X items boost <b>your whole party</b> for the next battle —
+    all run — but like the real games, a pokémon can take at most <b>${TUNING.vitaminCap} vitamins of each kind</b>
+    (Attack, HP and Speed). The role medicines count toward the one they replace: Calcium is an Attack vitamin, Iron and Zinc are HP vitamins, Energy Root is a Speed vitamin. Its summary shows how many it has had, and of which. The <b>always in stock</b> X items boost <b>your whole party</b> for the next battle —
     +${Math.round(TUNING.xItems.pct*100)}% Attack or Speed each, up to ${TUNING.xItems.perBattle} of each per battle. You can
     <b>Reserve</b> a Mart item to keep it through a reroll, and each shop rerolls separately.</p>
 

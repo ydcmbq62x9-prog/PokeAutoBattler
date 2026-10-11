@@ -2449,6 +2449,9 @@ const ITEMS = {
 /** How many of a vitamin this pokémon has had. */
 /** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
 const manualCap = G => Math.min(TUNING.manual.max, TUNING.manual.base + Math.floor(((G && G.badges) || 0) / TUNING.manual.badgesPer));
+/** The three vitamin limits, what each is for, and every item that fills it (6.5.2). */
+const VIT_GROUPS = { protein:'Attack', hpup:'HP', carbos:'Speed' };
+const vitMembers = g => Object.keys(ITEMS).filter(k => ITEMS[k].vitamin && (ITEMS[k].group || k) === g);
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
 /** What shelf group an item belongs to, so a Mart roll can spread across them (6.5.0). */
 const STONE_IDS = ['thunderstone','firestone','moonstone','waterstone','leafstone','sunstone','kingsrock','dragonscale','metalcoat'];
@@ -4221,6 +4224,7 @@ function mergeInto(G, dst, src){
     const n = Math.max(vitaminsTaken(dst, k), vitaminsTaken(src, k));
     if(n){ dst.vit = dst.vit || {}; dst.vit[k] = n; }
   }
+  if(src.vitBy || dst.vitBy){ dst.vitBy = dst.vitBy || {}; for(const k of Object.keys(src.vitBy || {})) dst.vitBy[k] = Math.max(dst.vitBy[k] || 0, src.vitBy[k]); }
   if(src.manuals || dst.manuals) dst.manuals = Math.max(dst.manuals || 0, src.manuals || 0);
   // …and so do the Lucky Egg rounds it has already had
   if(src.eggTicks || dst.eggTicks) dst.eggTicks = Math.max(dst.eggTicks || 0, src.eggTicks || 0);
@@ -4467,7 +4471,8 @@ function buyItem(G, idx, slot, where){
   G.credits -= def.cost; s.bought = true;
   const api = makeGameApi(G);
   def.apply(u, api);
-  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
+  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1;
+    u.vitBy = u.vitBy || {}; u.vitBy[s.id] = (u.vitBy[s.id] || 0) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
   api.log(`Used ${def.name} on ${u.nm}.`);
   return { ok:true };
 }
@@ -4725,7 +4730,7 @@ if(typeof module !== 'undefined' && module.exports){
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
-    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, endTurnEffects,
+    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
     trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
