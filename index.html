@@ -5760,11 +5760,11 @@ const ITEMS = {
   /* 4.0.0 — Gen 2 evolution items. Nobody can use them in a Gen 1 run, so the Mart never stocks them there. */
   sunstone:     { name:'Sun Stone', icon:'☀️', tier:2, cost:4, rarity:'common', text:'Evolves Gloom into Bellossom, or Eevee into Espeon.',
                   eligible:u => stonesFor(u.id).includes('sunstone'), apply:(u,G)=>G.evolve(u, 'sunstone') },
-  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'common', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
+  kingsrock:    { name:"King's Rock", icon:'👑', tier:2, cost:4, rarity:'uncommon', text:'Evolves Poliwhirl into Politoed, or Slowpoke into Slowking.',
                   eligible:u => stonesFor(u.id).includes('kingsrock'), apply:(u,G)=>G.evolve(u, 'kingsrock') },
-  dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'common', text:'Evolves Seadra into Kingdra.',
+  dragonscale:  { name:'Dragon Scale', icon:'🐉', tier:2, cost:4, rarity:'uncommon', text:'Evolves Seadra into Kingdra.',
                   eligible:u => stonesFor(u.id).includes('dragonscale'), apply:(u,G)=>G.evolve(u, 'dragonscale') },
-  metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'common', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
+  metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'uncommon', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
                   eligible:u => stonesFor(u.id).includes('metalcoat'), apply:(u,G)=>G.evolve(u, 'metalcoat') },
 };
 
@@ -5848,7 +5848,7 @@ const HELD_ITEMS = {
             text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
-  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'rare',
             text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
   egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
             text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
@@ -5865,16 +5865,16 @@ const HELD_ITEMS = {
   /* 6.5.0 — one held item aimed at each role. Each only works on its own role (the
      others show it greyed out, like Eviolite on a finished evolution). `boss:'none'`
      keeps them off gym leaders, whose difficulty was measured without them. */
-  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'tank',
+  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'tank',
             text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
             when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
-  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'bruiser',
+  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'bruiser',
             text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
             when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
-  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'uncommon', boss:'none', role:'support',
+  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none', role:'support',
             text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
             when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
-  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'cannon',
+  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'cannon',
             text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
             when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
@@ -7388,6 +7388,22 @@ function rollMart(G, payCost){
     note(g, id, wantHeld);
     next.push({ id, held: wantHeld, reserved:false, bought:false });
   });
+  /* 6.8.0 — every shelf carries at least one evolution stone, as long as someone
+     you own can use one: the last open medicine slot is swapped for a stone the
+     party can use. Reserved and already-bought slots are never touched. */
+  const stonePool = pool.filter(k => STONE_IDS.includes(k));
+  if(stonePool.length){
+    const cons = next.map((s, i) => ({ s, i })).filter(o => o.s && !o.s.held);
+    if(cons.length && !cons.some(o => STONE_IDS.includes(o.s.id) && !o.s.bought)){
+      const open = cons.filter(o => !o.s.reserved && !o.s.bought).pop();
+      if(open){
+        const have = cons.map(o => o.s.id);
+        const fresh = stonePool.filter(k => !have.includes(k));
+        const pick = pickWeighted(fresh.length ? fresh : stonePool, ITEMS, rnd());
+        next[open.i] = { id: pick, held:false, reserved:false, bought:false };
+      }
+    }
+  }
   G.mart = next;
   return true;
 }
@@ -8467,7 +8483,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.7.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.9.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -12843,6 +12859,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.9.0', date:'Oct 11, 2026', title:'Balance patch', sub:'The four role-specific held items are now Rare', items:[
+    'Bulk Plate, Black Belt, Soothe Bell and Scope Lens are now Rare instead of Uncommon, so each turns up in a shelf slot 25% as often as a Common item instead of 60%. The Pok\u00e9dex shows the new chance.',
+  ] },
+  { v:'6.8.0', date:'Oct 11, 2026', title:'Minor gameplay changes', sub:'Every Pok\u00e9Mart shelf now has at least one evolution stone', items:[
+    'The Pok\u00e9Mart always stocks at least one evolution stone (or King\u2019s Rock, Dragon Scale, Metal Coat) when someone in your party can use one, on every refresh and reroll. A reserved item is never pushed out to make room.',
+    'If nobody you own can evolve with a stone, none is stocked, as before.',
+    'Rarity pass: King\u2019s Rock, Dragon Scale and Metal Coat are now Uncommon (they only help a couple of pok\u00e9mon) and Focus Band is now Rare.',
+  ] },
   { v:'6.7.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Hoenn bosses can field Kanto and Johto pok\u00e9mon, like Johto bosses always could', items:[
     'Hoenn leaders, the Elite Four and Wallace now field Gen 1 and Gen 2 pok\u00e9mon even when the run does not sell them. Before, a Gen 3-only run quietly dropped most of their hand-picked bodyguards (Glacia\u2019s Lapras and Jynx, Drake\u2019s Dragonite and Charizard, Brawly\u2019s Machamp, Wattson\u2019s Raichu), and a Gen 1+3 run dropped the Gen 2 ones.',
     'Each leader draws on the Gen 1 and Gen 2 pok\u00e9mon that live in Hoenn (the Zubat, Geodude, Machop, Abra, Oddish, Magikarp and Marill lines and a few more) plus the ones that leader was built around. Nobody borrows another leader\u2019s picks, so Flannery does not get a Charizard and Winona does not get a Dragonite. Legendaries stay out of trainer teams.',
