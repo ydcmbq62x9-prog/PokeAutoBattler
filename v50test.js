@@ -27,7 +27,7 @@ check(E.rarityOf({ rare:true }) === 'rare' && E.rarityOf({}) === 'common', 'an i
 /* rival prizes and Gift Items use the same odds */
 { const seen = {};
   for(let s = 1; s < 1200; s++){ const G = E.newGame(s); G.badges = 8; G.turn = 30; const p = E.rivalPrize ? E.rivalPrize(G, 1) : null;
-    if(p && p.item) seen[E.HELD_ITEMS[p.item].rarity] = (seen[E.HELD_ITEMS[p.item].rarity] || 0) + 1; }
+    if(p && p.item && !E.HELD_ITEMS[p.item].role) seen[E.HELD_ITEMS[p.item].rarity] = (seen[E.HELD_ITEMS[p.item].rarity] || 0) + 1; }
   const per = {}; Object.values(E.HELD_ITEMS).filter(d => !d.role).forEach(d => per[d.rarity] = (per[d.rarity] || 0) + 1);   // 6.5.0: role items are stocked by ownership, not by rarity alone
   const ok = !E.rivalPrize || (seen.rare / per.rare) < (seen.common / per.common) * 0.4;
   check(ok, `rival prizes favour common items over rare ones (${JSON.stringify(seen)})`); }

@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.8.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.9.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.9.0', date:'Oct 11, 2026', title:'Balance patch', sub:'The four role-specific held items are now Rare', items:[
+    'Bulk Plate, Black Belt, Soothe Bell and Scope Lens are now Rare instead of Uncommon, so each turns up in a shelf slot 25% as often as a Common item instead of 60%. The Pok\u00e9dex shows the new chance.',
+  ] },
   { v:'6.8.0', date:'Oct 11, 2026', title:'Minor gameplay changes', sub:'Every Pok\u00e9Mart shelf now has at least one evolution stone', items:[
     'The Pok\u00e9Mart always stocks at least one evolution stone (or King\u2019s Rock, Dragon Scale, Metal Coat) when someone in your party can use one, on every refresh and reroll. A reserved item is never pushed out to make room.',
     'If nobody you own can evolve with a stone, none is stocked, as before.',

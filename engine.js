@@ -2553,16 +2553,16 @@ const HELD_ITEMS = {
   /* 6.5.0 — one held item aimed at each role. Each only works on its own role (the
      others show it greyed out, like Eviolite on a finished evolution). `boss:'none'`
      keeps them off gym leaders, whose difficulty was measured without them. */
-  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'tank',
+  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'tank',
             text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
             when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
-  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'bruiser',
+  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'bruiser',
             text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
             when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
-  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'uncommon', boss:'none', role:'support',
+  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none', role:'support',
             text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
             when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
-  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'cannon',
+  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'cannon',
             text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
             when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
