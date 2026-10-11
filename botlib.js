@@ -40,7 +40,11 @@ function buyMart(G){
     const ok = medTarget(G, s.id);
     if(ok >= 0) E.buyItem(G, i, ok);
   }
-  while(G.bag.length){ const f = G.team.find(u => !u.held); if(!f) break; if(!E.equipHeld(G, 0, f).ok) break; }
+  /* 6.5.0: a role item goes on a pokémon of its role (a human would); the rest on the first free one. */
+  while(G.bag.length){
+    const r = (E.HELD_ITEMS[G.bag[0]] || {}).role;
+    const f = (r && G.team.find(u => !u.held && E.roleOf(u) === r)) || G.team.find(u => !u.held && !(r));
+    if(!f) break; if(!E.equipHeld(G, 0, f).ok) break; }
 }
 
 /** How much a pokémon is worth RIGHT NOW. Only its HP is wounded: a veteran on

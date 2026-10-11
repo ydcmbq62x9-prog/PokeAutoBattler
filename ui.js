@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.4.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.5.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -356,7 +356,19 @@ const SILVER_LINES = [
     lost:"…I lost. Maybe I've been doing this all wrong.",
     won:"I'm going to the top. Try and keep up." },
 ];
-const rivalLines = (G, m) => { const L = rivalOf(G).id === 'silver' ? SILVER_LINES : RIVAL_LINES; return L[m] || L[0]; };
+/* 6.5.0: May, the Hoenn rival: friendly, a little competitive, always smiling. */
+const MAY_LINES = [
+  { hi:"Hi! I was hoping we'd run into each other. Let's have a battle and see how we're both doing!",
+    lost:"Wow, you're good! Okay, okay, I'll train twice as hard. Just you wait!",
+    won:"Yes! We did it! Don't worry, you'll get me next time." },
+  { hi:"There you are! I've been training so much with my team. Ready to see what they can do?",
+    lost:"Aw, really? I thought we had it that time. But that was fun, let's go again later!",
+    won:"Phew, that was close! You've got to keep up if you want to beat me to the League." },
+  { hi:"This is it! I've got a team I'm proud of, and I want to show you how far we've come!",
+    lost:"You win. And honestly? I'm not even sad. Let's both go as far as we can.",
+    won:"We won! Thank you for a great battle. See you at the Pokémon League!" },
+];
+const rivalLines = (G, m) => { const id = rivalOf(G).id; const L = id === 'silver' ? SILVER_LINES : id === 'may' ? MAY_LINES : RIVAL_LINES; return L[m] || L[0]; };
 
 /* A gym leader / Elite Four / Champion portrait, when the Sprites folder has one.
    Returns '' otherwise so every caller keeps its old look. */
@@ -4366,6 +4378,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.5.0', date:'Oct 10, 2026', title:'Major gameplay update', sub:'May joins as the Hoenn rival, every role gets its own items, and the Mart stops rolling all one kind', items:[
+    'May is now the Gen 3 rival, with her own portrait and lines. Like Blue\u2019s Eevee, her Support is always the same pok\u00e9mon: a Ralts that grows up through Kirlia into Gardevoir, alongside her Taillow and a starter that beats yours.',
+    'The Mart no longer rolls a shelf of one kind. No shelf repeats an item, and no more than half of a shelf\u2019s slots share a category: medicine splits into vitamins, evolution items and boosts, held items into stat, trigger and economy. Reserved items still stay put and count toward the mix. (The very first shelf only sells Protein and HP Up, so it is unchanged.)',
+    'Four role medicines, each a stronger vitamin only that role can take: Iron (+9 HP, Tanks), Calcium (+10 Attack, Cannons), Zinc (+5 HP and +6 Speed, Supports) and Energy Root (+4 to every stat, Bruisers). They count toward the same cap of ten as the vitamin they replace, so a role vitamin makes a slot worth more but never raises the ceiling.',
+    'Training Manual: trains a pok\u00e9mon a little in the way its role grows (a Tank mostly HP, a Cannon mostly Attack), up to 3 per pok\u00e9mon.',
+    'Four role held items, greyed out on the wrong role like Eviolite: Bulk Plate (Tank, +25% HP and 8% less damage), Black Belt (Bruiser, +14% HP and Attack), Soothe Bell (Support, heals 50% bigger and +15% Speed) and Scope Lens (Cannon, +28% Attack, \u22128% HP).',
+    'The Mart only stocks a role item if you own a pok\u00e9mon of that role. Gym leaders, Elite Four and rivals never carry them, so no boss was changed.',
+  ] },
   { v:'6.4.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The Pok\u00e9dex uses real Pok\u00e9dex numbers and order', items:[
     'The Pok\u00e9dex now numbers every pok\u00e9mon with its real National Pok\u00e9dex number and lists them in that order, from Bulbasaur #001 through Jirachi #385, instead of numbering them by shop tier. The numbers skip the pok\u00e9mon the game doesn\u2019t have, so Ivysaur is still #002 and Pikachu is #025.' ] },
   { v:'6.4.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Roselia was the weakest pok\u00e9mon in the game; now it holds its own', items:[

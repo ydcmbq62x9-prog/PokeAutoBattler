@@ -686,7 +686,7 @@ try{
     // a kind is a promise about where the effect shows up
     const u0 = E.makeUnit('squirtle', 0); u0.held = k;
     const movesStats = E.heldStats(u0).hp || E.heldStats(u0).atk || E.heldStats(u0).spd;
-    check(!!(h.stat || h.pct) === !!movesStats, k + ': stat bonus and heldStats disagree');
+    check(!!(h.stat || h.pct) === !!movesStats || !!h.role, k + ': stat bonus and heldStats disagree');   // 6.5.0: a role item does nothing on a squirtle
     if(h.kind === 'economy')
       check(!movesStats && !h.reduce && !h.cutPct && !h.unresist && !h.superBoost, k + ' is economy but touches the fight');
   }

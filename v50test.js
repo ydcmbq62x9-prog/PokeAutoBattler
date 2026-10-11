@@ -16,9 +16,9 @@ check(E.rarityOf({ rare:true }) === 'rare' && E.rarityOf({}) === 'common', 'an i
 
 /* the shelf follows the weights: uncommon ~0.6x a common, rare ~0.25x */
 { const held = { common:0, uncommon:0, rare:0 }, per = {};
-  Object.values(E.HELD_ITEMS).forEach(d => per[d.rarity] = (per[d.rarity] || 0) + 1);
+  Object.values(E.HELD_ITEMS).filter(d => !d.role).forEach(d => per[d.rarity] = (per[d.rarity] || 0) + 1);   // 6.5.0: role items are stocked by ownership, not by rarity alone
   for(let s = 1; s < 1500; s++){ const G = E.newGame(s); G.turn = 30; G.badges = 8; G.team = [E.makeUnit('abra', 0)];
-    E.rollMart(G, false); for(const m of G.mart) if(m.held) held[E.HELD_ITEMS[m.id].rarity]++; }
+    E.rollMart(G, false); for(const m of G.mart) if(m.held && !E.HELD_ITEMS[m.id].role) held[E.HELD_ITEMS[m.id].rarity]++; }
   const each = r => held[r] / per[r];
   const u = each('uncommon') / each('common'), r = each('rare') / each('common');
   check(u > 0.5 && u < 0.72, `an uncommon held item turns up ~${T.rarity.uncommon.weight}× as often as a common one (${u.toFixed(2)}×)`);
@@ -28,7 +28,7 @@ check(E.rarityOf({ rare:true }) === 'rare' && E.rarityOf({}) === 'common', 'an i
 { const seen = {};
   for(let s = 1; s < 1200; s++){ const G = E.newGame(s); G.badges = 8; G.turn = 30; const p = E.rivalPrize ? E.rivalPrize(G, 1) : null;
     if(p && p.item) seen[E.HELD_ITEMS[p.item].rarity] = (seen[E.HELD_ITEMS[p.item].rarity] || 0) + 1; }
-  const per = {}; Object.values(E.HELD_ITEMS).forEach(d => per[d.rarity] = (per[d.rarity] || 0) + 1);
+  const per = {}; Object.values(E.HELD_ITEMS).filter(d => !d.role).forEach(d => per[d.rarity] = (per[d.rarity] || 0) + 1);   // 6.5.0: role items are stocked by ownership, not by rarity alone
   const ok = !E.rivalPrize || (seen.rare / per.rare) < (seen.common / per.common) * 0.4;
   check(ok, `rival prizes favour common items over rare ones (${JSON.stringify(seen)})`); }
 

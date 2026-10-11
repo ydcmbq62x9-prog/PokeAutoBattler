@@ -602,9 +602,9 @@ const ELITE_FOUR3 = [
 const CHAMPION3 = { id:'wallace-champion', person:'wallace', name:'Wallace', title:'Champion', gen:3, theme:['Water'], guards:['milotic','ludicolo','gardevoir','altaria','walrein','wailord','swampert','sharpedo'],
   also:['milotic', 'kyogre'],
   blurb:'Hoenn’s Champion, with Milotic as elegant and merciless as ever. There is no counter-pick here.', calib:1.246 };
-const RIVAL3 = { id:'may', name:'May', title:'Rival', gen:3, theme:null, bird:'taillow', support:null,
+const RIVAL3 = { id:'may', name:'May', title:'Rival', gen:3, theme:null, bird:'taillow', support:'ralts',   // 6.5.0: like Blue's Eevee, her Support is always the same one: Ralts, who grows up with her
   starters:{ Grass:'treecko', Fire:'torchic', Water:'mudkip' },
-  blurb:'She picked the starter that beats yours, same as always. Three times a run, getting sharper each time.' };
+  blurb:'She picked the starter that beats yours, with Taillow and a Ralts that grows up beside her. Three times a run, getting sharper each time.' };
 /* 6.0.0 — STEVEN, the Gen 3 secret boss. Like Red and Oak, he never battles on
    the schedule: the run decides from its seed whether he waits after the
    Champion (one chance, no rematch), following the exact Red/Oak pattern. */
@@ -2394,6 +2394,28 @@ const ITEMS = {
   carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
                   eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
                   apply:(u,G)=>G.boost(u,{spd:10}) },
+  /* 6.5.0 — role medicine. Each is a stronger vitamin that only a pokémon of
+     one role can take. They share the cap of the vitamin they replace (`group`),
+     so ten of any mix is still the most a pokémon can have: a role vitamin makes
+     a slot worth more, it does not raise the ceiling. */
+  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', text:'+9 HP, permanently. Tanks only.',
+                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:9}) },
+  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', text:'+10 Attack, permanently. Cannons only.',
+                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{atk:10}) },
+  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', text:'+5 HP and +6 Speed, permanently. Supports only.',
+                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:5, spd:6}) },
+  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', text:'+4 HP, +4 Attack and +4 Speed, permanently. Bruisers only.',
+                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:4, atk:4, spd:4}) },
+  /* Training: stat growth shaped by the pokémon's own role (a Tank takes it as HP,
+     a Cannon as Attack), without a level. At most 3 per pokémon. */
+  manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost', cap:3,
+                  text:'Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Up to 3 per pokémon.',
+                  eligible:u => ((u && u.manuals) || 0) < 3,
+                  apply:(u,G)=>{ G.train(u, { hp:6, atk:6, spd:6 }); u.manuals = (u.manuals || 0) + 1; } },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
@@ -2424,6 +2446,10 @@ const ITEMS = {
 
 /** How many of a vitamin this pokémon has had. */
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
+/** What shelf group an item belongs to, so a Mart roll can spread across them (6.5.0). */
+const STONE_IDS = ['thunderstone','firestone','moonstone','waterstone','leafstone','sunstone','kingsrock','dragonscale','metalcoat'];
+const martCatOf = (id, held) => held ? ((HELD_ITEMS[id] || {}).kind || 'stat')
+  : ITEMS[id] ? (ITEMS[id].vitamin ? 'vitamin' : STONE_IDS.includes(id) ? 'stone' : 'boost') : 'boost';
 
 /** The stone a line needs (the first one, for a branching line). */
 const stoneFor = id => { const s = stonesFor(id); return s.length ? s[0] : null; };
@@ -2507,6 +2533,21 @@ const HELD_ITEMS = {
             text:'35% of the damage it deals heals your most-hurt pokémon (itself included).', bell:0.35 },
   helmet: { name:'Rocky Helmet', icon:'🪖', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
             text:'Anything that hits it takes 10% of its own max HP.', helmet:0.10 },
+  /* 6.5.0 — one held item aimed at each role. Each only works on its own role (the
+     others show it greyed out, like Eviolite on a finished evolution). `boss:'none'`
+     keeps them off gym leaders, whose difficulty was measured without them. */
+  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'tank',
+            text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
+            when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
+  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'bruiser',
+            text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
+            when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
+  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'uncommon', boss:'none', role:'support',
+            text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
+            when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
+  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'cannon',
+            text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
+            when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
      cost attached, so where you put it is a decision. Two are Sean's (Iron
      Ball, Heart Scale). `boss:'elite'`: gym leaders never hold them, but each
@@ -2659,7 +2700,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       role:roleOf(u), atk0:effAtk(u), spd0:effSpd(u), rallies:0,
       st:null, stHad:{}, shield:0, focus:0,
       // the held item rides along: its flat reduction, and one use of a trigger
-      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct) || 0,
+      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct && (!h.when || h.when(u))) ? h.cutPct : 0,
       moveHp:0, moveHpCap: Math.max(1, Math.round(hp * TUNING.moveGuardCap.hpPct)) };
   };
 
@@ -2813,7 +2854,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     const th = heldOf(t);
     if(th && th.noHeal){ if(!t.ironSaid){ t.ironSaid = true; B.log(`${t.nm}'s ${th.name} stops it from being healed for the rest of this battle.`); } return 0; }
     const sh = src && heldOf(src);
-    if(sh && sh.healBoost) n = Math.round(n * (1 + sh.healBoost));
+    if(sh && sh.healBoost && (!sh.when || sh.when(src))) n = Math.round(n * (1 + sh.healBoost));
     const was = t.hp;
     t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff');
     if(src && t.hp > was) src.rHealed = (src.rHealed || 0) + (t.hp - was);   // 2.0.0: recap
@@ -3440,7 +3481,7 @@ function rivalCore(G){
 function rivalLineup(G, m){
   const R = rivalCore(G), size = TUNING.rival.size[m];
   const rnd = makeRng(mix32((G.seed || 1) ^ 0x7f4a7c15, 10 + m));
-  const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy');   // no Amulet Coins in a fight
+  const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy' && !HELD_ITEMS[k].role);   // no Amulet Coins in a fight; role items are for your own roster
   return R.core.slice(0, size).map((base, i) => {
     // his Eevee stays an Eevee the first time, then evolves (1.4.0)
     const line = base === 'eevee' ? ['eevee', 'eevee', R.eevo || rivalEevo(G)] : evoLine(base);
@@ -3745,6 +3786,7 @@ function makeGameApi(G){
   return {
     log: txt => { G.log.push(txt); if(G.log.length > 60) G.log.shift(); },
     team: () => G.team,
+    train: (u, d) => growUnit(u, d),
     boost: (u, d) => {
       if(!u) return;
       if(d.atk) u.atk = Math.max(0, u.atk + d.atk);
@@ -3982,21 +4024,40 @@ function rollMart(G, payCost){
   const pool = Object.keys(ITEMS).filter(k =>
     ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u))
       // vitamins are for anyone until someone owns a pokémon that has maxed them
-      || (ITEMS[k].vitamin && !owned.length)));
-  const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier);
+      || (ITEMS[k].vitamin && !owned.length && !ITEMS[k].role)));
+  const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier
+    && (!HELD_ITEMS[k].role || !owned.length || owned.some(u => roleOf(u) === HELD_ITEMS[k].role)));   // 6.5.0: never a role item nobody you own can use
   /* The shelf is [consumables…, held…]. Consumables keep the indices they have
      always had, and held slots are appended, so a reserved item stays put. */
   const plan = [];
   for(let i = 0; i < martSlotsFor(tierFor(G)); i++) plan.push(false);
   if(!(G.mods && G.mods.noitems)) for(let i = 0; i < heldSlotsFor(tierFor(G)); i++) plan.push(true);   // 4.12.0: No Held Items
+  /* 6.5.0 — a spread, not a pile. Each shelf is built so one reroll can't be all
+     one kind: the same item never appears twice while there is another to put
+     there, and a shelf of two or more is never all one category
+     (vitamin / stone / boost for medicine; stat / trigger / economy for held).
+     Only a shelf that is about to be all one kind is steered, so every item
+     keeps the rarity it was measured at.
+     Reserved items stay where they are and count toward the mix. */
+  const groups = { false: { n: plan.filter(w => !w).length, ids: [], cats: {} },
+                   true:  { n: plan.filter(w => w).length,  ids: [], cats: {} } };
+  const note = (g, id, held) => { g.ids.push(id); const c = martCatOf(id, held); g.cats[c] = (g.cats[c] || 0) + 1; };
+  const keep = plan.map((wantHeld, i) => { const prev = G.mart[i];
+    const ok = prev && prev.reserved && !prev.bought && !!prev.held === wantHeld;
+    if(ok) note(groups[wantHeld], prev.id, wantHeld);
+    return ok ? prev : null; });
   const next = [];
   plan.forEach((wantHeld, i) => {
-    const prev = G.mart[i];
-    if(prev && prev.reserved && !prev.bought && !!prev.held === wantHeld){ next.push(prev); return; }
-    const src = wantHeld ? heldPool : pool;
+    if(keep[i]){ next.push(keep[i]); return; }
+    const src = wantHeld ? heldPool : pool, defs = wantHeld ? HELD_ITEMS : ITEMS, g = groups[wantHeld];
     if(!src.length) return;
-    next.push({ id: pickWeighted(src, wantHeld ? HELD_ITEMS : ITEMS, rnd()),
-                held: wantHeld, reserved:false, bought:false });
+    const capCat = Math.max(1, g.n - 1);                       // only the LAST slot is steered: the shelf is never all one category
+    let cands = src.filter(k => !g.ids.includes(k) && (g.cats[martCatOf(k, wantHeld)] || 0) < capCat);
+    if(!cands.length) cands = src.filter(k => !g.ids.includes(k));          // thin pool: allow a repeat of a category…
+    if(!cands.length) cands = src;                                           // …and finally of an item
+    const id = pickWeighted(cands, defs, rnd());
+    note(g, id, wantHeld);
+    next.push({ id, held: wantHeld, reserved:false, bought:false });
   });
   G.mart = next;
   return true;
@@ -4156,6 +4217,7 @@ function mergeInto(G, dst, src){
     const n = Math.max(vitaminsTaken(dst, k), vitaminsTaken(src, k));
     if(n){ dst.vit = dst.vit || {}; dst.vit[k] = n; }
   }
+  if(src.manuals || dst.manuals) dst.manuals = Math.max(dst.manuals || 0, src.manuals || 0);
   // …and so do the Lucky Egg rounds it has already had
   if(src.eggTicks || dst.eggTicks) dst.eggTicks = Math.max(dst.eggTicks || 0, src.eggTicks || 0);
   dst.hp  = Math.max(dst.hp,  src.hp);
@@ -4396,12 +4458,12 @@ function buyItem(G, idx, slot, where){
   if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
   if(!u) return { ok:false, why:'Pick a pokémon first.' };
   if(!canUseItem(s.id, u)) return { ok:false, why: def.vitamin
-    ? `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`
+    ? (def.role && roleOf(u) !== def.role ? `${def.name} is only for ${ROLES[def.role].name}s.` : `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`)
     : `${def.name} does nothing for ${u.nm}.` };
   G.credits -= def.cost; s.bought = true;
   const api = makeGameApi(G);
   def.apply(u, api);
-  if(def.vitamin){ u.vit = u.vit || {}; u.vit[s.id] = vitaminsTaken(u, s.id) + 1; }
+  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
   api.log(`Used ${def.name} on ${u.nm}.`);
   return { ok:true };
 }
@@ -4652,7 +4714,7 @@ if(typeof module !== 'undefined' && module.exports){
   module.exports = { NATDEX, M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
-    heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
+    heldSlotsFor, martCatOf, STONE_IDS, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,

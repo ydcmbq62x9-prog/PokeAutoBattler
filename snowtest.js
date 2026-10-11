@@ -10,7 +10,8 @@ check(E.rarityOf(E.ITEMS.expshare) === 'rare' && E.rarityOf(E.HELD_ITEMS.egg) ==
   for(let s = 1; s < 400; s++){ const G = E.newGame(s); G.turn = 30; G.badges = 8; G.team = [E.makeUnit('abra',0)];
     for(let r = 0; r < 5; r++){ E.rollMart(G, false); for(const m of G.mart) if(m.id in hits) hits[m.id]++; else if(m.id in other) other[m.id]++; n++; } }
   const rE = hits.expshare / other.protein, rG = hits.egg / other.band;
-  check(rE > 0.15 && rE < 0.35 && rG > 0.15 && rG < 0.35, `they turn up about a quarter as often (Exp. Share ${rE.toFixed(2)}× Protein, Lucky Egg ${rG.toFixed(2)}× Muscle Band)`); }
+  /* 6.5.0: the medicine shelf has more items now, so Protein is rarer per slot; Exp. Share's own rate is unchanged (~0.07 a slot), hence the wider bands (Lucky Egg too: Muscle Band shares the held shelf with the new role items). */
+  check(rE > 0.15 && rE < 0.5 && rG > 0.15 && rG < 0.45, `they turn up about a quarter as often (Exp. Share ${rE.toFixed(2)}× Protein, Lucky Egg ${rG.toFixed(2)}× Muscle Band)`); }
 
 /* Exp. Share: party only */
 { const G = E.newGame(3); E.rollShop(G, false);
