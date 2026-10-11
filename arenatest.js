@@ -41,7 +41,8 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     if(start.vert) check(start.ys.every(o => o.side === 'p' ? o.y > o.mid : o.y < o.mid), `${w}px: phone board: theirs on top, yours below`);   // 4.13.0
     else check(start.left && start.right, `${w}px: your side on the left, theirs on the right`);
     check(start.intro && /wants to battle|blocks the way/.test(start.introTxt), `${w}px: the intro says "${start.introTxt.replace(/\s+/g, ' ').trim().slice(0, 40)}"`);
-    await page.waitForTimeout(2200);
+    await page.waitForFunction(() => !document.querySelector('.introban'), null, { timeout: 15000 }).catch(() => {});   // wait for the intro to clear, not a fixed 2.2s
+    await page.waitForFunction(() => typeof battle !== "undefined" && battle && battle.i > 0, null, { timeout: 15000 }).catch(() => {});
     check(await page.evaluate(() => !document.querySelector('.introban')), `${w}px: the intro clears before the fight`);
     const seen = await page.evaluate(() => new Promise(res => {
       let nums = 0, shots = 0; const keep = document.querySelector('.bstage');

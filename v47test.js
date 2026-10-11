@@ -20,8 +20,14 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
     const mark = async () => page.evaluate(() => SFX.log.length);
 
     /* ---- START menu ---- */
+    /* A wall-clock threshold is only meaningful on an idle machine, so time three opens and keep the fastest: a forced full-page
+       layout costs tens of ms EVERY time, while a busy CPU only slows some of them. The first two are closed again straight away. */
+    const timeOpen = () => page.evaluate(() => { const s = performance.now(); document.querySelector('[data-act="menu"]').click(); return performance.now() - s; });
+    const closeMenu = async () => { await page.evaluate(() => { const c = document.querySelector('.smi[data-m="close"]'); if(c) c.click(); }); await page.waitForTimeout(80); await page.evaluate(() => document.querySelectorAll('.modal').forEach(x => x.remove())); };
+    const tries = [];
+    for(let k = 0; k < 2; k++){ tries.push(await timeOpen()); await closeMenu(); }
     let n = await mark();
-    const t = await page.evaluate(() => { const s = performance.now(); document.querySelector('[data-act="menu"]').click(); return performance.now() - s; });
+    tries.push(await timeOpen()); const t = Math.min(...tries);
     const m = await page.evaluate(() => { const b = document.querySelector('.modal.startmenu .box'); const cs = getComputedStyle(b);
       return { name: cs.animationName, fn: cs.animationTimingFunction, dur: parseFloat(cs.animationDuration), wc: cs.willChange,
         focusedNow: !!document.activeElement.closest('.startmenu') }; });

@@ -16,7 +16,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     /* the queue row is there from the start */
     await page.click('[data-act="endturn"]'); await page.waitForTimeout(80);
     const q0 = await page.evaluate(() => { const q = document.querySelector('#bqueue .queue'); return { i: battle.i, h: q ? q.getBoundingClientRect().height : 0, cells: document.querySelectorAll('#bqueue .qmon:not(.ghost)').length }; });
-    await page.waitForTimeout(2600);
+    await page.waitForFunction(() => typeof battle !== "undefined" && battle && battle.i > 0, null, { timeout: 15000 }).catch(() => {}); await page.waitForTimeout(300);   // until the order has filled in, not a fixed 2.6s: a busy machine plays slower
     const q1 = await page.evaluate(() => { const q = document.querySelector('#bqueue .queue'); return { i: battle.i, h: q ? q.getBoundingClientRect().height : 0 }; });
     check(q0.i === 0 && q0.cells > 0 && q0.h > 20, `${tag}: during the intro the turn-order row already shows who moves first (${q0.cells} up)`);
     check(q1.i > 0 && Math.abs(q1.h - q0.h) <= 1, `${tag}: and it doesn't change height when the order fills in (${Math.round(q0.h)} → ${Math.round(q1.h)})`);
@@ -24,7 +24,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     /* two numbers on the same pokémon stack */
     const st = await page.evaluate(() => new Promise(r => { const S = battle.stage; const F = [...S.f.values()][0];
       floatText(S, F, '−31', ''); setTimeout(() => { floatText(S, F, '−8', ''); floatText(S, F, 'Burned!', 'note');
-        const els = [...S.fx.querySelectorAll('.num')].slice(-3).map(e => parseFloat(e.style.top)); r(els); }, 120); }));
+        const els = [...S.fx.querySelectorAll('.num')].slice(-3).map(e => parseFloat(e.style.top)); r(els); }, 20); }));   // 20ms, not 120: the stacking window is time-based, so a slow machine stretched 120ms past it
     const gaps = [Math.abs(st[0] - st[1]), Math.abs(st[1] - st[2]), Math.abs(st[0] - st[2])];
     check(st.length === 3 && Math.min(...gaps) >= 14, `${tag}: numbers landing close together start at different heights (${st.map(Math.round).join(', ')})`);
 

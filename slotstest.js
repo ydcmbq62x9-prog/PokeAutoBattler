@@ -100,7 +100,7 @@ const lines = r => r.steps.flatMap(s => s.lines);
     await page.click('[data-act="pc"][data-i="2"]'); await page.waitForTimeout(150);
     box = await page.evaluate(() => G.pc.map(u => u.box).join());
     check(box === '2', `${w}px: tap a stored pokémon, tap any box — it moves (${box})`);
-    await page.reload(); await page.waitForTimeout(300);
+    await page.reload(); await page.waitForFunction(() => typeof G !== "undefined" && G && G.pc && G.pc.length, null, { timeout: 15000 }).catch(() => {}); await page.waitForTimeout(100);   // wait for the reloaded game, not a fixed time: a busy machine loads slowly
     box = await page.evaluate(() => G.pc.map(u => u.box).join());
     check(box === '2', `${w}px: the PC layout survives a reload`);
     const sw = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
