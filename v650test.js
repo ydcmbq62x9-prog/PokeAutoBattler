@@ -58,6 +58,8 @@ check(roleBad === 0, 'a role item is only stocked when you own a pokémon of tha
     lines: MAY_LINES.length === 3 && MAY_LINES.every(l => l.hi && l.lost && l.won), art: bossArt(RIVAL3, 'hero').includes('<img'),
     items: ['ironvit','calcium','zinc','energyroot','manual'].every(k => ITEMS[k]) && ['plate','gi','sbell','scope'].every(k => HELD_ITEMS[k]) }; });
   check(r.sprite, 'May has her sprite'); check(r.lines, 'May has her three meeting lines'); check(r.art, 'her portrait renders'); check(r.items, 'the new items exist in the page');
+  const art = await p.evaluate(() => ['ironvit','calcium','zinc','energyroot','manual','plate','gi','sbell','scope'].filter(k => !SPRITES[k]));
+  check(art.length === 0, 'every new item has artwork' + (art.length ? ' (missing ' + art + ')' : ''));
   check(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''));
   await b.close(); console.log(fails ? fails + ' FAILED' : 'all passed'); process.exit(fails ? 1 : 0);
 })();

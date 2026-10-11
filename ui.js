@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.5.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.5.1', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4378,6 +4378,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.5.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The nine new items have their own artwork', items:[
+    'Iron, Calcium, Zinc, Energy Root, Training Manual, Bulk Plate, Black Belt, Soothe Bell and Scope Lens now show their own pixel art in the Mart, the Bag, the Pok\u00e9dex and on the pok\u00e9mon holding them, instead of an emoji.',
+  ] },
   { v:'6.5.0', date:'Oct 10, 2026', title:'Major gameplay update', sub:'May joins as the Hoenn rival, every role gets its own items, and the Mart stops rolling all one kind', items:[
     'May is now the Gen 3 rival, with her own portrait and lines. Like Blue\u2019s Eevee, her Support is always the same pok\u00e9mon: a Ralts that grows up through Kirlia into Gardevoir, alongside her Taillow and a starter that beats yours.',
     'The Mart no longer rolls a shelf of one kind. No shelf repeats an item, and no more than half of a shelf\u2019s slots share a category: medicine splits into vitamins, evolution items and boosts, held items into stat, trigger and economy. Reserved items still stay put and count toward the mix. (The very first shelf only sells Protein and HP Up, so it is unchanged.)',
