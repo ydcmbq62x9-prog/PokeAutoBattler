@@ -692,7 +692,7 @@ function themePool(themeOrBoss){
      so two leaders don't share a bench (Koga leaves the Ghosts to Agatha). */
   const boss = themeOrBoss && !Array.isArray(themeOrBoss) ? themeOrBoss : null;
   const theme = boss ? boss.theme : themeOrBoss;
-  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && (boss ? inBossPool(k) || !!(boss.bossOnly && boss.bossOnly.includes(k)) : inGens(k)));   // 2.1.0: no trainer fields a legendary; 4.0.0: a leader draws on the run's whole region, the Daycare only on what's sold
+  const all = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && (boss ? inBossPool(k, null, boss) || !!(boss.bossOnly && boss.bossOnly.includes(k)) : inGens(k)));   // 2.1.0: no trainer fields a legendary; 4.0.0: a leader draws on the run's whole region, the Daycare only on what's sold
   if(!theme) return all;
   const types = k => (SPECIES[k].gen1 || '').split('/');
   return all.filter(k => {
@@ -1939,8 +1939,18 @@ const GENS_READY = [1, 2, 3];   // 6.0.0: Gen 3 (Hoenn) joins Kanto and Johto
 const KANTO_ONLY = ['bulbasaur', 'ivysaur', 'venusaur', 'charmander', 'charmeleon', 'charizard', 'squirtle', 'wartortle', 'blastoise',
   'farfetchd', 'porygon', 'tangela', 'zapdos', 'articuno', 'moltres', 'mewtwo'];
 /** Can a boss of this run field it? The run's gens, or the Johto Pokédex when Gen 2 is on. */
-const inBossPool = (id, gens) => { gens = gens || ACTIVE_GENS;
-  return inGens(id, gens) || (gens.includes(2) && genOf(id) === 1 && !KANTO_ONLY.includes(id)); };
+/* 6.7.0 (Sean): Hoenn bosses may likewise field Gen 1 and Gen 2 pokémon the run doesn't sell: the ones that live
+   in Hoenn, plus the handful each leader is hand-built around (Glacia's Lapras and Jynx, Drake's Dragonite and Charizard).
+   Only a Gen 3 boss gets this, so Kanto and Johto benches are untouched. */
+const HOENN_LIVING = ['zubat', 'golbat', 'crobat', 'oddish', 'gloom', 'vileplume', 'bellossom', 'geodude', 'graveler', 'golem',
+  'machop', 'machoke', 'machamp', 'abra', 'kadabra', 'alakazam', 'magikarp', 'gyarados', 'marill', 'azumarill', 'wobbuffet',
+  'magnemite', 'magneton', 'voltorb', 'electrode'];
+/** What this Gen 3 boss may field from outside the run's gens: Hoenn-living species, and its own hand-picked guards, extras and signatures. */
+const hoennBossHas = (boss, id) => HOENN_LIVING.includes(id)
+  || [...(boss.guards || []), ...(boss.also || []), ...(boss.signature || [])].includes(id);
+const inBossPool = (id, gens, boss) => { gens = gens || ACTIVE_GENS;
+  return inGens(id, gens) || (gens.includes(2) && genOf(id) === 1 && !KANTO_ONLY.includes(id))
+    || !!(boss && boss.gen === 3 && gens.includes(3) && genOf(id) < 3 && !SPECIES[id].legendary && hoennBossHas(boss, id)); };
 /* Sean: a Gen 2 run plays ONLY Gen 2 pokémon — plus any Gen 1 line that a Gen 2 pokémon
    belongs to (Onix → Steelix, Magby → Magmar, Pichu → Pikachu…), the whole line. */
 let GEN2_LINKED = null;
@@ -3182,7 +3192,7 @@ function generateAiTeam(spec){
      Giovanni, and so on. A species that evolves is allowed once the run is far
      enough along for this leader to field evolved forms. */
   let offPool = boss && boss.theme
-    ? (boss.guards || []).filter(k => SPECIES[k] && inBossPool(k) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
+    ? (boss.guards || []).filter(k => SPECIES[k] && inBossPool(k, null, boss) && !base.includes(k) && SPECIES[k].tier <= Math.min(maxTier, openTier)
         && evoDepth(k) <= maxDepth)
     : [];
   if(finalsOnly){ const f = offPool.filter(isFinal); if(f.length >= 2) offPool = f; }
@@ -4725,7 +4735,7 @@ if(typeof module !== 'undefined' && module.exports){
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
     heldSlotsFor, martCatOf, STONE_IDS, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
-    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
+    GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
