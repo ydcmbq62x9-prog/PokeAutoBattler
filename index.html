@@ -3441,6 +3441,8 @@ const TUNING = {
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
   eggCap:       10,
+  /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
+  manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
      Champion (Gen 2 runs only) climbs Mt. Silver. One fight, no second try. */
   red: { chance: 1/6, ratio: { '2': 1.12, '1+2': 1.185 }, oakRatio: { '1': 1.10, '1+2': 1.19 }, exp: 5 },   // ratio by gens: ~35% of runs that reach him beat him (bot)
@@ -3913,9 +3915,9 @@ const ELITE_FOUR3 = [
 const CHAMPION3 = { id:'wallace-champion', person:'wallace', name:'Wallace', title:'Champion', gen:3, theme:['Water'], guards:['milotic','ludicolo','gardevoir','altaria','walrein','wailord','swampert','sharpedo'],
   also:['milotic', 'kyogre'],
   blurb:'Hoenn’s Champion, with Milotic as elegant and merciless as ever. There is no counter-pick here.', calib:1.246 };
-const RIVAL3 = { id:'may', name:'May', title:'Rival', gen:3, theme:null, bird:'taillow', support:null,
+const RIVAL3 = { id:'may', name:'May', title:'Rival', gen:3, theme:null, bird:'taillow', support:'ralts',   // 6.5.0: like Blue's Eevee, her Support is always the same one: Ralts, who grows up with her
   starters:{ Grass:'treecko', Fire:'torchic', Water:'mudkip' },
-  blurb:'She picked the starter that beats yours, same as always. Three times a run, getting sharper each time.' };
+  blurb:'She picked the starter that beats yours, with Taillow and a Ralts that grows up beside her. Three times a run, getting sharper each time.' };
 /* 6.0.0 — STEVEN, the Gen 3 secret boss. Like Red and Oak, he never battles on
    the schedule: the run decides from its seed whether he waits after the
    Champion (one chance, no rematch), following the exact Red/Oak pattern. */
@@ -5208,6 +5210,39 @@ const SPECIES = {
    =================================================================== */
 const GENS = { 1: { name:'Gen 1', region:'Kanto' }, 2: { name:'Gen 2', region:'Johto' }, 3: { name:'Gen 3', region:'Hoenn' } };
 /** The gens a player can switch on today. Gen 2 joins when its pack is complete. */
+/* 6.5.0: real National Pokédex numbers (the game only has a subset, so there are gaps). The Pokédex orders and numbers by these. */
+const NATDEX = {
+  bulbasaur:1, ivysaur:2, venusaur:3, charmander:4, charmeleon:5, charizard:6, squirtle:7, wartortle:8, blastoise:9, caterpie:10,
+  metapod:11, butterfree:12, weedle:13, kakuna:14, beedrill:15, pidgey:16, pidgeotto:17, pidgeot:18, rattata:19, raticate:20,
+  spearow:21, fearow:22, pikachu:25, raichu:26, sandshrew:27, sandslash:28, nidoranf:29, nidorina:30, nidoqueen:31, nidoranm:32,
+  nidorino:33, nidoking:34, clefairy:35, clefable:36, vulpix:37, ninetales:38, jigglypuff:39, wigglytuff:40, zubat:41, golbat:42,
+  oddish:43, gloom:44, vileplume:45, paras:46, parasect:47, diglett:50, dugtrio:51, mankey:56, primeape:57, growlithe:58,
+  arcanine:59, poliwag:60, poliwhirl:61, poliwrath:62, abra:63, kadabra:64, alakazam:65, machop:66, machoke:67, machamp:68,
+  bellsprout:69, weepinbell:70, victreebel:71, geodude:74, graveler:75, golem:76, ponyta:77, rapidash:78, slowpoke:79, slowbro:80,
+  magnemite:81, magneton:82, farfetchd:83, doduo:84, dodrio:85, seel:86, dewgong:87, shellder:90, cloyster:91, gastly:92,
+  haunter:93, gengar:94, onix:95, drowzee:96, hypno:97, voltorb:100, electrode:101, exeggcute:102, exeggutor:103, cubone:104,
+  marowak:105, hitmonlee:106, hitmonchan:107, koffing:109, weezing:110, rhyhorn:111, rhydon:112, chansey:113, tangela:114, horsea:116,
+  seadra:117, staryu:120, starmie:121, 'mr-mime':122, scyther:123, jynx:124, electabuzz:125, magmar:126, tauros:128, magikarp:129,
+  gyarados:130, lapras:131, eevee:133, vaporeon:134, jolteon:135, flareon:136, porygon:137, omanyte:138, omastar:139, kabuto:140,
+  kabutops:141, aerodactyl:142, snorlax:143, articuno:144, zapdos:145, moltres:146, dratini:147, dragonair:148, dragonite:149, mewtwo:150,
+  mew:151, chikorita:152, bayleef:153, meganium:154, cyndaquil:155, quilava:156, typhlosion:157, totodile:158, croconaw:159, feraligatr:160,
+  hoothoot:163, noctowl:164, ledyba:165, ledian:166, spinarak:167, ariados:168, crobat:169, chinchou:170, lanturn:171, pichu:172,
+  cleffa:173, igglybuff:174, togepi:175, togetic:176, natu:177, xatu:178, mareep:179, flaaffy:180, ampharos:181, bellossom:182,
+  marill:183, azumarill:184, politoed:186, sunkern:191, sunflora:192, wooper:194, quagsire:195, espeon:196, umbreon:197, murkrow:198,
+  slowking:199, misdreavus:200, wobbuffet:202, girafarig:203, pineco:204, forretress:205, gligar:207, steelix:208, snubbull:209, granbull:210,
+  qwilfish:211, scizor:212, heracross:214, sneasel:215, teddiursa:216, ursaring:217, slugma:218, magcargo:219, swinub:220, piloswine:221,
+  skarmory:227, houndour:228, houndoom:229, kingdra:230, phanpy:231, donphan:232, porygon2:233, tyrogue:236, hitmontop:237, smoochum:238,
+  elekid:239, magby:240, miltank:241, blissey:242, raikou:243, entei:244, suicune:245, larvitar:246, pupitar:247, tyranitar:248,
+  lugia:249, 'ho-oh':250, celebi:251, treecko:252, grovyle:253, sceptile:254, torchic:255, combusken:256, blaziken:257, mudkip:258,
+  marshtomp:259, swampert:260, poochyena:261, mightyena:262, zigzagoon:263, linoone:264, lotad:270, lombre:271, ludicolo:272, seedot:273,
+  nuzleaf:274, shiftry:275, taillow:276, swellow:277, ralts:280, kirlia:281, gardevoir:282, surskit:283, masquerain:284, shroomish:285,
+  breloom:286, slakoth:287, vigoroth:288, slaking:289, makuhita:296, hariyama:297, azurill:298, sableye:302, aron:304, lairon:305,
+  aggron:306, electrike:309, manectric:310, roselia:315, gulpin:316, swalot:317, carvanha:318, sharpedo:319, wailmer:320, wailord:321,
+  numel:322, camerupt:323, torkoal:324, spoink:325, grumpig:326, trapinch:328, vibrava:329, flygon:330, cacnea:331, cacturne:332,
+  swablu:333, altaria:334, anorith:347, armaldo:348, feebas:349, milotic:350, shuppet:353, banette:354, absol:359, snorunt:361,
+  glalie:362, spheal:363, sealeo:364, walrein:365, bagon:371, shelgon:372, salamence:373, beldum:374, metang:375, metagross:376,
+  regirock:377, regice:378, registeel:379, kyogre:382, groudon:383, rayquaza:384, jirachi:385,
+};
 const GENS_READY = [1, 2, 3];   // 6.0.0: Gen 3 (Hoenn) joins Kanto and Johto
 /* Sean: bosses of a Gen 2 run may also field the Gen 1 pokémon of the Johto Pokédex (Morty's
    Gengar, Pryce's Dewgong, Clair's Dragonair) — everything but these Kanto-only ones — though
@@ -5672,6 +5707,28 @@ const ITEMS = {
   carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
                   eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
                   apply:(u,G)=>G.boost(u,{spd:10}) },
+  /* 6.5.0 — role medicine. Each is a stronger vitamin that only a pokémon of
+     one role can take. They share the cap of the vitamin they replace (`group`),
+     so ten of any mix is still the most a pokémon can have: a role vitamin makes
+     a slot worth more, it does not raise the ceiling. */
+  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', text:'+9 HP, permanently. Tanks only.',
+                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:9}) },
+  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', text:'+10 Attack, permanently. Cannons only.',
+                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{atk:10}) },
+  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', text:'+5 HP and +6 Speed, permanently. Supports only.',
+                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:5, spd:6}) },
+  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', text:'+4 HP, +4 Attack and +4 Speed, permanently. Bruisers only.',
+                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
+                  apply:(u,G)=>G.boost(u,{hp:4, atk:4, spd:4}) },
+  /* Training: stat growth shaped by the pokémon's own role (a Tank takes it as HP,
+     a Cannon as Attack), without a level. At most 3 per pokémon. */
+  manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost',
+                  text:`Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Each pokémon can take ${TUNING.manual.base} at first, and one more for every ${TUNING.manual.badgesPer} badges you win (up to ${TUNING.manual.max}).`,
+                  eligible:(u, G) => ((u && u.manuals) || 0) < manualCap(G),
+                  apply:(u,G)=>{ G.train(u, { hp:6, atk:6, spd:6 }); u.manuals = (u.manuals || 0) + 1; } },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
@@ -5701,7 +5758,13 @@ const ITEMS = {
 };
 
 /** How many of a vitamin this pokémon has had. */
+/** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
+const manualCap = G => Math.min(TUNING.manual.max, TUNING.manual.base + Math.floor(((G && G.badges) || 0) / TUNING.manual.badgesPer));
 const vitaminsTaken = (u, id) => (u && u.vit && u.vit[id]) || 0;
+/** What shelf group an item belongs to, so a Mart roll can spread across them (6.5.0). */
+const STONE_IDS = ['thunderstone','firestone','moonstone','waterstone','leafstone','sunstone','kingsrock','dragonscale','metalcoat'];
+const martCatOf = (id, held) => held ? ((HELD_ITEMS[id] || {}).kind || 'stat')
+  : ITEMS[id] ? (ITEMS[id].vitamin ? 'vitamin' : STONE_IDS.includes(id) ? 'stone' : 'boost') : 'boost';
 
 /** The stone a line needs (the first one, for a branching line). */
 const stoneFor = id => { const s = stonesFor(id); return s.length ? s[0] : null; };
@@ -5785,6 +5848,21 @@ const HELD_ITEMS = {
             text:'35% of the damage it deals heals your most-hurt pokémon (itself included).', bell:0.35 },
   helmet: { name:'Rocky Helmet', icon:'🪖', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
             text:'Anything that hits it takes 10% of its own max HP.', helmet:0.10 },
+  /* 6.5.0 — one held item aimed at each role. Each only works on its own role (the
+     others show it greyed out, like Eviolite on a finished evolution). `boss:'none'`
+     keeps them off gym leaders, whose difficulty was measured without them. */
+  plate:  { name:'Bulk Plate',   icon:'🧱', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'tank',
+            text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
+            when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
+  gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'bruiser',
+            text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
+            when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
+  sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'uncommon', boss:'none', role:'support',
+            text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
+            when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
+  scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'uncommon', boss:'none', role:'cannon',
+            text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
+            when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
      cost attached, so where you put it is a decision. Two are Sean's (Iron
      Ball, Heart Scale). `boss:'elite'`: gym leaders never hold them, but each
@@ -5937,7 +6015,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
       role:roleOf(u), atk0:effAtk(u), spd0:effSpd(u), rallies:0,
       st:null, stHad:{}, shield:0, focus:0,
       // the held item rides along: its flat reduction, and one use of a trigger
-      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct) || 0,
+      held:u.held || null, itemUsed:false, itemReduce:(h && h.reduce) || 0, itemCut:(h && h.cutPct && (!h.when || h.when(u))) ? h.cutPct : 0,
       moveHp:0, moveHpCap: Math.max(1, Math.round(hp * TUNING.moveGuardCap.hpPct)) };
   };
 
@@ -6091,7 +6169,7 @@ function simulateBattle(playerTeam, enemyTeam, seed, opts){
     const th = heldOf(t);
     if(th && th.noHeal){ if(!t.ironSaid){ t.ironSaid = true; B.log(`${t.nm}'s ${th.name} stops it from being healed for the rest of this battle.`); } return 0; }
     const sh = src && heldOf(src);
-    if(sh && sh.healBoost) n = Math.round(n * (1 + sh.healBoost));
+    if(sh && sh.healBoost && (!sh.when || sh.when(src))) n = Math.round(n * (1 + sh.healBoost));
     const was = t.hp;
     t.hp = Math.min(t.maxHp, t.hp + n); if(t.hp > was) B.fx(t,'buff');
     if(src && t.hp > was) src.rHealed = (src.rHealed || 0) + (t.hp - was);   // 2.0.0: recap
@@ -6718,7 +6796,7 @@ function rivalCore(G){
 function rivalLineup(G, m){
   const R = rivalCore(G), size = TUNING.rival.size[m];
   const rnd = makeRng(mix32((G.seed || 1) ^ 0x7f4a7c15, 10 + m));
-  const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy');   // no Amulet Coins in a fight
+  const held = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind !== 'economy' && !HELD_ITEMS[k].role);   // no Amulet Coins in a fight; role items are for your own roster
   return R.core.slice(0, size).map((base, i) => {
     // his Eevee stays an Eevee the first time, then evolves (1.4.0)
     const line = base === 'eevee' ? ['eevee', 'eevee', R.eevo || rivalEevo(G)] : evoLine(base);
@@ -7023,6 +7101,7 @@ function makeGameApi(G){
   return {
     log: txt => { G.log.push(txt); if(G.log.length > 60) G.log.shift(); },
     team: () => G.team,
+    train: (u, d) => growUnit(u, d),
     boost: (u, d) => {
       if(!u) return;
       if(d.atk) u.atk = Math.max(0, u.atk + d.atk);
@@ -7094,10 +7173,10 @@ function evolveUnit(G, u, stone){
   return true;
 }
 
-function canUseItem(itemId, u){
+function canUseItem(itemId, u, G){
   const def = ITEMS[itemId];
   if(!def || !u) return false;
-  return def.eligible ? def.eligible(u) : true;
+  return def.eligible ? def.eligible(u, G) : true;
 }
 
 /* ===================================================================
@@ -7258,23 +7337,42 @@ function rollMart(G, payCost){
   // never stock a stone nobody you own can use
   const owned = ownedUnits(G);
   const pool = Object.keys(ITEMS).filter(k =>
-    ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u))
+    ITEMS[k].tier <= maxTier && (!ITEMS[k].eligible || owned.some(u => canUseItem(k, u, G))
       // vitamins are for anyone until someone owns a pokémon that has maxed them
-      || (ITEMS[k].vitamin && !owned.length)));
-  const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier);
+      || (ITEMS[k].vitamin && !owned.length && !ITEMS[k].role)));
+  const heldPool = Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].tier <= maxTier
+    && (!HELD_ITEMS[k].role || !owned.length || owned.some(u => roleOf(u) === HELD_ITEMS[k].role)));   // 6.5.0: never a role item nobody you own can use
   /* The shelf is [consumables…, held…]. Consumables keep the indices they have
      always had, and held slots are appended, so a reserved item stays put. */
   const plan = [];
   for(let i = 0; i < martSlotsFor(tierFor(G)); i++) plan.push(false);
   if(!(G.mods && G.mods.noitems)) for(let i = 0; i < heldSlotsFor(tierFor(G)); i++) plan.push(true);   // 4.12.0: No Held Items
+  /* 6.5.0 — a spread, not a pile. Each shelf is built so one reroll can't be all
+     one kind: the same item never appears twice while there is another to put
+     there, and a shelf of two or more is never all one category
+     (vitamin / stone / boost for medicine; stat / trigger / economy for held).
+     Only a shelf that is about to be all one kind is steered, so every item
+     keeps the rarity it was measured at.
+     Reserved items stay where they are and count toward the mix. */
+  const groups = { false: { n: plan.filter(w => !w).length, ids: [], cats: {} },
+                   true:  { n: plan.filter(w => w).length,  ids: [], cats: {} } };
+  const note = (g, id, held) => { g.ids.push(id); const c = martCatOf(id, held); g.cats[c] = (g.cats[c] || 0) + 1; };
+  const keep = plan.map((wantHeld, i) => { const prev = G.mart[i];
+    const ok = prev && prev.reserved && !prev.bought && !!prev.held === wantHeld;
+    if(ok) note(groups[wantHeld], prev.id, wantHeld);
+    return ok ? prev : null; });
   const next = [];
   plan.forEach((wantHeld, i) => {
-    const prev = G.mart[i];
-    if(prev && prev.reserved && !prev.bought && !!prev.held === wantHeld){ next.push(prev); return; }
-    const src = wantHeld ? heldPool : pool;
+    if(keep[i]){ next.push(keep[i]); return; }
+    const src = wantHeld ? heldPool : pool, defs = wantHeld ? HELD_ITEMS : ITEMS, g = groups[wantHeld];
     if(!src.length) return;
-    next.push({ id: pickWeighted(src, wantHeld ? HELD_ITEMS : ITEMS, rnd()),
-                held: wantHeld, reserved:false, bought:false });
+    const capCat = Math.max(1, g.n - 1);                       // only the LAST slot is steered: the shelf is never all one category
+    let cands = src.filter(k => !g.ids.includes(k) && (g.cats[martCatOf(k, wantHeld)] || 0) < capCat);
+    if(!cands.length) cands = src.filter(k => !g.ids.includes(k));          // thin pool: allow a repeat of a category…
+    if(!cands.length) cands = src;                                           // …and finally of an item
+    const id = pickWeighted(cands, defs, rnd());
+    note(g, id, wantHeld);
+    next.push({ id, held: wantHeld, reserved:false, bought:false });
   });
   G.mart = next;
   return true;
@@ -7434,6 +7532,7 @@ function mergeInto(G, dst, src){
     const n = Math.max(vitaminsTaken(dst, k), vitaminsTaken(src, k));
     if(n){ dst.vit = dst.vit || {}; dst.vit[k] = n; }
   }
+  if(src.manuals || dst.manuals) dst.manuals = Math.max(dst.manuals || 0, src.manuals || 0);
   // …and so do the Lucky Egg rounds it has already had
   if(src.eggTicks || dst.eggTicks) dst.eggTicks = Math.max(dst.eggTicks || 0, src.eggTicks || 0);
   dst.hp  = Math.max(dst.hp,  src.hp);
@@ -7673,13 +7772,13 @@ function buyItem(G, idx, slot, where){
   const def = ITEMS[s.id];
   if(G.credits < def.cost) return { ok:false, why:'Not enough pokecredits.' };
   if(!u) return { ok:false, why:'Pick a pokémon first.' };
-  if(!canUseItem(s.id, u)) return { ok:false, why: def.vitamin
-    ? `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`
+  if(!canUseItem(s.id, u, G)) return { ok:false, why: s.id === 'manual' ? `${u.nm} has had all ${manualCap(G)} Training Manuals it can take for now (the limit grows with your badges).` : def.vitamin
+    ? (def.role && roleOf(u) !== def.role ? `${def.name} is only for ${ROLES[def.role].name}s.` : `${u.nm} can't take any more ${def.name} (${TUNING.vitaminCap} is the most per pokémon).`)
     : `${def.name} does nothing for ${u.nm}.` };
   G.credits -= def.cost; s.bought = true;
   const api = makeGameApi(G);
   def.apply(u, api);
-  if(def.vitamin){ u.vit = u.vit || {}; u.vit[s.id] = vitaminsTaken(u, s.id) + 1; }
+  if(def.vitamin){ const g = def.group || s.id; u.vit = u.vit || {}; u.vit[g] = vitaminsTaken(u, g) + 1; }   // 6.5.0: role vitamins count toward the vitamin they replace
   api.log(`Used ${def.name} on ${u.nm}.`);
   return { ok:true };
 }
@@ -7927,17 +8026,17 @@ function nextTurn(G){
 
 /* ---- export for node-based testing ---- */
 if(typeof module !== 'undefined' && module.exports){
-  module.exports = { M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
+  module.exports = { NATDEX, M, teamAt, pcAt, teamIdx, pcIdx, fixSlots, freePos, freeBox, placeUnit, placeInBox, lineUpByRole, MOVE2, move2Of, on, TRIGGER_TEXT, TARGET_TEXT, STATUS_VERB, ROLES, ROLE_ORDER, roleOf, growUnit, formationSort, sf, TUNING, TYPES, TYPE_CHART, singleTypeOf, inTypePool, canStillEvolve, MONO_TYPES, tcgTypeFor, SPECIES, ITEMS, BATTLE_ITEMS, HELD_ITEMS,
     heldOf, heldActive, heldStats, effHp, effAtk, effSpd, ownedUnits,
     intervalFor, actionInterval, previewOrder, paceVs, paceRank,
-    heldSlotsFor, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
+    heldSlotsFor, martCatOf, STONE_IDS, bagRoom, defOfSlot, buyHeld, equipHeld, unequipHeld, reclaimHeld, sellHeld, heldResale, BUYABLE, M, typeMult,
     tierForTurn, tierFor, runPlan, RUN_LENGTH, stageOf, isBoss, nextUp, opponentFor,
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
     generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
-    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, endTurnEffects,
+    sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
     trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
@@ -8278,6 +8377,16 @@ const SPRITES = {
   "seadra": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABxUlEQVR42uWVoXLbQBCGP2UCpFcIE3SZxWp2KhOsoWhZzAwT6ECxwhQKKlCsNpOZxHrwWKZvILErcO7mpJzspIH5Zwy8Hn+7/+5qBZ9J+uXzLl29EajvWv1fVc0l0Nljzwz8XU6COfigFF/XCxs8VpIwjlkmIQAPSTD3/5GufUEXfqwkwOj7/uGLC9fnCp4GdHr3ZwRzq3b14gDTvjlHrxy4cLdFAF07sExCmm1qwV070JeZb0G8Qw5MZa6OlaTZpiyTkGMlWRV7AJptSl9mrIq9SagB3f7e0T9X/ha5G2OSaX2K3Xf+Qbou6nIDQHSzBgiuXUvTXddak6bpCO7OxQd+eqpHiMCspW+Q5yoFiPITrC8zm8BVdLM+DdkMDrD9na6ngRuoARut64wqq5FSIqUi3/wCCIJzvRdCjCvK61l3u7hASgVg4dMhTx8Y3T9XSHlyslgs2P39TtcODEqhm1ubdBcXrxIm3+5HDrwSQui63JDlP21sVezp2sG26HA4nD1DF2+JEEK7c9HNrW1V/SO6yLi69A4w8K4dCOPY/vAW+Oyxmz7FYRzbvkd5zaAUHznX+A6gqX5QanpNP5wAzwsm4NPoH+pb7PYx50C1AAAAAElFTkSuQmCC",
   "seel": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAACH0lEQVR42u2ZK7OCUBSFF3cMxBuNRiKRSCQSiUQj0Z9gJBqJRiPRaCQS+QlGGjfAZmDPPvLwcR04qzigc2D2d9Z+HAGt75Lxj8+uuheu6wIArtfrrHf60USeJJFcbgCAwLN7X3qeN4uMJjKXRFmWvZvnNBPJmKY56d0XQ2Tz6QdyAiqPcHJcpmlWXTLaI6+qH0ORJ4IklZc0kXdns7Ee00Q+RaRT4UUvdeqMzlofIcIjzrPdYiu78aqIzljzYbai7BT6zqh1da/FRZHlPdDcim7trHVOiJtnvUGTHomuQ9+ZREAlYT1DE3mUbVTdqZXdAQC2ZfYqNSlNU3HxLC9neWWVdaRHgiJHEZ86ISbxQSTDiZAc+xer90gv65yiYBIJ6pX4+RV9JjFGkVhdHTFUBDr5GwBwz071Hk/q+cB0I3GGVk1w3FukQ+QDAI7xRXzBvMhH9VyL8ohYoSkCFEmqA4G9FSNOHnKcbXPfEb01Vbr7HVIQuiIJuk8iTxV5vcdvyb7OduGpt/dVXuHfrzdrqbxC/yi1HmEEuPzoDAC4xIGY7aiycwJ0n05PxnYfi+61KumHrRd2uzrCRSF6h0hQD0XZLoyOIgku6hgoyw31WKvIWuKszUnQdVvRGw909rbotVszp6gqeF7055oRZwErn0fuzR5vSTSE9vGZr6k676okMrybVvVsmsjYrDZjrVGnLEMkNJE36inSiyGi9W36AxPhEtbyX04OAAAAAElFTkSuQmCC",
   "shellder": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABwklEQVR42tWYL5ODQAzFH50KZGUlsrJyZSXyJBLJR0BW9iMgkciTyJXIykrkyUrcVnCZazIb/tzN3LBRDbtNu7++F0KBjUb09tpNrK0Jt+Iz1dhtmZgDgLLs2MLtZtae1FtHxtK6u2A0pp347aTRlJYulwvLjbmx/PnVAwAOx0SrGw4xL7muK9mitRYAUOQNAOBsUrbe9w+Wy/dLgprmwiNGWjklhZcMxb1rWa7to2iaD5Zn2SfLi+KwbY3tJamqejISc6TmCEmikpBGctPEmAvJVY++Yv1GuozcRfuT5DRJVLpVkqJ61ppwNObtOzLXOjgRoetSe0SU9ml1w7tX/nT4UXPXa7moEPU7Iig1J4PIBdf59x56bk2Bth3dl6ajpsxx2q0TGgt8upBzlUYqjmMAwDAMnJyYIrQ+GPQ85gAgz3OhiX6SmBaSnCRFObm5qrPwXOkl1RbjCYu2YteJiCRH1zVNaUGatta6MF05NN8z/30kZM58ykgr/x0hSRIveY8L4ZuUSWvhuHIpKUlGi7qu534lF9R0sV+6kQjSc6UM2f/eSEW/0HnArqSIMzNHwP3l/7CgiWkEov/8Ypslttl4AV6Q10YQwdp3AAAAAElFTkSuQmCC",
+  "may": "data:image/png;base64,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",
+  "ironvit": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABXUlEQVR42rWVoXPCMBSHv3IzTFWSKSorI9u5ys5hkeAqx3+wyU1GImdxqxuO1jE5WdRStyqGY4odR5uUstszyeW13/3eL+/yHCwxHA73tvxms3FMuSsbdD4PCYK4MZ/nKZMJexO8Z4ImiWeEAgRBTJJ4xqp6tlLzPL0oZ7XiXIApeqZLUapo/Vmpgs4ez0LBeq0BjOssFEaPHRPUDysiGaNU1qr8KdM15dbLW76n+GGFH1a1XNNZK3iQ3AMQyZhIxjXQ8f7w7VldIYTAk29kZUGoF43AL/mAjAVa6+7tJj2JHnj4sllVURaX97HbdwG4fbkGYDXeUn1Xl/XxaRygp/s/gZtAd4ubVnCrFavxtnZ2jhWNYK013sCzlv46+uwOLtUzxaNAetKqWGtNqZ67WbFLp/RlTCZGv+qP22yXTikzt7vHH5kLpETAMu3+dDq2WTcLRevjY5p9zn8N0x+915gkinEccwAAAABJRU5ErkJggg==",
+  "calcium": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABXklEQVR42rWVoXPCMBSHv3IzTBVHpqgsLrayMrhJ7HDDjf9gk8NROTs5R9yQtXNMFrXUUcVwTAxu3NqklN2e6bu85rtffnmX5+GIXq+3c9VXq5Vnq124oPObPn01rKwv9TODJ3Y2eMsGnamOFQrQV0NmqmM9Vct11KV+PqvmtOJUgC1atksZ63Xt5rFe09jjSSTIjAGwfieRsHrs2aBhVBBLRZKktcofU1NS7ry8xZsmjArCqCjVqtZqwd3bOwBiqYilKoGO88O/J3WFEIJAvpLmGZF5qQSu5T1SCcze70btJgOJ6QaEslpVlmfn97Hf9r+T+HJv/Ibiszivj0txgP7O/wSuAPmDq9pttVaw2JSWTrGiEmyMIegGdsVAMf9oDs6TKdmDQAbSqdgYQ55Mm1mx1SPaUpGK6x/1R2221SPy1G/u8XvqA5oYWGjd+Nn0XLNuEonax8c2+7z/GqZfwdWUfpO5DlEAAAAASUVORK5CYII=",
+  "zinc": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABWklEQVR42rWVoXODMBSHP3oznWKOTIFERhaJjJytbN1k+x9scpXIytrJuFVSiZwEteCG6uo61V1vkFC62zPJ5cF3v/fLuzwPR4RheHTlq6rybLkbF3Q9u0OqSWe+0Dtma442+MgGnarKCgWQasJUVdaqRq5SC727Kue04lKALUa2S9nosPfnjQ4Z7PEyEWxNAWBdl4mweuzZoHHSkEpFluW9yl9y01LuvLxtoYmThjhpWrmus15w8LgAIJWKVKoW6Hx/+vairhBCEMk38rokMa+dwE/5hFQCY8zwdpORxAQRsexWVdbl9X3sj30AVuUtAItoT/PVXNfHv+ME/b3/E7gLtK7ve8G9ViyifevsEis6wcYYoiBylj4LPoaD62xF+SyQkXQqNsZQZ6thVhz0nLFU5OLhR/15mx30nDr3h3v8nvuAJgW2Wg9+Nj3XrFsmovfxsc0+77+G6TelVZjfRYdQSwAAAABJRU5ErkJggg==",
+  "energyroot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABwklEQVR42qWVoZabQBSGv+REIEHiJhJJJY8w61oXHoG6iYwrboPbles2ti4jK3EtqkWCWmR4AyqSmcIu2WxhzplzGM7wzb3//e+wYMYQQnT9dV3XC/O8mgOs8hSAPz80AHc7OgNfToFWeUqVpzRNRdNUaH0GJ1Fr9y2nQJumAiD68gSAlBKtNVJKm80kKQ5ZdonwvPaCAC5RT9Z4v/1KrBS+v7brx9zlmMrBvv/WeLt/ALByABzT6FK8nMnFA/D9NYcsYx3tkFLiBYEtoBmLOd5NopZYKQBOZTkv4rquF2Y+5u6gmLM0fj1OZUmsFF4QcEwjm9HyVrpCiK4/x/Y3RfHm3epauu+1bd8NXhBYuOM4H5Oi37YGUOWpbV0vCDhkGb6/HkDfgE2Ur1vXpGosJaUkiVqaoiBWauDpUbCRIIlau/mQZXySn2mKgu3+wUoSK4UfhjRFwaksBweP+rgfrYnUD0NOZWnlMAdK+a+N73b54E5ejUF/6e8AOI6D1po4DC8f5iRRy9m/LqAxXjZAIUTXv/ARQnTdy3P38vNb9/t5091vXGux+43bXbPizTY10DG/XgN8CPxeA9wETPlBTh1/AX9sCtjTJHnLAAAAAElFTkSuQmCC",
+  "manual": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAbCAYAAACN1PRVAAABwklEQVR42t3Wv0/CQBQH8O+pwzF2MKGDydWtY9nqJiOOboyOyp/AyJ9QVibDxgYdYYONTloTE2mCCQwkdCCxQ5M61Ktc+dFrY4zxFki5y4f37t3rAX99MMYixliUd91ZEciqBBiBoocY9DyPyKwlRSF963lrGn9moaQoZJganMlMmJOFkqIRGaYGAFA0HcOuLYWSoqlLj2q9lome/BS073uzAtxqAXjlkjwQLavCnGC52FlnmJqQWncdoDejh9OYhjiia1SY586CvWDy+xdktWpoNG2cykC6RrHyQ7y/zOGHJaz8EBeX51BoCD8sIdxsjkLdcQnzV1fcs2N7ZFRU0LIKo/KdSqoomRF1xyXUrz4gFIhsMTjTBYLlAs50IQ01mjY8zyMkC+JpTEfBUVpWk307Bgm9cQQKrANAoTsV50KFjrXwXNcoXMhDAEAYY9FwYKF60wAQnwsA0FNouuy3S18GSiJrdyYYDqz4UHIUInqoxGWhBHu4M9HuTAAgEy0KJYeap5JHyf+AgKbSmxcSOgjvX7JoXmhvu5JF80KZjfgQ+uzYuSHp99k+9NpY54IK3ajenvpR//G+0O3q165x/3t8Avh9d3GR19NUAAAAAElFTkSuQmCC",
+  "plate": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAABAklEQVR42rWVoVIDMRCGv2QQyOIad5En11ZikUgegVdA8gq8Qh2VyEos8mTiUkclDgSTa2i3cKTpbzKZnfmy+4mNQUnXdZ+ckBijMRr08eEekQXO9/+GpjBwc3vHhVYUWbDZJt5WrzjvSSHgvP8TOp85NtsEgNW6/X55B5sC3Y/Vuq2FAaxfVjoYGMepycd7OA6uyXzmdBWl39qUk1rNb22yX1VFC7/NHJd+n9eJGKOx5/D7o+OWfg9UtPJ7kuMUwlG/ALbGb94jGa5NasttNqXDEpr3yb5fYLc2Ra5/BYvop+Z3BC+XT2pxSi6v/IHfEdz3wjDQNJYzxbT4PPMHWt6/AO4BfRif4CytAAAAAElFTkSuQmCC",
+  "gi": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAABJUlEQVR42qWUsbXDIAxFnzgeIumgZQSXrJHSc1F6DcqM4FZ08Rb8JuTIGBvsryp2zEN6uhIBgNY64RsxRsI/Y9BaJ2ssAGDhpeuQTKKWyHAlgyw2vabNez/7JIVV/vF4PpqC1lhYY+Fnf/qtkoJudLvSpGCRHZgZzLw7p2KMFN6hmWGOhZdmM5V8MMZgek2/W+8IAgDJjGQD/OxRUpEF82XZtvAOm8voDJUjZFoV0B2kWpbQFcjd6LB+1qbH1AM5M2/+z7QcNW2oCZYTUyJX8/i0UW50P7zy5JxhlM9IAg5n38++yaSsysEhIKQYI6m76620yRhTnygAm+72CpaVVTNdPyussTuktNYpeyiJKK2ingUiOe1Bi3onR0a5C7rgv7oLyvgDmovJ72WjWdoAAAAASUVORK5CYII=",
+  "sbell": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABoklEQVR42p2Ur5ObQBiGn1zzB+RmKg63iArqDnc2Nm6RK+tqexLRmQN3MifPYUEiY24mVWxViySKrW9lZ7YKBsKGJF21w3z7fO/34wWuOEIIK4SwczE318Ca19ezcUvXw+5+OBwW18AAFi4VP8scgE1eAvDp9hYAuX5gk5d9ollgB0seH/vHx+ccDOBdd1mtVl//vL0RPz/z/u9vNnmJ+vjhKphTYfTyAsCTf0ex+8Z330drPXp0CRghhP3x5bPNssy2bWullPbp/t5WVWXbtrVt29qqqmyWZXZufZbDrJu8tGHzC4Dtdstut8PzPIwx1HUNQBAEKKVIkgTf9+2x2qWjlD7zer0ewYbHGHPZ2uz3+0nwUF1RFCRJgtaauq6J43jU0xtX5jAMCcMQz/NOqkvTlCAI/t96Q3XGGKSUzmQTYF3XaK37spVSk1LTNL3cy8OedeW5YEEQOBUuT5UHUBQFwAh2vOSzU+4mrZTqQcaYfghAD8zznCiKJq5xApumGYGklJMKoihy2nBxyoadwuFqdD2L4/ikpxfn/O36Pvdz+Af7eA6IZgARQgAAAABJRU5ErkJggg==",
+  "scope": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAACdUlEQVR42sWVIXTaUBSGP3YqqEtlXSKDA7e4VhIXHKkiuNbBVIMiVRuOSVAJLiiKG1VNXeYSt4djaqC2ukxwkhJSunEmds/JOcnJe9/93//uu6/EgZBlOUnfl8tliSPj3SFoGAkate/Uzetckr+N0iEoX3XKaplee05IExEuOGYFJ4egk6mgaSgAWC2LEdAwDCTpDPvGPLiCNGlpHxyFtez7OX4G4G6wwOh/w+7ZWC2LzWaNJJ2hKEoBbOoay+WyVPoTNAX/UvuYTRO7Z9MwDAAWX59zUOPiHEVRMHUtb8Vr0N0QQuD0HeyeXfinqirTBzB2Pd5X+1YIIfDdEbFYvUCVcwAaVxabqlHcPIDxXUzrVs2pVhQFP46pqCqSdMZ8EQAwGo+yMVbLwuk7eBOvWMd6W8IX79HbUlFpuMCfTtls1hnUd0do9Q5avcP0YbW16ra7VZzaoLclfHerIBYrarpG6FVetWM03gIHk2jP4xgIXhRXaiG+O2IwiWj3fOyeTRgJamZ00OtOc5u0ufhw+Eh3G6fEYkUwH7AW80x1t3FKzYyIyq3MjjTSzZtcfswBU6tOAKqtL5i6RhiJbJKpazhDD+cCgqcgm+hPpzQMg8E4oNPSAJg/rYnjmMtqmSiO81Xh3Qc0rqxMlTP0UBQFIcTecV0kkapyWVUZjF8SptC593l78mRZTrz7IKvR3RITQhA8BVRUlU/2TdYHZFlO6uZ1wdcUmvWKtPnsFj2AN/Ey6H5Xe62VFrqeLMuJO3tMfvxMssedPSbu7DGRZTkZurPk2J6cU+AMvUK9Wi0L+8Y8+hYptM2uM8wN2PX2n2+QN3373/EbVZVUlIlFVXEAAAAASUVORK5CYII=",
   "silver": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEcAAABHCAYAAABVsFofAAAF2UlEQVR42u2bLZCrOhTH/9lZgURGRkZGIpGVTyKRKyuRK5FXrkRWXlmJREYiIyORuDzRhA0UaN+9pVD2nZnOttt0Sn493ycAG5ecCgPArPHd71uGwmhweaHXuQayUU2BA5PIarXrJFuF4uRstabQFfmRZtUzoQGYA3WvIvNsSGSrYMZE6RY1gqcBelsbTBwJMMbvBsPR4lnR6w0bEcb4FSSlWyjdwvmiAwVqBMipeAqgt7XNSakaZSV7fsaBYjQAo0EPEkf7NECb0RylaihVg6PFV9UH5nzSeZDvpDTad7RSuu2F7xoBsjy+aFdWOh/T0xr/r9UeskvNqRH0TMqBAS7P/8kPvTXPlM2Y1ZwkKb/Snl3DybQkzsk68wIAnuYoiqq3tqwUGh4ilVUHhqNFpuWiudrb2iZ1oN85zNf5EwBwPJ17gNI0Ql6WnRYVutpvhpzSqAvBB3rxNRwtjud83GnL8vt5rXHIi6dc/2qaM4xCAFCeTuMJooh7JvasH3YVOIWuiAvFfu7iacSk5uRliZyKnvbtwqxSGhlfY8ZCeqEr1EUGJmJ8HvPO5zhzyql4WvFJ1vI3Y5BqBJAhAwA0TY36nEPJEr+z8+japQGt3bIwKY06UHbDEDzpAMX2f7aWuspxlgS0SPlwzlJTVgp5Wc5duLlsuA/GQQlD7tVWwuU0T/1B35eC8fkrA44wM4BIpqXxATiNcRKGHGgUwpBDhBxNUwOAUQsnfw+Dc85SEycJgBOAuIPhR5g5s2ZUmPB746MhX/qwADAA6gKWbBrOJe84gXGKlFPEETOMXxq/ccSQzzByYNzGh+a0tjwkz4mTBKq+Hi4xTpHFsZkDM6UxTk4hh2jUpN/aNJy8LMnnMe8yV8ZpD1RYN7MJ2xCQaBSSpu4eY2FfaQlmo9fmHXJelmjlGeXpYl4+IJcJMyqM0pIMzWm46ZIKyI2Y1qPKBxKIA+Ik6appxilkIXsawqgwY2DCkEPW33XVnKm5956hPY/29gYAsjjuTMppzskDMnS8Foy7FjO26Q8AXxOm5TRy60kgsWZmbKlwBcYPySNgZns/mKjLXq0qJwBIoSs/s72SCTBEjXymRIuPJ/ucpacPxELootUwC36gOZOt+5y7/dKN7zd+8QkAsTeSKa15Le131phbkVstDde28KHAm1XxgXNeSns2N5op0XbJX9LYCehgzZeFtvTEc5Nzqy8LpkbQA+NPHUq0i08hNgXHJYhhyHEKOXzzAoBWnofr4SLbEgcLNj3x9DPluSnnx4339wDHfFhzauyjt3kWIf44TyaIHO3DtWdTR22zvolciVZlB8tBKbyq/dHasyU4RIjEBAFFVv268i3u3ORvFqOy7wuRgHkHC5KUg1ZBNzp+xSRwVIRIDKURtK5AR0J0Yxte4cBJa10hPwRdJwAAiqK61dx/LZ8TBHS66JQFtCqvwPS0i9Nef2l30WpKa5SWoCwe/QylUTdGHmvV7gYOncl457SmSwwrBZ7mD3MXmz/ZVcsCQtyu5K2feagf3QQcIRIzpRlqph/ki3XA+y48x0TKE9FPOs21STjNyGzKAiH+muE6+/olesh/HMbDkF1tXMrTqFP217msebdw2lYDYLMRScoTiSJqhpFryZv4VofjMuNmeuTbgzhca/Mfs5c26ezG75GrEmLvDvlvJKR833DoX/aDmb1H9EdozjCMO6dcy2Js3c8yq2EYHwOif1KD/Q806384a8nbK2kFo8JMRaZ7C9SXgcOoMMMopXWFRteL1UsvrTkWzH9a3+h6kVNea8IxIeXwQ3Mti7sTOgclpLx74METz02UDxN11eSpCQdlt2blzCCkHG2r0ba62/CtjY+9v4Rpva9pUmOJXhQdbQtjNCIR2PslhEg6/xQjAOxgr/SO9P6trBURDIDebUL+aa0oOqKqfk2e+nLnckq0iL3PDsI6eVk4UyYQf99aRG4VmWMHKOs7Pr95OP5NaCMbu/fazJL7WjPRMhu8pp78C4CnCj/04xT/AAAAAElFTkSuQmCC",
   "sitrus": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABkUlEQVR42p2UoW7DMBRFb7KADVRKQaUFTHJhwhoYFpqy9RMGW1hW0o9Y4T6hYw0tMyyZlMCYpSwFA6s0KQPVcx3PsbY+lDwl1+de+xm4sRhjLWOs1fveLUIAEL9El8YbWiGE8y9BlSTbJTi+n/D47AMAYkQdUe8vQtUhk71xnF+FDOXYxEio5iUAIEhCKZrtEgBAPuWwWiaq+SzoJa8OmSS1EjLG2vkswHI1QcEFooRZsy24QL5vsNnWktLVLS5XEwBAlDAUXHQEyLpaWTrsvLv6BzUv5Y86IWUIAE19MlK7+gbY7HUWri6C+b4xH+yalwiSsEOh9omWctMtb7aXs+jYCNXM9IXINpFOFwWEEI5rE9HF1HxV2+W+7p9llcREZdqUMA2AbXPdFCGEM47z3p1TFwiSsGNVrzt68H1/7Z2/4XtneB7wMLiXNgdPI0lVfRzxefqSVkfjgczPOCm716iXkLIK0+tY6pPimGZ5Pgt+TYAaPAlOFwUoMut9SGJ03rJ02KEyCVmvL9PVrpZJiOoHCtDTKz2MVnkAAAAASUVORK5CYII=",
   "skarmory": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAACCElEQVR42sVWq5biQBC9zcGMHIfGNY7+g2TdyqyMZBxxsZGxuMQFGZnIuIQ/aBztZi0O/qDX0E3ltdNzZs5uGULT3FuPW1UB/qNpxzsu97CY+rPW+iMiLS83Z7LF3A+e51EACqLTNLNfCNmsLaeiOKv7CEBsXjUABgA/gxBSScjLDU1d0ojYpyI55DUlwBwAABRV61wTnaYZzuoOqaQ9jPfBqBZSSQguIJXEinO8/fox5YRNsyHRRdXaNAguLEEYJbMeXpWaVV2wK8Y12QU+zupuCZq6/CuBsUEUFrw+vtnzpYnCqkVJXJVCHOcom2wyFVelIGd66/ZeDs/YgkZhCJIksrcenmnqhCFq26pfq8sNh7xG13XQWsP0W09dZZZixTmKqsXLi0LT/IbYCkvkeR7KLKXgMODGgXgfwPd9+L4PxhgAMEYV80iNMWZyLLYCbRXjkNc2kjJLEUaJVVmZpQCAfN0X2ebYPQs/I0OIrYA8PysguLCqM88UfP/+HA6n0wkA2BIAo908MJZEQnue12vOYQ/la2bBe5GsfWyOnWYu07aoWittCh5GyShNm2M3ctSZxKSKqgsAVpwPFcmcZ9dQdVS+xlac9z4/PSBpB7+uQ0tkjPbSnGictuNje+lHyvTEftHBrnDekC7rdQ7sQyKGr1lv2tKh+G0vGzSd5Pnb32hc0vlv7A9SfDgPWLqrAgAAAABJRU5ErkJggg==",
@@ -8342,7 +8451,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.4.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.6.0', date:'Oct 10, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -8683,7 +8792,19 @@ const SILVER_LINES = [
     lost:"…I lost. Maybe I've been doing this all wrong.",
     won:"I'm going to the top. Try and keep up." },
 ];
-const rivalLines = (G, m) => { const L = rivalOf(G).id === 'silver' ? SILVER_LINES : RIVAL_LINES; return L[m] || L[0]; };
+/* 6.5.0: May, the Hoenn rival: friendly, a little competitive, always smiling. */
+const MAY_LINES = [
+  { hi:"Hi! I was hoping we'd run into each other. Let's have a battle and see how we're both doing!",
+    lost:"Wow, you're good! Okay, okay, I'll train twice as hard. Just you wait!",
+    won:"Yes! We did it! Don't worry, you'll get me next time." },
+  { hi:"There you are! I've been training so much with my team. Ready to see what they can do?",
+    lost:"Aw, really? I thought we had it that time. But that was fun, let's go again later!",
+    won:"Phew, that was close! You've got to keep up if you want to beat me to the League." },
+  { hi:"This is it! I've got a team I'm proud of, and I want to show you how far we've come!",
+    lost:"You win. And honestly? I'm not even sad. Let's both go as far as we can.",
+    won:"We won! Thank you for a great battle. See you at the Pokémon League!" },
+];
+const rivalLines = (G, m) => { const id = rivalOf(G).id; const L = id === 'silver' ? SILVER_LINES : id === 'may' ? MAY_LINES : RIVAL_LINES; return L[m] || L[0]; };
 
 /* A gym leader / Elite Four / Champion portrait, when the Sprites folder has one.
    Returns '' otherwise so every caller keeps its old look. */
@@ -8812,7 +8933,7 @@ function triWithItem(u, id, held){
   let v = null;
   if(held){ if(!HELD_ITEMS[id] || u.held === id) return null; v = { ...u, held: id }; }
   else {
-    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u)) return null;
+    const def = ITEMS[id]; if(!def || !def.vitamin || !canUseItem(id, u, G)) return null;
     v = { ...u }; const fake = { boost: (x, d) => { for(const k of ['hp', 'atk', 'spd']) if(d[k]) x[k] = (x[k] || 0) + d[k]; } };
     try{ def.apply(v, fake); }catch(e){ return null; }
   }
@@ -8947,7 +9068,7 @@ function slotClass(i){
   if(sel && sel.kind === 'mart'){
     const s = G.mart[sel.idx];
     if(s && s.held) return u ? 'valid' : '';   // buy it straight onto this pokémon
-    return (u && s && canUseItem(s.id, u)) ? 'valid' : '';
+    return (u && s && canUseItem(s.id, u, G)) ? 'valid' : '';
   }
   if(sel && sel.kind === 'bitem') return '';   // party-wide: there is no target to pick
   if(sel && sel.kind === 'team'){
@@ -8977,7 +9098,7 @@ function pcSlotClass(i){
   }
   if(sel && sel.kind === 'mart'){                // medicine, candy, stones and held items work on the PC too
     const s = G.mart[sel.idx];
-    return (u && s && (s.held || canUseItem(s.id, u))) ? 'valid' : '';
+    return (u && s && (s.held || canUseItem(s.id, u, G))) ? 'valid' : '';
   }
   if(sel && sel.kind === 'team') return (!u && pcRoom(G) > 0) || u ? 'valid' : '';   // store it, or swap with this one
   return '';
@@ -9340,7 +9461,7 @@ const toastHtml = () => toast ? `<div class="toastbox" role="status"><b>${esc(to
 function stonePreview(stone){
   const out = [];
   for(const [where, list] of [['party', G.team || []], ['PC', G.pc || []]]) for(const u of list){
-    if(!u || !canUseItem(stone, u)) continue;
+    if(!u || !canUseItem(stone, u, G)) continue;
     const n = evoNext(u.id).find(x => x.stone === stone);
     if(n) out.push({ u, where, into: n.into });
   }
@@ -12693,6 +12814,23 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.6.0', date:'Oct 10, 2026', title:'Minor gameplay changes', sub:'Training Manuals: the limit grows with your badges', items:[
+    'A pok\u00e9mon can now take 1 Training Manual at the start of a run, and one more for every 2 badges you win, up to 5 with all eight. It used to be a flat 3, so early on you must choose who gets the training, and by the Elite Four you can train your main team much further.',
+    'The Training Manual\u2019s description and the message you get when a pok\u00e9mon is full both show the current limit.',
+  ] },
+  { v:'6.5.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The nine new items have their own artwork', items:[
+    'Iron, Calcium, Zinc, Energy Root, Training Manual, Bulk Plate, Black Belt, Soothe Bell and Scope Lens now show their own pixel art in the Mart, the Bag, the Pok\u00e9dex and on the pok\u00e9mon holding them, instead of an emoji.',
+  ] },
+  { v:'6.5.0', date:'Oct 10, 2026', title:'Major gameplay update', sub:'May joins as the Hoenn rival, every role gets its own items, and the Mart stops rolling all one kind', items:[
+    'May is now the Gen 3 rival, with her own portrait and lines. Like Blue\u2019s Eevee, her Support is always the same pok\u00e9mon: a Ralts that grows up through Kirlia into Gardevoir, alongside her Taillow and a starter that beats yours.',
+    'The Mart no longer rolls a shelf of one kind. No shelf repeats an item, and no more than half of a shelf\u2019s slots share a category: medicine splits into vitamins, evolution items and boosts, held items into stat, trigger and economy. Reserved items still stay put and count toward the mix. (The very first shelf only sells Protein and HP Up, so it is unchanged.)',
+    'Four role medicines, each a stronger vitamin only that role can take: Iron (+9 HP, Tanks), Calcium (+10 Attack, Cannons), Zinc (+5 HP and +6 Speed, Supports) and Energy Root (+4 to every stat, Bruisers). They count toward the same cap of ten as the vitamin they replace, so a role vitamin makes a slot worth more but never raises the ceiling.',
+    'Training Manual: trains a pok\u00e9mon a little in the way its role grows (a Tank mostly HP, a Cannon mostly Attack), up to 3 per pok\u00e9mon.',
+    'Four role held items, greyed out on the wrong role like Eviolite: Bulk Plate (Tank, +25% HP and 8% less damage), Black Belt (Bruiser, +14% HP and Attack), Soothe Bell (Support, heals 50% bigger and +15% Speed) and Scope Lens (Cannon, +28% Attack, \u22128% HP).',
+    'The Mart only stocks a role item if you own a pok\u00e9mon of that role. Gym leaders, Elite Four and rivals never carry them, so no boss was changed.',
+  ] },
+  { v:'6.4.1', date:'Oct 10, 2026', title:'Visual bug fixes', sub:'The Pok\u00e9dex uses real Pok\u00e9dex numbers and order', items:[
+    'The Pok\u00e9dex now numbers every pok\u00e9mon with its real National Pok\u00e9dex number and lists them in that order, from Bulbasaur #001 through Jirachi #385, instead of numbering them by shop tier. The numbers skip the pok\u00e9mon the game doesn\u2019t have, so Ivysaur is still #002 and Pikachu is #025.' ] },
   { v:'6.4.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Roselia was the weakest pok\u00e9mon in the game; now it holds its own', items:[
     'Roselia\u2019s main move was a 40% chance to paralyse, which left it winning about 31% of matchups when a typical support wins about 50%. Pok\u00e9mon whose main move only inflicts a status all measured low, and Roselia also had the lowest stats of any support. Its main move is now Magical Leaf, a light hit that slows the target, and its second move is Stun Spore, paralysing a random enemy every third action. It now measures about 51%, in line with the other supports.' ] },
   { v:'6.3.0', date:'Oct 10, 2026', title:'Balance patch', sub:'Hoenn catches up: three more lines, stone evolutions and every difficulty setting measured', items:[
@@ -14120,8 +14258,9 @@ function openDex(){
 
   /* 4.1.0: the Pokémon are a grid of tiles; a tap opens that pokémon's card. */
   const seenSet = dexSeen();
-  const allMons = families.flat();
-  const dexNo = k => String(allMons.indexOf(k) + 1).padStart(3, '0');
+  /* 6.5.0 (Sean): real National Pokédex numbers and order (#001 Bulbasaur … #385 Jirachi), with gaps where the game has no pokémon. */
+  const allMons = families.flat().sort((a, b) => (NATDEX[a] || 999) - (NATDEX[b] || 999));
+  const dexNo = k => String(NATDEX[k] || 0).padStart(3, '0');
   const maxOf = f => Math.max(...Object.keys(SPECIES).map(k => SPECIES[k][f] || 0));
   const MAXS = { hp: maxOf('hp'), atk: maxOf('atk'), spd: maxOf('spd') };
   const viaOf = (k, i) => { const from = i > 0 ? evoStep(k) : null; if(!from) return '';
@@ -14164,7 +14303,7 @@ function openDex(){
   /* 4.1.1: a card is built when you tap its tile, not for all 186 up front (that made the Pokédex take seconds to open on a phone) */
   const cards = {};
   const cardFor = k => { if(!cards[k]){ const before = ACTIVE_GENS.slice(); setActiveGens(GENS_READY); try{ cards[k] = cardHtml(k); } finally { setActiveGens(before); if(G) useGens(G); } } return cards[k]; };
-  /* 5.12.0: one numbered grid (families still sit next to each other, in order), coloured by type; unseen ones are silhouettes */
+  /* 5.12.0: one numbered grid (National Pokédex order), coloured by type; unseen ones are silhouettes */
   const tileHtml = k => { const s = SPECIES[k], seen = seenSet.has(k);
     return `<button class="dextile ${seen ? 'seen' : 'unseen'}" data-id="${k}" data-name="${esc(s.name.toLowerCase())}" data-type="${esc(s.type)} ${secondTypes(k).map(esc).join(' ')}" ${dexGenAttr(k)} style="--tcol:${typeColor(k)}" aria-label="${seen ? esc(s.name) : 'Not seen yet'}">
       <span class="dno">${dexNo(k)}</span>${spriteHtml(k, 'tile')}<b>${seen ? esc(s.name) : '???'}</b>${s.legendary && seen ? '<i class="dleg">★</i>' : ''}<i class="dband"></i></button>`; };
