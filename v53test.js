@@ -12,7 +12,7 @@ check(H.bell.boss === 'none' && H.helmet.boss === 'none', '…and bosses don’t
 
 /* Choice Band: +30% Attack, −5% HP, still locked */
 { const u = E.makeUnit('machamp', 0); u.atk = 100; u.hp = 100; u.held = 'choice'; const s = E.heldStats(u);
-  check(s.atk === 30 && s.hp === -5 && s.spd === 0 && H.choice.lockMain, `Choice Band: +30% Attack, −5% HP, main move only (${s.atk}/${s.hp}/${s.spd})`); }
+  check(s.atk === 45 && s.hp === -5 && s.spd === 0 && H.choice.lockMain, `Choice Band: +45% Attack, −5% HP, main move only (${s.atk}/${s.hp}/${s.spd})`); }
 
 /* Shell Bell: 35% of the damage dealt heals the most-hurt teammate */
 { const hitter = held => { const u = E.makeUnit('abra', 0); u.atk = Math.round(30 / T.atkPerDamage); u.hp = 500; u.pos = 1; u.held = held; return u; };

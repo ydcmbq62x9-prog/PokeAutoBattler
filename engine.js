@@ -2573,15 +2573,15 @@ const HELD_ITEMS = {
   /* v52 (Sean): like the real item, it locks the holder into one move — the
      second move never fires — instead of costing Speed. */
   choice: { name:'Choice Band',  icon:'🎀', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
-            text:'+30% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.30, hp:-0.05 }, lockMain:true },
+            text:'+45% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.45, hp:-0.05 }, lockMain:true },
   orb:    { name:'Life Orb',     icon:'🔮', tier:4, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
-            text:'Its attacks deal 50% more damage, but each attack that lands costs it 6% of its max HP.',
-            dmgBoost:0.50, orbCost:0.06 },
+            text:'Its attacks deal 75% more damage, but each attack that lands costs it 6% of its max HP.',
+            dmgBoost:0.75, orbCost:0.06 },
   iron:   { name:'Iron Ball',    icon:'⚫', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
             text:'Takes 35% less damage from every hit, but nothing can heal it for the whole battle — not even its own moves. (Resting in the PC still works.)',
             cutPct:0.35, noHeal:true },
   scale:  { name:'Heart Scale',  icon:'💗', tier:3, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
-            text:'Every heal it gives is doubled (its healing moves, and a Support’s Aftercare), but −15% Attack.', healBoost:1.0, pct:{ atk:-0.15 } },
+            text:'Every heal it gives is 130% bigger (its healing moves, and a Support’s Aftercare), but −10% Attack.', healBoost:1.3, pct:{ atk:-0.10 } },
 };
 
 const heldOf = u => (u && u.held && HELD_ITEMS[u.held]) || null;

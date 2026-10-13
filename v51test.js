@@ -18,7 +18,7 @@ check(NEW.every(k => H[k].boss === 'elite'), '…and marked as Elite Four / Cham
 /* Choice Band: more Attack, and locked into the main move */
 { const u = E.makeUnit('machamp', 0); u.atk = 100; u.spd = 60; u.held = 'choice';
   const s = E.heldStats(u);
-  check(s.atk === 30 && s.spd === 0, `Choice Band: +30% Attack and no Speed cost (100/60 → +${s.atk} / ${s.spd})`);
+  check(s.atk === 45 && s.spd === 0, `Choice Band: +45% Attack and no Speed cost (100/60 → +${s.atk} / ${s.spd})`);
   // a pokémon whose second move fires every few actions stops using it
   const sp = Object.keys(E.SPECIES).find(k => E.SPECIES[k].move2 && E.SPECIES[k].move2.trig === 'every');
   const nm = E.SPECIES[sp].name, m2 = E.SPECIES[sp].move2.name;
@@ -33,7 +33,7 @@ check(NEW.every(k => H[k].boss === 'elite'), '…and marked as Elite Four / Cham
   const plain = dmgTo('Rattata', lines(fight([mk(null)], [tgt()], 31)))[0];
   const r = fight([mk('orb')], [tgt()], 31), ls = lines(r);
   const orb = dmgTo('Rattata', ls)[0];
-  check(orb >= Math.round(plain * 1.5) - 1 && orb <= Math.round(plain * 1.5) + 1, `Life Orb: 50% more damage (${plain} → ${orb})`);
+  check(orb >= Math.round(plain * 1.75) - 1 && orb <= Math.round(plain * 1.75) + 1, `Life Orb: 75% more damage (${plain} → ${orb})`);
   const cost = ls.filter(l => /lost \d+ HP to its Life Orb/.test(l));
   check(cost.length > 0 && cost.every(l => +l.match(/lost (\d+)/)[1] === Math.round(300 * 0.06)), `…and costs 6% of max HP per attack (${cost[0]})`);
   const attacks = ls.filter(l => /^Machop used /.test(l)).length;
@@ -82,7 +82,7 @@ check(NEW.every(k => H[k].boss === 'elite'), '…and marked as Elite Four / Cham
   const avg = x => x.reduce((p, q) => p + q, 0) / Math.max(1, x.length);
   check(a.length && b.length && Math.max(...b) >= Math.max(...a) * 1.7, `Heart Scale: the Support's heals about double (${Math.max(...a)} → ${Math.max(...b)} HP at best; the rest can be capped by missing HP)`);
   const hs = (() => { const u = E.makeUnit('chansey', 0); u.atk = 100; u.held = 'scale'; return E.heldStats(u); })();
-  check(hs.atk === -15, `…for −15% Attack (${hs.atk} on 100)`);
+  check(hs.atk === -10, `…for −10% Attack (${hs.atk} on 100)`);
   const onixHeld = held => { const t = E.makeUnit('onix', 0); t.hp = 300; t.pos = 0; t.held = held;
     const s = E.makeUnit(sup[0], 0); s.hp = 300; s.pos = 1;
     return lines(fight([t, s], [hitter()], 61)).map(l => l.match(/tended to Onix \(\+(\d+) HP\)/)).filter(Boolean).map(m => +m[1]); };

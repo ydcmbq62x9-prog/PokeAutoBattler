@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.9.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.10.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.10.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Choice Band, Life Orb and Heart Scale got stronger, to keep up with the role items', items:[
+    'Measured on their best-fit holder, the Very Rare items trailed the role items (Bulk Plate and Soothe Bell add about 6\u20137 points of win rate; Choice Band and Life Orb added 2\u20134, and Heart Scale only helped Supports). Iron Ball was already on par and is unchanged.',
+    'Choice Band: +30% Attack \u2192 +45% Attack (still \u22125% HP and main move only). Life Orb: 50% \u2192 75% more damage (still 6% HP per hit). Heart Scale: heals doubled \u2192 130% bigger, and the Attack penalty \u221215% \u2192 \u221210%.',
+    'Each now adds roughly 6 points of win rate on its best holder. Elite Four and Champion pok\u00e9mon can hold them too, so those fights were re-measured.',
+  ] },
   { v:'6.9.0', date:'Oct 11, 2026', title:'Balance patch', sub:'The four role-specific held items are now Rare', items:[
     'Bulk Plate, Black Belt, Soothe Bell and Scope Lens are now Rare instead of Uncommon, so each turns up in a shelf slot 25% as often as a Common item instead of 60%. The Pok\u00e9dex shows the new chance.',
   ] },
