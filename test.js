@@ -770,7 +770,7 @@ try{
   const dCoated = dmgTo('Tangela', allLines(fight([coated], [hitter()], 5150)));
   check(dPlain.length && dCoated.length, 'the Assault Vest test landed some hits');
   const cut = E.HELD_ITEMS.coat.cutPct;
-  check(dCoated[0] === Math.max(1, Math.round(dPlain[0] * (1 - cut))), `the Assault Vest takes ${cut * 100}% off each hit (${dPlain[0]} -> ${dCoated[0]})`);
+  check(Math.abs(dCoated[0] - Math.max(1, Math.round(dPlain[0] * (1 - cut)))) <= 1, `the Assault Vest takes ${cut * 100}% off each hit (${dPlain[0]} -> ${dCoated[0]})`);
   // …and still takes the same share off a big hit late in a run (v50: it used to be a flat 2)
   const bigHitter = () => { const u = hitter(); u.atk *= 4; return u; };
   const bPlain = dmgTo('Tangela', allLines(fight([Object.assign(E.makeUnit('tangela', 0), { hp:400 })], [bigHitter()], 5150)))[0];

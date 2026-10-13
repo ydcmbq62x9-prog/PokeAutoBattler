@@ -2529,14 +2529,14 @@ const HELD_ITEMS = {
             pct:{ hp:0.50 }, when:u => canStillEvolve(u.id),
             offText:'No effect — this one has nowhere left to evolve.' },
   coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
-            text:'Takes 15% less damage from every hit.', cutPct:0.15 },
+            text:'Takes 20% less damage from every hit.', cutPct:0.20 },
   char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
-            text:'+20% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.20 }, unresist:true },   // 4.8.0: was the unresist alone
+            text:'+28% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.28 }, unresist:true },   // 4.8.0: was the unresist alone
   lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
-  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'rare',
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
   egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
             text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
@@ -2557,13 +2557,13 @@ const HELD_ITEMS = {
             text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
             when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
   gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'bruiser',
-            text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
+            text:'+22% HP and +22% Attack. Bruisers only.', pct:{ hp:0.22, atk:0.22 },
             when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
   sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none', role:'support',
-            text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
+            text:'Its heals are 50% bigger (including Aftercare), and +12% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.12 },
             when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
   scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'cannon',
-            text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
+            text:'+70% Attack, but −8% HP. Cannons only.', pct:{ atk:0.70, hp:-0.08 },
             when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
      cost attached, so where you put it is a decision. Two are Sean's (Iron

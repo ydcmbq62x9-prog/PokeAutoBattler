@@ -35,7 +35,7 @@ check(E.rarityOf({ rare:true }) === 'rare' && E.rarityOf({}) === 'common', 'an i
 /* the balance numbers Sean picked */
 check(E.HELD_ITEMS.sitrus.cost === 5 && E.HELD_ITEMS.focus.cost === 5, 'Sitrus Berry and Focus Band cost 5₽');
 check(T.xItems.pct === 0.05, 'X items are +5% a use');
-check(E.HELD_ITEMS.coat.cutPct === 0.15 && !E.HELD_ITEMS.coat.reduce, 'the Assault Vest (was Metal Coat) is a share, not a flat 2');
+check(E.HELD_ITEMS.coat.cutPct === 0.20 && !E.HELD_ITEMS.coat.reduce, 'the Assault Vest (was Metal Coat) is a share, not a flat 2');
 check(E.HELD_ITEMS.char.unresist && !E.HELD_ITEMS.char.superBoost, 'Expert Belt: resisted hits land for full damage');
 check(E.HELD_ITEMS.lefto.endRoundPct === 0.22, 'Leftovers heals 22%');
 check(/max HP/.test(E.HELD_ITEMS.sitrus.text) && !/round of battle EXP/.test(E.HELD_ITEMS.egg.text + E.ITEMS.expshare.text), 'the reworded texts');
