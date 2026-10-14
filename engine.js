@@ -129,7 +129,7 @@ const TUNING = {
     cnf: { name:'Confusion', icon:'💫', short:'CNF', actions:3, selfHit:0.35, selfPower:0.5 },
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
-  eggCap:       10,
+  eggCap:       12,
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -2432,7 +2432,7 @@ const ITEMS = {
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
                   apply:(u,G)=>G.addExp(u,1) },
-  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rarity:'rare',
+  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:5, rarity:'rare',
                   text:'Everyone in your party gets EXP as if they had just won a fight. (Not the PC, and not pokémon you buy later.)',
                   apply:(u,G)=>G.shareExp() },
   thunderstone: { name:'Thunder Stone', icon:'⚡', tier:3, cost:4, rarity:'common', text:'Evolves Pikachu, or Eevee into Jolteon.',
@@ -2543,7 +2543,7 @@ const HELD_ITEMS = {
             when:u => (u.eggTicks || 0) < TUNING.eggCap,
             offText:`Fully trained — this pokémon has had all ${TUNING.eggCap} bonus rounds. Pass the egg on.` },
   coin:   { name:'Amulet Coin',  icon:'🪙', tier:2, cost:5, kind:'economy', rarity:'uncommon',
-            text:'+2₽ at the start of each turn.', income:2 },
+            text:'+1₽ at the start of each turn.', income:1 },
   /* v53 — two items for the two ends of a formation. `boss:'none'` keeps them
      off gym leaders, whose difficulty was measured with the older list. */
   bell:   { name:'Shell Bell',   icon:'🐚', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',

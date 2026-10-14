@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.11.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.12.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.12.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Amulet Coin halved, Lucky Egg stronger, Exp. Share cheaper', items:[
+    'The money and EXP items were measured with full bot runs. Amulet Coin (+2\u20bd a turn) was worth about 9.5 points of clear rate, the strongest item in the game, so it now gives +1\u20bd a turn (about 6 points, in line with the role items).',
+    'Lucky Egg was worth about 5 points for a Rare item, so each pok\u00e9mon can now take 12 bonus rounds instead of 10 (about 6.5 points).',
+    'Exp. Share was worth about 2.5 points for 6\u20bd, so it now costs 5\u20bd. (Two rounds of EXP per use was tried and made Red far too easy, because the bot stacks many of them, so it stays at one round.)',
+    'Checked and left alone: Rare Candy (about +3 for 4\u20bd), Training Manual (+4 to +6), the plain vitamins and the role vitamins. The vitamins are weak one at a time, but raising them lifted the bot\u2019s clear rate by 6\u20139 points, so they stay as they are. Overall clear rate is unchanged.',
+  ] },
   { v:'6.11.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Every held item re-measured: Scope Lens, Black Belt and two Uncommon items buffed, Soothe Bell trimmed', items:[
     'Each held item was measured on all four roles. Scope Lens (+28% Attack) added under 2 points of win rate on a Cannon and Black Belt about 4, against 6\u20138 for the other role items, so: Scope Lens +28% \u2192 +70% Attack (still \u22128% HP); Black Belt +14% \u2192 +22% HP and Attack; Soothe Bell +15% \u2192 +12% Speed (it was the strongest item in the game on a Support).',
     'Assault Vest takes 20% less damage instead of 15%, and Expert Belt gives +28% Attack instead of +20%. Both were adding about 3 points, the weakest of the Uncommon items.',
