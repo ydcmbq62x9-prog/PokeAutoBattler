@@ -14,3 +14,6 @@ engine.after*.js
 engine.new.js
 ui.new.js
 /_scratch/
+!/*.sh
+!/bump.py
+!/DEV.md
