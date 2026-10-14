@@ -1,7 +1,7 @@
 /* Duels live link: host gets a 4-letter code, the friend types it, teams swap, both watch the same fight.
    The matchmaking server is faked locally (same message format as the PeerJS server). */
 const { chromium } = require('playwright');
-const WS = require('/home/claude/.npm-global/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/ws');
+let WS; try{ WS = require('ws'); }catch(e){ WS = require('/home/claude/.npm-global/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/ws'); }   // npm i ws
 const URL = require('./pkbpaths').PAGE;
 let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) bad++; };
 (async () => {

@@ -172,7 +172,7 @@ Transport, in order of preference:
    matchmaking server** (`0.peerjs.com`, message format: OPEN/ID-TAKEN/OFFER/ANSWER/CANDIDATE) and then the phones talk directly over
    a WebRTC data channel (the server never sees teams). Messages: commit fingerprint → team once both are locked → ready → 3-2-1 →
    both devices run the same deterministic battle. The first OFFER wins the seat; strangers are ignored. **This was never run against
-   the real server** (the cloud sandbox couldn't reach it) — only against a local stand-in (`livetest.js` uses a `ws` mock). Test it for
+   the real server** (the cloud sandbox couldn't reach it) — only against a local stand-in (`livetest.js` uses a `ws` mock; `npm i ws` to run it). Test it for
    real first: if the PeerJS server's behaviour differs, `liveSignal`/`liveHost`/`liveJoin` in `duelui.js` are the places to look.
 2. **Shared room fallback** for the claude.ai preview page, where WebRTC/WebSocket to other hosts are blocked: the artifact `room`
    capability carries the same 4-letter code (`liveRoom`). Needs viewers signed in with access to the artifact. Not used in a normal
