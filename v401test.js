@@ -1,5 +1,5 @@
 /* 4.0.0 (gen2 branch): the Gen 2 pack — 68 pokémon, Steel and Dark, the Johto leaders, Silver. */
-const E = require('./engine.js'); const S = E.SPECIES; const MAIN = require('../engine.js');
+const E = require('./engine.js'); const S = E.SPECIES; let MAIN; try{ MAIN = require('../engine.js'); }catch(e){ console.log('skipped: needs the old Gen 1 build at ../engine.js (a historical comparison, not in this repo)'); process.exit(0); }
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
 const G2 = Object.keys(S).filter(k => S[k].gen === 2);
 check(G2.length === 82 && S.magmar && (S.magmar.gen || 1) === 1 && S.horsea && !S.horsea.gen && S.kingdra.gen === 2, `82 Gen 2 pokémon (Celebi, Kingdra and Porygon2 included), plus Magmar, Horsea and Seadra for Gen 1 (${G2.length})`);
