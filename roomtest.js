@@ -25,15 +25,15 @@ let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + m
     return me;
   };
   const A = await mk('Ann'), B = await mk('Bob');
-  await A.p.waitForSelector('[data-l="rhost"]'); check(await A.p.$('[data-l="host"]') === null, 'no WebRTC buttons when WebRTC is blocked');
-  await A.p.click('[data-l="rhost"]'); await A.p.waitForSelector('.dcode'); const code = await A.p.textContent('.dcode');
-  check(/^[a-z0-9]{6}$/.test(code), `room code made (${code})`);
-  await B.p.click('[data-l="rjoin"]'); await B.p.fill('#lk_in', '!!'); await B.p.click('[data-l="rgo"]'); await B.p.waitForSelector('.dlive .dmsg'); check(true, 'bad room code refused');
-  await B.p.fill('#lk_in', code); await B.p.click('[data-l="rgo"]');
+  await A.p.waitForSelector('[data-l="host"]');
+  await A.p.click('[data-l="host"]'); await A.p.waitForSelector('.dcode'); const code = await A.p.textContent('.dcode');
+  check(/^[A-Z2-9]{4}$/.test(code), `room code made (${code})`);
+  await B.p.click('[data-l="join"]'); await B.p.fill('#lk_in', '!!'); await B.p.click('[data-l="go"]'); await B.p.waitForSelector('.dlive .dmsg'); check(true, 'bad room code refused');
+  await B.p.fill('#lk_in', code); await B.p.click('[data-l="go"]');
   for(const P of [A, B]) await P.p.waitForFunction(() => liveOn(), null, { timeout:6000 });
   check(true, 'both linked through the room');
   const C = await mk('Eve');     // a stranger who guesses the code after the pair formed
-  await C.p.click('[data-l="rjoin"]'); await C.p.fill('#lk_in', code); await C.p.click('[data-l="rgo"]'); await C.p.waitForTimeout(2500);
+  await C.p.click('[data-l="join"]'); await C.p.fill('#lk_in', code);  await C.p.click('[data-l="go"]'); await C.p.waitForTimeout(2500);
   check(await C.p.evaluate(() => !liveOn()) && await A.p.evaluate(() => liveOn()) && await B.p.evaluate(() => liveOn()), 'a third person cannot take a seat');
   const pick = async P => { const bids = await P.p.evaluate(() => [...document.querySelectorAll('[data-pick]')].map(e => e.dataset.pick));
     for(const bid of bids){ if(await P.p.evaluate(() => duelDraft ? duelDraft.picks.length : 0) >= 6) break; await P.p.click(`[data-pick="${bid}"]`);
