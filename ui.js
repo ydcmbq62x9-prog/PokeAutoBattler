@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.13.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.13.1', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4393,6 +4393,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.13.1', date:'Oct 13, 2026', title:'Visual bug fixes', sub:'Developer tools can be switched on by tapping the Duels heading five times', items:[
+    'The #dev page address trick does not work inside the published page, so tap the Duels heading five times to show or hide the developer tools (add maxed pok\u00e9mon, fill the box, clear).',
+  ] },
   { v:'6.13.0', date:'Oct 13, 2026', title:'Major gameplay update', sub:'Duels preview: save pok\u00e9mon from your runs and battle a friend by code', items:[
     'New Duels screen on the title menu and in-game menu. Finish a run and save up to 3 pok\u00e9mon from a win, or 1 from a loss, into a 30-slot duel box. Saved pok\u00e9mon are frozen: their level, stats and held item never change.',
     'A set is best of three, six against six, with each team inside a power budget of 4200. A pok\u00e9mon that faints sits out the next game only. The items on your first six are your pool for the set, and from game 2 you can move them around; a pok\u00e9mon swapped in from the box arrives without its own item.',

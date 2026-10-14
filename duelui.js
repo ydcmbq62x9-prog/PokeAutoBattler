@@ -35,6 +35,8 @@ function openDuels(){
       <select id="devsp">${Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && SPRITES[k] && evoLine(k)[evoLine(k).length - 1] === k).sort().map(k => `<option value="${k}">${esc(SPECIES[k].name)}</option>`).join('')}</select>
       <button class="btn" data-m="devadd">Add maxed</button><button class="btn" data-m="devfill">Fill the box</button>
       <button class="btn ghost" data-m="devclear">Clear box + set</button></div>` : ''}`);
+  /* the page address can't be edited inside the published page, so tapping the heading five times turns developer tools on (and off) */
+  let taps = 0; d.querySelector('h3').addEventListener('click', () => { if(++taps >= 5){ try{ localStorage.setItem('pkb_dev', duelDev() ? '0' : '1'); }catch(e){} d.remove(); openDuels(); } });
   d.addEventListener('click', ev => {
     const b = ev.target.closest('[data-m]'); if(!b) return; const m = b.dataset.m;
     if(m === 'close') d.remove();
