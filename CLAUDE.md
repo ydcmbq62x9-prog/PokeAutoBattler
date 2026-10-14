@@ -25,9 +25,8 @@ Champion. It ships as **one self-contained HTML file** (no dependencies, no serv
    `python3 bump.py X.Y.Z "Title" "sub" "bullet" ...` — it edits `GAME_VERSION` and the changelog together, and `build.py`
    refuses to build if they disagree.
 3. **Push to GitHub only when Sean says "push it".** The claude.ai artifact gets every update immediately; the GitHub Pages
-   copy (the installed home-screen app) is updated only on request. (The previous sessions had no write access to the repo, so
-   Sean uploaded `index.html`, `sw.js`, `manifest.webmanifest`, `icons/` himself. With Claude Code you may be able to push
-   directly — still only when told.)
+   copy (the installed home-screen app) is updated only on request. Claude Code sessions can push to the repo directly — still
+   only when told. (Cowork sessions had no write access, so Sean uploaded the app files himself.)
 4. **"Iron out"** = a pass of small visual clean-ups, done **only** when he says the words. Otherwise leave small cosmetic nits.
 5. **Always offer ideas** for how the task or the project could progress next.
 6. **A move name means the same effect on every pokémon that has it** (only the percentages may differ for balance). If a move
@@ -47,17 +46,20 @@ template), `sprites.js` (generated base64 art — checked in, don't regenerate c
 `build.py`, `bump.py`, `quick.sh`/`runtests.sh`/`run1.sh`/`release.sh`, ~86 `*test.js` files plus ~130 measuring/one-off scripts,
 `app/` (icon scripts, README/sw templates, icons), `extra-sprites/`, `DEV.md`, this file. `_scratch/` is git-ignored.
 
-Branches (the repo bundle in this hand-off contains all of them):
+Everything lives in one GitHub repo, `origin` = https://github.com/ydcmbq62x9-prog/PokeAutoBattler (source pushed there Oct 2026).
+Two of its branches hold **built files, not source** — never merge source into them:
 
 | branch | version | what it is |
 |---|---|---|
-| `merge610` | 6.12.0 | **The main game line.** Gens 1+2+3, roles/subroles, items, economy, dev tooling. Start here. |
-| `multiplayer` | 6.15.0 | `merge610` + Duels (friend-code sets, power budget, live link with 4-letter code). Separate preview, not merged. |
-| `gen2` | 5.12.2 | older line, kept for history |
-| `main` | 4.1.0 | very old; matches what was on GitHub Pages at some point |
+| `merge610` | 6.12.0 | **The main game source.** Gens 1+2+3, roles/subroles, items, economy, dev tooling. Start here. |
+| `multiplayer` | 6.16.0 | `merge610` + Duels (friend-code sets, power budget, live link, Cloudflare relay). Separate preview, not merged. |
+| `gen2` | 5.12.2 | older source line, kept for history |
+| `old-main` | 4.1.0 | very old source (was called `main` in the Cowork bundle) |
+| `main` | built | **The live app on GitHub Pages** (index.html, sw.js, manifest, icons from a `merge610` build). Update only on "push it". |
+| `duels-preview` | built | **The Duels preview on Cloudflare** (output of `relay/site.sh` from `multiplayer`). Cloudflare deploys it by itself. |
 
-`origin` is https://github.com/ydcmbq62x9-prog/PokeAutoBattler (the GitHub Pages repo that serves the installed app).
-It holds only the built app files (index.html, sw.js, manifest, icons), not this source.
+To update `main`: build `merge610`, copy `$PKB_OUT/gen2/pokebattler-app/*` over the branch's files, commit, push.
+To update `duels-preview`: build `multiplayer`, run `./relay/site.sh`, replace the branch's files with `$PKB_OUT/duels-site/`, commit, push.
 
 ## 4. Building and testing on your own machine
 
@@ -155,7 +157,7 @@ Everything numeric has been **measured, not guessed**, with scripts that run the
   existing same-slot bosses.
 - Always re-run `./runtests.sh` after anything economic. Verify tests catch a regression by sabotage when you add one.
 
-## 8. Multiplayer: Duels (branch `multiplayer`, 6.15.0)
+## 8. Multiplayer: Duels (branch `multiplayer`, 6.16.0)
 
 Built on a branch so the main game stays safe. Everything lives in `engine.js` (DUELS section + `TUNING.duel`) and `duelui.js`
 (injected into the build at `/*@DUELUI@*/` in `ui.js`).
@@ -168,11 +170,21 @@ between brought pokémon but never conjured; a pokémon swapped in from the box 
 before the opponent's team opens. Nothing carries past the set.
 
 Transport, in order of preference:
+0. **Own relay (6.16.0)** — the one that matters for real phones. The Duels preview is a Cloudflare Worker,
+   https://pokeautobattler.ydcmbq62x9.workers.dev/ (Sean's account; Worker name `pokeautobattler`, Workers Builds deploys branch
+   `duels-preview`). `relay/worker.js` serves the game from `public/` and, at `/relay/<CODE>`, a WebSocket room per code (one Durable
+   Object per code, hibernating sockets, `ping`/`pong` auto-response). Host opens it (`taken` if the code is in use → new code), the
+   first joiner pairs (`peer`), later joiners get `full`, a join with no host gets `nobody`; either side leaving sends `left` to the other.
+   Relay frames are JSON with a `_` key; everything else is forwarded untouched, so the same lock-in messages as below ride on it.
+   `liveRelay` in `duelui.js` tries it first on any http(s) page (`<page host>/relay/`, or `window.__relay`), then falls back to (1).
+   Why it exists: on real phones the PeerJS link reached the server but the direct link never opened ("Could not connect to CODE")
+   — networks blocking WebRTC. Test: `./relay/site.sh`, `cd $PKB_OUT/duels-site && npx wrangler dev --port 8787`, then
+   `RELAY=http://127.0.0.1:8787 node relaytest.js` (18 checks; needs `npm i ws wrangler`). Cloudflare free plan covers it.
 1. **Live link (6.14–6.15)**: Host shows a 4-character code; Join types it. A tiny signalling client talks to the **free PeerJS
    matchmaking server** (`0.peerjs.com`, message format: OPEN/ID-TAKEN/OFFER/ANSWER/CANDIDATE) and then the phones talk directly over
    a WebRTC data channel (the server never sees teams). Messages: commit fingerprint → team once both are locked → ready → 3-2-1 →
-   both devices run the same deterministic battle. The first OFFER wins the seat; strangers are ignored. **This was never run against
-   the real server** (the cloud sandbox couldn't reach it) — only against a local stand-in (`livetest.js` uses a `ws` mock). Test it for
+   both devices run the same deterministic battle. The first OFFER wins the seat; strangers are ignored. Against the real server it reached
+   signalling but the direct link failed on Sean's phones (Oct 2026); otherwise tested only against a local stand-in (`livetest.js` uses a `ws` mock). Test it for
    real first: if the PeerJS server's behaviour differs, `liveSignal`/`liveHost`/`liveJoin` in `duelui.js` are the places to look.
 2. **Shared room fallback** for the claude.ai preview page, where WebRTC/WebSocket to other hosts are blocked: the artifact `room`
    capability carries the same 4-letter code (`liveRoom`). Needs viewers signed in with access to the artifact. Not used in a normal
@@ -202,8 +214,8 @@ for the code-swap path; saves live in localStorage and can be edited.
 
 ## 10. Open items and ideas (nothing here is committed to)
 
-- **Real-world test of the live link** (PeerJS server, mobile carriers/symmetric NATs may block direct links — a TURN server would be
-  the fix; consider a relay if friends can't connect).
+- **Real-phone test of the relay** (6.16.0, on Cloudflare) — not yet confirmed working on real phones at the time of writing.
+  Idea: point other copies (GitHub Pages) at the workers.dev relay via `liveRelayUrl` so the installed app gets it too once merged.
 - Tune the duel budget (4200) and save counts (3/1) after real play. Maybe mirrored replay for the 'e' side.
 - Subroles: no playtest data yet on whether 0.2–0.5 weights are felt.
 - Vitamins are weak; buffing needs a boss retune. Attack vitamins weakest.
