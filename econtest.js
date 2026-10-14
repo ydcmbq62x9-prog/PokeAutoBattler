@@ -1,3 +1,4 @@
+// @slow: statistical balance check, skipped by quick.sh (runs in the full suite)
 /* The economy, as a regression test.
    ----------------------------------
    Every other suite was blind to the worst balance bug this game has had: the

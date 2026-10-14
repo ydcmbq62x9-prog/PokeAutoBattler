@@ -1,3 +1,4 @@
+// @slow: statistical balance check, skipped by quick.sh (runs in the full suite)
 /* Can credits buy a second team?
    ------------------------------
    The PC holds twelve and a bench body costs 3₽ and arrives at trainer level,

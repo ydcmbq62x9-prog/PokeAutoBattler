@@ -1,3 +1,4 @@
+// @slow: statistical balance check, skipped by quick.sh (runs in the full suite)
 /* 4.1.0: Red on Mt. Silver — chance, team, one chance, rewards. */
 const E = require('./engine.js');
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };

@@ -1,11 +1,18 @@
+"""Build the game: shell.html + engine.js + sprites.js + ui.js -> one HTML file, plus the home-screen app zip.
+   Everything comes from files in this folder; nothing is read back from the output (it used to be, which is how
+   a stale copy could get published). Writes, under /mnt/user-data/outputs/:
+     pokebattler.html        the page to publish as the artifact (title "PokéArena")
+     gen2/pokebattler.html   the copy the Playwright tests load (title "PokéArena Gen 2 Preview")
+     gen2/pokebattler-app.zip + gen2/pokebattler-app/   the GitHub Pages / home-screen app
+   Fails loudly if the version and the changelog disagree. """
 import re, pathlib
-shell = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').read_text().replace('<title>PokéArena Gen 2 Preview</title>', '<title>PokéArena</title>')
-if '<!--BUILT-->' in shell:
-    shell = pathlib.Path('shell.html').read_text()
-else:
-    pathlib.Path('shell.html').write_text(shell)
+OUT = pathlib.Path('/mnt/user-data/outputs')
+shell = pathlib.Path('shell.html').read_text()
 engine  = pathlib.Path('engine.js').read_text()
 ui      = pathlib.Path('ui.js').read_text()
+_ver = re.search(r"GAME_VERSION = \{ v:'([\w.]+)'", ui).group(1)
+_top = re.search(r"const CHANGELOG = \[\s*\{ v:'([\w.]+)'", ui).group(1)
+assert _ver == _top, f'GAME_VERSION {_ver} but the newest changelog entry is {_top}: run bump.py'
 sprites = pathlib.Path('sprites.js')
 if sprites.exists():
     placeholder = ui.split('const SPRITES = {};')
@@ -15,7 +22,9 @@ js = engine + "\n\n" + ui
 assert '</script>' not in js, 'JS contains a literal closing script tag'
 out = shell.replace('<script>\n"use strict";\n</script>', '<!--BUILT-->\n<script>\n"use strict";\n' + js + '\n</script>')
 assert '<!--BUILT-->' in out, 'injection point not found'
-pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler.html').write_text(out.replace('<title>PokéArena</title>', '<title>PokéArena Gen 2 Preview</title>', 1))   # gen2 branch: its own page title
+(OUT / 'gen2').mkdir(parents=True, exist_ok=True)
+(OUT / 'pokebattler.html').write_text(out)                                    # the artifact copy: always the same build as the tests load
+(OUT / 'gen2' / 'pokebattler.html').write_text(out.replace('<title>PokéArena</title>', '<title>PokéArena Gen 2 Preview</title>', 1))
 print('built', len(out), 'bytes')
 
 # ---- v48: the home-screen app (GitHub Pages) ----
@@ -60,5 +69,8 @@ manifest = {
 zpath = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler-app.zip')
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(appdir.rglob('*')):
-        if f.is_file(): z.write(f, f.relative_to(appdir))
+        if f.is_file():
+            zi = zipfile.ZipInfo(str(f.relative_to(appdir)), (2026, 1, 1, 0, 0, 0))   # fixed date: a file with a pre-1980 mtime made zipping fail
+            zi.compress_type = zipfile.ZIP_DEFLATED; zi.external_attr = 0o644 << 16
+            z.writestr(zi, f.read_bytes())
 print('app', ver, 'written:', sorted(str(f.relative_to(appdir)) for f in appdir.rglob('*') if f.is_file()))

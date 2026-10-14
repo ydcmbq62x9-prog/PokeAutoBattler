@@ -13,3 +13,4 @@
 engine.after*.js
 engine.new.js
 ui.new.js
+/_scratch/

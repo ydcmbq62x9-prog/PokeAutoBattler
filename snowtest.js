@@ -1,3 +1,4 @@
+// @slow: statistical balance check, skipped by quick.sh (runs in the full suite)
 /* v31: Exp. Share and Lucky Egg can't carry a run on their own any more. */
 const E = require('./engine.js');
 const errors = [];

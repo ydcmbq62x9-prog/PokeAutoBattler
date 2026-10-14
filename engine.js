@@ -2397,37 +2397,31 @@ function evoFamily(id){
    use out of the shop entirely.
    =================================================================== */
 const ITEMS = {
-  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', text:'+9 Attack, permanently.',
-                  eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{atk:9}) },
-  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', text:'+8 HP, permanently.',
-                  eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:8}) },
-  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
-                  eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{spd:10}) },
+  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', boost:{atk:9},
+                  eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap, },
+  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', boost:{hp:8},
+                  eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', boost:{spd:10},
+                  eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap, },
   /* 6.5.0 — role medicine. Each is a stronger vitamin that only a pokémon of
      one role can take. They share the cap of the vitamin they replace (`group`),
      so ten of any mix is still the most a pokémon can have: a role vitamin makes
      a slot worth more, it does not raise the ceiling. */
-  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', text:'+9 HP, permanently. Tanks only.',
-                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:9}) },
-  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', text:'+10 Attack, permanently. Cannons only.',
-                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{atk:10}) },
-  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', text:'+5 HP and +6 Speed, permanently. Supports only.',
-                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:5, spd:6}) },
-  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', text:'+4 HP, +4 Attack and +4 Speed, permanently. Bruisers only.',
-                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:4, atk:4, spd:4}) },
+  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', boost:{hp:9},
+                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', boost:{atk:10},
+                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap, },
+  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', boost:{hp:5, spd:6},
+                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', boost:{hp:4, atk:4, spd:4},
+                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap, },
   /* Training: stat growth shaped by the pokémon's own role (a Tank takes it as HP,
      a Cannon as Attack), without a level. At most 3 per pokémon. */
   manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost',
                   text:`Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Each pokémon can take ${TUNING.manual.base} at first, and one more for every ${TUNING.manual.badgesPer} badges you win (up to ${TUNING.manual.max}).`,
                   eligible:(u, G) => ((u && u.manuals) || 0) < manualCap(G),
-                  apply:(u,G)=>{ G.train(u, { hp:6, atk:6, spd:6 }); u.manuals = (u.manuals || 0) + 1; } },
+                  train:{ hp:6, atk:6, spd:6 },
+                  apply:(u,G)=>{ G.train(u, ITEMS.manual.train); u.manuals = (u.manuals || 0) + 1; } },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
@@ -2455,6 +2449,15 @@ const ITEMS = {
   metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'uncommon', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
                   eligible:u => stonesFor(u.id).includes('metalcoat'), apply:(u,G)=>G.evolve(u, 'metalcoat') },
 };
+
+/* 6.13.0 — a vitamin's numbers live in ONE place (`boost`); its tap effect and its
+   text are made from them, so a balance patch is a one-number edit and the card
+   can never disagree with the effect. */
+{ const STAT = { hp:'HP', atk:'Attack', spd:'Speed' }, ROLE = { tank:'Tanks', bruiser:'Bruisers', support:'Supports', cannon:'Cannons' };
+  const list = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  for(const [k, d] of Object.entries(ITEMS)){ if(!d.boost) continue;
+    d.apply = (u, G) => G.boost(u, d.boost);
+    d.text = `${list(Object.entries(d.boost).map(([s, n]) => `+${n} ${STAT[s]}`))}, permanently.${d.role ? ' ' + ROLE[d.role] + ' only.' : ''}`; } }
 
 /** How many of a vitamin this pokémon has had. */
 /** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
