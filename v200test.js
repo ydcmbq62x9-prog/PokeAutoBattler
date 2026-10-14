@@ -159,7 +159,7 @@ const S = E.SPECIES, T = E.TUNING;
       t.querySelector('[data-t="daily"]').click(); const dm = !!document.querySelector('.modal.daily');
       document.querySelectorAll('.modal').forEach(m => m.remove()); t.remove(); document.body.classList.remove('titled'); titleEl = null;
       return { items, dm }; });
-    check(tl.items.join() === 'continue,new,daily,dex,trainer,options' && tl.dm, `${tag}: the title has Continue · New run · Daily Challenge · Trainer Card · Options (${tl.items.join(', ')})`);
+    check(tl.items.join() === 'continue,new,daily,duels,dex,trainer,options' && tl.dm, `${tag}: the title has Continue · New run · Daily Challenge · Trainer Card · Options (${tl.items.join(', ')})`);
     const sm = await p.evaluate(() => { openMenu(); const ids = [...document.querySelectorAll('.smi')].map(b => b.dataset.m); document.querySelectorAll('.modal').forEach(m => m.remove()); return ids; });
     check(sm.includes('title'), `${tag}: START has Title screen`);
 

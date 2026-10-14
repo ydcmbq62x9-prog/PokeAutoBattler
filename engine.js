@@ -130,6 +130,9 @@ const TUNING = {
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
   eggCap:       12,
+  /* Duels (multiplayer branch): a 30-slot box, six per team, three games, a power budget per team. Budget = the median
+     'six best pokémon from one winning run' (4188 in 140 bot clears), so the six strongest in a mixed box don't fit. */
+  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200 },
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -3652,6 +3655,143 @@ function importTeam(code){
 }
 
 /* ===================================================================
+   DUELS (the multiplayer branch) — friend-code, best-of-3 sets.
+   Pure functions on plain data, so both players' devices reach the same result:
+   a battle is deterministic given two teams and a seed, and the seed is a hash
+   of both players' lock-in codes. No server.
+
+   The multiplayer BOX holds frozen snapshots ({bid,id,hp,atk,spd,exp,held}).
+   A set is three games (first to two wins). Rules (Sean, Oct 2026):
+     · a team is 6 from the box, within a POWER BUDGET (sum of unitPower, held items counted)
+     · a pokémon that faints sits out the NEXT game only
+     · an item stays on the pokémon it was saved with; the set's item pool is the items on
+       the six brought to game 1. From game 2 on those can move freely among the six you
+       bring, and a pokémon swapped in from the box arrives without its saved item
+     · hidden picks: you lock your team before the opponent's code can be opened
+     · everything resets when the set ends; the box itself never changes
+   =================================================================== */
+const DUEL_PROTO = 1;
+const hash32 = str => { let h = 0x811c9dc5; for(let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; };
+const snapUnit = (u, bid, from) => ({ bid: bid || ('b' + Math.random().toString(36).slice(2, 9)), id:u.id, hp:u.hp, atk:u.atk, spd:u.spd, exp:u.exp || 0, held:u.held || null, from:from || 'run', at:Date.now() });
+/** A saved pokémon as a live unit. Frozen: nothing grows it. `item` overrides what it holds (undefined = its saved one). */
+function thawUnit(s, pos, item){
+  const u = makeUnit(s.id, s.exp);
+  u.hp = s.hp; u.atk = s.atk; u.spd = s.spd; u.bid = s.bid;
+  u.held = item === undefined ? (s.held || null) : (item || null);
+  if(Number.isInteger(pos)) u.pos = pos;
+  return u;
+}
+const duelPower = units => units.reduce((n, u) => n + unitPower(u), 0);
+/** Which pokémon can be brought to the next game, and which are resting. */
+function duelEligible(set, box){
+  const rest = new Set(set.rest || []);
+  return { ready: box.filter(s => !rest.has(s.bid)), resting: box.filter(s => rest.has(s.bid)) };
+}
+function newDuelSet(me, ver){ return { proto:DUEL_PROTO, ver:ver || '', me:me || 'Trainer', opp:'', id:'', game:1, games:[], pool:null, rest:[], budget:TUNING.duel.budget, locked:null, over:null }; }
+/** Items the set may use: every item on the six brought to game 1. */
+const duelPoolOf = (box, picks) => picks.map(p => (box.find(s => s.bid === p.bid) || {}).held).filter(Boolean);
+/** Check a team of picks ({bid,pos,item}) against the rules. Returns '' when fine, otherwise why not. */
+function duelCheckPicks(set, box, picks){
+  const D = TUNING.duel;
+  if(!picks.length || picks.length > D.bring) return `Bring between 1 and ${D.bring} pokémon.`;
+  if(new Set(picks.map(p => p.bid)).size !== picks.length) return 'The same pokémon is in the team twice.';
+  const rest = new Set(set.rest || []), units = [];
+  for(const p of picks){
+    const s = box.find(x => x.bid === p.bid); if(!s) return 'A pokémon in that team is not in your box.';
+    if(rest.has(p.bid)) return `${SPECIES[s.id].name} fainted last game and sits this one out.`;
+    units.push(thawUnit(s, p.pos, p.item));
+  }
+  const pool = set.pool || duelPoolOf(box, picks);
+  if(!set.pool){                       // game 1: everyone holds what they were saved with
+    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if((p.item || null) !== (s.held || null)) return 'Items cannot move before game 1.'; } }
+  const left = pool.slice();
+  for(const p of picks) if(p.item){ const i = left.indexOf(p.item); if(i < 0) return `You have no spare ${HELD_ITEMS[p.item] ? HELD_ITEMS[p.item].name : p.item} in this set.`; left.splice(i, 1); }
+  const power = Math.round(duelPower(units));
+  if(power > set.budget) return `That team is ${power - set.budget} over the power budget (${power} of ${set.budget}).`;
+  return '';
+}
+/** The lock-in code: your six, frozen, plus enough about the set for the other side to check it. */
+function duelCode(set, box, picks){
+  const t = picks.map(p => { const s = box.find(x => x.bid === p.bid);
+    return [s.id, s.hp, s.atk, s.spd, s.exp, p.item || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
+  const body = { p:DUEL_PROTO, ver:set.ver, n:set.me, s:set.id, g:set.game, b:set.budget, t };
+  const json = JSON.stringify(body), ck = hash32(json).toString(36);
+  const b64 = (typeof btoa !== 'undefined') ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64');
+  return 'PKD1-' + ck + '-' + b64.replace(/=+$/, '');
+}
+function duelParse(code){
+  try{
+    const m = /^PKD1-([0-9a-z]+)-(.+)$/.exec(String(code).trim().replace(/\s+/g, '')); if(!m) return { err:'That is not a duel code.' };
+    const json = (typeof atob !== 'undefined') ? decodeURIComponent(escape(atob(m[2]))) : Buffer.from(m[2], 'base64').toString('utf8');
+    if(hash32(json).toString(36) !== m[1]) return { err:'That code is damaged or was edited.' };
+    const p = JSON.parse(json);
+    if(!p || p.p !== DUEL_PROTO || !Array.isArray(p.t)) return { err:'That code is from a different version of the duel rules.' };
+    for(const r of p.t) if(!SPECIES[r[0]]) return { err:'That code has a pokémon this version does not know.' };
+    return { ok:true, raw:String(code).trim().replace(/\s+/g, ''), name:p.n || 'Trainer', ver:p.ver, setId:p.s || '', game:p.g | 0, budget:p.b | 0, units:p.t };
+  }catch(e){ return { err:'That is not a duel code.' }; }
+}
+const duelUnits = parsed => parsed.units.map(r => { const u = makeUnit(r[0], r[4] | 0); u.hp = Math.max(1, r[1] | 0); u.atk = Math.max(0, r[2] | 0); u.spd = Math.max(1, r[3] | 0);
+  u.held = r[5] && HELD_ITEMS[r[5]] ? r[5] : null; u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
+/** Is the opponent's code a legal move in this set? '' when yes. */
+function duelCheckOpponent(set, parsed){
+  const D = TUNING.duel;
+  if(parsed.ver !== set.ver) return `They are on version ${parsed.ver || '?'}, you are on ${set.ver}. Both of you need the same version.`;
+  if(parsed.budget !== set.budget) return 'Your power budgets do not match.';
+  if(parsed.game !== set.game) return `That code is for game ${parsed.game}; this is game ${set.game}.`;
+  if(set.game > 1 && parsed.setId !== set.id) return 'That code is from a different set.';
+  if(set.opp && set.game > 1 && parsed.name !== set.opp) return `That code is from ${parsed.name}, not ${set.opp}.`;
+  if(!parsed.units.length || parsed.units.length > D.bring) return `Teams are up to ${D.bring} pokémon.`;
+  const units = duelUnits(parsed);
+  if(new Set(units.map(u => u.bid)).size !== units.length) return 'Their team has the same pokémon twice.';
+  const power = Math.round(duelPower(units));
+  if(power > set.budget) return `Their team is over the power budget (${power} of ${set.budget}).`;
+  const prev = set.games.length ? set.games[set.games.length - 1] : null;
+  if(prev){
+    const sat = new Set(prev.theirFainted || []);
+    for(const u of units) if(sat.has(u.bid)) return `${u.nm} fainted last game and should be sitting this one out.`;
+  }
+  /* items: game 1 is whatever they were saved with; later games may only use the game-1 pool */
+  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => u.held).filter(Boolean)).slice();
+  if(set.game > 1){ for(const u of units) if(u.held){ const i = pool.indexOf(u.held); if(i < 0) return 'Their team has an item they did not bring to the set.'; pool.splice(i, 1); } }
+  return '';
+}
+/** One game. Both devices call this with the same two codes and get the same battle. The lower code plays the 'p' side. */
+function duelSim(set, myCode, theirCode){
+  const mine = duelParse(myCode), theirs = duelParse(theirCode);
+  const iAmP = mine.raw < theirs.raw;
+  const seed = hash32(`${set.id || 'new'}|${set.game}|${iAmP ? mine.raw : theirs.raw}|${iAmP ? theirs.raw : mine.raw}`);
+  const P = duelUnits(iAmP ? mine : theirs), Eu = duelUnits(iAmP ? theirs : mine);
+  const sim = simulateBattle(P, Eu, seed);
+  const mySide = iAmP ? 'p' : 'e';
+  const myResult = sim.result === 'draw' ? 'draw' : ((sim.result === 'win') === iAmP ? 'win' : 'lose');
+  const fainted = side => sim.stats.filter(s => s.side === side && s.fainted).map(s => { const pool = side === 'p' ? P : Eu; return (pool.find(u => u.uid === s.uid) || {}).bid; }).filter(Boolean);
+  return { sim, seed, iAmP, mySide, myResult, myFainted: fainted(mySide), theirFainted: fainted(iAmP ? 'e' : 'p'), mine, theirs };
+}
+const duelWins = set => ({ me: set.games.filter(g => g.result === 'win').length, opp: set.games.filter(g => g.result === 'lose').length });
+/** Record a finished game on `set` and advance it. Returns the set. */
+function duelApply(set, out){
+  const first = !set.games.length;
+  if(first){ set.opp = out.theirs.name; set.id = hash32(out.iAmP ? out.mine.raw + '|' + out.theirs.raw : out.theirs.raw + '|' + out.mine.raw).toString(36);   // same on both devices
+    set.pool = out.mine.units.map(r => r[5]).filter(Boolean); }     // the items on the six brought to game 1
+  set.games.push({ result: out.myResult, myFainted: out.myFainted, theirFainted: out.theirFainted, mine: out.mine.units.map(r => r[7]),
+    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => r[5]).filter(Boolean) : set.games[0].theirPool });
+  set.rest = out.myFainted.slice();             // fainted: sits out the next game only
+  const w = duelWins(set);
+  if(w.me >= 2 || w.opp >= 2 || set.games.length >= TUNING.duel.games){
+    set.over = w.me > w.opp ? 'win' : w.me < w.opp ? 'lose' : 'draw';
+  } else set.game = set.games.length + 1;
+  set.locked = null;
+  return set;
+}
+/** A winning run saves up to 3, a losing run 1; the box holds 30. Returns { ok, why, box }. */
+function duelBoxAdd(box, snaps){
+  const room = TUNING.duel.boxSize - box.length;
+  if(snaps.length > room) return { ok:false, why:`Your box has room for ${room} more.`, box };
+  return { ok:true, box: box.concat(snaps) };
+}
+const duelSavesFor = won => won ? TUNING.duel.saveWin : TUNING.duel.saveLoss;
+
+/* ===================================================================
    GAME STATE
    =================================================================== */
 /* 2.0.0 — run modifiers, chosen at New Run (the daily challenge draws one):
@@ -4757,7 +4897,7 @@ if(typeof module !== 'undefined' && module.exports){
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
-    generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
+    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,

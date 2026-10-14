@@ -3292,6 +3292,35 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb{grid-template-columns:48px 1fr 40px}
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popheld p,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pace small,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pacesub{display:none}
 }
+
+/* ---- duels (multiplayer branch) ---- */
+@media (max-height:700px){html.bc .tmi{padding:5px 14px!important}.tmi small{font-size:11px}}
+.dstat{margin:8px 0;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin:10px 0}
+.dgrid.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.dcard{position:relative;padding:6px 4px;text-align:center;cursor:default}
+.dcard[data-pick],.dcard[data-act]{cursor:pointer}
+.dcard.sel{outline:3px solid var(--gold);outline-offset:-3px}
+.dcard.rest{opacity:.45}
+.dcard-item{font-size:11px;margin-top:2px;min-height:14px}
+.dteam{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.dteam .dcard{padding-bottom:8px}
+.dteam select{width:100%;font-size:12px;margin:2px 0}
+.dpos{font-size:11px;opacity:.7;margin-top:2px}
+.btnrow.tight{gap:4px;margin:4px 0 0;flex-wrap:wrap;justify-content:center}
+.btn.small{padding:3px 8px;font-size:12px;min-height:0}
+.dmeter{position:relative;height:22px;background:rgba(255,255,255,.08);border-radius:11px;overflow:hidden;margin:8px 0}
+.dmeter i{position:absolute;inset:0 auto 0 0;background:var(--hp);transition:width .2s}
+.dmeter i.over{background:var(--bad)}
+.dmeter span{position:relative;display:block;text-align:center;font-size:12px;line-height:22px;font-weight:700}
+.dmsg{background:rgba(255,80,80,.16);border:1px solid rgba(255,80,80,.4);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:13px}
+.dhist{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.dres{padding:2px 8px;border-radius:10px;font-size:12px;background:rgba(255,255,255,.1)}
+.dres.win{background:rgba(70,200,110,.3)}.dres.lose{background:rgba(255,80,80,.3)}
+.dverdict{font-size:20px;font-weight:800;text-align:center;margin:14px 0}
+.dverdict.win{color:var(--hp)}.dverdict.lose{color:var(--bad)}
+.modal textarea{width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;border-radius:8px;padding:6px;background:rgba(0,0,0,.35);color:inherit;border:1px solid rgba(255,255,255,.2)}
+.dsave{margin:12px 0}
 </style>
 </head>
 <body>

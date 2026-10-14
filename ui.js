@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.12.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.13.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -3067,6 +3067,7 @@ function renderOver(){
     ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
     ${runSummaryHtml()}
     <div class="row overteam" style="margin:14px 0">${G.team.map((u, i) => u ? `<div class="slot" style="border-style:solid" data-act="overcard" data-i="${i}" role="button">${unitHtml(u)}</div>` : '').join('')}</div>
+    ${duelSaveHtml()}
     <div class="shopbar">
       ${G.daily ? `<button class="btn" data-act="runimage">Save summary image</button>
       <button class="btn" data-act="dailyshare">Copy result</button>
@@ -3764,6 +3765,7 @@ function handle(act, i, data){
     }
     case 'legendpass': if(G.encounter){ G.encounter.taken = 'passed'; say(`The ${SPECIES[G.encounter.id].name} flew off.`); } return;
     case 'presets': openPresets(); return;
+    case 'mppick': case 'mpsave': case 'mpskip': case 'mpbox': if(duelSaveAct(act, { dataset: data })) return; break;
     case 'totitle': showTitle(afterTitle); return;
     case 'dailyshare': copyDailyResult(); return;
   }
@@ -4279,7 +4281,7 @@ async function afterBattle(opts){
   if(!battle) return;
   clearTimeout(battle.timer);
   if(SFX.held) SFX.hold(false);   // 4.17.3: a battle finished (or left) while paused no longer leaves the game silent
-  if(battle.exhibition){ battle = null; phase = 'shop'; render(); return; }
+  if(battle.exhibition){ const cb = battle.onDone; battle = null; phase = 'shop'; render(); if(cb) cb(); return; }
   const result = battle.result;
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
@@ -4391,6 +4393,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.13.0', date:'Oct 13, 2026', title:'Major gameplay update', sub:'Duels preview: save pok\u00e9mon from your runs and battle a friend by code', items:[
+    'New Duels screen on the title menu and in-game menu. Finish a run and save up to 3 pok\u00e9mon from a win, or 1 from a loss, into a 30-slot duel box. Saved pok\u00e9mon are frozen: their level, stats and held item never change.',
+    'A set is best of three, six against six, with each team inside a power budget of 4200. A pok\u00e9mon that faints sits out the next game only. The items on your first six are your pool for the set, and from game 2 you can move them around; a pok\u00e9mon swapped in from the box arrives without its own item.',
+    'Friend codes only: lock in your team to get a code, send it, paste your friend\'s and you both watch the same battle (it is decided by a seed made from both codes, so no server is needed). You can only open their code after yours is locked, so nobody can peek and counter-pick. A code from a different game version, a damaged code or a team over budget is refused.',
+    'Preview: this lives on its own branch and page while it is tested. Add #dev to the page address once to get developer tools that fill your box with maxed pok\u00e9mon.',
+  ] },
   { v:'6.12.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Amulet Coin halved, Lucky Egg stronger, Exp. Share cheaper', items:[
     'The money and EXP items were measured with full bot runs. Amulet Coin (+2\u20bd a turn) was worth about 9.5 points of clear rate, the strongest item in the game, so it now gives +1\u20bd a turn (about 6 points, in line with the role items).',
     'Lucky Egg was worth about 5 points for a Rare item, so each pok\u00e9mon can now take 12 bonus rounds instead of 10 (about 6.5 points).',
@@ -4924,6 +4932,7 @@ function openMenu(){
     ['dex',     'Pokédex', 'Every pokémon, leader and item.'],
     ['export',  'Team code', 'Copy your team code to send a friend.'],
     ['versus',  'Vs friend', 'Paste a friend’s team code and battle it.'],
+    ['duels',   'Duels', 'Your duel box, and best-of-three sets with a friend by code.'],
     ['transfer','Transfer save', 'Move this run to another device or the home-screen app with a code.'],
     ['news',    'What’s new', `What changed in ${GAME_VERSION.v}.`],
     ['help',    'How to play', 'Rules, roles and statuses.'],
@@ -4968,6 +4977,7 @@ function openMenu(){
     if(m === 'trainer') openTrainerCard();
     if(m === 'export')  openExport();
     if(m === 'versus')  openVersus();
+    if(m === 'duels')   openDuels();
     if(m === 'transfer') openTransfer();
     if(m === 'help')    openHelp();
     if(m === 'news')    openChangelog();
@@ -6092,6 +6102,7 @@ function showTitle(then){
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">Continue<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">New run<small>with rules, if you like</small></button>
       <button class="tmi" role="menuitem" data-t="daily">Daily challenge<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="duels">Duels<small>battle a friend with saved pokémon, by code</small></button>
       <button class="tmi" role="menuitem" data-t="dex">Pokédex<small>${dexHave} / ${dexTotal} seen · cards, trainers, items</small></button>
       <button class="tmi" role="menuitem" data-t="trainer">Trainer card<small>${sbEarned().length ? `${sbEarned().length} special badge${sbEarned().length === 1 ? '' : 's'} · records` : 'your badges and records'}</small></button>
       <button class="tmi" role="menuitem" data-t="options">Options</button>
@@ -6121,6 +6132,7 @@ function showTitle(then){
     } else if(t === 'continue'){ if(G && G.daily) switchSlot(SAVE_KEY); leave(); }
     else if(t === 'new'){ if(document.activeElement) document.activeElement.blur(); openNewRun(leave); }
     else if(t === 'daily'){ if(document.activeElement) document.activeElement.blur(); openDaily(leave); }
+    else if(t === 'duels'){ if(document.activeElement) document.activeElement.blur(); openDuels(); }
     else if(t === 'dex'){ if(document.activeElement) document.activeElement.blur(); openDex(); }
     else if(t === 'trainer'){ if(document.activeElement) document.activeElement.blur(); openTrainerCard(true); }
     else if(t === 'options'){ if(document.activeElement) document.activeElement.blur(); openOptions(); }
@@ -6147,6 +6159,8 @@ function showTitle(then){
   d.addEventListener('pointermove', e => { const b = e.target.closest('.tmi'); if(b && !b.disabled && !b.classList.contains('cur')){ SFX.play('move'); items().forEach(x => x.classList.toggle('cur', x === b)); } });
   document.addEventListener('keydown', onKey, true);
 }
+
+/*@DUELUI@*/
 
 /* ===================================================================
    BOOT

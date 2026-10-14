@@ -44,7 +44,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const sm = await page.evaluate(() => ({ items: [...document.querySelectorAll('.startmenu .smi')].map(b => b.dataset.m).join(','),
       cur: (document.querySelector('.smi.cur') || {}).dataset.m, desc: document.querySelector('.sdesc').textContent,
       ver: document.querySelector('.sver').textContent, v: GAME_VERSION.v }));
-    check(sm.items === 'trainer,dex,export,versus,transfer,news,help,options,title,restart,close', `${tag}: START menu entries: ${sm.items}`);
+    check(sm.items === 'trainer,dex,export,versus,duels,transfer,news,help,options,title,restart,close', `${tag}: START menu entries: ${sm.items}`);
     check(sm.cur === 'trainer' && /badges/.test(sm.desc) && sm.ver.includes(sm.v), `${tag}: cursor starts on TRAINER, with its line and the version`);
     await page.hover('.smi[data-m="dex"]');
     check(await page.evaluate(() => document.querySelector('.smi.cur').dataset.m === 'dex' && /pokémon/.test(document.querySelector('.sdesc').textContent)), `${tag}: the cursor follows`);
