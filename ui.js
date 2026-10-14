@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.13.1', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.14.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4393,6 +4393,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.14.0', date:'Oct 13, 2026', title:'Minor gameplay changes', sub:'Duels can be watched live by both players', items:[
+    'Connect two phones once with a pair of link codes, no server needed.',
+    'Teams swap on their own once both are locked in, and stay hidden until then.',
+    'Both press Fight, a 3-2-1 runs, and the same battle plays on both screens.',
+    'Swapping codes by hand still works if the link drops or your network blocks it.',
+  ] },
   { v:'6.13.1', date:'Oct 13, 2026', title:'Visual bug fixes', sub:'Developer tools can be switched on by tapping the Duels heading five times', items:[
     'The #dev page address trick does not work inside the published page, so tap the Duels heading five times to show or hide the developer tools (add maxed pok\u00e9mon, fill the box, clear).',
   ] },
