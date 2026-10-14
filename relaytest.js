@@ -9,6 +9,9 @@ const URL = process.env.RELAY || 'http://127.0.0.1:8787';
 if(!process.env.RELAY) console.log('(RELAY not set, trying ' + URL + ')');
 let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) bad++; };
 (async () => {
+  // the suite has no relay running: skip unless one answers (start it as described above)
+  try{ const r = await fetch(URL, { signal:AbortSignal.timeout(3000) }); if(!r.ok) throw 0; }
+  catch(e){ console.log('skipped: no relay at ' + URL + ' (see the top of this file)'); process.exit(0); }
   const clients = new Map(), seen = [];
   const wss = new WS.Server({ port:9099 });
   wss.on('connection', (ws, req) => {

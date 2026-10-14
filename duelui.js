@@ -22,7 +22,7 @@ const cardOf = (s, extra) => { const u = thawUnit(s); u.uid = 'd' + s.bid;
    two phones (it never sees teams); after that they talk directly (WebRTC). Teams are exchanged on lock-in (a fingerprint
    first, the team only once both are locked), then both press Fight and a 3-2-1 starts the same battle on both screens.
    Inside the claude.ai preview page neither is reachable, so the page's own live room carries the same code instead.
-   If the link drops, swapping codes by hand still works. */
+   If the link drops, connecting again picks up where the set left off (6.17.0: the long copy-and-paste codes are gone). */
 const LIVE = { pc:null, dc:null, tr:null, cleanup:null, room:undefined, code:'', step:'idle', err:'', out:'', peer:{}, mine:{}, hook:null, go:null, starting:false };
 const livePaint = () => { try{ if(LIVE.hook) LIVE.hook(); }catch(e){} };
 const liveOn = () => LIVE.step === 'on' && !!LIVE.tr && LIVE.tr.ok();
@@ -45,7 +45,7 @@ function liveReset(keepErr){
 function liveAttach(dc){
   LIVE.dc = dc; LIVE.tr = { send:s => dc.send(s), ok:() => dc.readyState === 'open', close:() => dc.close() };
   dc.onopen = () => { if(LIVE.dc !== dc) return; try{ if(LIVE.cleanup) LIVE.cleanup(); }catch(e){} LIVE.cleanup = null; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); };
-  dc.onclose = () => { if(LIVE.dc !== dc) return; const was = LIVE.step === 'on'; liveReset(true); if(was) LIVE.err = 'The live link dropped. Swap codes by hand, or connect again.'; livePaint(); };
+  dc.onclose = () => { if(LIVE.dc !== dc) return; const was = LIVE.step === 'on'; liveReset(true); if(was) LIVE.err = 'The live link dropped. Connect again to keep playing.'; livePaint(); };
   dc.onmessage = e => liveMsg(e.data);
 }
 /** Lock-in handshake: send a fingerprint of my locked team; once I have theirs too, send the team itself. */
@@ -60,7 +60,7 @@ function liveMsg(raw){
   else if(m.t === 'unlock'){ if(!LIVE.peer.code) LIVE.peer = {}; }
   else if(m.t === 'code' && LIVE.peer.commit && !LIVE.peer.code && typeof m.c === 'string' && m.c.length < 4000){
     const p = duelParse(m.c);
-    if(p.err || liveCommit(p.raw) !== LIVE.peer.commit){ LIVE.err = 'Your friend’s team did not match what they locked in. Swap codes by hand instead.'; LIVE.peer = {}; }
+    if(p.err || liveCommit(p.raw) !== LIVE.peer.commit){ LIVE.err = 'Your friend’s team did not match what they locked in. Connect again.'; LIVE.peer = {}; }
     else LIVE.peer.code = p.raw;
   }
   else if(m.t === 'ready' && LIVE.peer.code){ LIVE.peer.ready = true; if(LIVE.mine.ready && !LIVE.starting && LIVE.go){ LIVE.starting = true; LIVE.go(); return; } }
@@ -88,7 +88,7 @@ async function liveRoom(code){
   });
   iv = setInterval(() => {
     if(!peer) emit({ hi:1, needy:1 });
-    else { emit({ hb:1, to:peer }); if(Date.now() - seen > 12000){ liveReset(true); LIVE.err = 'Your friend left the room. Swap codes by hand, or connect again.'; livePaint(); } }
+    else { emit({ hb:1, to:peer }); if(Date.now() - seen > 12000){ liveReset(true); LIVE.err = 'Your friend left the room. Connect again to keep playing.'; livePaint(); } }
   }, 1500);
   emit({ hi:1, needy:1 });
 }
@@ -118,7 +118,7 @@ function liveSignal(id){
 function liveNewPc(sig, remote){
   const pc = new RTCPeerConnection({ iceServers:LIVE_ICE }), pend = []; pc._ready = false;
   pc.onicecandidate = e => { if(e.candidate) sig.send('CANDIDATE', remote, { candidate:e.candidate }); };
-  pc.onconnectionstatechange = () => { if(LIVE.pc !== pc || pc.connectionState !== 'failed') return; liveReset(true); LIVE.err = 'Could not link directly (some phone networks block it). Swapping codes by hand still works.'; livePaint(); };
+  pc.onconnectionstatechange = () => { if(LIVE.pc !== pc || pc.connectionState !== 'failed') return; liveReset(true); LIVE.err = 'Could not link directly (some phone networks block it). Try again, or on another network.'; livePaint(); };
   pc._cand = c => { if(pc._ready) pc.addIceCandidate(c).catch(() => {}); else pend.push(c); };
   pc._flush = () => { pc._ready = true; pend.splice(0).forEach(c => pc.addIceCandidate(c).catch(() => {})); };
   return pc;
@@ -146,14 +146,14 @@ function liveRelay(code, role){
       if(m && typeof m._ === 'string'){
         if(m._ === 'wait') up();
         else if(m._ === 'peer'){ up(); if(!mine()) return; peer = true; LIVE.tr = tr; LIVE.code = code; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); }
-        else if(m._ === 'left') lost('The live link dropped (your friend left). Connect again, or swap codes by hand.');
+        else if(m._ === 'left') lost('The live link dropped (your friend left). Connect again to keep playing.');
         else fail(m._);
         return; }
       if(peer) liveMsg(e.data);
     };
     ws.onerror = () => fail('blocked');
     ws.onclose = () => { clearInterval(iv); if(!done) return fail('blocked');
-      lost(peer ? 'The live link dropped. Swap codes by hand, or connect again.' : 'Lost the connection while waiting. Host again.'); };
+      lost(peer ? 'The live link dropped. Connect again to keep playing.' : 'Lost the connection while waiting. Host again.'); };
   });
 }
 /** The shared code for both transports: hosts wait on it, joiners type it. */
@@ -164,12 +164,12 @@ async function liveHost(){
     try{ await liveRelay(code, 'host'); if(LIVE.step !== 'on'){ LIVE.step = 'rwait'; LIVE.code = code; livePaint(); } return; }
     catch(e){ if(LIVE.step !== 'making') return; if(e.message !== 'taken') break; }
   }
-  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Swap codes by hand.'); return liveRoom(liveNewCode()); }
+  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Open the game in your browser or the installed app.'); return liveRoom(liveNewCode()); }
   let sig = null, code = '';
   for(let i = 0; i < 6 && !sig; i++){
     code = liveNewCode();
     try{ sig = await liveSignal(liveId(code)); }
-    catch(e){ if(e.message !== 'taken'){ if(LIVE.room) return liveRoom(liveNewCode()); throw new Error('Could not reach the matchmaking server. Check your connection, or swap codes by hand.'); } }
+    catch(e){ if(e.message !== 'taken'){ if(LIVE.room) return liveRoom(liveNewCode()); throw new Error('Could not reach the matchmaking server. Check your connection and try again.'); } }
   }
   if(!sig) throw new Error('Could not get a free code. Try again.');
   let accepted = null, pc = null, timer = 0;
@@ -196,9 +196,9 @@ async function liveJoin(code){
     catch(e){ if(LIVE.step !== 'connecting') return; if(e.message === 'full') throw new Error(code + ' already has two players. Check the code.'); }
     // 'nobody' falls through too: the host may be on the direct link if the relay was out of reach for them
   }
-  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Swap codes by hand.'); return liveRoom(code); }
+  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Open the game in your browser or the installed app.'); return liveRoom(code); }
   const me = 'pkj-' + Math.random().toString(36).slice(2, 10); let sig;
-  try{ sig = await liveSignal(me); }catch(e){ if(LIVE.room) return liveRoom(code); throw new Error('Could not reach the matchmaking server. Check your connection, or swap codes by hand.'); }
+  try{ sig = await liveSignal(me); }catch(e){ if(LIVE.room) return liveRoom(code); throw new Error('Could not reach the matchmaking server. Check your connection and try again.'); }
   const host = liveId(code), pc = liveNewPc(sig, host); LIVE.pc = pc;
   let timer = 0; const giveUp = msg => { if(LIVE.pc === pc && !liveOn()){ liveReset(true); LIVE.err = msg; livePaint(); } };
   LIVE.cleanup = () => { clearTimeout(timer); sig.close(); };
@@ -209,7 +209,7 @@ async function liveJoin(code){
       else if(m.type === 'EXPIRE') giveUp('Nobody is hosting ' + code + '. Check the code.');
     }catch(e){}
   };
-  timer = setTimeout(() => giveUp('Could not connect to ' + code + '. Check the code, or swap codes by hand.'), 15000);
+  timer = setTimeout(() => giveUp('Could not connect to ' + code + '. Check the code and try again.'), 15000);
   liveAttach(pc.createDataChannel('duel'));
   await pc.setLocalDescription(await pc.createOffer()); sig.send('OFFER', host, { sdp:pc.localDescription });
 }
@@ -236,7 +236,7 @@ function liveCardHtml(){
   else if(L.step === 'rjoinin') h = `<b>Join a friend</b><p>Type the 4-letter code on their screen.</p><input id="lk_in" type="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="CODE">
     <div class="btnrow tight"><button class="btn small primary" data-l="go">Join</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
   else if(L.step === 'connecting') h = `<b>Live link</b> · connecting to ${esc(L.code)}…<div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
-  else if(!liveRtcOk() && !L.room && !liveRelayUrl()) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Swap codes by hand below, or open the installed app for live fights.</p>`;
+  else if(!liveRtcOk() && !L.room && !liveRelayUrl()) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Open the game in your browser or the installed app to play a friend.</p>`;
   else h = `<b>Live link</b> <span class="dim">(optional)</span><p class="dim">One of you hosts and gets a 4-letter code, the other types it. Then you both watch each fight live.</p>
     <div class="btnrow tight"><button class="btn small" data-l="host">Host</button><button class="btn small" data-l="join">Join</button></div>`;
   return `<div class="dlive">${err}${h}</div>`;
@@ -247,7 +247,7 @@ function openDuels(){
   const box = duelBox(), set = getDuelSet();
   const w = set && duelWins(set);
   const d = modal(`<h3>Duels</h3>
-    <p class="dim">Battle a friend with pokémon you saved from your runs. Swap codes to play: no accounts, no server. Best of three, six against six, within a power budget of ${DUEL.budget}.</p>
+    <p class="dim">Battle a friend with pokémon you saved from your runs. One of you hosts and gets a 4-letter code, the other types it: no accounts. Best of three, six against six, within a power budget of ${DUEL.budget}.</p>
     <div class="dstat"><b>${box.length} / ${DUEL.boxSize}</b> in your box${box.length ? '' : ' — finish a run and save a pokémon to start'}</div>
     ${set ? `<div class="dstat">${set.over ? `Set against <b>${esc(set.opp || 'a friend')}</b> finished: ${set.over === 'win' ? 'you won' : set.over === 'lose' ? 'you lost' : 'a draw'} ${w.me}–${w.opp}.`
       : `A set${set.opp ? ' against <b>' + esc(set.opp) + '</b>' : ''} is in progress · game ${set.game} of ${DUEL.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}.`}</div>` : ''}
@@ -284,7 +284,7 @@ function openDuelHow(){
     <p><b>A set.</b> Best of ${DUEL.games}: first to two wins. Each game you bring up to ${DUEL.bring} from your box, and the team has to fit the power budget (${DUEL.budget}).</p>
     <p><b>Fainting.</b> A pokémon that faints sits out the next game only, so you need about twelve usable.</p>
     <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.</p>
-    <p><b>Playing.</b> Pick your team and lock it in to get your code. Send it to your friend, paste theirs, and you both see the same battle. You can only open their code after you have locked yours, so nobody can peek and counter-pick.</p>
+    <p><b>Playing.</b> One of you taps Host and reads out the 4-letter code, the other taps Join and types it. Pick your team and lock it in: your friend only sees that you are locked in, never your team, until you both press Fight and watch the same battle together.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Got it</button></div>`);
   d.addEventListener('click', ev => { if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); } });
 }
@@ -311,7 +311,7 @@ function openDuelSet(){
   if(!set){ set = newDuelSet(playerName(), GAME_VERSION.v); putDuelSet(set); }
   const d = modal('', true);
   const body = d.querySelector('.boxscroll');
-  const KEEP = ['#lk_in', '#theircode'];
+  const KEEP = ['#lk_in'];
   const paint = () => {
     const kept = KEEP.map(q => { const e = body.querySelector(q); return e ? e.value : null; });
     set = getDuelSet(); body.innerHTML = setHtml(set);
@@ -351,23 +351,19 @@ function openDuelSet(){
       const why = duelCheckPicks(set, box, picks); if(why){ toastDuel(body, why); return; }
       set.locked = { picks, code: duelCode(set, box, picks) }; putDuelSet(set); paint(); liveSync(); }
     else if(m === 'unlock'){ set.locked = null; putDuelSet(set); if(LIVE.mine.commit){ liveSend({ t:'unlock' }); LIVE.mine = {}; } paint(); }
-    else if(m === 'copy'){ const t = body.querySelector('#mycode'); t.select(); try{ navigator.clipboard.writeText(t.value); }catch(e){ try{ document.execCommand('copy'); }catch(_){} } b.textContent = 'Copied'; }
     else if(m === 'fight'){
-      if(liveOn()){
-        if(!LIVE.peer.code || LIVE.mine.ready) return;
-        const parsed = duelParse(LIVE.peer.code), why = parsed.err || duelCheckOpponent(set, parsed);
-        if(why){ toastDuel(body, why); return; }
-        LIVE.mine.ready = true; liveSend({ t:'ready' });
-        LIVE.go = () => {                                  // 3-2-1, then the same battle on both screens
-          LIVE.starting = true; let n = 3;
-          const tick = () => { if(!d.isConnected) return;
-            if(n === 0){ const e = runFight(LIVE.peer.code); if(e){ LIVE.starting = false; paint(); toastDuel(body, e); } return; }
-            body.innerHTML = `<div class="dcount">${n}</div><p class="dim" style="text-align:center">Both screens start together…</p>`; n--; setTimeout(tick, 1000); };
-          tick(); };
-        if(LIVE.peer.ready){ LIVE.starting = true; LIVE.go(); } else paint();
-        return;
-      }
-      const err = runFight(body.querySelector('#theircode').value); if(err) toastDuel(body, err);
+      if(!liveOn()) return;                                // 6.17.0: fights only over the live link
+      if(!LIVE.peer.code || LIVE.mine.ready) return;
+      const parsed = duelParse(LIVE.peer.code), why = parsed.err || duelCheckOpponent(set, parsed);
+      if(why){ toastDuel(body, why); return; }
+      LIVE.mine.ready = true; liveSend({ t:'ready' });
+      LIVE.go = () => {                                  // 3-2-1, then the same battle on both screens
+        LIVE.starting = true; let n = 3;
+        const tick = () => { if(!d.isConnected) return;
+          if(n === 0){ const e = runFight(LIVE.peer.code); if(e){ LIVE.starting = false; paint(); toastDuel(body, e); } return; }
+          body.innerHTML = `<div class="dcount">${n}</div><p class="dim" style="text-align:center">Both screens start together…</p>`; n--; setTimeout(tick, 1000); };
+        tick(); };
+      if(LIVE.peer.ready){ LIVE.starting = true; LIVE.go(); } else paint();
     }
   });
   d.addEventListener('change', ev => {
@@ -396,12 +392,8 @@ function setHtml(set){
       ${LIVE.mine.sent ? '' : '<button class="btn ghost" data-m="unlock">Change my team</button>'}<button class="btn ghost" data-m="hub">Close</button></div>`;
   }
   if(set.locked){
-    return `${head}${hist}${live}<p><b>Your team is locked in.</b> Send this code to ${esc(set.opp || 'your friend')}, then paste theirs below.</p>
-      <textarea id="mycode" readonly rows="3">${esc(set.locked.code)}</textarea>
-      <div class="btnrow"><button class="btn" data-m="copy">Copy my code</button><button class="btn ghost" data-m="unlock">Change my team</button></div>
-      <p><b>Their code</b> <span class="dim">(you can open it because yours is locked)</span></p>
-      <textarea id="theircode" rows="3" placeholder="PKD1-…"></textarea>
-      <div class="btnrow"><button class="btn primary" data-m="fight">Fight game ${set.game}</button><button class="btn ghost" data-m="hub">Close</button></div>`;
+    return `${head}${hist}${live}<p><b>Your team is locked in.</b> Link up with ${esc(set.opp || 'your friend')} above (Host or Join) and the fight is ready once they lock in too.</p>
+      <div class="btnrow"><button class="btn ghost" data-m="unlock">Change my team</button><button class="btn ghost" data-m="hub">Close</button></div>`;
   }
   const dr = duelDraft || { picks: [] }, pool = (set.pool || []).slice();
   const el = duelEligible(set, box), units = dr.picks.map((p, i) => { const s = box.find(x => x.bid === p.bid); return s ? thawUnit(s, i, p.item) : null; }).filter(Boolean);
@@ -426,11 +418,12 @@ function setHtml(set){
 
 /* ---------------- the battle ---------------- */
 function playDuelBattle(out, set){
+  const back = { phase, title: !!titleEl };        // 6.17.0: where to go back to afterwards (the title, or the run you had open)
   if(titleEl){ const t = document.getElementById('title'); if(t) t.remove(); titleEl = null; document.body.classList.remove('titled'); }
   const sim = out.sim, flip = !out.iAmP;
   battle = { steps: sim.steps, i:0, result: flip ? (sim.result === 'win' ? 'lose' : sim.result === 'lose' ? 'win' : 'draw') : sim.result,
              oppName: set.opp, timer:null, exhibition:true, duel:true, flip,
-             onDone: () => openDuelSet() };
+             back, onDone: () => { if(back.title) showTitle(afterTitle); openDuelSet(); } };
   sessionBattles++;
   transition(() => { phase = 'battle'; render(); window.scrollTo(0, 0); }, beginPlayback);
 }

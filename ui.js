@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.16.0', date:'Oct 14, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.17.0', date:'Oct 14, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -1599,7 +1599,7 @@ function renderBattle(){
 
   <div class="shopbar">
     ${done
-      ? `<button class="btn primary" data-act="afterbattle">${battle.exhibition ? 'Back to the Mart' : winningBadge ? 'Choose your reward ▶' : 'Continue ▶'}</button>`
+      ? `<button class="btn primary" data-act="afterbattle">${battle.duel ? 'Back to the set' : battle.exhibition ? 'Back to the Mart' : winningBadge ? 'Choose your reward ▶' : 'Continue ▶'}</button>`
       : `<div class="speed" role="group" aria-label="Playback speed">
            ${SPEEDS.map(v => `<button class="sp ${v === speed ? 'on' : ''}" data-act="speed" data-i="${v}"
              aria-pressed="${v === speed}">${v}×</button>`).join('')}
@@ -3073,7 +3073,6 @@ function renderOver(){
       <button class="btn" data-act="dailyshare">Copy result</button>
       <button class="btn primary" data-act="totitle">Title screen</button>`
       : `<button class="btn" data-act="runimage">Save summary image</button>
-      <button class="btn" data-act="export">Share Team Code</button>
       <button class="btn primary" data-act="restart">New Run</button>`}
     </div>
   </div>`;
@@ -3744,7 +3743,6 @@ function handle(act, i, data){
       lineUpByRole(G);
       sel = null; say('Lined up: Tanks in front, Cannons at the back.'); break;
     }
-    case 'export':  openExport(); return;
     case 'restart': openNewRun(); return;
     /* ----- 2.0.0 ----- */
     case 'undo': {
@@ -4281,7 +4279,7 @@ async function afterBattle(opts){
   if(!battle) return;
   clearTimeout(battle.timer);
   if(SFX.held) SFX.hold(false);   // 4.17.3: a battle finished (or left) while paused no longer leaves the game silent
-  if(battle.exhibition){ const cb = battle.onDone; battle = null; phase = 'shop'; render(); if(cb) cb(); return; }
+  if(battle.exhibition){ const cb = battle.onDone, back = battle.back; battle = null; phase = back && back.phase === 'over' ? 'over' : 'shop'; render(); if(cb) cb(); return; }   // 6.17.0: a duel goes back to where it started
   const result = battle.result;
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
@@ -4393,6 +4391,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.17.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels clean-up: live link only, and a finished duel no longer opens a run', items:[
+    'A duel now goes back to where you started it: the title screen, or the run you had open. Before, finishing a duel from the title screen dropped you into a new run.',
+    'Duels are played over the live link only: the long copy-and-paste codes are gone. Host gets a 4-letter code, your friend types it.',
+    'Team code and Vs friend are gone from the menu (Duels replaces them).',
+    'The button after a duel says Back to the set.',
+  ] },
   { v:'6.16.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels: live link works on any network', items:[
     'Live link now goes through Pok\u00e9Arena\u2019s own relay on the Cloudflare copy, so phones on mobile data or strict Wi-Fi can still link up.',
     'The direct link and swapping codes by hand still work as before when the relay can\u2019t be reached.',
@@ -4954,8 +4958,6 @@ function openMenu(){
   const items = [
     ['trainer', 'Trainer', 'Your badges, this run and your records.'],
     ['dex',     'Pokédex', 'Every pokémon, leader and item.'],
-    ['export',  'Team code', 'Copy your team code to send a friend.'],
-    ['versus',  'Vs friend', 'Paste a friend’s team code and battle it.'],
     ['duels',   'Duels', 'Your duel box, and best-of-three sets with a friend by code.'],
     ['transfer','Transfer save', 'Move this run to another device or the home-screen app with a code.'],
     ['news',    'What’s new', `What changed in ${GAME_VERSION.v}.`],
@@ -4999,8 +5001,6 @@ function openMenu(){
     }
     if(m === 'title') showTitle(afterTitle);
     if(m === 'trainer') openTrainerCard();
-    if(m === 'export')  openExport();
-    if(m === 'versus')  openVersus();
     if(m === 'duels')   openDuels();
     if(m === 'transfer') openTransfer();
     if(m === 'help')    openHelp();
@@ -5433,7 +5433,7 @@ function openOptions(){
     <div class="optrow"><span>Effects</span>${seg('fx', fxLevel(), [['full', 'Full'], ['light', 'Light'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
-    <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
+    <p class="hint optnote">Your name goes on your Trainer Card and your duel teams. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
@@ -5494,24 +5494,6 @@ function typeInspect(){
   }
 }
 
-function openExport(){
-  const code = exportTeam(G.team, playerName());
-  const d = modal(`<h3>Your Team Code</h3>
-    <p>Send this to a friend — they can paste it into <b>Menu → Vs friend</b> and fight your exact party.</p>
-    <textarea readonly>${esc(code)}</textarea>
-    <div class="btnrow"><button class="btn primary" data-m="copy">Copy</button>
-    <button class="btn ghost" data-m="close">Close</button></div>`);
-  d.querySelector('textarea').onclick = e => e.target.select();
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
-    if(b.dataset.m === 'copy'){
-      const ta = d.querySelector('textarea'); ta.select();
-      try{ navigator.clipboard ? navigator.clipboard.writeText(code) : document.execCommand('copy'); }catch(e){}
-      b.textContent = 'Copied!'; return;
-    }
-    d.remove();
-  });
-}
-
 /* ===================================================================
    1.3.0 · TRANSFER CODES
    Each copy of the game keeps its own save (the claude.ai link, the
@@ -5543,7 +5525,7 @@ async function makeTransferCode(){
 async function readTransferCode(raw){
   const code = String(raw || '').replace(/\s+/g, '');
   if(!code) return { ok:false, why:'Paste a transfer code first.' };
-  if(/^PKB\d-/.test(code)) return { ok:false, why:'That’s a team code (for Vs friend), not a transfer code.' };
+  if(/^PKB\d-/.test(code)) return { ok:false, why:'That’s an old team code, not a transfer code.' };
   if(!code.startsWith(XFER_PREFIX)) return { ok:false, why:'That doesn’t look like a transfer code — they start with PKBSAVE-.' };
   const rest = code.slice(XFER_PREFIX.length), cut = rest.lastIndexOf('-');
   if(cut < 2) return { ok:false, why:'This code is cut short. Copy the whole thing and try again.' };
@@ -5636,25 +5618,6 @@ function openTransfer(){
   });
 }
 
-function openVersus(){
-  const d = modal(`<h3>Battle a Friend</h3>
-    <p>Paste their team code. This is an exhibition match — your lives and wins don't change.</p>
-    <textarea placeholder="PKB3-..."></textarea>
-    <div class="btnrow"><button class="btn primary" data-m="go">Fight</button>
-    <button class="btn ghost" data-m="close">Cancel</button></div>`);
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
-    if(b.dataset.m === 'close'){ d.remove(); return; }
-    const parsed = importTeam(d.querySelector('textarea').value);
-    if(!parsed){ b.textContent = 'Bad code — try again'; return; }
-    if(!G.team.length){ b.textContent = 'You need a party first'; return; }
-    d.remove();
-    const sim = simulateBattle(G.team, parsed.team, (G.seed + 31) * 7);
-    battle = { steps: sim.steps, i:0, result: sim.result, oppName: parsed.name, timer:null, exhibition:true };
-    sessionBattles++;
-    transition(() => { phase = 'battle'; render(); }, beginPlayback);
-  });
-}
-
 function typeRingHtml(){
   /* 3.0.0: the real Gen 1 types — each row is a type with what it is weak to and resists. */
   const chips = l => l.length ? l.map(t => `<span class="chip" style="background:${TYPES[t].color}">${t}</span>`).join('') : '<span class="dim">nothing</span>';
@@ -5675,7 +5638,7 @@ function openTutorial(){
     { ids:['snorlax','zapdos'], title:'Fights have stakes',
       text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
     { ids:['eevee','pikachu','mew'], title:'Make it yours',
-      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Duels lets you battle a friend.' },
   ];
   let i = 0;
   const d = modal('', true); d.classList.add('tutorial');

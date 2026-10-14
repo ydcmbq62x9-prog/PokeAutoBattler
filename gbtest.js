@@ -44,7 +44,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const sm = await page.evaluate(() => ({ items: [...document.querySelectorAll('.startmenu .smi')].map(b => b.dataset.m).join(','),
       cur: (document.querySelector('.smi.cur') || {}).dataset.m, desc: document.querySelector('.sdesc').textContent,
       ver: document.querySelector('.sver').textContent, v: GAME_VERSION.v }));
-    check(sm.items === 'trainer,dex,export,versus,duels,transfer,news,help,options,title,restart,close', `${tag}: START menu entries: ${sm.items}`);
+    check(sm.items === 'trainer,dex,duels,transfer,news,help,options,title,restart,close', `${tag}: START menu entries: ${sm.items}`);
     check(sm.cur === 'trainer' && /badges/.test(sm.desc) && sm.ver.includes(sm.v), `${tag}: cursor starts on TRAINER, with its line and the version`);
     await page.hover('.smi[data-m="dex"]');
     check(await page.evaluate(() => document.querySelector('.smi.cur').dataset.m === 'dex' && /pokémon/.test(document.querySelector('.sdesc').textContent)), `${tag}: the cursor follows`);
@@ -93,8 +93,6 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     check(/Partner\s*\w+ · 1 battle/.test(card.t) && card.face, `${tag}: partner and its picture: ${(card.t.match(/Partner [^B]*/) || [''])[0]}`);
     check(/Best run\s*(On the way to|Reached) Brock/.test(card.t), `${tag}: best run label`);
     await page.click('.modal [data-m="close"]');
-    const code = await page.evaluate(() => { openExport(); const v = document.querySelector('.modal textarea').value; document.querySelectorAll('.modal').forEach(x => x.remove()); return importTeam(v); });
-    check(code && /Sean/.test(code.name || ''), `${tag}: the team code carries the name (${code && code.name})`);
 
     /* ---- restart counts the run ---- */
     await page.click('[data-act="menu"]'); await page.click('.smi[data-m="restart"]'); await page.click('[data-m="restart-yes"]'); await page.waitForTimeout(150);
