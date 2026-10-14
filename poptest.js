@@ -3,7 +3,7 @@
    summary lives in the message box (#inspect), not a pop-up. */
 const { chromium } = require('playwright');
 
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const errors = [];
 
 (async () => {

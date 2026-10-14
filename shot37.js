@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   for (const [w,h,tag] of [[390,844,'phone'],[1250,900,'wide']]){
     const p = await b.newPage({viewport:{width:w,height:h}, deviceScaleFactor:1});
     p.on('pageerror',e=>errs.push(tag+' '+e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(tag+' '+m.text())});
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
     await p.evaluate(()=>{ G.team=['wartortle','geodude','pidgeotto','clefairy','charmeleon','pikachu'].map(i=>makeUnit(i,0));
       G.team.forEach((u,k)=>u.pos=[2,5,1,4,0,3][k]); G.badges=3; G.stage=13; G.turn=14; G.credits=18; G.lives=4; G.streak=5; save(); render(); });
     await p.waitForTimeout(300);

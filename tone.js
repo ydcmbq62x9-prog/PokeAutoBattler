@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const ctx = await b.newContext({ viewport:{ width:393, height:740 }, hasTouch:true, isMobile:true, deviceScaleFactor:2 });
   const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; window.PKB_TIPS = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.stage = runPlan().findIndex(s => s.kind === 'gym'); sessionBattles = 9;
     G.team = ['hoothoot','ledyba','cyndaquil','bayleef','pichu'].map((id, i) => { const u = makeUnit(id, 1); u.pos = [1,3,5,2,4][i]; return u; }); render(); });
   await p.waitForTimeout(400); await p.screenshot({ path:'tn_1.png' });

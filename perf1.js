@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
   const p = await b.newPage({viewport:{width:420,height:860}});
   const errs=[]; p.on('pageerror',e=>errs.push(String(e))); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(800);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(800);
   for(const gens of [[1],[1,2]]){
     const r = await p.evaluate((gens)=>{
       G = newGame(4242,{gens}); rollShop(G,false); phase='shop'; render();

@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   for(const [w,h,tag] of [[1250,1000,'wide'],[390,844,'phone']]){
     const p = await b.newPage({ viewport:{width:w,height:h}, deviceScaleFactor:2 });
     const errs=[]; p.on('pageerror', e=>errs.push(String(e)));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
     // a gym is next: put the run one step before Misty
     await p.evaluate(() => {
       G.pendingRewards=[]; G.credits=40;

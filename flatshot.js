@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const ctx = await b.newContext({ viewport:{ width:393, height:740 }, hasTouch:true, isMobile:true, deviceScaleFactor:2 });
   const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.team = [makeUnit('chikorita',1)]; G.team[0].pos = 1; render(); });
   await p.locator('.drow[data-act="dc"][data-i="0"]').tap(); await p.waitForTimeout(500);
   await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(400); await p.screenshot({ path:'fl_1.png' });

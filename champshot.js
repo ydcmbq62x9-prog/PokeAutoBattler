@@ -5,7 +5,7 @@ const [w,h,tag,mode] = [+process.argv[2]||390, +process.argv[3]||844, process.ar
   const p = await b.newPage({ viewport:{ width:w, height:h } });
   const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   await p.evaluate(mode => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); sessionBattles = 9;
     if(mode === 'champ'){ G.badges = 8; G.stage = runPlan().findIndex(s => s.kind === 'champion'); }
     else G.stage = runPlan().findIndex(s => s.kind === 'gym');

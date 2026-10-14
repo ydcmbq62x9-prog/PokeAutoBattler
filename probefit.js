@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async()=>{ const b = await chromium.launch();
   for(const [w,h] of [[390,844],[1250,900]]){
   const p = await b.newPage({viewport:{width:w,height:h}});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
   await p.evaluate(()=>{ G.pendingRewards=[]; document.querySelectorAll('.modal').forEach(x=>x.remove());
     G.team=['jigglypuff','rattata','charizard','onix','gyarados','pidgeot'].map((id,k)=>{const u=makeUnit(id,0); u.pos=k; return u;}); G.pc=[makeUnit('snorlax',0),makeUnit('dragonite',0)]; G.pc.forEach((u,k)=>u.pos=k); G.team[0].held='lefto'; G.bag=['claw']; save(); render(); });
   await p.waitForTimeout(900);

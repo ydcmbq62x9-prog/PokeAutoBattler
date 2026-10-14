@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async()=>{
   const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
   const p = await b.newPage({viewport:{width:420,height:860}});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(800);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(800);
   const c = await p.context().newCDPSession(p);
   await c.send('Profiler.enable'); await c.send('Profiler.setSamplingInterval',{interval:200});
   await p.evaluate(()=>{ G=newGame(31,{gens:[1,2]}); rollShop(G,false); G.badges=5; G.turn=14; rollShop(G,false); phase='shop';

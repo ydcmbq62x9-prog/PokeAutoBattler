@@ -16,7 +16,7 @@ const COMBOS = [
     await ctx.addInitScript(() => { window.PKB_TITLE = false; });
     const p = await ctx.newPage(); const errs = [];
     p.on('pageerror', e => errs.push(String(e).split('\n')[0])); p.on('console', m => { if(m.type() === 'error') errs.push('console: ' + m.text().slice(0, 120)); });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     for(const combo of COMBOS){
       await p.evaluate(c => { localStorage.setItem('pkb_prefs_dummy', '1'); try{ PREF.set('motion', 'reduced'); PREF.set('text', 'instant'); PREF.set('autoskip', 'on'); PREF.set('tips', 'off'); }catch(e){}
         document.querySelectorAll('.modal').forEach(x => x.remove()); newRun(c); G.credits = 60; render(); setSpeed(4); }, combo);

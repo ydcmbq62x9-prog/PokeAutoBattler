@@ -1,6 +1,6 @@
 const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch(); const p = await (await b.newContext(devices['iPhone 13'])).newPage();
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
   await p.evaluate(() => { localStorage.setItem('pkb_seen', 'v54'); });
   const tag = await p.evaluate(() => document.querySelector('.vtag').textContent);
   await p.evaluate(() => openChangelog()); await p.waitForTimeout(300);

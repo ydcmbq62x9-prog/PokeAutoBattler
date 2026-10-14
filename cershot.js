@@ -5,7 +5,7 @@ const [w,h,tag] = [+process.argv[2]||390, +process.argv[3]||844, process.argv[4]
   const p = await b.newPage({ viewport:{ width:w, height:h } });
   const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] });
     G.stage = runPlan().findIndex(s => s.kind === 'gym');
     G.team = ['mewtwo','mew','dragonite','snorlax','gyarados','alakazam'].map((id, i) => { const u = makeUnit(id, 3); u.pos = i; return u; }); fixSlots(G); render(); });

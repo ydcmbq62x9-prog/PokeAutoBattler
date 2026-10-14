@@ -1,6 +1,6 @@
 const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch(); const ctx = await b.newContext(devices['iPhone 13']); await ctx.addInitScript(() => { window.PKB_TITLE = true; });
-  const p = await ctx.newPage(); await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(1200);
+  const p = await ctx.newPage(); await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(1200);
   await p.evaluate(() => document.querySelector('#title [data-t="start"]').click()); await p.waitForTimeout(400);
   await p.screenshot({ path:'s200-title.png' });
   await p.evaluate(() => document.querySelector('#title [data-t="daily"]').click()); await p.waitForTimeout(300);

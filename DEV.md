@@ -35,3 +35,7 @@ Version rule: first digit mechanical, second additions/removals, third visual.
 - Don't hard-code a balance number in a test: read it from `E.HELD_ITEMS` / `E.TUNING` (see `test.js` Assault Vest).
 - Reports with no assertions are named `*report.js` (`lockreport.js`, `symreport.js`) so the suite doesn't run them.
 - `_scratch/` (git-ignored) holds screenshots, logs and one-off scripts.
+
+## Running outside the cloud sandbox
+Set `PKB_OUT` to any folder (default `/mnt/user-data/outputs`). `build.py` writes there and every browser test loads
+`$PKB_OUT/gen2/pokebattler.html` via `pkbpaths.js`. See `CLAUDE.md` for the full hand-off.

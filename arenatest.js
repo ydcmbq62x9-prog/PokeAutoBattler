@@ -8,7 +8,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if(m.type() === 'error') errs.push(m.text()); });
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; G.credits = 20; const m = (id, pos) => { const u = makeUnit(id, 4); u.pos = pos; return u; };
       G.team = [m('charizard', 0), m('blastoise', 1), m('pidgeot', 4), m('clefable', 2)]; rollShop(G, false); save(); render();
       document.querySelectorAll('.modal').forEach(x => x.remove()); });
@@ -83,7 +83,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, ...opts });
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(e.message));
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; setSpeed(4); const m = (id, pos) => { const u = makeUnit(id, 20); u.pos = pos; return u; };
       G.team = [m('onix', 0), m('pikachu', 5), m('gengar', 4)]; save(); render(); document.querySelectorAll('.modal').forEach(x => x.remove()); });
     await page.evaluate(() => document.querySelector('[data-act="endturn"]').click());

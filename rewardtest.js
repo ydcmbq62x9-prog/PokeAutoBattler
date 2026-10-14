@@ -1,7 +1,7 @@
 /* Badge rewards in the browser: old saves are owed their rewards, the picker
    fits a phone, free rerolls show and cost nothing, the badge screen adds up. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const errors = [];
 const mark = m => console.log('… ' + m);
 (async () => {

@@ -5,8 +5,8 @@
      gen2/pokebattler.html   the copy the Playwright tests load (title "PokéArena Gen 2 Preview")
      gen2/pokebattler-app.zip + gen2/pokebattler-app/   the GitHub Pages / home-screen app
    Fails loudly if the version and the changelog disagree. """
-import re, pathlib
-OUT = pathlib.Path('/mnt/user-data/outputs')
+import re, pathlib, os
+OUT = pathlib.Path(os.environ.get('PKB_OUT', '/mnt/user-data/outputs'))   # set PKB_OUT to build somewhere else
 shell = pathlib.Path('shell.html').read_text()
 engine  = pathlib.Path('engine.js').read_text()
 ui      = pathlib.Path('ui.js').read_text()
@@ -34,7 +34,7 @@ print('built', len(out), 'bytes')
 # /mnt/user-data/outputs/gen2/pokebattler-app/ and zipped; the artifact is unchanged.
 import json, shutil, zipfile
 ver = re.search(r"GAME_VERSION = \{ v:'([\w.]+)'", ui).group(1)
-appdir = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler-app')
+appdir = OUT / 'gen2' / 'pokebattler-app'
 if appdir.exists(): shutil.rmtree(appdir)
 (appdir / 'icons').mkdir(parents=True)
 for f in ['icon-192.png', 'icon-512.png', 'maskable-192.png', 'maskable-512.png', 'apple-touch-icon.png', 'favicon-32.png']:
@@ -68,7 +68,7 @@ manifest = {
 (appdir / 'manifest.webmanifest').write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
 (appdir / 'sw.js').write_text(pathlib.Path('app/sw.template.js').read_text().replace('__VERSION__', ver))
 (appdir / 'README.md').write_text(pathlib.Path('app/README.template.md').read_text().replace('__VERSION__', ver))
-zpath = pathlib.Path('/mnt/user-data/outputs/gen2/pokebattler-app.zip')
+zpath = OUT / 'gen2' / 'pokebattler-app.zip'
 with zipfile.ZipFile(zpath, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(appdir.rglob('*')):
         if f.is_file():

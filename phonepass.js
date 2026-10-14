@@ -75,7 +75,7 @@ const SCREENS = {
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: true, isMobile: w < 700 });
     await ctx.addInitScript(() => { window.PKB_TITLE = false; });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(process.env.STACK ? e.stack : e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
     // title screen separately
     for(const [sname, fn] of Object.entries(SCREENS)){
       await p.evaluate(setup); await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(120);

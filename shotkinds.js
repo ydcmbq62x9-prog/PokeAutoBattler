@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   for(const [name, stage, w] of plan){
     const p = await b.newPage({ viewport:{width:w,height:900} });
     const errs=[]; p.on('pageerror',e=>errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
     await p.evaluate((stage) => { G.pendingRewards=[]; const m=(id,pos,e)=>{const u=makeUnit(id,e||0);u.pos=pos;return u;};
       G.team=[m('charizard',0,40), m('blastoise',1,40), m('pidgeot',4,40), m('clefable',2,40), m('pikachu',5,40), m('venusaur',3,40)];
       const plan=runPlan(); G.stage = stage < 0 ? plan.length-5 : plan.findIndex(s=>s.kind==='gym')+ (stage-1)*0;

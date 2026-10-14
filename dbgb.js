@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const ctx = await browser.newContext({ viewport:{width:430,height:900}, deviceScaleFactor:2 });
   ctx.setDefaultTimeout(5000);
   const page = await ctx.newPage();
-  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await page.goto(require('./pkbpaths').PAGE);
   await page.waitForTimeout(300);
   console.log(await page.evaluate(() => [document.querySelectorAll('.modal').length, [...document.querySelectorAll('.modal')].map(m=>m.className).join('|'), phase]));
   await page.click(`[data-act="dc"][data-i="0"]`).catch(e=>console.log('dc', e.message.slice(0,300)));

@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:393, height:740 }, deviceScaleFactor:3 });
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').ARTIFACT); await p.waitForTimeout(600);
   const r = await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); render();
     const st = document.querySelector('.wcam .bstage'), tv = st.querySelector('.tview'), cs = getComputedStyle(tv);
     const out = { persp: cs.perspective, po: cs.perspectiveOrigin, real: {}, sim: {} };

@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async()=>{
   const b = await chromium.launch();
   const p = await b.newPage({viewport:{width:390,height:844}});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
   await p.evaluate(()=>{ phase='battle'; });
   const r = await p.evaluate(()=>{ const out=[]; for(const x of [195]) for(const y of [835,840,843]){ const el=document.elementFromPoint(x,y); out.push(y+': '+(el? el.tagName+'.'+el.className+' '+(el.id||''):'none')); } return out; });
   console.log(r);

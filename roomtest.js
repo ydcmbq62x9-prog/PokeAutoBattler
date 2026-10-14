@@ -1,7 +1,7 @@
 /* Duels live link inside the preview page: WebRTC is blocked there, so the page's own room carries it.
    The room is faked here (two pages bridged through node); a third page tries to barge in. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) bad++; };
 (async () => {
   const br = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });

@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async()=>{const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
 const ctx=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isMobile:true});
 await ctx.addInitScript(()=>{window.PKB_TITLE=false});
-const p=await ctx.newPage();await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');await p.addStyleTag({content:'*{overflow-anchor:none!important}'});await p.waitForTimeout(600);
+const p=await ctx.newPage();await p.goto(require('./pkbpaths').PAGE);await p.addStyleTag({content:'*{overflow-anchor:none!important}'});await p.waitForTimeout(600);
 await p.evaluate(()=>{PREF.set('tips','off');newRun({gens:[1,2]});G.turn=22;G.badges=5;G.stage=24;G.credits=40;
 G.team=['blastoise','charizard','machamp','alakazam','snorlax'].map((id,i)=>makeUnit(id,i));G.pc=[makeUnit('abra',1),makeUnit('gastly',4)];fixSlots(G);rollShop(G,false);render();});
 await p.waitForTimeout(300);

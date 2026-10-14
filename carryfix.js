@@ -4,7 +4,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
 (async () => { const b = await chromium.launch();
   for(const [tag, dev] of [['pc', { viewport:{ width:1250, height:900 } }], ['small window', { viewport:{ width:720, height:700 } }]]){
     const ctx = await b.newContext(dev); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
     await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; }
       G.pendingRewards = []; G.credits = 30; G.team = [makeUnit('squirtle', 0), makeUnit('machop', 0)]; fixSlots(G); PREF.set('text', 'instant'); render(); });
     const chip = () => p.evaluate(() => { const c = document.querySelector('.carry'); if(!c) return { exists: false, shown: false };
@@ -33,7 +33,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     await ctx.close(); }
   // phone: pinned bar, unaffected
   const ctx = await b.newContext(devices['iPhone 13']); const p = await ctx.newPage();
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
   await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; } G.pendingRewards = []; G.team = [makeUnit('squirtle', 0)]; fixSlots(G); render(); });
   const hid = await p.evaluate(() => { const c = document.querySelector('.carry'); return !c || getComputedStyle(c).display === 'none'; });
   await p.tap('.slot[data-act="team"][data-i="0"]'); await p.waitForTimeout(200);

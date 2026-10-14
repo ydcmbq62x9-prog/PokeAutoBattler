@@ -6,7 +6,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   const p = await b.newPage({ viewport:{ width:390, height:844 } });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); localStorage.removeItem('pkb_records'); openNewRun(); });
   check(await p.evaluate(() => ['onelife','nopc','noitems','nolegend','hardgyms','tight'].every(k => document.querySelector(`.newrun [data-mod="${k}"] svg, .newrun [data-mod="${k}"] img`))), 'New Run lists all six challenges, each with its badge');
   for(const k of ['noitems', 'hardgyms']) await p.click(`[data-mod="${k}"]`);

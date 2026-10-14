@@ -8,7 +8,7 @@ check(E.vitMembers('carbos').join() === 'carbos,energyroot' && E.vitMembers('hpu
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }); const p = await b.newPage({ viewport:{ width:390, height:844 } });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
   const r = await p.evaluate(() => { newRun({ gens:[1] }); const u = makeUnit('machop', 0); u.vit = { carbos:3, protein:2 }; u.vitBy = { energyroot:1, carbos:2, calcium:2 }; u.manuals = 1; G.badges = 2;
     const old = makeUnit('onix', 0); old.vit = { hpup:4 };
     return { a: vitLineHtml(u).replace(/<[^>]+>/g, '|').replace(/\|+/g, '|'), b: vitLineHtml(old).replace(/<[^>]+>/g, '|').replace(/\|+/g, '|'), t: vitLimitText('energyroot'), t2: vitLimitText('protein') }; });

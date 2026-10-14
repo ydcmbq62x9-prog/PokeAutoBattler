@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch();
   const pg = await b.newPage({ viewport:{width:390,height:844}, hasTouch:true, isMobile:true });
-  await pg.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await pg.goto(require('./pkbpaths').PAGE);
   await pg.click('[data-act="dc"][data-i="0"]'); await pg.click('[data-act="team"][data-i="0"]');
   await pg.click('[data-act="endturn"]'); await pg.waitForTimeout(300);
   console.log('battle:', await pg.$eval('.vtag', e => e.textContent));

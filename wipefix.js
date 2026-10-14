@@ -3,7 +3,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
 (async () => { const b = await chromium.launch();
   for(const [tag, dev] of [['iPhone 13', devices['iPhone 13']], ['short', { viewport:{ width:390, height:700 }, deviceScaleFactor:2, hasTouch:true, isMobile:true }]]){
     const ctx = await b.newContext(dev); await ctx.addInitScript(() => { window.PKB_WIPE = true; }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
     await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; }
       G.pendingRewards = []; G.team = [makeUnit('machop', 0)]; fixSlots(G); PREF.set('wipe', 'full'); PREF.set('text', 'instant'); render(); });
     await p.evaluate(() => { window.__w = wipe(() => new Promise(r => setTimeout(r, 900)), null); });

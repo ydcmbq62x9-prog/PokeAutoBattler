@@ -2,7 +2,7 @@ const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch();
   for(const [tag, dev] of [['iphone', devices['iPhone 13']], ['se', { ...devices['iPhone SE'] }], ['wide', { viewport:{ width:1250, height:900 } }]]){
     const p = await (await b.newContext({ ...dev, colorScheme:'dark' })).newPage();
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
     const r = await p.evaluate(() => { localStorage.setItem('pkb_seen_version', 'v48'); PREF.set('theme','dark'); applyTheme && applyTheme(); openChangelog();
       const pills = [...document.querySelectorAll('.clog .cnew, .clog .cnow')].map(e => ({ t: e.textContent, lines: e.getClientRects().length, h: Math.round(e.getBoundingClientRect().height) }));
       const metaSplit = [...document.querySelectorAll('.clog .cmeta')].filter(m => { const rs = [...m.children].map(c => Math.round(c.getBoundingClientRect().top)); return new Set(rs).size > 1; }).length;

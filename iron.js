@@ -5,7 +5,7 @@ const [W,H,tag,touch] = [+process.argv[2], +process.argv[3], process.argv[4], pr
   const ctx = await b.newContext({ viewport:{ width:W, height:H }, hasTouch:touch, isMobile:touch, deviceScaleFactor:2 });
   const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; window.PKB_FLAT = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   const shot = async n => { await p.waitForTimeout(350); await p.screenshot({ path:`ir_${tag}_${n}.png` }); };
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); sessionBattles = 9; G.turn = 6; G.credits = 18; G.badges = 1;
     G.stage = runPlan().findIndex(s => s.kind === 'gym' && s.badge === 1); if(G.stage < 0) G.stage = runPlan().findIndex(s => s.kind === 'gym');

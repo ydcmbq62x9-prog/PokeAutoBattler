@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
     const p = await b.newPage({ viewport:{ width:vw, height:vh }, deviceScaleFactor:1 });
     p.on('pageerror', e => errs.push(String(e)));
     await p.addInitScript(() => { window.PKB_TITLE = false; });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
     for(const badges of [0, 4, 8]){
       await p.evaluate((bd) => { document.querySelectorAll('.modal').forEach(m => m.remove()); if(battle){ battle = null; phase='shop'; } newRun({ gens:[1] }); G.turn = 14; G.badges = bd;
         const ids = ['snorlax','lapras','charizard','mew','pikachu','gengar']; G.team = ids.map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); fixSlots(G); render(); startBattle(); }, badges);

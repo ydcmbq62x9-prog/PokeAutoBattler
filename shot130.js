@@ -1,6 +1,6 @@
 const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch(); const ctx = await b.newContext(devices['iPhone 13']); await ctx.addInitScript(() => { window.PKB_TITLE = true; });
-  const p = await ctx.newPage(); await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(1500);
+  const p = await ctx.newPage(); await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(1500);
   await p.screenshot({ path:'s130-title.png' });
   await p.evaluate(() => { const t = document.getElementById('title'); if(t) t.remove(); document.body.classList.remove('titled');
     PREF.set('text','instant'); G.team = [makeUnit('eevee', 0), makeUnit('flareon', 0)]; fixSlots(G); sel = { kind:'team', idx:0 }; inspect = { kind:'unit', u:G.team[0] }; render(); });

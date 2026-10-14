@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 let fails = 0;
 const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').forEach(x => x.remove());
   const m = (id, pos) => { const u = makeUnit(id, 4); u.pos = pos; return u; };
   G.team = [m('charizard', 0), m('blastoise', 1), m('pidgeot', 4)]; G.stage = 1; G.turn = 2; G.credits = 20;

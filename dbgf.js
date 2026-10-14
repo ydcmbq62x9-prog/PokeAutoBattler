@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   const p = await b.newPage({ viewport:{ width:w, height:h } });
   p.on('pageerror', e => console.log('ERR', e.message));
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
   console.log(w, await p.evaluate(async () => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] });
     G.team = ['snorlax','pikachu'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i; return u; }); fixSlots(G); render(); await startBattle(); await new Promise(r => setTimeout(r, 2500));
     const f = document.querySelector('.wcam .ftr.p'), a = f.querySelector('.fart').getBoundingClientRect(), r = f.getBoundingClientRect();

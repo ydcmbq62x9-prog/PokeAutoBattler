@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   for(const [w,h,tag] of [[1250,1000,'wide'],[390,844,'phone']]){
     const p = await b.newPage({ viewport:{width:w,height:h}, deviceScaleFactor:2 });
     const errs=[]; p.on('pageerror', e=>errs.push(String(e)));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
     await p.evaluate(() => { G.pendingRewards=[]; G.turn=12; G.stage=5;
       G.team=['charizard','blastoise','butterfree','gengar','pidgeot','clefable'].map(i=>makeUnit(i,2));
       G.team.forEach(u=>{u.hp+=60;u.atk+=60;u.spd+=30;}); rollShop(G,false); save(); render(); });

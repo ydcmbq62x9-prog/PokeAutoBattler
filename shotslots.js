@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch();
   for(const [w,h,tag] of [[1250,1000,'wide'],[390,844,'phone']]){
     const p = await b.newPage({ viewport:{width:w,height:h}, deviceScaleFactor:2 });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
     await p.evaluate(() => { G.pendingRewards=[]; G.turn=10;
       const m=(id,pos)=>{const u=makeUnit(id,0);u.pos=pos;return u;};
       G.team=[m('onix',1), m('abra',4), m('pikachu',5)];

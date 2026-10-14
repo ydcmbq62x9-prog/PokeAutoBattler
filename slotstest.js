@@ -76,7 +76,7 @@ const lines = r => r.steps.flatMap(s => s.lines);
   for(const [w, h] of [[1200, 1000], [390, 844]]){
     const page = await (await browser.newContext({ viewport:{ width:w, height:h } })).newPage();
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; G.credits = 40; G.team = []; G.pc = []; rollShop(G, false); save(); render(); });
     await page.waitForTimeout(150);
     const nums = await page.$$eval('.formation .slot.empty', els => els.map(e => getComputedStyle(e, '::after').content).filter(c => c && c !== 'none' && c !== 'normal' && c !== '""'));
@@ -119,7 +119,7 @@ const lines = r => r.steps.flatMap(s => s.lines);
     const ctx = await browser.newContext({ viewport:{ width:390, height:844 }, hasTouch:true, isMobile:true });
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); G.pendingRewards = []; G.team = [makeUnit('onix', 0)]; G.pc = []; save(); render(); });
     await page.waitForTimeout(150);
     await page.tap('[data-act="team"][data-i="0"]'); await page.waitForTimeout(500);

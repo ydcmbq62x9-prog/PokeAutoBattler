@@ -2,7 +2,7 @@
    The matchmaking server is faked locally (same message format as the PeerJS server). */
 const { chromium } = require('playwright');
 const WS = require('/home/claude/.npm-global/lib/node_modules/@mermaid-js/mermaid-cli/node_modules/ws');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) bad++; };
 (async () => {
   const clients = new Map(), seen = [];

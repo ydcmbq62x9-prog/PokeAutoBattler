@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 (async()=>{
   const b = await chromium.launch(); const p = await b.newPage({viewport:{width:390,height:844}});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
   await p.evaluate(()=>{ G.pendingRewards=[]; document.querySelectorAll('.modal').forEach(x=>x.remove());
     G.team=['charmander','squirtle'].map((id,k)=>{const u=makeUnit(id,0); u.pos=k; return u;}); G.team[0].copies=2; save(); render(); });
   await p.waitForTimeout(1500);

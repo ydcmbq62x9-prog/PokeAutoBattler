@@ -16,7 +16,7 @@ check(!E.LEGENDS().includes('celebi'), 'and not in a Gen 1 run');
   const p = await b.newPage({ viewport:{ width:390, height:844 } });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_TIPS = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   check(await p.evaluate(() => !!document.querySelector('.modal.tutorial') && /Welcome/.test(document.querySelector('.tutpg h3').textContent)), 'first launch shows the tutorial');
   check(await p.evaluate(() => !!document.querySelector('.tutart img, .tutart .sprite, .tutart svg')), 'cards show pokémon art');
   for(let k = 0; k < 4; k++){ await p.click('[data-t="next"]'); await p.waitForTimeout(40); }
@@ -33,7 +33,7 @@ check(!E.LEGENDS().includes('celebi'), 'and not in a Gen 1 run');
   await p.evaluate(() => { localStorage.clear(); });
   await p.addInitScript(() => {}); 
   const q = await b.newPage({ viewport:{ width:390, height:844 } }); await q.addInitScript(() => { window.PKB_TITLE = false; window.PKB_TIPS = true; localStorage.setItem('pkb_records', JSON.stringify({ runs:3, cleared:0, best:5 })); });
-  await q.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await q.waitForTimeout(700);
+  await q.goto(require('./pkbpaths').PAGE); await q.waitForTimeout(700);
   check(await q.evaluate(() => !document.querySelector('.modal.tutorial')), 'players who already have runs never see it');
   // Celebi through the real encounter
   const c = await p.evaluate(() => { newRun({ gens:[2] }); G.badges = 5; G.turn = 12; G.credits = 40; G.encounter = { id:'celebi', cost:12, turn:G.turn }; G.team = []; fixSlots(G);

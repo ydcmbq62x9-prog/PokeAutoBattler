@@ -22,7 +22,7 @@ const setup = `
     const p = await (await b.newContext({viewport:{width:w,height:h},deviceScaleFactor:2,
       hasTouch: w < 700, isMobile: w < 700})).newPage();
     const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+    await p.goto(require('./pkbpaths').PAGE);
     await p.waitForTimeout(250);
     await p.evaluate(setup);
     await p.waitForTimeout(120);

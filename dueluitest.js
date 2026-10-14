@@ -1,6 +1,6 @@
 /* Duels end to end in the browser: two players, a full set, through the real screens. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) bad++; };
 (async () => {
   const br = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });

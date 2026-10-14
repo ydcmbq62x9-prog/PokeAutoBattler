@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:393, height:740 }, deviceScaleFactor:2 });
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_FLAT = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.credits = 20;
     const id = G.daycare[0].unit.id; G.team = [makeUnit(id, 0), makeUnit(id, 0)]; G.team[0].exp = TUNING.expForLevel2 - 1; G.team[0].pos = 0; G.team[1].pos = 1; render(); });
   await p.locator('.drow[data-act="dc"][data-i="0"]').click(); await p.waitForTimeout(200);

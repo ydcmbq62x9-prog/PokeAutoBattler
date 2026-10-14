@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport:{width:1200,height:1100}, deviceScaleFactor:2 });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.goto(require('./pkbpaths').PAGE);
   await p.waitForTimeout(250);
   await p.evaluate(() => {
     G.turn=12; G.badges=2; G.stage=2*(TUNING.battlesPerBadge+1)+TUNING.battlesPerBadge; G.credits=26;
