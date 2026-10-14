@@ -4,7 +4,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
 (async () => { const b = await chromium.launch();
   for(const [tag, dev] of [['640', { viewport:{ width:640, height:800 } }], ['720', { viewport:{ width:720, height:800 } }], ['1000', { viewport:{ width:1000, height:800 } }], ['1400', { viewport:{ width:1400, height:900 } }], ['phone', devices['iPhone 13']], ['small phone', { viewport:{ width:340, height:640 }, hasTouch:true, isMobile:true }]]){
     const ctx = await b.newContext(dev); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
     await p.evaluate(() => { newRun(); document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; }
       G.pendingRewards = []; G.credits = 30; render(); });
     const geo = () => p.evaluate(() => { const d = document.querySelector('.dock'); if(!d) return null; const q = x => { const e = d.querySelector(x); if(!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height, b: r.bottom }; };

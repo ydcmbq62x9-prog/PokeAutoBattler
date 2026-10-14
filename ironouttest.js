@@ -8,7 +8,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const tag = w + 'px';
     const page = await browser.newPage({ viewport: { width: w, height: h } });
     const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if(m.type() === 'error') errs.push(m.text()); });
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(200);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(200);
     await page.evaluate(() => { localStorage.removeItem('pkb_motion'); G.pendingRewards = []; document.querySelectorAll('.modal').forEach(x => x.remove());
       G.team = ['charizard', 'blastoise', 'venusaur', 'pikachu', 'geodude', 'clefairy'].map((id, k) => { const u = makeUnit(id, 3); u.pos = k; return u; });
       G.stage = 1; G.turn = 2; setSpeed(1); save(); render(); });

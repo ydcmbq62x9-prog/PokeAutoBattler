@@ -1,7 +1,7 @@
 /* The held-item flow, end to end in the browser: buy into the Bag, give it to
    a pokémon, see it in the summary, take it back off. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const errors = [];
 const mark = m => console.log('… ' + m);
 

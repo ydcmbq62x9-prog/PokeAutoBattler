@@ -77,7 +77,7 @@ check(bought === E.TUNING.xItems.perBattle && z.team[0].tmpAtk <= Math.ceil(a0 *
   const browser = await chromium.launch();
   const page = await (await browser.newContext({ viewport:{ width:1200, height:1000 } })).newPage();
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await page.goto(require('./pkbpaths').PAGE);
   await page.waitForTimeout(250);
   await page.evaluate(() => {
     G.turn = 12; G.credits = 30; G.stage = 1; G.gauntlet = null;

@@ -5,7 +5,7 @@ const tag = process.argv[2] || 'pre';
   for(const [w,h,sz] of [[1250,1000,'wide'],[390,844,'phone']]){
     const p = await b.newPage({ viewport:{width:w,height:h}, deviceScaleFactor:1 });
     const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{ if(m.type()==='error') errs.push(m.text()); });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
     await p.evaluate(() => { G.pendingRewards=[]; G.turn=6; G.credits=12;
       const m=(id,pos)=>{const u=makeUnit(id,0);u.pos=pos;return u;};
       G.team=[m('onix',0), m('machop',1), m('abra',4), m('pikachu',5), m('charmander',2), m('clefairy',3)];

@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
   const p = await b.newPage({viewport:{width:420,height:860}});
   const errs=[]; p.on('pageerror',e=>errs.push('PAGEERR '+String(e)+'\n'+(e.stack||''))); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(800);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(800);
   for(const gens of [[2],[1,2]]){
     await p.evaluate((gens)=>{ G=newGame(99,{gens}); rollShop(G,false); phase='shop';
       const u=makeUnit('tyrogue',0); u.pos=0; G.team=[u]; G.daycare[0]={unit:makeUnit('tyrogue',0),bought:false}; G.credits=30; render(); }, gens);

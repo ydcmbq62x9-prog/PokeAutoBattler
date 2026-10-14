@@ -5,7 +5,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   for(const [tag, vp] of [['phone', { width:390, height:844 }], ['desktop', { width:1250, height:900 }], ['landscape', { width:844, height:390 }]]){
     const ctx = await b.newContext({ viewport: vp }); await ctx.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.pendingRewards = [];
       G.team = ['charmeleon','wartortle','pikachu','gengar'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i; return u; }); fixSlots(G); render(); });
     check(await p.evaluate(() => PREF.get('wipe', 'auto') === 'auto' && useCamera()), `${tag}: the camera is the default transition`);

@@ -17,7 +17,7 @@ check(nums.every(Boolean) && new Set(nums).size === nums.length, 'every pokémon
 check(N.bulbasaur === 1 && N.pikachu === 25 && N.mew === 151 && N.chikorita === 152 && N.celebi === 251 && N.treecko === 252 && N.jirachi === 385 && N.gardevoir === 282, 'the numbers are the real ones');
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }); const p = await b.newPage();
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   const r = await p.evaluate(() => ({ sig: ['blaziken', 'gardevoir', 'metagross', 'salamence', 'kyogre', 'rayquaza', 'registeel'].every(k => SIG[k]),
     lines: ['roxanne','brawly','wattson','flannery','norman','winona','tate-liza','juan','sidney','phoebe','glacia','drake','wallace-champion','steven'].filter(id => !BOSS_LINES[id]) }));
   check(r.sig, 'Hoenn finals and legendaries have signature move effects');

@@ -4,12 +4,12 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 let fails = 0;
 const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const setup = () => { G.pendingRewards = []; document.querySelectorAll('.modal').forEach(x => x.remove());
   G.team = ['charmeleon', 'squirtle', 'pikachu'].map((id, k) => { const u = makeUnit(id, 0); u.pos = [0, 1, 3][k]; return u; });
   G.team[0].held = 'lefto'; G.turn = 6; G.stage = 4; setSpeed(4); rollShop(G, false); save(); render(); };
 (async () => {
-  const html = fs.readFileSync('/mnt/user-data/outputs/gen2/pokebattler.html', 'utf8');
+  const html = fs.readFileSync(require('./pkbpaths').PAGE_FILE, 'utf8');
   check(/Barlow\+Condensed:wght@/.test(html) && /family=Nunito:/.test(html) && !/Pixelify\+Sans/.test(html), '5.4.0: the sports font replaces the pixel font, and Nunito is the reading font');
   const browser = await chromium.launch();
 

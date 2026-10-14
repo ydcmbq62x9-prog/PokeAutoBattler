@@ -1,7 +1,7 @@
 /* 2.4.0: the Hardcore Badge — earned by clearing a One Life run. */
 const { chromium } = require('playwright');
 let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) fails++; };
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 (async () => {
   const browser = await chromium.launch();
   for(const [w, h] of [[1250, 950], [390, 844], [360, 640]]){

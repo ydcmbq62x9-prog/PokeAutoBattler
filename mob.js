@@ -7,7 +7,7 @@ const land = process.argv[2] === 'land';
   const ctx = await b.newContext(dev); const p = await ctx.newPage();
   const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   const tag = land ? 'L' : 'P';
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); sessionBattles = 9; G.turn = 24; G.credits = 22; G.badges = 5;
     G.stage = runPlan().findIndex((s, i) => s.kind === 'gym' && s.badge === 5) ; if(G.stage < 0) G.stage = runPlan().findIndex(s => s.kind === 'gym');

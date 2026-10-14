@@ -5,7 +5,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   for(const [tag, vp] of [['phone', { width:390, height:844 }], ['desktop', { width:1250, height:900 }]]){
     const p = await b.newPage({ viewport: vp }); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     const setup = (kind, strong) => p.evaluate(([kind, strong]) => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.pendingRewards = []; setSpeed(4); sessionBattles = 9;
       if(kind === 'champion') G.badges = 8;
       G.stage = runPlan().findIndex(s => s.kind === kind);
@@ -42,7 +42,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   /* the won run's summary image is the photo */
   const p = await b.newPage({ viewport:{ width:390, height:844 } });
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
   const ok = await p.evaluate(async () => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.badges = 8;
     G.team = ['mewtwo','snorlax'].map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); G.over = 'won'; phase = 'over'; render();
     await new Promise(r => setTimeout(r, 1200)); const im = document.querySelector('.runphoto'); return !!(im && im.complete && im.naturalWidth === 720); });

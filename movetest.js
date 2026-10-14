@@ -82,7 +82,7 @@ check(true, 'every move describes itself at every level');
   for(const [w, h] of [[1200, 1000], [390, 844]]){
     const page = await (await browser.newContext({ viewport:{ width:w, height:h } })).newPage();
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { G.pendingRewards = []; G.team = ['charizard','blastoise'].map(i => makeUnit(i, 2)); rollShop(G, false); save(); render(); });
     if(w > 1000){
       await page.click('[data-pop="team:0"]'); await page.waitForTimeout(250);

@@ -9,7 +9,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if(m.type() === 'error') errs.push(m.text()); });
-    await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await page.waitForTimeout(250);
+    await page.goto(require('./pkbpaths').PAGE); await page.waitForTimeout(250);
     await page.evaluate(() => { localStorage.removeItem('pkb_records'); localStorage.removeItem('pkb_name'); localStorage.removeItem('pkb_motion'); localStorage.removeItem('pkb_theme');
       G.pendingRewards = []; G.credits = 20; const m = (id, pos) => { const u = makeUnit(id, 4); u.pos = pos; return u; };
       G.team = [m('charizard', 0), m('blastoise', 1), m('pidgeot', 4)]; G.stage = 1; G.turn = 2; rollShop(G, false); save(); render();

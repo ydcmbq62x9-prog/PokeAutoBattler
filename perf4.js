@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async()=>{
   const b = await chromium.launch({executablePath:'/opt/pw-browsers/chromium'});
   const p = await b.newPage({viewport:{width:420,height:860}});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(800);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(800);
   const c = await p.context().newCDPSession(p); await c.send('Emulation.setCPUThrottlingRate',{rate:6});
   const r = await p.evaluate(async()=>{
     const out={}; const T=(k,f)=>{const t=performance.now(); const r=f(); out[k]=+(performance.now()-t).toFixed(0); return r;};

@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:393, height:740 } });
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_FLAT = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   console.log(await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove());
     const st = document.createElement('style'); st.textContent = '.pfield .slot:not(:first-child){margin-top:40px!important}'; document.head.appendChild(st);
     newRun({ gens:[2] }); render();

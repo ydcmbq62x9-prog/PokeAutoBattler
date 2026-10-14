@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 (async () => {
   const browser = await chromium.launch();
   for (const [w,h,cpu] of [[1250,950,1],[390,844,4]]) {

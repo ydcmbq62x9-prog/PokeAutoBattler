@@ -6,7 +6,7 @@ const mark = () => { const vis = [...document.querySelectorAll('#title .tmi, .mo
 (async () => { const b = await chromium.launch();
   for(const [tag, dev] of [['pc', { viewport:{ width:1250, height:900 } }], ['phone', devices['iPhone 13']]]){
     const ctx = await b.newContext(dev); await ctx.addInitScript(() => { window.PKB_TITLE = true; }); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     const tap = sel => dev.hasTouch ? p.tap(sel) : p.click(sel);
     await tap('.tpress'); await p.waitForTimeout(300);
     // the reported case: focus on one item, pointer on another

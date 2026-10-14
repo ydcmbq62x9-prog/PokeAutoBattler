@@ -3,7 +3,7 @@
    the load-bearing assertion here is that the shop strip and the battle's own
    clock agree about who acts when. */
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 const errors = [];
 const mark = m => console.log('… ' + m);
 

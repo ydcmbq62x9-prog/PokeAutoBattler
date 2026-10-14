@@ -5,7 +5,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   for(const [tag, vp] of [['phone', { width:390, height:844 }], ['desktop', { width:1250, height:900 }]]){
     const p = await b.newPage({ viewport: vp }); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.addInitScript(() => { window.PKB_TITLE = false; });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     const setup = kind => p.evaluate(kind => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.pendingRewards = []; setSpeed(1);
       if(kind) G.stage = runPlan().findIndex(s => s.kind === kind);
       G.team = ['charmeleon','wartortle','pikachu'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i; return u; }); fixSlots(G); render(); }, kind);

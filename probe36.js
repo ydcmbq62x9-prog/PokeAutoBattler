@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport:{width:1250,height:1000} });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
   await p.evaluate(() => { G.pendingRewards=[]; const m=(id,pos)=>{const u=makeUnit(id,0);u.pos=pos;return u;};
     G.team=[m('onix',0), m('machop',1), m('abra',4)]; save(); render(); document.querySelectorAll('.modal').forEach(m=>m.remove());
     window.__t0 = null; const orig = window.playIntro; });

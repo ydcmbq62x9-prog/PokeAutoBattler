@@ -7,7 +7,7 @@ const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + msg); if(!ok) 
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport: { width: 1250, height: 950 } }]]){
     const ctx = await br.newContext(dev); await ctx.addInitScript(() => { window.PKB_TITLE = false; });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
     const r = await p.evaluate(() => {
       localStorage.removeItem('pkb_records');
       const o = {};

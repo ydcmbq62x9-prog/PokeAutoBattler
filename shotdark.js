@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch(); const errs=[];
   const p = await b.newPage({viewport:{width:390,height:844}});
   p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
   await p.evaluate(()=>{ localStorage.setItem('pkb_theme','dark'); });
   await p.reload(); await p.waitForTimeout(400);
   await p.evaluate(()=>{ G.team=['wartortle','geodude','pidgeotto','clefairy','charmeleon','pikachu'].map(i=>makeUnit(i,0));

@@ -170,7 +170,7 @@ check(!!w, 'found a Lorelei win that fainted one pokémon and hurt another');
   ctx.setDefaultTimeout(8000);
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-  await page.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await page.goto(require('./pkbpaths').PAGE);
   await page.waitForTimeout(250);
 
   const setup = async (stageOff, gauntlet) => page.evaluate(([off, gt]) => {

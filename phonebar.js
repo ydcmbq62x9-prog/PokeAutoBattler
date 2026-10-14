@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const errs = [];
   const p = await b.newPage({ viewport:{width:390,height:860}, deviceScaleFactor:2 });
   p.on('pageerror', e => errs.push(e.message));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.goto(require('./pkbpaths').PAGE);
   await p.waitForTimeout(250);
   await p.evaluate(() => {
     localStorage.setItem('pkb_speed','1');

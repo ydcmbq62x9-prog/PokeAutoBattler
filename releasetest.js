@@ -5,7 +5,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   for(const [tag, o] of [['phone', { viewport:{ width:390, height:844 }, hasTouch:true, isMobile:true }], ['desktop', { viewport:{ width:1250, height:900 } }]]){
     const ctx = await b.newContext(o); const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.addInitScript(() => { window.PKB_TITLE = false; });
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
     await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.credits = 0;
       G.team = [['snorlax', 3], ['pikachu', 5], ['charmander', 0]].map(([id, pos]) => { const u = makeUnit(id, 1); u.pos = pos; return u; }); render(); });
     const tap = async sel => { const l = p.locator(sel); if(o.hasTouch) await l.tap(); else await l.click(); await p.waitForTimeout(250); };

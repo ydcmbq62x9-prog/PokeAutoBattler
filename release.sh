@@ -9,4 +9,4 @@ python3 build.py | cut -c1-70
 node phonepass.js | tail -1
 [ "$1" = "full" ] && ./runtests.sh
 echo
-echo "Ready: /mnt/user-data/outputs/pokebattler.html (publish as the artifact) and /mnt/user-data/outputs/gen2/pokebattler-app.zip"
+OUT="${PKB_OUT:-/mnt/user-data/outputs}"; echo "Ready: $OUT/pokebattler.html and $OUT/gen2/pokebattler-app.zip"

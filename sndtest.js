@@ -3,7 +3,7 @@ let fails = 0; const check = (ok, m) => { console.log((ok ? '✓ ' : '✗ ') + m
 (async () => { const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium', args:['--autoplay-policy=no-user-gesture-required'] }); const p = await b.newPage({ viewport:{ width:390, height:844 } });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_SOUND = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   await p.mouse.click(10, 10);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1] }); G.turn = 6;
     G.team = ['charmander','squirtle','bulbasaur'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i; return u; }); fixSlots(G); render(); startBattle(); });

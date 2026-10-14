@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:1366, height:860 } });
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   const st = () => p.evaluate(() => ({ t: WORLD.cam.style.transform, fresh: shopCamera(), host: WORLD.cam.parentNode.id || WORLD.cam.parentNode.className, box: JSON.stringify(WORLD.box) }));
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); sessionBattles = 9; G.stage = runPlan().findIndex(s => s.kind === 'gym');
     G.team = ['quilava','bayleef','hoothoot','ledian','pichu','azumarill'].map((id, i) => { const u = makeUnit(id, 2); u.pos = i; return u; }); render(); });

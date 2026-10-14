@@ -56,7 +56,7 @@ check(roleBad === 0, 'a role item is only stocked when you own a pokémon of tha
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }); const p = await b.newPage();
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   const r = await p.evaluate(() => { const G0 = { gens:[3] }; return { sprite: !!SPRITES.may && SPRITES.may.startsWith('data:image/png'),
     lines: MAY_LINES.length === 3 && MAY_LINES.every(l => l.hi && l.lost && l.won), art: bossArt(RIVAL3, 'hero').includes('<img'),
     items: ['ironvit','calcium','zinc','energyroot','manual'].every(k => ITEMS[k]) && ['plate','gi','sbell','scope'].every(k => HELD_ITEMS[k]) }; });

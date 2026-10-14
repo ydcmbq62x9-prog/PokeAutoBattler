@@ -5,7 +5,7 @@ const [W,H,tag] = [+process.argv[2], +process.argv[3], process.argv[4]];
   const ctx = await b.newContext({ viewport:{ width:W, height:H }, hasTouch:true, isMobile:true, deviceScaleFactor:2 });
   const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(() => { window.PKB_TITLE = false; window.PKB_WIPE = true; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(700);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(700);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[2] }); G.turn = 2; G.credits = 14;
     G.team = ['ledyba','hoothoot'].map((id, i) => { const u = makeUnit(id, 1); u.pos = i + 2; return u; }); fixSlots(G); render(); });
   await p.waitForTimeout(500); await p.screenshot({ path:`${tag}_1.png` });

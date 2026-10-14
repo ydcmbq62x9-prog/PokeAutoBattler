@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
   const p = await b.newPage({viewport:{width:420,height:860}});
   const errs=[]; p.on('pageerror',e=>errs.push(String(e))); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
   await p.addInitScript(()=>{window.PKB_TITLE=true;});
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.goto(require('./pkbpaths').PAGE);
   await p.waitForTimeout(1800);
   await p.screenshot({path:'/tmp/s1.png'});
   await p.click('.tpress'); await p.waitForTimeout(500);

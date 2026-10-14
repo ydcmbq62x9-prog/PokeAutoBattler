@@ -6,7 +6,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   for(const [tag, dev] of [['phone', devices['iPhone 13']], ['wide', { viewport: { width: 1280, height: 860 } }]]){
     const ctx = await br.newContext(dev); await ctx.addInitScript(() => { window.PKB_TITLE = false; });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(300);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(300);
     const r = await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); G.credits = 30;
       G.team = ['charizard','pikachu','snorlax'].map((id,i)=>{const u=makeUnit(id,2); u.pos=i; return u;}); fixSlots(G); render();
       const o = { before: document.querySelectorAll('.pfield .stri .c').length };

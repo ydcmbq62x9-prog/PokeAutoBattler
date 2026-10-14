@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium' });
   const p = await b.newPage({ viewport:{ width:390, height:844 }, deviceScaleFactor:2 });
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); newRun({ gens:[1,2] }); G.turn = 20;
     const ids = ['snorlax','lapras','charizard','mew','pikachu','farfetchd']; G.team = ids.map((id, i) => { const u = makeUnit(id, 0); u.pos = i; return u; }); fixSlots(G); render(); startBattle(); });
   await p.waitForTimeout(3000);

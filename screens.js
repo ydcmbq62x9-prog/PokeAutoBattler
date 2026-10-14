@@ -5,7 +5,7 @@ const theme = process.argv[2] || 'dark';
   const p = await b.newPage({ viewport:{ width:390, height:844 } });
   const errs=[]; p.on('pageerror', e => errs.push(String(e)));
   await p.addInitScript(t => { window.PKB_TITLE = true; try{ localStorage.setItem('pkb_pref_theme', t); }catch(e){} }, theme);
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(1500);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(1500);
   await p.evaluate(t => { PREF.set('theme', t); applyTheme(); }, theme);
   await p.waitForTimeout(300);
   await p.screenshot({ path:`sc_${theme}_title.png` });

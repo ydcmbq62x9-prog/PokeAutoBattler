@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
   const b = await chromium.launch();
   const p = await b.newPage({ viewport:{width:1250,height:1000}, deviceScaleFactor:1.5 });
   const errs=[]; p.on('pageerror', e=>errs.push(String(e)));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(200);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(200);
   await p.evaluate(() => { G.pendingRewards=[]; G.team=['onix','abra'].map(i=>makeUnit(i,0));
     G.stage = gauntletStart(); G.badges = 8; G.turn = 30; rollShop(G,false); save(); render(); });
   await p.waitForTimeout(200);

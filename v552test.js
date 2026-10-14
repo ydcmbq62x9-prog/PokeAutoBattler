@@ -5,7 +5,7 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   const br = await chromium.launch();
   const p = await br.newPage({ viewport:{ width:1440, height:900 } }); const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.addInitScript(() => { window.PKB_TITLE = false; });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(400);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(400);
   const r = await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove());
     G.team = ['charizard','pikachu','snorlax'].map((id,i)=>{const u=makeUnit(id,2); u.pos=i; return u;}); fixSlots(G); render();
     const o = { icons: document.querySelectorAll('.pfield .stri').length * 3, dc: document.querySelectorAll('.dnums .si').length, pg1: getComputedStyle(document.documentElement).getPropertyValue('--pg1').trim() };

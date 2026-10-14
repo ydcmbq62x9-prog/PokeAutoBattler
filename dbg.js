@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
-  const p = await b.newPage(); await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(600);
+  const p = await b.newPage(); await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(600);
   console.log(JSON.stringify(await p.evaluate(() => { localStorage.clear();
     G = newGame(11, { gens: [1, 2], mods: { secrets: true } }); rollShop(G, false);
     G.stage = runPlan(G).findIndex(x => x.kind === 'champion'); G.badges = 8;

@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
   ctx.setDefaultTimeout(4000);
   const p = await ctx.newPage();
   p.on('pageerror',e=>console.log('PAGEERROR:', e.message));
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.goto(require('./pkbpaths').PAGE);
   await p.waitForTimeout(250);
   await p.evaluate(() => {
     G.team = [makeUnit('charmander',0)]; G.pc = []; G.credits = 99;

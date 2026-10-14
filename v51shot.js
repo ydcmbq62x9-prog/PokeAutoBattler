@@ -1,6 +1,6 @@
 const { chromium, devices } = require('playwright');
 (async () => { const b = await chromium.launch(); const p = await (await b.newContext(devices['iPhone 13'])).newPage();
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(250);
+  await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(250);
   await p.evaluate(() => { G.turn = 20; G.badges = 5; G.credits = 50; PREF.set('text','instant');
     G.team = [makeUnit('machamp', 0), makeUnit('abra', 0)]; G.team[0].held = 'choice'; G.team[1].held = 'iron'; fixSlots(G);
     G.mart = [{ id:'protein', held:false }, { id:'choice', held:true }, { id:'orb', held:true }, { id:'iron', held:true }, { id:'scale', held:true }]; render(); });

@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport:{width:1200,height:1000}, deviceScaleFactor:3 });
-  await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html');
+  await p.goto(require('./pkbpaths').PAGE);
   await p.waitForTimeout(250);
   await p.evaluate(() => {
     G.turn=12; G.badges=3; G.credits=30;

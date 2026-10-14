@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const URL = 'file:///mnt/user-data/outputs/gen2/pokebattler.html';
+const URL = require('./pkbpaths').PAGE;
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport:{width:1250,height:950} });

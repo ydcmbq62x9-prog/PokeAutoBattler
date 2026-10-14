@@ -46,7 +46,7 @@ check(E.evoLine('jolteon').join() === 'eevee,jolteon' && E.evoFamily('eevee').le
     await ctx.addInitScript(() => { window.PKB_TITLE = true; });
     const p = await ctx.newPage();
     const errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto('file:///mnt/user-data/outputs/gen2/pokebattler.html'); await p.waitForTimeout(500);
+    await p.goto(require('./pkbpaths').PAGE); await p.waitForTimeout(500);
 
     /* the title shows the version, no date */
     const t = await p.evaluate(() => { const t = document.getElementById('title');
