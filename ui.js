@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.15.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.16.0', date:'Oct 14, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4393,6 +4393,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.16.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels: live link works on any network', items:[
+    'Live link now goes through Pok\u00e9Arena\u2019s own relay on the Cloudflare copy, so phones on mobile data or strict Wi-Fi can still link up.',
+    'The direct link and swapping codes by hand still work as before when the relay can\u2019t be reached.',
+  ] },
   { v:'6.15.0', date:'Oct 13, 2026', title:'Minor gameplay changes', sub:'Duels: join with a 4-letter code', items:[
     'Host taps Host and gets a 4-letter code; your friend taps Join and types it. No more long codes.',
     'A free matchmaking server only introduces the two phones; teams never pass through it.',

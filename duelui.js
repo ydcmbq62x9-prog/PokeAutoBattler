@@ -123,9 +123,47 @@ function liveNewPc(sig, remote){
   pc._flush = () => { pc._ready = true; pend.splice(0).forEach(c => pc.addIceCandidate(c).catch(() => {})); };
   return pc;
 }
+/* Our own relay (6.16.0). The Cloudflare copy of the game carries a tiny room per code at <its address>/relay/<CODE>
+   (relay/worker.js). Both phones talk to it like loading a page, so it works on networks that block the direct link.
+   It is tried first; where it isn't there (GitHub Pages, a file) the direct link above is used as before. */
+const liveRelayUrl = () => window.__relay || (/^https?:$/.test(location.protocol) ? location.protocol.replace('http', 'ws') + '//' + location.host + '/relay/' : '');
+/** Open the relay room for `code`. Resolves once the relay says 'wait' (host) or 'peer' (join); rejects 'taken', 'nobody', 'full' or 'blocked'. */
+function liveRelay(code, role){
+  return new Promise((res, rej) => {
+    let ws, done = false, peer = false, pong = Date.now(), iv = 0;
+    const tr = { send:s => ws.send(s), ok:() => peer && ws.readyState === 1, close:() => { clearInterval(iv); try{ ws.close(); }catch(e){} } };
+    const mine = () => LIVE.cleanup === tr.close;
+    const fail = why => { if(done) return; done = true; clearTimeout(t); if(mine()) LIVE.cleanup = null; tr.close(); rej(new Error(why)); };
+    const t = setTimeout(() => fail('blocked'), 5000);
+    const up = () => { if(done) return; done = true; clearTimeout(t); res(tr);
+      iv = setInterval(() => { if(Date.now() - pong > 15000) return tr.close(); try{ ws.send('ping'); }catch(e){} }, 5000); };
+    const lost = msg => { if(!mine()) return; liveReset(true); LIVE.err = msg; livePaint(); };
+    LIVE.cleanup = tr.close;
+    try{ ws = new WebSocket(liveRelayUrl() + code + '?role=' + role); }catch(e){ return fail('blocked'); }
+    ws.onmessage = e => {
+      if(e.data === 'pong'){ pong = Date.now(); return; }
+      let m = null; try{ m = JSON.parse(e.data); }catch(_){}
+      if(m && typeof m._ === 'string'){
+        if(m._ === 'wait') up();
+        else if(m._ === 'peer'){ up(); if(!mine()) return; peer = true; LIVE.tr = tr; LIVE.code = code; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); }
+        else if(m._ === 'left') lost('The live link dropped (your friend left). Connect again, or swap codes by hand.');
+        else fail(m._);
+        return; }
+      if(peer) liveMsg(e.data);
+    };
+    ws.onerror = () => fail('blocked');
+    ws.onclose = () => { clearInterval(iv); if(!done) return fail('blocked');
+      lost(peer ? 'The live link dropped. Swap codes by hand, or connect again.' : 'Lost the connection while waiting. Host again.'); };
+  });
+}
 /** The shared code for both transports: hosts wait on it, joiners type it. */
 async function liveHost(){
   liveReset(); LIVE.step = 'making'; livePaint();
+  if(liveRelayUrl()) for(let i = 0; i < 6; i++){
+    const code = liveNewCode();
+    try{ await liveRelay(code, 'host'); if(LIVE.step !== 'on'){ LIVE.step = 'rwait'; LIVE.code = code; livePaint(); } return; }
+    catch(e){ if(LIVE.step !== 'making') return; if(e.message !== 'taken') break; }
+  }
   if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Swap codes by hand.'); return liveRoom(liveNewCode()); }
   let sig = null, code = '';
   for(let i = 0; i < 6 && !sig; i++){
@@ -153,6 +191,11 @@ async function liveJoin(code){
   code = String(code).trim().toUpperCase();
   if(!/^[A-Z0-9]{4}$/.test(code)) throw new Error('Codes are 4 letters or numbers.');
   liveReset(); LIVE.step = 'connecting'; LIVE.code = code; livePaint();
+  if(liveRelayUrl()){
+    try{ await liveRelay(code, 'join'); return; }
+    catch(e){ if(LIVE.step !== 'connecting') return; if(e.message === 'full') throw new Error(code + ' already has two players. Check the code.'); }
+    // 'nobody' falls through too: the host may be on the direct link if the relay was out of reach for them
+  }
   if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Swap codes by hand.'); return liveRoom(code); }
   const me = 'pkj-' + Math.random().toString(36).slice(2, 10); let sig;
   try{ sig = await liveSignal(me); }catch(e){ if(LIVE.room) return liveRoom(code); throw new Error('Could not reach the matchmaking server. Check your connection, or swap codes by hand.'); }
@@ -193,7 +236,7 @@ function liveCardHtml(){
   else if(L.step === 'rjoinin') h = `<b>Join a friend</b><p>Type the 4-letter code on their screen.</p><input id="lk_in" type="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="CODE">
     <div class="btnrow tight"><button class="btn small primary" data-l="go">Join</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
   else if(L.step === 'connecting') h = `<b>Live link</b> · connecting to ${esc(L.code)}…<div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
-  else if(!liveRtcOk() && !L.room) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Swap codes by hand below, or open the installed app for live fights.</p>`;
+  else if(!liveRtcOk() && !L.room && !liveRelayUrl()) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Swap codes by hand below, or open the installed app for live fights.</p>`;
   else h = `<b>Live link</b> <span class="dim">(optional)</span><p class="dim">One of you hosts and gets a 4-letter code, the other types it. Then you both watch each fight live.</p>
     <div class="btnrow tight"><button class="btn small" data-l="host">Host</button><button class="btn small" data-l="join">Join</button></div>`;
   return `<div class="dlive">${err}${h}</div>`;
