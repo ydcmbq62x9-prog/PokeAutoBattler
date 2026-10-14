@@ -3441,7 +3441,7 @@ const TUNING = {
     cnf: { name:'Confusion', icon:'💫', short:'CNF', actions:3, selfHit:0.35, selfPower:0.5 },
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
-  eggCap:       10,
+  eggCap:       12,
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -5744,7 +5744,7 @@ const ITEMS = {
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
                   apply:(u,G)=>G.addExp(u,1) },
-  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:6, rarity:'rare',
+  expshare:     { name:'Exp. Share', icon:'📿', tier:4, cost:5, rarity:'rare',
                   text:'Everyone in your party gets EXP as if they had just won a fight. (Not the PC, and not pokémon you buy later.)',
                   apply:(u,G)=>G.shareExp() },
   thunderstone: { name:'Thunder Stone', icon:'⚡', tier:3, cost:4, rarity:'common', text:'Evolves Pikachu, or Eevee into Jolteon.',
@@ -5841,21 +5841,21 @@ const HELD_ITEMS = {
             pct:{ hp:0.50 }, when:u => canStillEvolve(u.id),
             offText:'No effect — this one has nowhere left to evolve.' },
   coat:   { name:'Assault Vest', icon:'🦺', tier:4, cost:5, kind:'stat', rarity:'uncommon',   // 4.0.0 (Sean): was Metal Coat, which is now Gen 2's evolution item; same effect, same id so saves keep it
-            text:'Takes 15% less damage from every hit.', cutPct:0.15 },
+            text:'Takes 20% less damage from every hit.', cutPct:0.20 },
   char:   { name:'Expert Belt',  icon:'🎗️', tier:4, cost:5, kind:'stat', rarity:'uncommon',
-            text:'+20% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.20 }, unresist:true },   // 4.8.0: was the unresist alone
+            text:'+28% Attack, and its hits are never resisted: a “not very effective” hit deals full damage instead.', pct:{ atk:0.28 }, unresist:true },   // 4.8.0: was the unresist alone
   lefto:  { name:'Leftovers',    icon:'🍎', tier:3, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Heals 22% of its max HP on a steady beat, all fight long.', endRoundPct:0.22 },   // 4.8.0: was 12%
   sitrus: { name:'Sitrus Berry', icon:'🍒', tier:2, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, when it drops below half HP, heals 35% of its max HP.', berry:0.35 },
-  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'rare',
+  focus:  { name:'Focus Band',   icon:'🥋', tier:4, cost:5, kind:'trigger', rarity:'uncommon',
             text:'Once per battle, a hit that would knock it out leaves it on 1 HP instead.', endure:true },
   egg:    { name:'Lucky Egg',    icon:'🥚', tier:3, cost:5, kind:'economy', rarity:'rare',
             text:`After every fight it gets bonus EXP, as if it had fought twice — up to ${TUNING.eggCap} times per pokémon.`, expTick:1,
             when:u => (u.eggTicks || 0) < TUNING.eggCap,
             offText:`Fully trained — this pokémon has had all ${TUNING.eggCap} bonus rounds. Pass the egg on.` },
   coin:   { name:'Amulet Coin',  icon:'🪙', tier:2, cost:5, kind:'economy', rarity:'uncommon',
-            text:'+2₽ at the start of each turn.', income:2 },
+            text:'+1₽ at the start of each turn.', income:1 },
   /* v53 — two items for the two ends of a formation. `boss:'none'` keeps them
      off gym leaders, whose difficulty was measured with the older list. */
   bell:   { name:'Shell Bell',   icon:'🐚', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none',
@@ -5869,13 +5869,13 @@ const HELD_ITEMS = {
             text:'+25% HP and 8% less damage from every hit. Tanks only.', pct:{ hp:0.25 }, cutPct:0.08,
             when:u => roleOf(u) === 'tank', offText:'No effect — only a Tank can use this.' },
   gi:     { name:'Black Belt',   icon:'🥋', tier:3, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'bruiser',
-            text:'+14% HP and +14% Attack. Bruisers only.', pct:{ hp:0.14, atk:0.14 },
+            text:'+22% HP and +22% Attack. Bruisers only.', pct:{ hp:0.22, atk:0.22 },
             when:u => roleOf(u) === 'bruiser', offText:'No effect — only a Bruiser can use this.' },
   sbell:  { name:'Soothe Bell',  icon:'🔔', tier:3, cost:5, kind:'trigger', rarity:'rare', boss:'none', role:'support',
-            text:'Its heals are 50% bigger (including Aftercare), and +15% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.15 },
+            text:'Its heals are 50% bigger (including Aftercare), and +12% Speed. Supports only.', healBoost:0.5, pct:{ spd:0.12 },
             when:u => roleOf(u) === 'support', offText:'No effect — only a Support can use this.' },
   scope:  { name:'Scope Lens',   icon:'🔭', tier:4, cost:5, kind:'stat', rarity:'rare', boss:'none', role:'cannon',
-            text:'+28% Attack, but −8% HP. Cannons only.', pct:{ atk:0.28, hp:-0.08 },
+            text:'+70% Attack, but −8% HP. Cannons only.', pct:{ atk:0.70, hp:-0.08 },
             when:u => roleOf(u) === 'cannon', offText:'No effect — only a Cannon can use this.' },
   /* v51 — the trade-off items (Very rare). Each is a big number with a real
      cost attached, so where you put it is a decision. Two are Sean's (Iron
@@ -5885,15 +5885,15 @@ const HELD_ITEMS = {
   /* v52 (Sean): like the real item, it locks the holder into one move — the
      second move never fires — instead of costing Speed. */
   choice: { name:'Choice Band',  icon:'🎀', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
-            text:'+30% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.30, hp:-0.05 }, lockMain:true },
+            text:'+45% Attack, but −5% HP, and it only ever uses its main move — its second move never fires.', pct:{ atk:0.45, hp:-0.05 }, lockMain:true },
   orb:    { name:'Life Orb',     icon:'🔮', tier:4, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
-            text:'Its attacks deal 50% more damage, but each attack that lands costs it 6% of its max HP.',
-            dmgBoost:0.50, orbCost:0.06 },
+            text:'Its attacks deal 75% more damage, but each attack that lands costs it 6% of its max HP.',
+            dmgBoost:0.75, orbCost:0.06 },
   iron:   { name:'Iron Ball',    icon:'⚫', tier:4, cost:6, kind:'stat', rarity:'veryrare', boss:'elite',
             text:'Takes 35% less damage from every hit, but nothing can heal it for the whole battle — not even its own moves. (Resting in the PC still works.)',
             cutPct:0.35, noHeal:true },
   scale:  { name:'Heart Scale',  icon:'💗', tier:3, cost:6, kind:'trigger', rarity:'veryrare', boss:'elite',
-            text:'Every heal it gives is doubled (its healing moves, and a Support’s Aftercare), but −15% Attack.', healBoost:1.0, pct:{ atk:-0.15 } },
+            text:'Every heal it gives is 130% bigger (its healing moves, and a Support’s Aftercare), but −10% Attack.', healBoost:1.3, pct:{ atk:-0.10 } },
 };
 
 const heldOf = u => (u && u.held && HELD_ITEMS[u.held]) || null;
@@ -8483,7 +8483,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.9.0', date:'Oct 11, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.12.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -12859,6 +12859,23 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.12.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Amulet Coin halved, Lucky Egg stronger, Exp. Share cheaper', items:[
+    'The money and EXP items were measured with full bot runs. Amulet Coin (+2\u20bd a turn) was worth about 9.5 points of clear rate, the strongest item in the game, so it now gives +1\u20bd a turn (about 6 points, in line with the role items).',
+    'Lucky Egg was worth about 5 points for a Rare item, so each pok\u00e9mon can now take 12 bonus rounds instead of 10 (about 6.5 points).',
+    'Exp. Share was worth about 2.5 points for 6\u20bd, so it now costs 5\u20bd. (Two rounds of EXP per use was tried and made Red far too easy, because the bot stacks many of them, so it stays at one round.)',
+    'Checked and left alone: Rare Candy (about +3 for 4\u20bd), Training Manual (+4 to +6), the plain vitamins and the role vitamins. The vitamins are weak one at a time, but raising them lifted the bot\u2019s clear rate by 6\u20139 points, so they stay as they are. Overall clear rate is unchanged.',
+  ] },
+  { v:'6.11.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Every held item re-measured: Scope Lens, Black Belt and two Uncommon items buffed, Soothe Bell trimmed', items:[
+    'Each held item was measured on all four roles. Scope Lens (+28% Attack) added under 2 points of win rate on a Cannon and Black Belt about 4, against 6\u20138 for the other role items, so: Scope Lens +28% \u2192 +70% Attack (still \u22128% HP); Black Belt +14% \u2192 +22% HP and Attack; Soothe Bell +15% \u2192 +12% Speed (it was the strongest item in the game on a Support).',
+    'Assault Vest takes 20% less damage instead of 15%, and Expert Belt gives +28% Attack instead of +20%. Both were adding about 3 points, the weakest of the Uncommon items.',
+    'Focus Band was only adding about 3 points, too little for a Rare item, so it goes back to Uncommon.',
+    'Each role item now adds roughly 6 points of win rate on its own role. Elite Four and Champion pok\u00e9mon are unaffected by the role items (they never hold them), but they can hold Assault Vest and Expert Belt, so those fights were re-measured.',
+  ] },
+  { v:'6.10.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Choice Band, Life Orb and Heart Scale got stronger, to keep up with the role items', items:[
+    'Measured on their best-fit holder, the Very Rare items trailed the role items (Bulk Plate and Soothe Bell add about 6\u20137 points of win rate; Choice Band and Life Orb added 2\u20134, and Heart Scale only helped Supports). Iron Ball was already on par and is unchanged.',
+    'Choice Band: +30% Attack \u2192 +45% Attack (still \u22125% HP and main move only). Life Orb: 50% \u2192 75% more damage (still 6% HP per hit). Heart Scale: heals doubled \u2192 130% bigger, and the Attack penalty \u221215% \u2192 \u221210%.',
+    'Each now adds roughly 6 points of win rate on its best holder. Elite Four and Champion pok\u00e9mon can hold them too, so those fights were re-measured.',
+  ] },
   { v:'6.9.0', date:'Oct 11, 2026', title:'Balance patch', sub:'The four role-specific held items are now Rare', items:[
     'Bulk Plate, Black Belt, Soothe Bell and Scope Lens are now Rare instead of Uncommon, so each turns up in a shelf slot 25% as often as a Common item instead of 60%. The Pok\u00e9dex shows the new chance.',
   ] },
