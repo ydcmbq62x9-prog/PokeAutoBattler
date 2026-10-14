@@ -21,14 +21,23 @@ const cardOf = (s, extra) => { const u = thawUnit(s); u.uid = 'd' + s.bid;
    Two phones swap one connection code each, once. After that the phones talk directly: teams are
    exchanged on lock-in (a fingerprint first, the team only once both are locked), then both press
    Fight and a 3-2-1 starts the same battle on both screens. If the link drops, swapping codes by hand still works. */
-const LIVE = { pc:null, dc:null, step:'idle', err:'', out:'', peer:{}, mine:{}, hook:null, go:null, starting:false };
+const LIVE = { pc:null, dc:null, tr:null, cleanup:null, room:undefined, code:'', step:'idle', err:'', out:'', peer:{}, mine:{}, hook:null, go:null, starting:false };
 const livePaint = () => { try{ if(LIVE.hook) LIVE.hook(); }catch(e){} };
-const liveOn = () => LIVE.step === 'on' && !!LIVE.dc && LIVE.dc.readyState === 'open';
-const liveSend = o => { try{ if(liveOn()) LIVE.dc.send(JSON.stringify(o)); }catch(e){} };
+const liveOn = () => LIVE.step === 'on' && !!LIVE.tr && LIVE.tr.ok();
+const liveSend = o => { try{ if(liveOn()) LIVE.tr.send(JSON.stringify(o)); }catch(e){} };
+/** Can this window make a direct (WebRTC) link? The preview page on claude.ai blocks it, so test by really trying. */
+let _rtc;
+const liveRtcOk = () => { if(_rtc === undefined){ try{ const t = new RTCPeerConnection(); t.close(); _rtc = true; }catch(e){ _rtc = false; } } return _rtc; };
+/** Fallback inside the preview page: the page's own live room (needs the viewer signed in with access to the page). */
+async function liveProbe(){
+  if(LIVE.room !== undefined) return; LIVE.room = null;
+  try{ if(window.claude && typeof claude.use === 'function') LIVE.room = (await claude.use('room')) || null; }catch(e){}
+  livePaint();
+}
 const liveCommit = code => hash32(code).toString(36) + '.' + hash32('live|' + code).toString(36);
 function liveReset(keepErr){
-  const pc = LIVE.pc, dc = LIVE.dc; LIVE.pc = LIVE.dc = null;
-  try{ dc && dc.close(); }catch(e){} try{ pc && pc.close(); }catch(e){}
+  const pc = LIVE.pc, dc = LIVE.dc, cl = LIVE.cleanup; LIVE.pc = LIVE.dc = LIVE.tr = LIVE.cleanup = null; LIVE.code = '';
+  try{ cl && cl(); }catch(e){} try{ dc && dc.close(); }catch(e){} try{ pc && pc.close(); }catch(e){}
   LIVE.step = 'idle'; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; LIVE.starting = false; if(!keepErr) LIVE.err = '';
 }
 async function livePack(desc){
@@ -58,7 +67,7 @@ function liveNewPc(){
   return pc;
 }
 function liveAttach(dc){
-  LIVE.dc = dc;
+  LIVE.dc = dc; LIVE.tr = { send:s => dc.send(s), ok:() => dc.readyState === 'open', close:() => dc.close() };
   dc.onopen = () => { if(LIVE.dc !== dc) return; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); };
   dc.onclose = () => { if(LIVE.dc !== dc) return; const was = LIVE.step === 'on'; liveReset(true); if(was) LIVE.err = 'The live link dropped. Swap codes by hand, or connect again.'; livePaint(); };
   dc.onmessage = e => liveMsg(e.data);
@@ -82,10 +91,38 @@ function liveMsg(raw){
   else if(m.t === 'unready'){ LIVE.peer.ready = false; }
   livePaint();
 }
+async function liveRoom(code){
+  const room = LIVE.room; if(!room) throw new Error('Live rooms are not available in this window.');
+  liveReset(); LIVE.step = 'rwait'; LIVE.code = code; livePaint();
+  const nr = await room.join('pkd-' + code), me = Math.random().toString(36).slice(2, 10);
+  let peer = null, seen = 0, iv = 0, unsub = () => {};
+  const emit = d => { try{ nr.emit('m', Object.assign({ id:me }, d)).catch(() => {}); }catch(e){} };
+  const tr = { send:s => emit({ to:peer, m:s }), ok:() => !!peer, close:() => cleanup() };
+  const cleanup = () => { clearInterval(iv); try{ unsub(); }catch(e){} try{ nr.leave().catch(() => {}); }catch(e){} };
+  LIVE.cleanup = cleanup;
+  const pair = id => { peer = id; seen = Date.now(); LIVE.tr = tr; LIVE.step = 'on'; LIVE.err = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); };
+  unsub = nr.on('m', msg => {
+    const d = msg && msg.data; if(!d || msg.isMe || typeof d.id !== 'string') return;
+    if(d.hi){        // the first one to say hello is the only one ever heard; replies are addressed so a stranger can't pick them up
+      if(d.id === peer){ seen = Date.now(); if(d.needy) emit({ hi:1, to:peer }); return; }
+      if(!peer && (d.needy || d.to === me)){ pair(d.id); if(d.needy) emit({ hi:1, to:d.id }); }
+      return; }
+    if(d.id !== peer || d.to !== me) return; seen = Date.now();
+    if(d.hb) return; if(typeof d.m === 'string') liveMsg(d.m);
+  });
+  iv = setInterval(() => {
+    if(!peer) emit({ hi:1, needy:1 });
+    else { emit({ hb:1, to:peer }); if(Date.now() - seen > 12000){ liveReset(true); LIVE.err = 'Your friend left the room. Swap codes by hand, or connect again.'; livePaint(); } }
+  }, 1500);
+  emit({ hi:1, needy:1 });
+}
 async function liveAct(a, body){
   const val = id => ((body.querySelector(id) || {}).value || '');
   try{
-    if(a === 'host'){
+    if(a === 'rhost'){ await liveRoom(Math.random().toString(36).slice(2, 8).padEnd(6, 'x')); }
+    else if(a === 'rjoin'){ liveReset(); LIVE.step = 'rjoinin'; }
+    else if(a === 'rgo'){ const c = val('#lk_in').trim().toLowerCase(); if(!/^[a-z0-9]{4,12}$/.test(c)) throw new Error('That is not a room code.'); await liveRoom(c); }
+    else if(a === 'host'){
       liveReset(); LIVE.step = 'making'; livePaint();
       const pc = liveNewPc(); LIVE.pc = pc; liveAttach(pc.createDataChannel('duel'));
       await pc.setLocalDescription(await pc.createOffer()); await liveWaitIce(pc);
@@ -107,7 +144,7 @@ async function liveAct(a, body){
     else if(a === 'copy'){ const t = body.querySelector('#lk_out'); if(t){ t.select(); try{ navigator.clipboard.writeText(t.value); }catch(e){ try{ document.execCommand('copy'); }catch(_){} } } return; }
   }catch(e){
     LIVE.err = (e && e.message) || 'Could not connect.';
-    if(LIVE.step === 'making') liveReset(true);
+    if(LIVE.step === 'making' || LIVE.step === 'rwait') liveReset(true);
   }
   livePaint();
 }
@@ -126,6 +163,13 @@ function liveCardHtml(){
   else if(L.step === 'reply') h = `<b>Live link: you join</b><p>Send this reply code back to the host. It connects by itself.</p>${ta('lk_out', L.out, 1)}
     <div class="btnrow tight"><button class="btn small" data-l="copy">Copy</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
   else if(L.step === 'connecting') h = '<b>Live link</b> · connecting…';
+  else if(L.step === 'rwait') h = `<b>Live room</b><p>Tell your friend this room code. The link starts by itself when they join.</p><div class="dcode">${esc(L.code)}</div>
+    <div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
+  else if(L.step === 'rjoinin') h = `<b>Live room: join</b><p>Type the room code your friend sees.</p><input id="lk_in" type="text" autocapitalize="off" autocomplete="off" maxlength="12" placeholder="room code">
+    <div class="btnrow tight"><button class="btn small primary" data-l="rgo">Join</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
+  else if(!liveRtcOk()) h = L.room ? `<b>Live room</b> <span class="dim">(optional)</span><p class="dim">This window can’t link phones directly, but you can use a shared room: it needs your friend to have this same page open and signed in with access to it.</p>
+    <div class="btnrow tight"><button class="btn small" data-l="rhost">Create a room</button><button class="btn small" data-l="rjoin">Join a room</button></div>`
+    : `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Swap codes by hand below, or open the installed app for live fights.</p>`;
   else h = `<b>Live link</b> <span class="dim">(optional)</span><p class="dim">Connect once and you both watch each fight live, with no codes to paste each game.</p>
     <div class="btnrow tight"><button class="btn small" data-l="host">I’ll host</button><button class="btn small" data-l="join">I’m joining</button></div>`;
   return `<div class="dlive">${err}${h}</div>`;
@@ -219,7 +263,7 @@ function openDuelSet(){
     d.remove(); playDuelBattle(out, set); return '';
   };
   LIVE.hook = () => { if(!d.isConnected){ LIVE.hook = LIVE.go = null; } else if(!LIVE.starting) paint(); };
-  paint(); liveSync();
+  paint(); liveSync(); liveProbe();
   d.addEventListener('click', ev => {
     const b = ev.target.closest('[data-m],[data-l],[data-pick],[data-up],[data-down],[data-drop]'); if(!b) return;
     if(b.dataset.l){ liveAct(b.dataset.l, body); return; }

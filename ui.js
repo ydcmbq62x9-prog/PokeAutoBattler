@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.14.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.14.1', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4393,6 +4393,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.14.1', date:'Oct 13, 2026', title:'Visual bug fixes', sub:'Live link no longer errors on the preview page', items:[
+    'Direct phone links are blocked on the claude.ai preview page, so the live link now says so instead of failing.',
+    'On that page you can use a shared live room instead: one player creates a room code, the other joins it.',
+    'Installed app and normal browsers still use the direct link.',
+  ] },
   { v:'6.14.0', date:'Oct 13, 2026', title:'Minor gameplay changes', sub:'Duels can be watched live by both players', items:[
     'Connect two phones once with a pair of link codes, no server needed.',
     'Teams swap on their own once both are locked in, and stay hidden until then.',
