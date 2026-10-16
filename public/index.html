@@ -3307,7 +3307,7 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 @media (max-height:700px){html.bc .tmi{padding:5px 14px!important}.tmi small{font-size:11px}}
 .dlive{margin:8px 0;padding:8px 10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;font-size:13px}.dlive p{margin:6px 0}.dlive textarea{width:100%}.dcode{font-size:30px;font-weight:800;letter-spacing:.2em;text-align:center;padding:6px 0;user-select:all}.dlive input{width:100%;box-sizing:border-box;font-size:16px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:inherit}.dcount{text-align:center;font-size:72px;font-weight:800;padding:48px 0 8px}
 .dstat{margin:8px 0;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px}
-.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin:10px 0}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:6px;margin:10px 0}
 .dgrid.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
 .dcard{position:relative;padding:6px 4px;text-align:center;cursor:default}
 .dcard[data-pick],.dcard[data-act]{cursor:pointer}
@@ -3338,6 +3338,11 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .modal.duel h3{margin-bottom:2px}
 .dsub{font-size:13px;margin-bottom:8px}
 .dgrid .slot,.dteam .slot{max-width:none;min-height:0}
+.dgrid .slot{justify-content:flex-start;gap:4px}.dgrid .slot .unit{height:auto;flex:0 0 auto}
+.dgrid .slot > .btn{margin-top:auto;width:100%}
+.modal .btnrow.dhub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dhub .btn{white-space:nowrap}
+@media (min-width:560px){ .modal .btnrow.dhub{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.modal .btnrow.ddev{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ddev select{grid-column:1/-1;font-size:13px;padding:6px;border-radius:8px}
 .dteam{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
 .drank{display:flex;flex-direction:column;gap:6px;min-width:0}
 .drank > .dpos{text-align:center;font-weight:700;opacity:.8;margin:0}
@@ -3348,6 +3353,16 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .dslot > .dcard-item,.dslot > select{margin-top:auto}
 .dslot.empty{justify-content:center;--pb:34px}
 .dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
+/* 6.18.0: box filter (role buttons, type, sort) */
+.dfilter{display:flex;flex-direction:column;gap:6px;margin:6px 0 2px}
+.dfroles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.dfroles .btn.small{padding:5px 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:440px){ .dfroles .dfname{display:none} .dfroles .btn.small{font-size:15px;padding:3px 0} }
+.dfroles .btn.small.on{background:var(--gold);color:#10131a;border-color:var(--gold)}
+.dfsel{display:flex;gap:6px}
+.dfsel select{flex:1 1 0;min-width:0;font-size:13px;padding:5px 6px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,0,0,.25);color:inherit}
+.dfcount{font-size:12px}
+.linkish{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer}
 /* the message and Lock button ride at the bottom of the window, so their changing size never moves the box */
 .dfoot{position:sticky;bottom:-13px;margin:8px -13px -13px;padding:8px 13px 10px;background:var(--panel);border-top:1px solid var(--line2);z-index:2}
 html.bc .dfoot{background:#0e1426;box-shadow:0 -8px 16px rgba(0,0,0,.4)}
@@ -8681,7 +8696,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.17.1', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.18.0', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -13057,6 +13072,13 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.18.0', date:'Oct 16, 2026', title:'Minor gameplay changes', sub:'Duels: filter and sort your box, plus a tidy-up', items:[
+    'Filter your duel box by role (Tank, Bruiser, Cannon, Support) or type, and sort it by power, Attack, HP, Speed, name or newest. Works in the team picker and in My box.',
+    'My box: the Release button no longer overlaps the card.',
+    'Duels menu buttons sit in a neat grid instead of squashing their words.',
+    'The live link box is now called Play a friend, since it is how every fight starts.',
+    'A finished set shows its final score.',
+  ] },
   { v:'6.17.1', date:'Oct 16, 2026', title:'Visual bug fixes', sub:'Duels team picker: the box no longer jumps', items:[
     'Picking a pok\u00e9mon from your duel box no longer moves the box under your finger.',
     'Your team shows as six fixed places (Front, Middle, Back) with smaller move and remove buttons.',
@@ -15058,7 +15080,7 @@ function liveCardHtml(){
     <div class="btnrow tight"><button class="btn small primary" data-l="go">Join</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
   else if(L.step === 'connecting') h = `<b>Live link</b> · connecting to ${esc(L.code)}…<div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
   else if(!liveRtcOk() && !L.room && !liveRelayUrl()) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Open the game in your browser or the installed app to play a friend.</p>`;
-  else h = `<b>Live link</b> <span class="dim">(optional)</span><p class="dim">One of you hosts and gets a 4-letter code, the other types it. Then you both watch each fight live.</p>
+  else h = `<b>Play a friend</b><p class="dim">One of you hosts and gets a 4-letter code, the other types it. Then you both watch each fight live.</p>
     <div class="btnrow tight"><button class="btn small" data-l="host">Host</button><button class="btn small" data-l="join">Join</button></div>`;
   return `<div class="dlive">${err}${h}</div>`;
 }
@@ -15072,12 +15094,12 @@ function openDuels(){
     <div class="dstat"><b>${box.length} / ${DUEL.boxSize}</b> in your box${box.length ? '' : ' — finish a run and save a pokémon to start'}</div>
     ${set ? `<div class="dstat">${set.over ? `Set against <b>${esc(set.opp || 'a friend')}</b> finished: ${set.over === 'win' ? 'you won' : set.over === 'lose' ? 'you lost' : 'a draw'} ${w.me}–${w.opp}.`
       : `A set${set.opp ? ' against <b>' + esc(set.opp) + '</b>' : ''} is in progress · game ${set.game} of ${DUEL.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}.`}</div>` : ''}
-    <div class="btnrow">
+    <div class="btnrow dhub">
       <button class="btn primary" data-m="set" ${box.length ? '' : 'disabled'}>${set ? (set.over ? 'See the result' : 'Resume the set') : 'Start a set'}</button>
       <button class="btn" data-m="box">My box</button>
       <button class="btn" data-m="how">How it works</button>
       <button class="btn ghost" data-m="close">Close</button></div>
-    ${duelDev() ? `<hr><div class="dim">Developer tools</div><div class="btnrow">
+    ${duelDev() ? `<hr><div class="dim">Developer tools</div><div class="btnrow ddev">
       <select id="devsp">${Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && SPRITES[k] && evoLine(k)[evoLine(k).length - 1] === k).sort().map(k => `<option value="${k}">${esc(SPECIES[k].name)}</option>`).join('')}</select>
       <button class="btn" data-m="devadd">Add maxed</button><button class="btn" data-m="devfill">Fill the box</button>
       <button class="btn ghost" data-m="devclear">Clear box + set</button></div>` : ''}`);
@@ -15110,19 +15132,53 @@ function openDuelHow(){
   d.addEventListener('click', ev => { if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); } });
 }
 
+/* ---------------- 6.18.0: box filter and sort ----------------
+   One setting for the team picker and My box; it stays while the game is open. */
+const BOXF = { role:'', type:'', by:'power' };
+const BOX_SORTS = { power:'Power', atk:'Attack', hp:'HP', spd:'Speed', name:'Name', new:'Newest' };
+const snapType = s => (SPECIES[s.id] || {}).type || '';
+function boxSorted(list){
+  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -unitPower(u) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
+  return list.filter(s => (!BOXF.role || roleOf(s.id) === BOXF.role) && (!BOXF.type || snapType(s) === BOXF.type))
+    .map(s => ({ s, k:key(s), n:(SPECIES[s.id] || {}).name || '' })).sort((a, b) => a.k - b.k || a.n.localeCompare(b.n)).map(x => x.s);
+}
+function boxFilterHtml(all, shown){
+  const types = [...new Set(all.map(snapType).filter(Boolean))].sort();
+  if(BOXF.type && !types.includes(BOXF.type)) BOXF.type = '';
+  const on = BOXF.role || BOXF.type;
+  return `<div class="dfilter" role="group" aria-label="Filter the box">
+    <div class="dfroles">${[['', 'All'], ...Object.keys(ROLES).map(r => [r, `${ROLES[r].icon}<span class="dfname"> ${ROLES[r].name}</span>`])].map(([r, l]) => `<button class="btn small ${BOXF.role === r ? 'on' : 'ghost'}" data-frole="${r}" aria-pressed="${BOXF.role === r}" ${r ? `aria-label="${ROLES[r].name}" title="${ROLES[r].name}"` : ''}>${l}</button>`).join('')}</div>
+    <div class="dfsel"><select data-ftype aria-label="Type"><option value="">All types</option>${types.map(t => `<option value="${t}" ${BOXF.type === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <select data-fsort aria-label="Sort by">${Object.keys(BOX_SORTS).map(k => `<option value="${k}" ${BOXF.by === k ? 'selected' : ''}>Sort: ${BOX_SORTS[k]}</option>`).join('')}</select></div>
+    <div class="dfcount dim">${on ? `Showing ${shown} of ${all.length}${shown ? '' : ' · <button class="linkish" data-fclear>Clear filter</button>'}` : `${all.length} pokémon`}</div></div>`;
+}
+/** Filter taps and choices for a window that shows the box; `redraw` paints it again. Returns true if it handled the event. */
+function boxFilterAct(ev, redraw){
+  const f = ev.target.closest('[data-frole],[data-fclear]');
+  if(f && ev.type === 'click'){ if(f.dataset.fclear != null){ BOXF.role = BOXF.type = ''; } else BOXF.role = f.dataset.frole; redraw(); return true; }
+  const sel = ev.type === 'change' && ev.target.closest('[data-ftype],[data-fsort]');
+  if(sel){ if(sel.dataset.ftype != null) BOXF.type = sel.value; else BOXF.by = sel.value; redraw(); return true; }
+  return false;
+}
+
 /* ---------------- the box ---------------- */
 function openDuelBox(){
-  const box = duelBox();
+  const box = duelBox(), shown = boxSorted(box);
   const d = modal(`<h3>My box <span class="dim">${box.length} / ${DUEL.boxSize}</span></h3>
     <p class="dim">Frozen: nothing here grows or evolves. Tap Release to make room.</p>
-    <div class="dgrid">${box.map(s => cardOf(s, { foot:`<button class="btn small ghost" data-rel="${s.bid}">Release</button>` })).join('') || '<p class="dim">Empty. Finish a run and save a pokémon to fill it.</p>'}</div>
+    ${box.length ? boxFilterHtml(box, shown.length) : ''}
+    <div class="dgrid">${shown.map(s => cardOf(s, { foot:`<button class="btn small ghost" data-rel="${s.bid}">Release</button>` })).join('') || (box.length ? '' : '<p class="dim">Empty. Finish a run and save a pokémon to fill it.</p>')}</div>
     <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`); d.classList.add('duel');
+  const again = () => { const y = d.querySelector('.boxscroll').scrollTop; d.remove(); const n = openDuelBox(); n.querySelector('.boxscroll').scrollTop = y; };
+  d.addEventListener('change', ev => { boxFilterAct(ev, again); });
   d.addEventListener('click', ev => {
+    if(boxFilterAct(ev, again)) return;
     const r = ev.target.closest('[data-rel]');
     if(r){ if(r.dataset.sure !== '1'){ r.dataset.sure = '1'; r.textContent = 'Really release?'; return; }
-      saveDuelBox(duelBox().filter(s => s.bid !== r.dataset.rel)); d.remove(); openDuelBox(); return; }
+      saveDuelBox(duelBox().filter(s => s.bid !== r.dataset.rel)); again(); return; }
     if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); }
   });
+  return d;
 }
 
 /* ---------------- a set ---------------- */
@@ -15155,6 +15211,7 @@ function openDuelSet(){
   LIVE.hook = () => { if(!d.isConnected){ LIVE.hook = LIVE.go = null; } else if(!LIVE.starting) paint(); };
   paint(); liveSync(); liveProbe();
   d.addEventListener('click', ev => {
+    if(boxFilterAct(ev, paint)) return;
     const b = ev.target.closest('[data-m],[data-l],[data-pick],[data-up],[data-down],[data-drop]'); if(!b) return;
     if(b.dataset.l){ liveAct(b.dataset.l, body); return; }
     set = getDuelSet(); const box = duelBox();
@@ -15190,6 +15247,7 @@ function openDuelSet(){
     }
   });
   d.addEventListener('change', ev => {
+    if(boxFilterAct(ev, paint)) return;
     const sel = ev.target.closest('[data-item]'); if(!sel || !duelDraft) return;
     duelDraft.picks[+sel.dataset.item].item = sel.value || null; paint();
   });
@@ -15199,7 +15257,7 @@ const toastDuel = (body, msg) => { let t = body.querySelector('.dmsg'); if(!t){ 
 
 function setHtml(set){
   const box = duelBox(), D = DUEL, w = duelWins(set);
-  const head = `<h3>Set vs ${esc(set.opp || 'a friend')}</h3><div class="dsub dim">Game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}</div>`;
+  const head = `<h3>Set vs ${esc(set.opp || 'a friend')}</h3><div class="dsub dim">${set.over ? `Final score ${w.me}–${w.opp}` : `Game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}`}</div>`;
   const hist = set.games.length ? `<div class="dhist">${set.games.map((g, i) => `<span class="dres ${g.result}">Game ${i + 1}: ${g.result === 'win' ? 'won' : g.result === 'lose' ? 'lost' : 'drawn'}</span>`).join('')}</div>` : '';
   if(set.over){
     return `${head}${hist}<div class="dverdict ${set.over}">${set.over === 'win' ? 'You won the set!' : set.over === 'lose' ? 'You lost the set.' : 'The set is a draw.'} <span class="dim">${w.me}–${w.opp}</span></div>
@@ -15222,17 +15280,18 @@ function setHtml(set){
   const el = duelEligible(set, box), units = dr.picks.map((p, i) => { const s = box.find(x => x.bid === p.bid); return s ? thawUnit(s, i, p.item) : null; }).filter(Boolean);
   const power = Math.round(duelPower(units)), over = power > set.budget;
   const picksForCheck = dr.picks.map((p, i) => ({ bid:p.bid, item:p.item, pos:i }));
-  const why = dr.picks.length ? duelCheckPicks(set, box, picksForCheck) : 'Pick your team from the box below.';
+  const why = dr.picks.length ? duelCheckPicks(set, box, picksForCheck) : 'Tap pokémon in your box to pick your team.';
   const left = pool.slice(); dr.picks.forEach(p => { const i = left.indexOf(p.item); if(p.item && i >= 0) left.splice(i, 1); });
-  const rw = TUNING.rankWidth;
+  const rw = TUNING.rankWidth, ready = boxSorted(el.ready), resting = boxSorted(el.resting);
   return `${head}${hist}${live}
     <div class="dmeter"><i style="width:${Math.min(100, power / set.budget * 100)}%" class="${over ? 'over' : ''}"></i><span>Power ${power} / ${set.budget}</span></div>
     <div class="dteam">${['Front', 'Middle', 'Back'].slice(0, Math.ceil(DUEL.bring / rw)).map((rank, r) => `<div class="drank"><div class="dpos">${rank}</div>
       ${Array.from({ length:rw }, (_, k) => teamSlot(set, box, dr, pool, r * rw + k)).join('')}</div>`).join('')}</div>
     ${set.pool ? `<p class="dim">Items you can still hand out: ${left.length ? left.map(id => esc(itemName(id))).join(', ') : 'none (all in use)'}. A pokémon brought in from the box arrives without its saved item.</p>` : '<p class="dim">Game 1: every pokémon holds the item it was saved with. Those items become your pool for the set.</p>'}
     <h4>Your box</h4><p class="dim">Tap to add or remove.${el.resting.length ? ' Pokémon that fainted last game are resting.' : ''}</p>
-    <div class="dgrid">${el.ready.map(s => cardOf(s, { cls: dr.picks.some(p => p.bid === s.bid) ? 'sel' : '', attr:`data-pick="${s.bid}" role="button"` })).join('')}
-      ${el.resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>
+    ${boxFilterHtml(el.ready.concat(el.resting), ready.length + resting.length)}
+    <div class="dgrid">${ready.map(s => cardOf(s, { cls: dr.picks.some(p => p.bid === s.bid) ? 'sel' : '', attr:`data-pick="${s.bid}" role="button"` })).join('')}
+      ${resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>
     <div class="dfoot"><div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
       <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div></div>`;
 }
