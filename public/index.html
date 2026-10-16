@@ -3332,6 +3332,31 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .dverdict.win{color:var(--hp)}.dverdict.lose{color:var(--bad)}
 .modal textarea{width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;border-radius:8px;padding:6px;background:rgba(0,0,0,.35);color:inherit;border:1px solid rgba(255,255,255,.2)}
 .dsave{margin:12px 0}
+/* 6.17.1: Duels picker. Wider window on big screens; cards fill their column; the team is six fixed places
+   (Front / Middle / Back) that keep their size, so the box below never moves while you pick. */
+.modal.duel .box{max-width:760px}
+.modal.duel h3{margin-bottom:2px}
+.dsub{font-size:13px;margin-bottom:8px}
+.dgrid .slot,.dteam .slot{max-width:none;min-height:0}
+.dteam{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.drank{display:flex;flex-direction:column;gap:6px;min-width:0}
+.drank > .dpos{text-align:center;font-weight:700;opacity:.8;margin:0}
+/* sized from the sprite (which follows the screen width) plus the name, stats, item line and buttons */
+.dslot{height:calc(clamp(30px,8.6vw,52px) * 1.1 + 125px);box-sizing:border-box;justify-content:flex-start;gap:3px;padding:5px 4px}
+.dslot .unit{height:auto;flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select,.dslot > .dctl{flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select{margin-top:auto}
+.dslot.empty{justify-content:center;--pb:34px}
+.dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
+/* the message and Lock button ride at the bottom of the window, so their changing size never moves the box */
+.dfoot{position:sticky;bottom:-13px;margin:8px -13px -13px;padding:8px 13px 10px;background:var(--panel);border-top:1px solid var(--line2);z-index:2}
+html.bc .dfoot{background:#0e1426;box-shadow:0 -8px 16px rgba(0,0,0,.4)}
+.dfoot .dmsg,.dfoot .dim{margin:0 0 6px;font-size:13px}.dfoot .btnrow{margin:0}
+@media (max-height:500px){ .dfoot{display:flex;gap:10px;align-items:center;padding-top:6px;padding-bottom:6px} .dfoot > div:first-child{flex:1;margin:0} .dfoot .btnrow{flex:0 0 auto;flex-wrap:nowrap} .dfoot .btn{white-space:nowrap} }
+.dctl{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.dctl .btn.small{padding:0;height:28px;font-size:14px;flex:1 1 0;min-width:0}
+.dctl .btn[disabled]{opacity:.35}
+@media (min-width:700px){ .dteam{grid-template-columns:repeat(3,minmax(0,1fr))} .drank{flex-direction:row;flex-wrap:wrap} .drank > .dpos{flex:1 0 100%} .drank > .slot{flex:1 1 0} }
 </style>
 </head>
 <body>
@@ -8656,7 +8681,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.17.0', date:'Oct 14, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.17.1', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -13032,6 +13057,12 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.17.1', date:'Oct 16, 2026', title:'Visual bug fixes', sub:'Duels team picker: the box no longer jumps', items:[
+    'Picking a pok\u00e9mon from your duel box no longer moves the box under your finger.',
+    'Your team shows as six fixed places (Front, Middle, Back) with smaller move and remove buttons.',
+    'The message and Lock in button stay at the bottom of the window, always in reach.',
+    'Box cards fill the width, and the Duels window is wider on a computer.',
+  ] },
   { v:'6.17.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels clean-up: live link only, and a finished duel no longer opens a run', items:[
     'A duel now goes back to where you started it: the title screen, or the run you had open. Before, finishing a duel from the title screen dropped you into a new run.',
     'Duels are played over the live link only: the long copy-and-paste codes are gone. Host gets a 4-letter code, your friend types it.',
@@ -15085,7 +15116,7 @@ function openDuelBox(){
   const d = modal(`<h3>My box <span class="dim">${box.length} / ${DUEL.boxSize}</span></h3>
     <p class="dim">Frozen: nothing here grows or evolves. Tap Release to make room.</p>
     <div class="dgrid">${box.map(s => cardOf(s, { foot:`<button class="btn small ghost" data-rel="${s.bid}">Release</button>` })).join('') || '<p class="dim">Empty. Finish a run and save a pokémon to fill it.</p>'}</div>
-    <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`);
+    <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`); d.classList.add('duel');
   d.addEventListener('click', ev => {
     const r = ev.target.closest('[data-rel]');
     if(r){ if(r.dataset.sure !== '1'){ r.dataset.sure = '1'; r.textContent = 'Really release?'; return; }
@@ -15099,13 +15130,15 @@ let duelDraft = null;     // { picks:[{bid,item}] } while choosing a team
 function openDuelSet(){
   let set = getDuelSet();
   if(!set){ set = newDuelSet(playerName(), GAME_VERSION.v); putDuelSet(set); }
-  const d = modal('', true);
+  const d = modal('', true); d.classList.add('duel');
   const body = d.querySelector('.boxscroll');
   const KEEP = ['#lk_in'];
   const paint = () => {
     const kept = KEEP.map(q => { const e = body.querySelector(q); return e ? e.value : null; });
+    const g0 = body.querySelector('.dgrid'), y0 = g0 && g0.getBoundingClientRect().top;
     set = getDuelSet(); body.innerHTML = setHtml(set);
     KEEP.forEach((q, i) => { const e = body.querySelector(q); if(e && kept[i] != null) e.value = kept[i]; });
+    const g1 = g0 && body.querySelector('.dgrid'); if(g1) body.scrollTop += g1.getBoundingClientRect().top - y0;   // 6.17.1: the box stays put
   };
   const close = () => { LIVE.hook = LIVE.go = null; if(LIVE.mine.ready){ LIVE.mine.ready = false; liveSend({ t:'unready' }); } d.remove(); duelDraft = null; };
   /* checks their code and, if it's a legal move, records the game and shows the battle. Returns an error message or ''. */
@@ -15166,7 +15199,7 @@ const toastDuel = (body, msg) => { let t = body.querySelector('.dmsg'); if(!t){ 
 
 function setHtml(set){
   const box = duelBox(), D = DUEL, w = duelWins(set);
-  const head = `<h3>Set vs ${esc(set.opp || 'a friend')} <span class="dim">game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}</span></h3>`;
+  const head = `<h3>Set vs ${esc(set.opp || 'a friend')}</h3><div class="dsub dim">Game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}</div>`;
   const hist = set.games.length ? `<div class="dhist">${set.games.map((g, i) => `<span class="dres ${g.result}">Game ${i + 1}: ${g.result === 'win' ? 'won' : g.result === 'lose' ? 'lost' : 'drawn'}</span>`).join('')}</div>` : '';
   if(set.over){
     return `${head}${hist}<div class="dverdict ${set.over}">${set.over === 'win' ? 'You won the set!' : set.over === 'lose' ? 'You lost the set.' : 'The set is a draw.'} <span class="dim">${w.me}–${w.opp}</span></div>
@@ -15194,16 +15227,23 @@ function setHtml(set){
   const rw = TUNING.rankWidth;
   return `${head}${hist}${live}
     <div class="dmeter"><i style="width:${Math.min(100, power / set.budget * 100)}%" class="${over ? 'over' : ''}"></i><span>Power ${power} / ${set.budget}</span></div>
-    <div class="dteam">${dr.picks.map((p, i) => { const s = box.find(x => x.bid === p.bid); if(!s) return '';
-      const pooled = set.pool ? `<select data-item="${i}"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>` : (s.held ? `<div class="dcard-item">🎒 ${esc(itemName(s.held))}</div>` : '<div class="dcard-item dim">no item</div>');
-      return cardOf(s, { cls:'picked', noitem:true, foot:`<div class="dpos">${i < rw ? 'Front' : i < rw * 2 ? 'Middle' : 'Back'}</div>${pooled}
-        <div class="btnrow tight"><button class="btn small" data-up="${i}" aria-label="Move forward">◀</button><button class="btn small" data-down="${i}" aria-label="Move back">▶</button><button class="btn small ghost" data-drop="${i}">Remove</button></div>` }); }).join('')}</div>
+    <div class="dteam">${['Front', 'Middle', 'Back'].slice(0, Math.ceil(DUEL.bring / rw)).map((rank, r) => `<div class="drank"><div class="dpos">${rank}</div>
+      ${Array.from({ length:rw }, (_, k) => teamSlot(set, box, dr, pool, r * rw + k)).join('')}</div>`).join('')}</div>
     ${set.pool ? `<p class="dim">Items you can still hand out: ${left.length ? left.map(id => esc(itemName(id))).join(', ') : 'none (all in use)'}. A pokémon brought in from the box arrives without its saved item.</p>` : '<p class="dim">Game 1: every pokémon holds the item it was saved with. Those items become your pool for the set.</p>'}
-    <div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
-    <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div>
-    <h4>Your box</h4><p class="dim">Tap to add or remove. Pokémon that fainted last game are resting.</p>
+    <h4>Your box</h4><p class="dim">Tap to add or remove.${el.resting.length ? ' Pokémon that fainted last game are resting.' : ''}</p>
     <div class="dgrid">${el.ready.map(s => cardOf(s, { cls: dr.picks.some(p => p.bid === s.bid) ? 'sel' : '', attr:`data-pick="${s.bid}" role="button"` })).join('')}
-      ${el.resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>`;
+      ${el.resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>
+    <div class="dfoot"><div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
+      <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div></div>`;
+}
+
+/** 6.17.1: one of the six team places. Empty places keep their size, so the box below never moves while you pick. */
+function teamSlot(set, box, dr, pool, i){
+  const p = dr.picks[i], s = p && box.find(x => x.bid === p.bid);
+  if(!s) return `<div class="slot empty dslot"></div>`;
+  const pooled = set.pool ? `<select data-item="${i}" aria-label="Item"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>`
+    : `<div class="dcard-item ${s.held ? '' : 'dim'}">${s.held ? '🎒 ' + esc(itemName(s.held)) : 'no item'}</div>`;
+  return cardOf(s, { cls:'picked dslot', noitem:true, foot:`${pooled}<div class="dctl"><button class="btn small" data-up="${i}" aria-label="Move forward" ${i ? '' : 'disabled'}>◀</button><button class="btn small" data-down="${i}" aria-label="Move back" ${i < dr.picks.length - 1 ? '' : 'disabled'}>▶</button><button class="btn small ghost" data-drop="${i}" aria-label="Remove">✕</button></div>` });
 }
 
 /* ---------------- the battle ---------------- */
