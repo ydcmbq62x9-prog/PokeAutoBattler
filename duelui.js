@@ -295,7 +295,7 @@ function openDuelBox(){
   const d = modal(`<h3>My box <span class="dim">${box.length} / ${DUEL.boxSize}</span></h3>
     <p class="dim">Frozen: nothing here grows or evolves. Tap Release to make room.</p>
     <div class="dgrid">${box.map(s => cardOf(s, { foot:`<button class="btn small ghost" data-rel="${s.bid}">Release</button>` })).join('') || '<p class="dim">Empty. Finish a run and save a pokémon to fill it.</p>'}</div>
-    <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`);
+    <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`); d.classList.add('duel');
   d.addEventListener('click', ev => {
     const r = ev.target.closest('[data-rel]');
     if(r){ if(r.dataset.sure !== '1'){ r.dataset.sure = '1'; r.textContent = 'Really release?'; return; }
@@ -309,13 +309,15 @@ let duelDraft = null;     // { picks:[{bid,item}] } while choosing a team
 function openDuelSet(){
   let set = getDuelSet();
   if(!set){ set = newDuelSet(playerName(), GAME_VERSION.v); putDuelSet(set); }
-  const d = modal('', true);
+  const d = modal('', true); d.classList.add('duel');
   const body = d.querySelector('.boxscroll');
   const KEEP = ['#lk_in'];
   const paint = () => {
     const kept = KEEP.map(q => { const e = body.querySelector(q); return e ? e.value : null; });
+    const g0 = body.querySelector('.dgrid'), y0 = g0 && g0.getBoundingClientRect().top;
     set = getDuelSet(); body.innerHTML = setHtml(set);
     KEEP.forEach((q, i) => { const e = body.querySelector(q); if(e && kept[i] != null) e.value = kept[i]; });
+    const g1 = g0 && body.querySelector('.dgrid'); if(g1) body.scrollTop += g1.getBoundingClientRect().top - y0;   // 6.17.1: the box stays put
   };
   const close = () => { LIVE.hook = LIVE.go = null; if(LIVE.mine.ready){ LIVE.mine.ready = false; liveSend({ t:'unready' }); } d.remove(); duelDraft = null; };
   /* checks their code and, if it's a legal move, records the game and shows the battle. Returns an error message or ''. */
@@ -376,7 +378,7 @@ const toastDuel = (body, msg) => { let t = body.querySelector('.dmsg'); if(!t){ 
 
 function setHtml(set){
   const box = duelBox(), D = DUEL, w = duelWins(set);
-  const head = `<h3>Set vs ${esc(set.opp || 'a friend')} <span class="dim">game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}</span></h3>`;
+  const head = `<h3>Set vs ${esc(set.opp || 'a friend')}</h3><div class="dsub dim">Game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}</div>`;
   const hist = set.games.length ? `<div class="dhist">${set.games.map((g, i) => `<span class="dres ${g.result}">Game ${i + 1}: ${g.result === 'win' ? 'won' : g.result === 'lose' ? 'lost' : 'drawn'}</span>`).join('')}</div>` : '';
   if(set.over){
     return `${head}${hist}<div class="dverdict ${set.over}">${set.over === 'win' ? 'You won the set!' : set.over === 'lose' ? 'You lost the set.' : 'The set is a draw.'} <span class="dim">${w.me}–${w.opp}</span></div>
@@ -404,16 +406,23 @@ function setHtml(set){
   const rw = TUNING.rankWidth;
   return `${head}${hist}${live}
     <div class="dmeter"><i style="width:${Math.min(100, power / set.budget * 100)}%" class="${over ? 'over' : ''}"></i><span>Power ${power} / ${set.budget}</span></div>
-    <div class="dteam">${dr.picks.map((p, i) => { const s = box.find(x => x.bid === p.bid); if(!s) return '';
-      const pooled = set.pool ? `<select data-item="${i}"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>` : (s.held ? `<div class="dcard-item">🎒 ${esc(itemName(s.held))}</div>` : '<div class="dcard-item dim">no item</div>');
-      return cardOf(s, { cls:'picked', noitem:true, foot:`<div class="dpos">${i < rw ? 'Front' : i < rw * 2 ? 'Middle' : 'Back'}</div>${pooled}
-        <div class="btnrow tight"><button class="btn small" data-up="${i}" aria-label="Move forward">◀</button><button class="btn small" data-down="${i}" aria-label="Move back">▶</button><button class="btn small ghost" data-drop="${i}">Remove</button></div>` }); }).join('')}</div>
+    <div class="dteam">${['Front', 'Middle', 'Back'].slice(0, Math.ceil(DUEL.bring / rw)).map((rank, r) => `<div class="drank"><div class="dpos">${rank}</div>
+      ${Array.from({ length:rw }, (_, k) => teamSlot(set, box, dr, pool, r * rw + k)).join('')}</div>`).join('')}</div>
     ${set.pool ? `<p class="dim">Items you can still hand out: ${left.length ? left.map(id => esc(itemName(id))).join(', ') : 'none (all in use)'}. A pokémon brought in from the box arrives without its saved item.</p>` : '<p class="dim">Game 1: every pokémon holds the item it was saved with. Those items become your pool for the set.</p>'}
-    <div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
-    <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div>
-    <h4>Your box</h4><p class="dim">Tap to add or remove. Pokémon that fainted last game are resting.</p>
+    <h4>Your box</h4><p class="dim">Tap to add or remove.${el.resting.length ? ' Pokémon that fainted last game are resting.' : ''}</p>
     <div class="dgrid">${el.ready.map(s => cardOf(s, { cls: dr.picks.some(p => p.bid === s.bid) ? 'sel' : '', attr:`data-pick="${s.bid}" role="button"` })).join('')}
-      ${el.resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>`;
+      ${el.resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>
+    <div class="dfoot"><div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
+      <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div></div>`;
+}
+
+/** 6.17.1: one of the six team places. Empty places keep their size, so the box below never moves while you pick. */
+function teamSlot(set, box, dr, pool, i){
+  const p = dr.picks[i], s = p && box.find(x => x.bid === p.bid);
+  if(!s) return `<div class="slot empty dslot"></div>`;
+  const pooled = set.pool ? `<select data-item="${i}" aria-label="Item"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>`
+    : `<div class="dcard-item ${s.held ? '' : 'dim'}">${s.held ? '🎒 ' + esc(itemName(s.held)) : 'no item'}</div>`;
+  return cardOf(s, { cls:'picked dslot', noitem:true, foot:`${pooled}<div class="dctl"><button class="btn small" data-up="${i}" aria-label="Move forward" ${i ? '' : 'disabled'}>◀</button><button class="btn small" data-down="${i}" aria-label="Move back" ${i < dr.picks.length - 1 ? '' : 'disabled'}>▶</button><button class="btn small ghost" data-drop="${i}" aria-label="Remove">✕</button></div>` });
 }
 
 /* ---------------- the battle ---------------- */

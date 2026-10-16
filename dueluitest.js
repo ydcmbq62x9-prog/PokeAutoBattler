@@ -61,6 +61,19 @@ let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + m
   for(let game = 1; game <= 3; game++){
     for(const P of [A, B]) await P.p.waitForSelector('[data-pick], .dverdict', { timeout:5000 });
     const over = await A.p.$('.dverdict'); if(over) break;
+    if(game === 1){   // 6.17.1: tapping a box pokémon never moves the box (scrolled to the bottom is the hard case)
+      const moved = await A.p.evaluate(async () => { const b = document.querySelector('.modal .boxscroll'); let n = 0;
+        for(const where of ['mid', 'bottom']){ b.scrollTop = where === 'mid' ? document.querySelector('.dgrid').offsetTop - 60 : b.scrollHeight;
+          for(let k = 0; k < 4; k++){ const r0 = b.getBoundingClientRect(), foot = document.querySelector('.dfoot').getBoundingClientRect().top;
+            const card = [...document.querySelectorAll('.dgrid [data-pick]')].filter(e => { const r = e.getBoundingClientRect(); return r.top >= r0.top && r.bottom <= foot; })[k];
+            const id = card.dataset.pick, y0 = card.getBoundingClientRect().top; card.click();
+            if(Math.abs(document.querySelector(`[data-pick="${id}"]`).getBoundingClientRect().top - y0) > 1) n++; } }
+        duelDraft = null; return n; });
+      await A.p.evaluate(() => { document.querySelector('.modal .boxscroll').scrollTop = 0; });
+      check(moved === 0, `tapping box pokémon never moves the box (${moved} of 8 taps moved it)`);
+      const slots = await A.p.evaluate(() => document.querySelectorAll('.dteam .dslot').length);
+      check(slots === 6, `the team shows six fixed places (${slots})`);
+    }
     const na = await pickTeam(A), nb = await pickTeam(B);
     check(na >= 1 && nb >= 1, `game ${game}: both build a team within the budget (${na} and ${nb})`);
     await A.p.click('[data-m="lock"]'); await B.p.click('[data-m="lock"]');
