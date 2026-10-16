@@ -8,7 +8,8 @@ const prep = () => { G.pendingRewards = []; document.querySelectorAll('.modal').
   G.team = [makeUnit('wartortle', 2), makeUnit('onix', 0), makeUnit('pikachu', 0), makeUnit('machoke', 0)];
   G.pc = [makeUnit('abra', 0), makeUnit('gastly', 0)];
   G.team[0].held = 'band'; G.team[1].held = 'coat';
-  G.bag = ['sitrus', 'lefto']; PREF.set('text', 'instant');
+  G.bag = ['sitrus', 'lefto']; G.seed = 927763833;   // 6.17.0: a pinned shelf whose taps feed a Mart vitamin to a pokémon (the triangle-grow effect)
+  PREF.set('text', 'instant');
   rollShop(G, false); save(); render(); };
 /* the page as a plain tree, minus the one-shot effect classes and inline delays */
 const SIG = () => { const walk = n => n.nodeType === 1 && n.classList.contains('toastbox') ? '' : n.nodeType === 3 ? n.nodeValue : n.nodeType !== 1 ? '' :
@@ -43,7 +44,11 @@ const SIG = () => { const walk = n => n.nodeType === 1 && n.classList.contains('
       await el.click({ force: true, timeout: 800 }).catch(() => {});
       await page.evaluate(() => { document.querySelectorAll('.modal').forEach(x => x.remove()); const t = document.getElementById('title'); if(t){ t.remove(); document.body.classList.remove('titled'); titleEl = null; } });
       steps++;
-      const same = await page.evaluate(SIG => { const sig = eval(SIG); const a = sig();
+      /* one-shot effects drawn on top after the patch (a vitamin's old stat shape fading off the triangle, …) remove
+         themselves when they finish: finish them first, so a node an effect forgets to clean up still shows as a mismatch */
+      const same = await page.evaluate(async SIG => { const sig = eval(SIG);
+        for(const x of document.getAnimations()) try { x.finish(); } catch(e){}   // looping ones can't finish; they add no nodes
+        await new Promise(r => setTimeout(r, 0)); const a = sig();
         drawnPhase = null; render(); const b = sig(); if(a === b) return true;
         let i = 0; while(a[i] === b[i]) i++; return [a.slice(Math.max(0, i - 200), i + 150), b.slice(Math.max(0, i - 200), i + 150)]; }, '(' + SIG.toString() + ')');
       if(same !== true){ bad++; if(bad === 1) console.log('   diff:', JSON.stringify(same[0].slice(150,260)), '\n   vs', JSON.stringify(same[1].slice(150,260))); }
