@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.17.1', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.18.0', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,13 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.18.0', date:'Oct 16, 2026', title:'Minor gameplay changes', sub:'Duels: filter and sort your box, plus a tidy-up', items:[
+    'Filter your duel box by role (Tank, Bruiser, Cannon, Support) or type, and sort it by power, Attack, HP, Speed, name or newest. Works in the team picker and in My box.',
+    'My box: the Release button no longer overlaps the card.',
+    'Duels menu buttons sit in a neat grid instead of squashing their words.',
+    'The live link box is now called Play a friend, since it is how every fight starts.',
+    'A finished set shows its final score.',
+  ] },
   { v:'6.17.1', date:'Oct 16, 2026', title:'Visual bug fixes', sub:'Duels team picker: the box no longer jumps', items:[
     'Picking a pok\u00e9mon from your duel box no longer moves the box under your finger.',
     'Your team shows as six fixed places (Front, Middle, Back) with smaller move and remove buttons.',

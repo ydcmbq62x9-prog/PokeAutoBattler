@@ -3297,7 +3297,7 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 @media (max-height:700px){html.bc .tmi{padding:5px 14px!important}.tmi small{font-size:11px}}
 .dlive{margin:8px 0;padding:8px 10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;font-size:13px}.dlive p{margin:6px 0}.dlive textarea{width:100%}.dcode{font-size:30px;font-weight:800;letter-spacing:.2em;text-align:center;padding:6px 0;user-select:all}.dlive input{width:100%;box-sizing:border-box;font-size:16px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:inherit}.dcount{text-align:center;font-size:72px;font-weight:800;padding:48px 0 8px}
 .dstat{margin:8px 0;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px}
-.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin:10px 0}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:6px;margin:10px 0}
 .dgrid.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
 .dcard{position:relative;padding:6px 4px;text-align:center;cursor:default}
 .dcard[data-pick],.dcard[data-act]{cursor:pointer}
@@ -3328,6 +3328,11 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .modal.duel h3{margin-bottom:2px}
 .dsub{font-size:13px;margin-bottom:8px}
 .dgrid .slot,.dteam .slot{max-width:none;min-height:0}
+.dgrid .slot{justify-content:flex-start;gap:4px}.dgrid .slot .unit{height:auto;flex:0 0 auto}
+.dgrid .slot > .btn{margin-top:auto;width:100%}
+.modal .btnrow.dhub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dhub .btn{white-space:nowrap}
+@media (min-width:560px){ .modal .btnrow.dhub{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.modal .btnrow.ddev{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ddev select{grid-column:1/-1;font-size:13px;padding:6px;border-radius:8px}
 .dteam{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
 .drank{display:flex;flex-direction:column;gap:6px;min-width:0}
 .drank > .dpos{text-align:center;font-weight:700;opacity:.8;margin:0}
@@ -3338,6 +3343,16 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .dslot > .dcard-item,.dslot > select{margin-top:auto}
 .dslot.empty{justify-content:center;--pb:34px}
 .dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
+/* 6.18.0: box filter (role buttons, type, sort) */
+.dfilter{display:flex;flex-direction:column;gap:6px;margin:6px 0 2px}
+.dfroles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.dfroles .btn.small{padding:5px 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:440px){ .dfroles .dfname{display:none} .dfroles .btn.small{font-size:15px;padding:3px 0} }
+.dfroles .btn.small.on{background:var(--gold);color:#10131a;border-color:var(--gold)}
+.dfsel{display:flex;gap:6px}
+.dfsel select{flex:1 1 0;min-width:0;font-size:13px;padding:5px 6px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,0,0,.25);color:inherit}
+.dfcount{font-size:12px}
+.linkish{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer}
 /* the message and Lock button ride at the bottom of the window, so their changing size never moves the box */
 .dfoot{position:sticky;bottom:-13px;margin:8px -13px -13px;padding:8px 13px 10px;background:var(--panel);border-top:1px solid var(--line2);z-index:2}
 html.bc .dfoot{background:#0e1426;box-shadow:0 -8px 16px rgba(0,0,0,.4)}

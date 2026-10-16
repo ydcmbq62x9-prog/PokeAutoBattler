@@ -73,6 +73,15 @@ let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + m
       check(moved === 0, `tapping box pokémon never moves the box (${moved} of 8 taps moved it)`);
       const slots = await A.p.evaluate(() => document.querySelectorAll('.dteam .dslot').length);
       check(slots === 6, `the team shows six fixed places (${slots})`);
+      // 6.18.0: box filter and sort
+      await A.p.click('[data-frole="tank"]');
+      const f = await A.p.evaluate(() => { const ids = [...document.querySelectorAll('.dgrid [data-pick], .dgrid .rest')].map(e => e.dataset.pick).filter(Boolean);
+        return { n: ids.length, ok: ids.every(id => roleOf(duelBox().find(s => s.bid === id).id) === 'tank') }; });
+      check(f.n > 0 && f.ok, `the Tank filter shows only Tanks (${f.n})`);
+      await A.p.click('[data-frole=""]'); await A.p.selectOption('[data-fsort]', 'atk');
+      const atk = await A.p.evaluate(() => [...document.querySelectorAll('.dgrid [data-pick]')].map(e => effAtk(thawUnit(duelBox().find(s => s.bid === e.dataset.pick)))));
+      check(atk.length === 30 && atk.every((v, i) => !i || atk[i - 1] >= v), 'All shows the whole box again, sorted by Attack');
+      await A.p.selectOption('[data-fsort]', 'power');
     }
     const na = await pickTeam(A), nb = await pickTeam(B);
     check(na >= 1 && nb >= 1, `game ${game}: both build a team within the budget (${na} and ${nb})`);
