@@ -3227,7 +3227,8 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .modal.dexfull{padding:0!important;align-items:stretch!important;justify-content:stretch!important}
 .modal.dexfull > .box{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;margin:0!important;display:flex;flex-direction:column;background:#0e1424!important;box-shadow:none!important}
 .modal.dexfull .boxscroll{flex:1;min-height:0;overflow:auto;padding:0 max(14px,calc((100% - 1100px) / 2)) 18px!important}
-.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:12px 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
+/* 6.21.2: below the phone's status bar in the installed app (the close button sat under the clock) */
+.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
 .modal.dexfull .dextop h3{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-family:var(--pix);font-weight:800;font-style:italic;font-size:28px;color:var(--gold)}
 .modal.dexfull .dextop h3 .dexcount{font-style:normal;font-size:15px;color:var(--dim)}
 .dexx{margin-left:auto;align-self:center;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--text);font-size:16px;cursor:pointer}
@@ -8725,7 +8726,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.21.1', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.21.2', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -13101,6 +13102,10 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.21.2', date:'Oct 18, 2026', title:'Visual bug fixes', sub:'Pok\u00e9dex: secret bosses by gen, close button below the status bar', items:[
+    'Pok\u00e9dex: each secret boss shows only under the gen it belongs to, and with All gens they are listed in order (Gen 1, Gen 2, Gen 3).',
+    'Pok\u00e9dex: in the home-screen app on an iPhone the close button no longer hides under the clock and battery.',
+  ] },
   { v:'6.21.1', date:'Oct 18, 2026', title:'Visual bug fixes', sub:'Pok\u00e9dex gen filter shows one region; title menu lights one item', items:[
     'Pok\u00e9dex: Gen 1 shows only Kanto (#001\u2013151), Gen 2 only Johto (#152\u2013251) and Gen 3 only Hoenn (#252\u2013386). Before, Gen 2 also listed Kanto pok\u00e9mon with a Johto relative, like Pikachu and Golbat.',
     'A Hoenn pok\u00e9mon\'s card now says it is sold in Gen 3 runs (it said Bosses only).',
@@ -14663,7 +14668,7 @@ function openDex(){
 
   const items = Object.keys(ITEMS).map(k => { const it = ITEMS[k];
     const g2only = ['sunstone', 'kingsrock', 'metalcoat'].includes(k);   // 4.0.0: only useful with Gen 2 on
-    return `<div class="dexrow" data-g1="${g2only ? 0 : 1}" data-g2="1">${itemSpriteHtml(k, it.icon, 'sm')}
+    return `<div class="dexrow" data-g1="${g2only ? 0 : 1}" data-g2="1" data-g3="1">${itemSpriteHtml(k, it.icon, 'sm')}
       <div><b>${esc(it.name)}</b>${rarityTag(it)} <span class="dim">${it.cost}₽ · tier ${it.tier} · permanent</span>
       <div class="abil">${esc(it.text)}</div>${stoneUsers(k).length ? `<div class="dim evof">Evolves: ${stoneUsers(k).map(esc).join(' · ')}</div>` : ''}</div></div>`; }).join('');
 
@@ -14706,7 +14711,8 @@ function openDex(){
             : `<span class="dim">${esc(GENS[b.gen].name)}</span>`}
       <div class="abil">${met ? esc(b.blurb) : `Turns up after the Champion in about one ${esc(GENS[b.gen].name)} run in six. Meet him to fill this in.`}</div>
       ${met ? `<div class="secteam">${b.lineup.map(m => miniSprite(m.id)).join('')}</div>` : ''}</div></div>`; };
-  const secrets = ['red', 'oak', 'steven'].filter(id => GENS_READY.includes(SECRETS[id].gen)).map(secretRow).join('');
+  const secrets = Object.values(GEN_SECRET).filter(id => SECRETS[id] && GENS_READY.includes(SECRETS[id].gen))
+    .sort((a, b) => SECRETS[a].gen - SECRETS[b].gen).map(secretRow).join('');   // 6.21.2 (Sean): in gen order, Oak · Red · Steven
   /* 4.0.0: one block per gen that can be played */
   const leaders = GENS_READY.map(n => { const g = GEN_BOSSES[n];
     return `<div class="dexgen" data-g${n}="1">` + (GENS_READY.length > 1 ? `<h4 class="genhead">${esc(GENS[n].name)} · ${esc(GENS[n].region)}</h4>` : '')
@@ -14748,8 +14754,10 @@ function openDex(){
     d.querySelectorAll('.dexseg[data-f="sec"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === sec));
     d.querySelectorAll('.dexseg[data-f="gen"] .sp').forEach(b => b.classList.toggle('on', b.dataset.v === gen));
     d.querySelectorAll('section[data-sec]').forEach(x => x.hidden = sec !== 'all' && x.dataset.sec !== sec);
-    const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) !== '0' && (el.hasAttribute('data-g' + gen) || !el.matches('.dexgen'));
-    d.querySelectorAll('[data-g1],[data-g2]').forEach(el => el.hidden = !okGen(el));
+    /* 6.21.2 (Sean): a row tagged with gens shows only under a gen it is tagged for. Before, a row without that gen's tag
+       counted as shown, and only Gen 1/2 tags were looked at, so every secret boss showed under every gen. */
+    const okGen = el => gen === 'all' || el.getAttribute('data-g' + gen) === '1';
+    d.querySelectorAll(GENS_READY.map(n => `[data-g${n}]`).join(',')).forEach(el => el.hidden = !okGen(el));
     const q = (d.querySelector('.dexsearch').value || '').trim().toLowerCase();
     d.querySelectorAll('.dextile').forEach(t => { if((q && !t.dataset.name.includes(q)) || (ty && !t.dataset.type.split(' ').includes(ty))) t.hidden = true; });
     d.querySelectorAll('.dexgen').forEach(g => g.hidden = gen !== 'all' && !g.hasAttribute('data-g' + gen));
