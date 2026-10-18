@@ -1,4 +1,4 @@
-/* PokéArena Duels relay (Cloudflare Worker, 6.16.0)
+/* PokéArena Duels relay (Cloudflare Worker, 6.16.0; site guest list 6.21.0)
    Serves the game files and, at /relay/<CODE>, a tiny room that passes messages between two phones.
    One room per 4-letter code (a Durable Object). The host opens it, the first friend to join takes the
    seat, anyone after that is turned away. The relay never reads the messages, it only forwards them,
@@ -6,6 +6,10 @@
    Messages from the relay itself are JSON with a "_" key; everything else is the other phone's message. */
 import { DurableObject } from 'cloudflare:workers';
 
+/* 6.21.0: which pages may use the relay. The game's own address always may; the GitHub Pages app is the other copy;
+   localhost is for testing on a computer. Anything else (another website) is turned away, so nobody else spends the free allowance. */
+const SITES = ['https://ydcmbq62x9-prog.github.io'];
+const allowed = (origin, self) => !!origin && (origin === self || SITES.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
 const say = (ws, what) => { try{ ws.send(JSON.stringify({ _:what })); }catch(e){} };
 const shut = ws => { try{ ws.close(1000, 'bye'); }catch(e){} };
 
@@ -48,6 +52,7 @@ export default {
     const m = new URL(req.url).pathname.match(/^\/relay\/([A-Za-z0-9]{4})$/);
     if(!m) return env.ASSETS.fetch(req);
     if(req.headers.get('Upgrade') !== 'websocket') return new Response('The Duels relay only talks to the game.', { status:426 });
+    if(!allowed(req.headers.get('Origin'), new URL(req.url).origin)) return new Response('Only PokéArena can use this relay.', { status:403 });
     return env.ROOMS.get(env.ROOMS.idFromName(m[1].toUpperCase())).fetch(req);
   },
 };
