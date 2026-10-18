@@ -3217,7 +3217,8 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .modal.dexfull{padding:0!important;align-items:stretch!important;justify-content:stretch!important}
 .modal.dexfull > .box{width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;border-radius:0!important;margin:0!important;display:flex;flex-direction:column;background:#0e1424!important;box-shadow:none!important}
 .modal.dexfull .boxscroll{flex:1;min-height:0;overflow:auto;padding:0 max(14px,calc((100% - 1100px) / 2)) 18px!important}
-.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:12px 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
+/* 6.21.2: below the phone's status bar in the installed app (the close button sat under the clock) */
+.modal.dexfull .dextop{position:sticky;top:0;z-index:5;margin:0 -14px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px;background:linear-gradient(180deg,#151d33 70%,rgba(14,20,36,.96));box-shadow:0 6px 14px rgba(0,0,0,.35)}
 .modal.dexfull .dextop h3{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;font-family:var(--pix);font-weight:800;font-style:italic;font-size:28px;color:var(--gold)}
 .modal.dexfull .dextop h3 .dexcount{font-style:normal;font-size:15px;color:var(--dim)}
 .dexx{margin-left:auto;align-self:center;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--text);font-size:16px;cursor:pointer}

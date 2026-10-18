@@ -17,13 +17,29 @@ let bad = 0; const check = (ok, m) => { console.log((ok ? '✓ ' : '✗ ') + m);
     check(r.n > 0 && r.min >= lo && r.max <= hi, `Gen ${g} shows only ${region}: ${r.n} pokémon, #${r.min}–#${r.max}`);
     if(g === '2') await p.screenshot({ path: OUT + '/dex-gen2.png' });
   }
+  // 6.21.2: secret bosses only under their own gen, in gen order under All gens; Mart items still show under Gen 3
+  const vis = sel => p.evaluate(q => [...document.querySelectorAll(q)].filter(e => !e.hidden && !e.closest('[hidden]')).length, sel);
+  for(const g of ['1', '2', '3']){ await p.click(`.dexseg[data-f="gen"] [data-v="${g}"]`);
+    const sec = await p.evaluate(() => [...document.querySelectorAll('.dexrow.secret')].filter(e => !e.hidden).map(e => [...e.attributes].find(a => /^data-g\d$/.test(a.name)).name.slice(6)));
+    check(sec.length === 1 && sec[0] === g, `Gen ${g}: only Gen ${g}'s secret boss shows (${sec.join(', ')})`);
+    if(g === '3') check(await vis('section[data-sec="items"] .dexrow') > 10, 'Gen 3 still lists the held and Mart items'); }
   await p.click('.dexseg[data-f="gen"] [data-v="all"]');
   const all = await p.evaluate(() => [...document.querySelectorAll('.dextile')].filter(t => !t.hidden).length);
+  const order = await p.evaluate(() => [...document.querySelectorAll('.dexrow.secret')].filter(e => !e.hidden).map(e => [...e.attributes].find(a => /^data-g\d$/.test(a.name)).name.slice(6)).join(','));
+  check(order === '1,2,3', `All gens: secret bosses in gen order (${order})`);
   check(all === 297, `All gens shows all ${all}`);
   const tk = await p.evaluate(() => Object.keys(SPECIES).find(x => SPECIES[x].name === 'Treecko'));
   await p.evaluate(k => document.querySelector(`.dextile[data-id="${k}"]`).click(), tk); await p.waitForSelector('.dexcardm');
   const tre = await p.textContent('.dexcardm');
   check(/Gen 3 runs/.test(tre) && !/Bosses only/.test(tre), 'Treecko\'s card says it is sold in Gen 3 runs');
+  // 6.21.2: in the installed app on an iPhone the Pokédex's close button sits below the status bar
+  const cdp0 = await p.context().newCDPSession(p);
+  const inset = await cdp0.send('Emulation.setSafeAreaInsetsOverride', { insets:{ top:59, bottom:34 } }).then(() => true, () => false);
+  if(inset){ await p.waitForTimeout(200);
+    const y = await p.evaluate(() => document.querySelector('.dexx').getBoundingClientRect().top);
+    check(y >= 59, `with a 59px status bar the close button starts at ${Math.round(y)}px, below it`);
+    await cdp0.send('Emulation.setSafeAreaInsetsOverride', { insets:{} }).catch(() => {}); }
+  else console.log('  (this browser cannot pretend to have a status bar; close-button check skipped)');
   // title menu on a phone: tap an item, come back, only one item is lit
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(e => e.remove()); titleEl = null; showTitle(afterTitle); });
   await p.waitForSelector('#title .tpress'); await p.tap('#title .tpress'); await p.waitForTimeout(300);
