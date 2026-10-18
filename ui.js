@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.21.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.21.1', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.21.1', date:'Oct 18, 2026', title:'Visual bug fixes', sub:'Pok\u00e9dex gen filter shows one region; title menu lights one item', items:[
+    'Pok\u00e9dex: Gen 1 shows only Kanto (#001\u2013151), Gen 2 only Johto (#152\u2013251) and Gen 3 only Hoenn (#252\u2013386). Before, Gen 2 also listed Kanto pok\u00e9mon with a Johto relative, like Pikachu and Golbat.',
+    'A Hoenn pok\u00e9mon\'s card now says it is sold in Gen 3 runs (it said Bosses only).',
+    'On a phone the title menu and the in-game Menu light one item at a time; the last item you tapped no longer stays lit as well.',
+  ] },
   { v:'6.21.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: every copy of the game uses the Cloudflare relay', items:[
     'The live link now always goes through Pok\u00e9Arena\'s relay on Cloudflare, whichever copy of the game you play, so the home-screen app on GitHub Pages can link up too once Duels joins it.',
     'The relay only lets in Pok\u00e9Arena\'s own sites.',
@@ -5915,7 +5920,7 @@ function openDex(){
       <div class="tcwin">${spriteHtml(k, 'lg')}</div>
       <p class="tchint">Not seen yet. Meet it in a run (in the Daycare, or on a trainer’s team) to fill in its entry.</p></div></div>`;
     const chain = fam.map((m, i) => `${i ? `<span class="carrow" title="${viaOf(m, i)}">›<small>${viaOf(m, i)}</small></span>` : ''}<button class="cevo ${m === k ? 'me' : ''} ${seenSet.has(m) ? '' : 'unseen'}" data-jump="${m}">${spriteHtml(m, 'sm')}<span>${seenSet.has(m) ? esc(SPECIES[m].name) : '???'}</span></button>`).join('');
-    const sold = s.legendary ? 'Encounter only' : [inGens(k, [1]) ? 'Gen 1 runs' : '', inGens(k, [2]) ? 'Gen 2 runs' : ''].filter(Boolean).join(' · ') || 'Bosses only';
+    const sold = s.legendary ? 'Encounter only' : GENS_READY.filter(n => inGens(k, [n])).map(n => `Gen ${n} runs`).join(' · ') || 'Bosses only';   // 6.21.1: Gen 3 too
     const bs = bossesOf(k);
     const keep = TRI_SCALE; TRI_SCALE = { atk: MAXS.atk * 1.02, hp: MAXS.hp * 1.02, spd: MAXS.spd * 1.02 };   // measured against the whole Pokédex
     const tri = statTri(s.atk, s.hp, s.spd); TRI_SCALE = keep;
@@ -6060,7 +6065,9 @@ function openDex(){
   apply();
 }
 /** 4.0.0: which gens can meet this pokémon, for the dex filter (Gen 2 is the Johto Pokédex). */
-const dexGenAttr = k => GENS_READY.map(n => `data-g${n}="${inGens(k, [n]) ? 1 : 0}"`).join(' ');
+/* 6.21.1 (Sean): the Pokédex gen filter is the region a pokémon comes from (Gen 1 = Kanto #001–151, Gen 2 = Johto #152–251,
+   Gen 3 = Hoenn #252–386), not which runs sell it. A Gen 2 run also sells Pikachu (Pichu's family), but Pikachu is Kanto's. */
+const dexGenAttr = k => GENS_READY.map(n => `data-g${n}="${genOf(k) === n ? 1 : 0}"`).join(' ');
 
 /* ===================================================================
    TITLE SCREEN (v38)

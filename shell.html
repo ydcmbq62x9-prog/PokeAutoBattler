@@ -2913,10 +2913,14 @@ html.bc .iconbtn.start{gap:7px;padding:0 14px;letter-spacing:.1em}
 /* the menu: highlighted row instead of the ▶ cursor */
 html.bc .smi.cur::before,html.bc .tmi.cur::before{content:none!important}
 html.bc .smi{padding:8px 12px!important;border-radius:8px;font-size:18px;text-transform:none}
-html.bc .smi.cur,html.bc .smi:hover{background:rgba(255,210,58,.16);box-shadow:inset 3px 0 0 var(--gold)}
+html.bc .smi.cur{background:rgba(255,210,58,.16);box-shadow:inset 3px 0 0 var(--gold)}
 html.bc .tmi{padding:9px 14px!important;border-radius:10px;letter-spacing:.06em}
-html.bc .tmi.cur,html.bc .tmi:hover{background:rgba(12,18,34,.72);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
-html.bc .tmi.cur small,html.bc .tmi:hover small{color:#cfd8f0}
+html.bc .tmi.cur{background:rgba(12,18,34,.72);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
+html.bc .tmi.cur small{color:#cfd8f0}
+/* 6.21.1: hover only lights an item on a device that really hovers (a mouse). On a phone :hover sticks to the last item
+   tapped, so it lit a second item next to the cursor's (Sean's title screen showed New run and Daily challenge both lit). */
+@media (hover:hover){ html.bc .smi:hover{background:rgba(255,210,58,.16);box-shadow:inset 3px 0 0 var(--gold)}
+  html.bc .tmi:hover{background:rgba(12,18,34,.72);box-shadow:inset 3px 0 0 var(--gold);color:#fff} html.bc .tmi:hover small{color:#cfd8f0} }
 html.bc .modal.startmenu .box{animation:smin2 .18s cubic-bezier(.2,.8,.3,1) both}
 /* title: steady TAP TO PLAY, gold on navy like the scoreboard */
 html.bc .title .tpress{animation:tfade .3s .9s both!important;background:var(--navy);color:var(--gold);border-radius:10px;padding:10px 26px;box-shadow:0 0 0 2px var(--gold),0 8px 20px rgba(0,0,0,.35);letter-spacing:.14em;font-size:20px}
