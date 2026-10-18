@@ -132,7 +132,12 @@ const TUNING = {
   eggCap:       12,
   /* Duels (multiplayer branch): a 30-slot box, six per team, three games, a power budget per team. Budget = the median
      'six best pokémon from one winning run' (4188 in 140 bot clears), so the six strongest in a mixed box don't fit. */
-  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200 },
+  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200,
+    /* 6.20.0 (Sean): a battle-effect item costs power in a duel. Each number is the part of the item's worth that its
+       stat bonus does not already count, as a share of the holder's own power, by the holder's role (an item is worth
+       more on some roles: Life Orb on a Cannon, Iron Ball on a Tank). Measured with duelitemreport.js (2000 duels per
+       item and role, ±1 point); under 2 points counts as nothing. Plain stat items are already counted in full. */
+    itemPower: { lefto:{ tank:0.04, bruiser:0.05, support:0.06, cannon:0.04 }, sitrus:{ tank:0.11, bruiser:0.07, support:0.03 }, focus:{ tank:0.16, bruiser:0.1, support:0.07, cannon:0.04 }, coat:{ tank:0.12, bruiser:0.07, support:0.05, cannon:0.02 }, bell:{ tank:0.03, bruiser:0.07, support:0.05, cannon:0.08 }, helmet:{ tank:0.07, bruiser:0.05, support:0.04, cannon:0.02 }, orb:{ tank:0.04, bruiser:0.14, support:0.16, cannon:0.21 }, iron:{ tank:0.22, bruiser:0.09, support:0.05, cannon:0.04 }, scale:{ tank:0.03, bruiser:0.03, support:0.17, cannon:0.03 }, char:{ bruiser:0.03, support:0.05, cannon:0.06 }, sbell:0.08, plate:0.07 } },
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -3677,7 +3682,7 @@ const snapUnit = (u, bid, from) => ({ bid: bid || ('b' + Math.random().toString(
 function thawUnit(s, pos, item){
   const u = makeUnit(s.id, s.exp);
   u.hp = s.hp; u.atk = s.atk; u.spd = s.spd; u.bid = s.bid;
-  u.held = item === undefined ? (s.held || null) : (item || null);
+  u.held = duelItem(item === undefined ? s.held : item);
   if(Number.isInteger(pos)) u.pos = pos;
   return u;
 }
@@ -3689,7 +3694,15 @@ function inDuelGens(fn){
   if(g.join() !== GENS_READY.join()) setActiveGens(GENS_READY); ACTIVE_POOL = null;
   try{ return fn(); } finally { if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); ACTIVE_POOL = pool; }
 }
-const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + unitPower(u), 0));
+/** 6.20.0 (Sean): run-economy items (Lucky Egg, Amulet Coin) are switched off in a duel: no effect, no power, not in the item pool. */
+const duelItem = id => (id && HELD_ITEMS[id] && HELD_ITEMS[id].kind !== 'economy') ? id : null;
+/** A pokémon's power in a duel: its stats with the item, plus what a battle-effect item is worth (TUNING.duel.itemPower). */
+function duelUnitPower(u){
+  const h = u.held && HELD_ITEMS[u.held], c = h && (!h.when || h.when(u)) ? TUNING.duel.itemPower[u.held] : 0;
+  const extra = typeof c === 'number' ? c : (c && c[roleOf(u)]) || 0;
+  return unitPower(u) + extra * (u.hp + u.atk + TUNING.spdPower * u.spd);
+}
+const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + duelUnitPower(u), 0));
 /** Which pokémon can be brought to the next game, and which are resting. */
 function duelEligible(set, box){
   const rest = new Set(set.rest || []);
@@ -3697,7 +3710,7 @@ function duelEligible(set, box){
 }
 function newDuelSet(me, ver){ return { proto:DUEL_PROTO, ver:ver || '', me:me || 'Trainer', opp:'', id:'', game:1, games:[], pool:null, rest:[], budget:TUNING.duel.budget, locked:null, over:null }; }
 /** Items the set may use: every item on the six brought to game 1. */
-const duelPoolOf = (box, picks) => picks.map(p => (box.find(s => s.bid === p.bid) || {}).held).filter(Boolean);
+const duelPoolOf = (box, picks) => picks.map(p => duelItem((box.find(s => s.bid === p.bid) || {}).held)).filter(Boolean);
 /** Check a team of picks ({bid,pos,item}) against the rules. Returns '' when fine, otherwise why not. */
 function duelCheckPicks(set, box, picks){ return inDuelGens(() => checkPicks(set, box, picks)); }
 function checkPicks(set, box, picks){
@@ -3712,7 +3725,7 @@ function checkPicks(set, box, picks){
   }
   const pool = set.pool || duelPoolOf(box, picks);
   if(!set.pool){                       // game 1: everyone holds what they were saved with
-    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if((p.item || null) !== (s.held || null)) return 'Items cannot move before game 1.'; } }
+    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if(duelItem(p.item) !== duelItem(s.held)) return 'Items cannot move before game 1.'; } }
   const left = pool.slice();
   for(const p of picks) if(p.item){ const i = left.indexOf(p.item); if(i < 0) return `You have no spare ${HELD_ITEMS[p.item] ? HELD_ITEMS[p.item].name : p.item} in this set.`; left.splice(i, 1); }
   const power = Math.round(duelPower(units));
@@ -3722,7 +3735,7 @@ function checkPicks(set, box, picks){
 /** The lock-in code: your six, frozen, plus enough about the set for the other side to check it. */
 function duelCode(set, box, picks){
   const t = picks.map(p => { const s = box.find(x => x.bid === p.bid);
-    return [s.id, s.hp, s.atk, s.spd, s.exp, p.item || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
+    return [s.id, s.hp, s.atk, s.spd, s.exp, duelItem(p.item) || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
   const body = { p:DUEL_PROTO, ver:set.ver, n:set.me, s:set.id, g:set.game, b:set.budget, t };
   const json = JSON.stringify(body), ck = hash32(json).toString(36);
   const b64 = (typeof btoa !== 'undefined') ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64');
@@ -3740,7 +3753,7 @@ function duelParse(code){
   }catch(e){ return { err:'That is not a duel code.' }; }
 }
 const duelUnits = parsed => parsed.units.map(r => { const u = makeUnit(r[0], r[4] | 0); u.hp = Math.max(1, r[1] | 0); u.atk = Math.max(0, r[2] | 0); u.spd = Math.max(1, r[3] | 0);
-  u.held = r[5] && HELD_ITEMS[r[5]] ? r[5] : null; u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
+  u.held = duelItem(r[5]); u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
 /** Is the opponent's code a legal move in this set? '' when yes. */
 function duelCheckOpponent(set, parsed){ return inDuelGens(() => checkOpponent(set, parsed)); }
 function checkOpponent(set, parsed){
@@ -3761,7 +3774,7 @@ function checkOpponent(set, parsed){
     for(const u of units) if(sat.has(u.bid)) return `${u.nm} fainted last game and should be sitting this one out.`;
   }
   /* items: game 1 is whatever they were saved with; later games may only use the game-1 pool */
-  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => u.held).filter(Boolean)).slice();
+  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => duelItem(u.held)).filter(Boolean)).slice();
   if(set.game > 1){ for(const u of units) if(u.held){ const i = pool.indexOf(u.held); if(i < 0) return 'Their team has an item they did not bring to the set.'; pool.splice(i, 1); } }
   return '';
 }
@@ -3783,9 +3796,9 @@ const duelWins = set => ({ me: set.games.filter(g => g.result === 'win').length,
 function duelApply(set, out){
   const first = !set.games.length;
   if(first){ set.opp = out.theirs.name; set.id = hash32(out.iAmP ? out.mine.raw + '|' + out.theirs.raw : out.theirs.raw + '|' + out.mine.raw).toString(36);   // same on both devices
-    set.pool = out.mine.units.map(r => r[5]).filter(Boolean); }     // the items on the six brought to game 1
+    set.pool = out.mine.units.map(r => duelItem(r[5])).filter(Boolean); }     // the items on the six brought to game 1
   set.games.push({ result: out.myResult, myFainted: out.myFainted, theirFainted: out.theirFainted, mine: out.mine.units.map(r => r[7]),
-    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => r[5]).filter(Boolean) : set.games[0].theirPool });
+    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => duelItem(r[5])).filter(Boolean) : set.games[0].theirPool });
   set.rest = out.myFainted.slice();             // fainted: sits out the next game only
   const w = duelWins(set);
   if(w.me >= 2 || w.opp >= 2 || set.games.length >= TUNING.duel.games){
@@ -4908,7 +4921,7 @@ if(typeof module !== 'undefined' && module.exports){
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
-    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
+    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelUnitPower, duelItem, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,

@@ -13,9 +13,12 @@ const putDuelSet = s => { try{ if(s) localStorage.setItem(DUEL_SET_KEY, JSON.str
 const duelDev = () => { try{ if(location.hash === '#dev') localStorage.setItem('pkb_dev', '1'); return localStorage.getItem('pkb_dev') === '1'; }catch(e){ return false; } };
 const DUEL = TUNING.duel;
 const itemName = id => (HELD_ITEMS[id] || {}).name || '';
+/** 6.20.0: what a saved item shows on its card; run-economy items say they are switched off in duels. */
+const itemLine = id => !id ? '<span class="dim">no item</span>' : duelItem(id) ? '🎒 ' + esc(itemName(id))
+  : `<span class="dim" title="Only helps during a run, so it is switched off in duels">🎒 <s>${esc(itemName(id))}</s> off</span>`;
 const cardOf = (s, extra) => { const u = thawUnit(s); u.uid = 'd' + s.bid;
   return `<div class="slot dcard ${extra && extra.cls || ''}" ${extra && extra.attr || ''} style="border-style:solid">${unitHtml(u, { held:false })}
-    ${extra && extra.noitem ? '' : `<div class="dcard-item">${s.held ? '🎒 ' + esc(itemName(s.held)) : '<span class="dim">no item</span>'}</div>`}${extra && extra.foot || ''}</div>`; };
+    ${extra && extra.noitem ? '' : `<div class="dcard-item">${itemLine(s.held)}</div>`}${extra && extra.foot || ''}</div>`; };
 
 /* ---------------- live link (WebRTC, no server) ----------------
    One player hosts and gets a 4-letter code; the other types it. The free PeerJS matchmaking server only introduces the
@@ -283,7 +286,8 @@ function openDuelHow(){
     <p><b>Your box.</b> It holds ${DUEL.boxSize} pokémon, saved exactly as they were: their level, stats and held item are frozen. At the end of a run you save up to ${DUEL.saveWin} from a win, or ${DUEL.saveLoss} from a loss.</p>
     <p><b>A set.</b> Best of ${DUEL.games}: first to two wins. Each game you bring up to ${DUEL.bring} from your box, and the team has to fit the power budget (${DUEL.budget}).</p>
     <p><b>Fainting.</b> A pokémon that faints sits out the next game only, so you need about twelve usable.</p>
-    <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.</p>
+    <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.
+      Items with a battle effect (Leftovers, Focus Band, Life Orb and the like) add to a pokémon's power, so they count against the budget. Lucky Egg and Amulet Coin only help during a run, so they are switched off in duels.</p>
     <p><b>Playing.</b> One of you taps Host and reads out the 4-letter code, the other taps Join and types it. Pick your team and lock it in: your friend only sees that you are locked in, never your team, until you both press Fight and watch the same battle together.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Got it</button></div>`);
   d.addEventListener('click', ev => { if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); } });
@@ -295,7 +299,7 @@ const BOXF = { role:'', type:'', by:'power' };
 const BOX_SORTS = { power:'Power', atk:'Attack', hp:'HP', spd:'Speed', name:'Name', new:'Newest' };
 const snapType = s => (SPECIES[s.id] || {}).type || '';
 function boxSorted(list){
-  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -unitPower(u) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
+  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -duelPower([u]) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
   return list.filter(s => (!BOXF.role || roleOf(s.id) === BOXF.role) && (!BOXF.type || snapType(s) === BOXF.type))
     .map(s => ({ s, k:key(s), n:(SPECIES[s.id] || {}).name || '' })).sort((a, b) => a.k - b.k || a.n.localeCompare(b.n)).map(x => x.s);
 }
@@ -375,7 +379,7 @@ function openDuelSet(){
     const dr = duelDraft || (duelDraft = { picks: [] });
     if(b.dataset.pick){ const i = dr.picks.findIndex(p => p.bid === b.dataset.pick);
       if(i >= 0) dr.picks.splice(i, 1);
-      else if(dr.picks.length < DUEL.bring){ const s = box.find(x => x.bid === b.dataset.pick); dr.picks.push({ bid:s.bid, item: set.pool ? null : (s.held || null) }); }
+      else if(dr.picks.length < DUEL.bring){ const s = box.find(x => x.bid === b.dataset.pick); dr.picks.push({ bid:s.bid, item: set.pool ? null : duelItem(s.held) }); }
       paint(); return; }
     if(b.dataset.up){ const i = +b.dataset.up; if(i > 0){ [dr.picks[i - 1], dr.picks[i]] = [dr.picks[i], dr.picks[i - 1]]; } paint(); return; }
     if(b.dataset.down){ const i = +b.dataset.down; if(i < dr.picks.length - 1){ [dr.picks[i + 1], dr.picks[i]] = [dr.picks[i], dr.picks[i + 1]]; } paint(); return; }
@@ -458,7 +462,7 @@ function teamSlot(set, box, dr, pool, i){
   const p = dr.picks[i], s = p && box.find(x => x.bid === p.bid);
   if(!s) return `<div class="slot empty dslot"></div>`;
   const pooled = set.pool ? `<select data-item="${i}" aria-label="Item"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>`
-    : `<div class="dcard-item ${s.held ? '' : 'dim'}">${s.held ? '🎒 ' + esc(itemName(s.held)) : 'no item'}</div>`;
+    : `<div class="dcard-item">${itemLine(s.held)}</div>`;
   return cardOf(s, { cls:'picked dslot', noitem:true, foot:`${pooled}<div class="dctl"><button class="btn small" data-up="${i}" aria-label="Move forward" ${i ? '' : 'disabled'}>◀</button><button class="btn small" data-down="${i}" aria-label="Move back" ${i < dr.picks.length - 1 ? '' : 'disabled'}>▶</button><button class="btn small ghost" data-drop="${i}" aria-label="Remove">✕</button></div>` });
 }
 
@@ -484,7 +488,7 @@ function duelSaveHtml(){
   const room = DUEL.boxSize - box.length;
   return `<div class="panel dsave"><h3 style="margin:0 0 4px">Save to your duel box</h3>
     <p class="dim">${won ? 'You won' : 'You lost'}: pick up to <b>${n}</b>. They are saved exactly as they are now and never change. ${room < n ? `Your box has room for ${room}; release some to fit more.` : ''}</p>
-    <div class="dgrid small">${units.map(u => `<div class="slot dcard ${mpSel.has(u.uid) ? 'sel' : ''}" data-act="mppick" data-uid="${u.uid}" role="button" style="border-style:solid">${unitHtml(u, { held:false })}<div class="dcard-item">${u.held ? '🎒 ' + esc(itemName(u.held)) : '<span class="dim">no item</span>'}</div></div>`).join('')}</div>
+    <div class="dgrid small">${units.map(u => `<div class="slot dcard ${mpSel.has(u.uid) ? 'sel' : ''}" data-act="mppick" data-uid="${u.uid}" role="button" style="border-style:solid">${unitHtml(u, { held:false })}<div class="dcard-item">${itemLine(u.held)}</div></div>`).join('')}</div>
     <div class="btnrow"><button class="btn primary" data-act="mpsave" ${mpSel.size && mpSel.size <= Math.min(n, room) ? '' : 'disabled'}>Save ${mpSel.size || ''} to my box</button>
       <button class="btn ghost" data-act="mpskip">Skip</button></div></div>`;
 }

@@ -13,8 +13,8 @@ let bad = 0; const check = (ok, m) => { console.log((ok ? 'ok   ' : 'FAIL ') + m
 const holder = id => { const h = HELD_ITEMS[id]; return h.role ? Object.keys(SPECIES).find(k => SPECIES[k].role === h.role && !SPECIES[k].legendary && !SPECIES[k].token) : id === 'evio' ? sp('Bulbasaur') : sp('Machamp'); };
 for(const id of Object.keys(HELD_ITEMS)){
   const u = makeUnit(holder(id), 60); u.hp += 30; u.atk += 20; u.held = id;
-  const t = thawUnit(snapUnit(u));
-  check(t.held === id && stats(t) === stats(u), `${HELD_ITEMS[id].name.padEnd(13)} saved and restored: run ${stats(u)}  duel ${stats(t)}`);
+  const sv = snapUnit(u), t = thawUnit(sv);        // saved with the pokémon; a run-economy item is then switched off in the duel
+  check(sv.held === id && t.held === E.duelItem(id) && stats(t) === stats(u), `${HELD_ITEMS[id].name.padEnd(13)} saved and restored: run ${stats(u)}  duel ${stats(t)}${t.held ? '' : ' (off in duels)'}`);
 }
 // 2. battle effects: the same fight with run units and with saved-and-restored units
 const team = ['Machamp', 'Blastoise', 'Venusaur', 'Alakazam', 'Snorlax', 'Gengar'].map((n, i) => { const u = makeUnit(sp(n), 60); u.pos = i; return u; });
@@ -51,8 +51,27 @@ setActiveGens([1]); const r1 = duelSim(setA, ca, cb);
 setActiveGens([1, 2, 3]); const r2 = duelSim(setB, cb, ca);
 const hpOf = r => (r.sim.steps[0].p.concat(r.sim.steps[0].e).find(x => x.nm === 'Golbat') || {}).maxHp;
 check(seen(r1.sim) === seen(r2.sim) && hpOf(r1) === hpOf(r2), `Eviolite Golbat max HP in the duel ${hpOf(r1)} / ${hpOf(r2)}; same duel on two phones (one in a Gen 1 run, one with Gen 2/3 on): ${r1.sim.steps.length} vs ${r2.sim.steps.length} steps, ${r1.myResult} / ${r2.myResult}`);
-// 5. items that only work in a run
-for(const id of ['egg', 'coin']) check(true, `${HELD_ITEMS[id].name}: ${HELD_ITEMS[id].kind} item, no battle effect, so it does nothing in a duel`);
+// 5. 6.20.0 (Sean): run-economy items are switched off in a duel: no item, no power, not in the set's item pool
+setActiveGens([1, 2, 3]);
+for(const id of Object.keys(HELD_ITEMS).filter(k => HELD_ITEMS[k].kind === 'economy')){
+  const u = makeUnit(sp('Blissey'), 60); u.held = id; const x = snapUnit(u), y = snapUnit(makeUnit(sp('Snorlax'), 60));
+  const t = thawUnit(x), bx = [x, y], pk = bx.map((q, i) => ({ bid:q.bid, item:E.duelItem(q.held), pos:i }));
+  const code = duelCode(newDuelSet('Ann', 'v'), bx, pk), back = E.duelParse(code);
+  check(t.held === null && duelPower([t]) === duelPower([thawUnit(x, 0, null)]) && E.duelPoolOf(bx, pk).length === 0 && back.units[0][5] === '',
+    `${HELD_ITEMS[id].name}: off in a duel (no item, no power, not in the item pool, not in the lock-in code)`);
+}
+// 6. 6.20.0 (Sean): battle-effect items cost power by the holder's role; plain stat items cost only their stats
+const cost = (name, id) => { const x = snapUnit(makeUnit(sp(name), 60)); x.held = id; const bare = duelPower([thawUnit(x, 0, null)]), u = thawUnit(x);
+  return (duelPower([u]) - E.unitPower(u)) / (u.hp + u.atk + TUNING.spdPower * u.spd); };
+const IP = TUNING.duel.itemPower;
+for(const id of Object.keys(IP)){ const h = HELD_ITEMS[id];
+  check(h && h.kind !== 'economy' && (h.kind === 'trigger' || h.cutPct || h.unresist || h.endure || h.healBoost), `${h ? h.name : id} has a battle effect, so it may have a duel cost`); }
+for(const id of Object.keys(HELD_ITEMS).filter(k => !IP[k] && HELD_ITEMS[k].kind !== 'economy'))
+  check(!['trigger'].includes(HELD_ITEMS[id].kind) && !HELD_ITEMS[id].cutPct, `${HELD_ITEMS[id].name} has no extra duel cost: it is a plain stat item`);
+check(Math.abs(cost('Gengar', 'orb') - IP.orb.cannon) < 1e-9 && Math.abs(cost('Snorlax', 'orb') - IP.orb.tank) < 1e-9 && IP.orb.cannon > IP.orb.tank,
+  `Life Orb costs more on a Cannon (${IP.orb.cannon}) than on a Tank (${IP.orb.tank})`);
+check(cost('Machamp', 'band') === 0, 'Muscle Band costs only its +25% Attack');
+check(cost('Gengar', 'plate') === 0, 'Bulk Plate on a non-Tank does nothing, so it costs nothing');
 // the run's own setting is left as it was after a duel check (a Gen 1 run still says Golbat cannot evolve)
 setActiveGens([1]); duelPower([thawUnit(s)]); duelSim(setA, ca, cb);
 check(canStillEvolve(s.id) === false && E.BUYABLE.every(k => SPECIES[k].gen === 1 || !SPECIES[k].gen), 'after a duel the open run keeps its own generations');

@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.19.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.20.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -4391,6 +4391,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.20.0', date:'Oct 18, 2026', title:'Balance patch', sub:'Duels: battle items cost power, Lucky Egg and Amulet Coin switched off', items:[
+    'Lucky Egg and Amulet Coin only help during a run, so in a duel they are switched off: no effect, no power, and not part of the set\'s item pool. Your saved pok\u00e9mon still keep them.',
+    'Items with a battle effect now count against the duel power budget, by what they are worth on the pok\u00e9mon holding them (measured over 2000 duels per item and role): Life Orb +21% on a Cannon, Iron Ball +22% and Focus Band +16% on a Tank, Heart Scale +17% on a Support, Assault Vest +12% and Sitrus Berry +11% on a Tank, Shell Bell +8% on a Cannon, Soothe Bell +8%, Bulk Plate +7% on top of its HP, Rocky Helmet +7% on a Tank, Leftovers +4\u20136%, Expert Belt +3\u20136% on top of its Attack. The same item costs less on a pok\u00e9mon that makes less of it.',
+    'Plain stat items (Muscle Band, Quick Claw, Scope Lens, Black Belt, Choice Band, Eviolite) cost the same as before: just their stats.',
+  ] },
   { v:'6.19.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: Eviolite works the same on both phones', items:[
     'Eviolite in a duel no longer depends on the run each phone has open. A pok\u00e9mon counts as able to evolve if it has a later evolution anywhere in the game (Golbat, Onix, Scyther and others now always get the +50% HP). Before, two phones could show different HP and different fights.',
   ] },
