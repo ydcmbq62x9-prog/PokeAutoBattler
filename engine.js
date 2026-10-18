@@ -204,7 +204,8 @@ const TUNING = {
      the reference player (as Rich does): a Normal team has no offence and one weakness to
      exploit, a Water or Fire team meets gyms that wall it. */
   mods: { hardGymsFoes: 1.04, tightCut: 1,   // 4.12.0 handicaps: NOT balanced away — that's the point
-          richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,     // 3.0.0: re-measured for the real type chart
+          richIncome: 2, richFoes: 1.291, nopcFoes: 1.004, onelifeFoes: 1.019,
+          gauntletFoes: 0.787,   // 6.22.0 (Sean): the Gauntlet (bosses only) clears as often as a normal run of the same gens (gauntlettune.js, 300 runs, checked on 300 more with gauntletreport.js SEED=500000; Gen 1 eased 0.797 → 0.787 after that check; see byGens)     // 3.0.0: re-measured for the real type chart
           monoFoes: { Normal:1.06, Fire:0.946, Water:0.921, Electric:0.893, Grass:0.811, Fighting:0.955, Ground:0.998, Flying:1.061, Poison:0.911, Psychic:1.162, Bug:0.878, Rock:0.767 },   // 4.12.0 Psychic +0.008 (Mew); 3.8.0: re-measured for the bigger roster; Flying, Poison and Ground join
           monoFoesByGens: {
             '2':   { Normal:1.052, Fire:0.786, Water:0.942, Electric:1.004, Grass:0.957, Ice:1.074, Fighting:1.055, Ground:0.86, Flying:1.04, Poison:0.983, Psychic:1.018, Bug:0.984, Dark:0.858 },   // 4.0.0: re-measured once Gen 2 sold only Gen 2 lines
@@ -213,8 +214,9 @@ const TUNING = {
             '1+3': { Normal:1.188, Fire:0.981, Water:1, Electric:1.095, Grass:0.984, Ice:1.151, Fighting:1.058, Ground:1.131, Flying:1.154, Poison:1.048, Psychic:1.142, Bug:0.997, Rock:0.908, Ghost:1.03, Dragon:1.12, Dark:1.045 },   // 6.3.0: measured at a 75% bot clear
             '1+2+3': { Normal:1.188, Fire:1.04, Water:1.06, Electric:1.095, Grass:0.984, Ice:1.299, Fighting:1.088, Ground:1.179, Flying:1.223, Poison:1.139, Psychic:1.142, Bug:1.125, Rock:0.908, Ghost:1.09, Dragon:1.154, Steel:1, Dark:1.104 },   // 6.3.0: measured at a 75% bot clear
             '1+2': { Normal:1.121, Fire:0.981, Water:1, Electric:0.978, Grass:0.984, Ice:1.225, Fighting:0.998, Ground:1.067, Flying:1.154, Poison:1.017, Psychic:1.077, Bug:1.061, Rock:0.857, Dark:0.88 } },
-          byGens: { '2': { richFoes:1.267 }, '1+2': { richFoes:1.272, onelifeFoes:1.044 },
-            '3': { nopcFoes:1.064 }, '1+3': { nopcFoes:1.034, onelifeFoes:1.034 }, '2+3': { nopcFoes:1.034 }, '1+2+3': { nopcFoes:1.019 } } },   // 6.3.0: Hoenn combinations measured   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
+          byGens: { '2': { richFoes:1.267, gauntletFoes:0.772 }, '1+2': { richFoes:1.272, onelifeFoes:1.044, gauntletFoes:0.8 },
+            '3': { nopcFoes:1.064, gauntletFoes:0.797 }, '1+3': { nopcFoes:1.034, onelifeFoes:1.034, gauntletFoes:0.803 }, '2+3': { nopcFoes:1.034, gauntletFoes:0.791 },
+            '1+2+3': { nopcFoes:1.019, gauntletFoes:0.825 } } },   // 6.3.0: Hoenn combinations measured   // 4.0.0: Rich / No PC / One Life scales for runs with Gen 2 on, where they differ   // 4.0.0: Mono scales for runs with Gen 2 on (Gen 1 keeps monoFoes above)
   /* 4.0.0: every opponent's scale by the gens a run plays. Gen 1 and Gen 2 are each
      tuned through their bosses' calib; a mixed run sells twice the roster, so copies
      merge less often and the same player is weaker — this brings it back to par. */
@@ -337,11 +339,17 @@ const tierForTurn = t => Math.max(1, Math.min(6, Math.floor((t + 1) / 2)));
 /* 4.0.0: the bosses come from the run's own plan (G.bossPlan, drawn when the run
    starts — see drawBossPlan). A run without one, or a call without a game, is
    the classic Gen 1 order: Brock … Giovanni, Lorelei … Lance, Blue. */
+/* 6.22.0 (Sean): the Gauntlet run rule. Bosses only — the gym leaders, the Elite Four and the Champion, then the secret
+   boss of every gen in the run — with no trainer battles. To keep pace with a normal run, the first turn and the turn after
+   each gym win are BIG TURNS: the clock jumps, the pay and the party's EXP come as if the skipped trainer turns had happened.
+   RUSH_TURNS is computed from the schedule, so it follows battlesPerBadge. */
+const rushOn = G => !!(G && G.mods && G.mods.gauntlet);
+const RUSH_TURNS = () => TUNING.battlesPerBadge + 1;
 function runPlan(G){
   const bp = bossPlanOf(G);
   const plan = [];
   for(let b = 0; b < TUNING.badgesToWin; b++){
-    for(let i = 0; i < TUNING.battlesPerBadge; i++) plan.push({ kind:'trainer', badge:b });
+    if(!rushOn(G)) for(let i = 0; i < TUNING.battlesPerBadge; i++) plan.push({ kind:'trainer', badge:b });
     plan.push({ kind:'gym', badge:b, boss:bp.gyms[b % bp.gyms.length] });
   }
   for(let i = 0; i < TUNING.eliteFourCount; i++)
@@ -372,7 +380,7 @@ const isBoss = st => !!st && st.kind !== 'trainer';
    `G.gauntlet` exists only while you are mid-way through: once at least one
    member has fallen and before you win or black out.
    =================================================================== */
-const gauntletStart = () => TUNING.badgesToWin * (TUNING.battlesPerBadge + 1);
+const gauntletStart = G => TUNING.badgesToWin * (rushOn(G) ? 1 : TUNING.battlesPerBadge + 1);   // 6.22.0: the Gauntlet has no trainer stages
 const isGauntletStage = st => !!st && (st.kind === 'elite' || st.kind === 'champion');
 const inGauntlet = G => !!(G && G.gauntlet);
 /** What share of its max HP a pokémon has left. Stored as a SHARE, not a number,
@@ -684,7 +692,7 @@ function homeOf(b){
     Brock in slot 8 is priced like an eighth gym, not like a first. */
 function bossCalib(G, st){
   const b = st && st.boss; if(!b) return 1;
-  const slot = st.kind === 'gym' ? (st.badge || 0) : st.kind === 'elite' ? Math.max(0, (G.stage || 0) - gauntletStart()) : 0;
+  const slot = st.kind === 'gym' ? (st.badge || 0) : st.kind === 'elite' ? Math.max(0, (G.stage || 0) - gauntletStart(G)) : 0;
   const home = homeOf(b);
   if(!home || (home.kind === st.kind && home.slot === slot)) return b.calib || 1;
   const gens = cleanGens(G && G.gens);
@@ -3371,6 +3379,7 @@ function opponentFor(G){
   const k = (G.mods && G.mods.rich ? modFoes(G, 'richFoes') : 1) * (G.mods && G.mods.mono ? monoFoesFor(G, G.mods.mono) : 1)
           * (G.mods && G.mods.nopc ? modFoes(G, 'nopcFoes') : 1)   // 2.2.0
           * (G.mods && G.mods.onelife ? modFoes(G, 'onelifeFoes') : 1)   // 2.11.0: One Life has its own knob
+          * (rushOn(G) ? modFoes(G, 'gauntletFoes') : 1)   // 6.22.0
           * (G.mods && G.mods.hardgyms && ['gym', 'elite', 'champion'].includes((stageOf(G) || {}).kind) && rivalMeeting(G) < 0 ? TUNING.mods.hardGymsFoes : 1)   // 4.12.0
           * (TUNING.gensFoes[cleanGens(G && G.gens).join('+')] || 1);   // 4.0.0: a mixed roster is thinner, so its opponents are scaled to match
   if(k !== 1 && o && o.team){
@@ -3425,7 +3434,7 @@ function opponentFor0(G){
       : bossCalib(G, st) * (kind === 'gym'
         ? TUNING.gymRatio[Math.min(st.badge || 0, TUNING.gymRatio.length - 1)]
         : (TUNING.bossRatio[kind] || 1)
-          * (TUNING.gauntletRatio[(G.stage || 0) - gauntletStart()] || 1)),
+          * (TUNING.gauntletRatio[(G.stage || 0) - gauntletStart(G)] || 1)),
   });
 }
 
@@ -3828,6 +3837,7 @@ const MOD_INFO = {
   mono:    { name: t => `Mono-${t}`, text: t => `The Daycare only sells ${t} pokémon. Opponents are tuned so every type is about as hard.` },
   nopc:    { name: () => 'No PC', text: () => 'No PC box: just the six you carry, no bench.' },
   rich:    { name: () => 'Rich & Ruthless', text: () => `Double income, but every opponent is ${Math.round((TUNING.mods.richFoes - 1) * 100)}% stronger.` },
+  gauntlet: { name: () => 'Gauntlet', text: () => 'Bosses only: the gym leaders, the Elite Four and the Champion, then the secret boss of every generation in the run, back to back, one try each. No trainer battles, so each turn before a gym pays and trains like four. Clear it all for the Gauntlet Badge.' },
   secrets: { name: () => 'Secret Gauntlet', text: () => 'Red and Professor Oak both wait after the Champion, back to back, one try each. Needs Gen 1 and Gen 2, and costs a Red ticket and an Oak ticket. Beat both for the Gauntlet Badge.' },
   onelife: { name: () => 'One Life', text: () => 'One life. Lose any battle — trainer, gym leader or Elite Four, no free rematches — and the run is over.' },
   /* 4.12.0 — handicaps: unlike the rules above, opponents are NOT eased to match. Each earns its own badge. */
@@ -3850,7 +3860,7 @@ const modsLabel = G => modList(G).map(k => modName(G, k)).join(' · ');
 function cleanMods(m){
   const out = {};
   if(m && m.mono && MONO_TYPES.includes(m.mono)) out.mono = m.mono;
-  for(const k of ['nopc', 'rich', 'onelife', 'secrets', ...HANDICAPS]) if(m && m[k]) out[k] = true;
+  for(const k of ['nopc', 'rich', 'onelife', 'gauntlet', ...HANDICAPS]) if(m && m[k]) out[k] = true;   // 6.22.0: 'secrets' (the old two-boss Secret Gauntlet) retired; runs already on it finish as they were
   return out;
 }
 /** The daily challenge: one seed and one modifier per calendar day, the same for everyone. */
@@ -3924,7 +3934,7 @@ function drawFocus(seed, gens){
 function newGame(seed, opts){
   const gens = setActiveGens(opts && opts.gens);   // 4.0.0: which gens this run plays
   const mods = cleanMods(opts && opts.mods);
-  if(mods.secrets && !(gens.includes(1) && gens.includes(2))) delete mods.secrets;   // 4.4.0: both bosses need both gens
+  const rushSecrets = mods.gauntlet ? gens.slice().sort((a, b) => a - b).map(g => GEN_SECRET[g]).filter(id => SECRETS[id]) : null;   // 6.22.0: every gen's own, in gen order
   seed = seed || Math.floor(Math.random() * 1e9);
   const evoPool = drawEvoPool(seed, gens);
   ACTIVE_POOL = evoPool;
@@ -3934,11 +3944,11 @@ function newGame(seed, opts){
     seed,
     gens, bossPlan: drawBossPlan(seed, gens),
     evoPool, focus: drawFocus(seed, gens),   // 4.1.0
-    redFlag: mods.secrets ? 'red' : ticket || drawSecret(seed, gens), ticketUsed: ticket, redOpen: false, redResult: null,
-    ...(mods.secrets ? { secrets: ['red', 'oak'], secIdx: 0, secWon: [] } : {}),   // 4.4.0   // 4.1.0
+    redFlag: rushSecrets ? rushSecrets[0] : ticket || drawSecret(seed, gens), ticketUsed: rushSecrets ? null : ticket, redOpen: false, redResult: null,
+    ...(rushSecrets ? { secrets: rushSecrets, secIdx: 0, secWon: [] } : {}),   // 6.22.0 the Gauntlet (4.4.0 Secret Gauntlet)   // 4.1.0
     mods, daily: (opts && opts.daily) || null,
-    turn: 1,
-    credits: TUNING.creditsPerTurn,
+    turn: mods.gauntlet ? RUSH_TURNS() : 1,                                 // 6.22.0: the Gauntlet opens with a big turn
+    credits: TUNING.creditsPerTurn * (mods.gauntlet ? RUSH_TURNS() : 1),
     lives: mods.onelife ? 1 : TUNING.startingLives,
     stage: 0,               // index into runPlan() — the run's schedule
     badges: 0,
@@ -3948,7 +3958,8 @@ function newGame(seed, opts){
     streak: 0,              // >0 win streak, <0 loss streak
     lastResult: null,
     income: null,           // breakdown of this turn's pay, for the UI
-    trainerExp: { hp:0, atk:0, spd:0 },   // TUNING.expModel === 'trainer'
+    trainerExp: mods.gauntlet ? (g => ({ hp:g.hp * (RUSH_TURNS() - 1), atk:g.atk * (RUSH_TURNS() - 1), spd:g.spd * (RUSH_TURNS() - 1) }))(TUNING.expGainWin)
+                              : { hp:0, atk:0, spd:0 },   // TUNING.expModel === 'trainer'; 6.22.0 the Gauntlet starts with the trainer wins a normal run has before Brock
     gauntlet: null,         // mid-Elite-Four: { hpFrac: { uid: 0..1 } }
     team: [],               // index 0 = front rank; fills the formation grid
     pc: [],                 // owned but not carried — spare copies live here
@@ -4797,6 +4808,12 @@ function applyBattleResult(G, result, opp, sim){
     // you will face them again if you fall further in, so remember what they fielded
     if(gauntlet && boss && opp) scout(G, boss, opp);
     G.stage = (G.stage || 0) + 1;
+    /* 6.22.0: Gauntlet — a gym won with another gym next means the trainer turns a normal run plays in between are
+       skipped, so the party trains as if it won them and the next turn is a big one (see nextTurn / incomeFor) */
+    if(rushOn(G) && st.kind === 'gym' && (stageOf(G) || {}).kind === 'gym'){
+      for(let k = 1; k < RUSH_TURNS(); k++) grantBattleExp(G, 'win', true);
+      G.rushBig = true;
+    }
     if(st.kind === 'champion'){
       G.gauntlet = null;
       if(G.redFlag && !G.redOpen){ G.redOpen = true; G.attempt = 0; }   // 4.1.0: he was waiting up on Mt. Silver
@@ -4813,7 +4830,7 @@ function applyBattleResult(G, result, opp, sim){
       if(boss && opp) scout(G, boss, opp);
       if(G.attempt > freeAttemptsFor(G)) G.lives--;
       // fall anywhere in the gauntlet and it starts again from Lorelei, healed
-      if(gauntlet){ G.stage = gauntletStart(); G.gauntlet = null; }
+      if(gauntlet){ G.stage = gauntletStart(G); G.gauntlet = null; }
       makeGameApi(G).log(`You blacked out! Lost ${lost}₽.`);
     } else {
       G.lives--;
@@ -4850,8 +4867,8 @@ function nextUp(G){
     lifeAtRisk: isBoss(st) && (G.attempt || 0) >= freeAttemptsFor(G),
     scouted: boss ? (G.scouted || {})[boss.id] || null : null,
     gauntlet: isGauntletStage(st) ? {
-      at: (G.stage || 0) - gauntletStart(),
-      members: plan.slice(gauntletStart()).map(p => p.boss),
+      at: (G.stage || 0) - gauntletStart(G),
+      members: plan.slice(gauntletStart(G)).map(p => p.boss),
       running: inGauntlet(G),
     } : null,
     // the shop turn before Lorelei is the last one until the gauntlet is over
@@ -4875,8 +4892,10 @@ function incomeFor(G){
   const rival = G.rivalPay || 0;                   // beating your rival pays next turn
   // 2.0.0: Rich & Ruthless doubles everything earned (not what you carried over)
   const rich = G.mods && G.mods.rich ? (TUNING.mods.richIncome - 1) * (base + result + streak + items + badges + rival) : 0;
-  return { carry, base, result, streak, items, badges, rival, rich,
-           total: carry + base + result + streak + items + badges + rival + rich };
+  // 6.22.0: a Gauntlet big turn pays what the skipped trainer turns would have (everything earned, times RUSH_TURNS)
+  const rush = G.rushBig ? (RUSH_TURNS() - 1) * (base + result + streak + items + badges + rival + rich) : 0;
+  return { carry, base, result, streak, items, badges, rival, rich, rush,
+           total: carry + base + result + streak + items + badges + rival + rich + rush };
 }
 
 function nextTurn(G){
@@ -4899,8 +4918,10 @@ function nextTurn(G){
     }
     return;
   }
+  if(G.rushBig) G.turn += RUSH_TURNS() - 1;   // 6.22.0: the clock keeps pace with a normal run
   G.turn++;
   const inc = incomeFor(G);
+  G.rushBig = false;
   G.income = inc;
   G.credits = inc.total;
   G.rivalPay = 0;
@@ -4924,7 +4945,7 @@ if(typeof module !== 'undefined' && module.exports){
     generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelUnitPower, duelItem, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
-    applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
+    applyBattleResult, grantBattleExp, incomeFor, nextTurn, rushOn, RUSH_TURNS, gauntletStart, mergeInto, addExp, applyLevelUp,
     trainerCatchUp, shareExp, pickWeighted, itemWeight, rarityOf, xUses, shopRng, mix32, vitaminsTaken, buyHeldOnto, BADGE_REWARDS, rewardById, rewardOffer, pendingOffer,
     chooseReward, perk, pcCap, bagCap, carryCap, rerollCost, timesTaken, rewardAvailable, gauntletStart, isGauntletStage, inGauntlet, hpFracOf, canFight,
     fightersOf, stageBattle, recordWounds, scout,

@@ -23,8 +23,10 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
     return { html: document.body.innerText, rec: records().oak, red: records().red || null, badge: !!document.querySelector('.redend .rdb') };
   });
   check(/Oak defeated!/.test(w.html) && /Pallet Town/i.test(w.html) && w.badge && w.rec.count === 1 && !w.red, 'winning: Oak Defeated screen, Oak’s Badge recorded (not Red’s)');
-  const card = await p.evaluate(() => { openTrainerCard(false); const t = [...document.querySelectorAll('.sbt[data-sb="red"], .sbt[data-sb="oak"]')].map(b => b.getAttribute('aria-label') + (b.classList.contains('on') ? ':on' : '')).join(); document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
-  check(/Red.s Badge/.test(card) && /Oak.s Badge:on/.test(card), 'Trainer Card shows both secret badges (' + card + ')');
+  // 6.22.0: one Secret Boss Badge for any secret boss; it lists who was beaten
+  const card = await p.evaluate(() => { openTrainerCard(false); const b = document.querySelector('.sbt[data-sb="secret"]'); b.click();
+    const t = b.getAttribute('aria-label') + (b.classList.contains('on') ? ':on ' : ' ') + document.querySelector('.sbinfo').textContent; document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
+  check(/Secret Boss Badge:on/.test(card) && /\u2714 Professor Oak|\u2714 Oak/.test(card) && /\u2013 Red/.test(card), 'Trainer Card: the Secret Boss Badge is earned and lists Oak, not Red (' + card.slice(0, 160) + ')');
   check((await p.evaluate(async () => (await runImage()).size)) > 5000, 'summary image renders for Oak');
   const lose = await p.evaluate(() => {
     G = newGame(12, { gens: [1] }); G.redFlag = 'oak'; G.redOpen = true; G.stage = runPlan(G).length - 1;

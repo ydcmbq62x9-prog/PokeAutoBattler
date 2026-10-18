@@ -31,10 +31,11 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   check(await p.evaluate(() => { newRun({ mods:{ nolegend:true } }); G.over = 'lost'; noteRunEnd(); return !(records().chal.nolegend); }), 'a lost run earns no badge');
   // trainer card
   await p.evaluate(() => { document.querySelectorAll('.modal').forEach(m => m.remove()); openTrainerCard(); });
-  check(await p.evaluate(() => document.querySelectorAll('.sbt').length === 10 && document.querySelectorAll('.sbt.on').length === 5 && document.querySelectorAll('.sbt.gold').length === 3), 'Trainer Card: 10 tiles, 5 earned, 3 gold');
+  // 6.22.0: the tile count comes from the game (Red's and Oak's badges became one Secret Boss Badge)
+  check(await p.evaluate(() => document.querySelectorAll('.sbt').length === specialBadges().all.length && document.querySelectorAll('.sbt.on').length === 5 && document.querySelectorAll('.sbt.gold').length === 3), 'Trainer Card: a tile per special badge, 5 earned, 3 gold');
   await p.click('[data-sb="mono"]');
   check(await p.evaluate(() => /Mono Badge/.test(document.querySelector('.sbinfo').textContent) && document.querySelector('.sbtypes i').textContent === 'Fire'), 'tapping a tile explains it (Mono shows its types)');
-  await p.click('[data-sb="red"]');
+  await p.click('[data-sb="secret"]');   // 6.22.0: the Secret Boss Badge replaced Red's
   check(await p.evaluate(() => /Not earned yet/.test(document.querySelector('.sbinfo').textContent)), 'locked tiles say how to earn them');
   // transfer merge keeps the best of both
   const mg = await p.evaluate(() => mergeChal({ mono:{ count:2, types:['Fire'], first:'2026-10-01', last:'2026-10-02' } }, { mono:{ count:1, gold:1, types:['Water'], first:'2026-09-30', last:'2026-09-30' }, tight:{ count:1, first:'2026-10-03', last:'2026-10-03' } }));

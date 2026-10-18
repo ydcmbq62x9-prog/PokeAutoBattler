@@ -38,8 +38,8 @@ let fails = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') +
   });
   check(/Red defeated!/.test(win.first.html) && /Mt\. Silver/i.test(win.first.html) && win.first.badge, 'winning: Red Defeated screen with badge');
   check(win.first.rec.count === 1 && win.first.isNew && win.again === 1, 'badge recorded once, flagged NEW once');
-  const card = await p.evaluate(() => { openTrainerCard(false); const b = document.querySelector('.sbt[data-sb="red"]'); b.click(); const t = (b.classList.contains('on') ? 'ON ' : '') + document.querySelector('.sbinfo').textContent; document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
-  check(/^ON /.test(card) && /Red.s Badge/.test(card) && !/Not earned yet/.test(card), 'Trainer Card shows Red’s Badge as earned');
+  const card = await p.evaluate(() => { openTrainerCard(false); const b = document.querySelector('.sbt[data-sb="secret"]'); b.click();   /* 6.22.0: one badge for every secret boss */ const t = (b.classList.contains('on') ? 'ON ' : '') + document.querySelector('.sbinfo').textContent; document.querySelectorAll('.modal').forEach(m => m.remove()); return t; });
+  check(/^ON /.test(card) && /Secret Boss Badge/.test(card) && /\u2714 Red/.test(card) && !/Not earned yet/.test(card), 'Trainer Card shows the Secret Boss Badge as earned, with Red ticked');
   const img = await p.evaluate(async () => { const bl = await runImage(); return bl ? bl.size : 0; });
   check(img > 5000, 'summary image renders with the Red banner (' + img + ' bytes)');
   /* transfer merge */

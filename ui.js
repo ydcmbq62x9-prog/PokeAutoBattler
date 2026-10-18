@@ -15,7 +15,7 @@ const SPRITES = {};
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.21.2', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.22.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -281,7 +281,7 @@ function load(key){
       d.G.pendingRewards = Array.from({ length: d.G.badges || 0 }, (_, i) => i);
     }
     if(!('gauntlet' in d.G)){
-      d.G.gauntlet = (d.G.stage || 0) > gauntletStart() && !d.G.over ? { hpFrac: {} } : null;
+      d.G.gauntlet = (d.G.stage || 0) > gauntletStart(d.G) && !d.G.over ? { hpFrac: {} } : null;
     }
     fixSlots(d.G);     // v34: saves from before free placement stand where they were listed
     return d;
@@ -1573,8 +1573,8 @@ function renderBattle(){
               : battle.kind === 'rival' ? 'Rival beaten!' : 'Victory!')
         : r === 'lose' ? (battle.boss && battle.kind !== 'rival' && battle.kind !== 'red' ? 'Blacked out' : 'Defeat') : 'Draw'}</span></div>` : '';
   const redNote = !done ? '' : battle.kind === 'red'
-    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge(battle.boss.id, 'big')}
-        <div><b>${esc(battle.boss.name)}\u2019s Badge</b><span>${G.secrets && (G.secIdx || 0) < G.secrets.length - 1 ? `${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].name)} is next, at ${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].place)}. You are healed and the shops are open for one turn.` : battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
+    ? (won ? `<div class="award redwin">${bossArt(battle.boss, 'hero')}${secretBadge('secret', 'big')}
+        <div><b>${esc(battle.boss.name)} beaten \u00b7 Secret Boss Badge</b><span>${G.secrets && (G.secIdx || 0) < G.secrets.length - 1 ? `${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].name)} is next, at ${esc(SECRETS[G.secrets[(G.secIdx || 0) + 1]].place)}. You are healed and the shops are open for one turn.` : battle.boss.id === 'oak' ? 'The professor is proud of you.' : 'You beat the strongest trainer there is.'}</span></div></div>`
       : `<div class="award redlose">${bossArt(battle.boss, 'hero')}
         <div><b>${esc(battle.boss.name)} ${battle.boss.id === 'oak' ? 'smiles and shakes his head.' : 'didn\u2019t flinch.'}</b><span class="dim">Nothing is lost. Your run ends as the Champion clear it already was.</span></div></div>`)
     : battle.kind === 'champion' && won && G.redOpen
@@ -2600,7 +2600,7 @@ function handBadge(S, b, L){
   if(battle !== b || !S.el.isConnected) return;
   const { w, body, size, ms } = L, gym = b.kind === 'gym';
   const name = gym ? `${b.boss.badge} Badge` : `${b.boss.name}’s Badge`;
-  const html = gym ? `<i class="bdg ${badgeCls(G, G.badges % 8)} on big"></i>` : secretBadge(b.boss.id, 'big');
+  const html = gym ? `<i class="bdg ${badgeCls(G, G.badges % 8)} on big"></i>` : secretBadge('secret', 'big');
   leaderSay(L, gym ? `You’ve earned it. The ${name}!` : (b.boss.id === 'oak' ? 'Take this, with my compliments.' : '…'), 2600);
   anim(body, [{ scale: '1' }, { scale: '1.1' }, { scale: '1' }], { duration: ms(360), easing: 'ease-out' });
   const bd = document.createElement('div'); bd.className = 'wbadge'; bd.innerHTML = html + '<i class="wglow"></i>';
@@ -3050,7 +3050,7 @@ function redOverHtml(){
     <div><b>${esc(sb.place)}${w && G.redNew ? ' <i class="newdot">New</i>' : ''}</b>
     <span>${w ? `You beat ${esc(sb.name)} and his whole team: ${team.slice(0, -1).join(', ')} and ${team[team.length - 1]}.${(() => { const h = secretRec(sb.id); return h && !G.redNew ? ` That is ${h.count} in all.` : ''; })()}`
       : sb.id === 'oak' ? 'The professor smiled and sent you home. Nothing was lost.' : 'Red didn\u2019t say a word, and you walked back down. Nothing was lost.'}</span></div>
-    ${w ? `<span class="rpika">${miniSprite(sb.id === 'oak' ? 'bulbasaur' : 'pikachu')}</span>${secretBadge(sb.id, 'big')}` : ''}</div>`;
+    ${w ? `<span class="rpika">${miniSprite(({ oak:'bulbasaur', red:'pikachu', steven:'metagross' })[sb.id] || 'pikachu')}</span>${secretBadge('secret', 'big')}` : ''}</div>`;
 }
 function renderOver(){
   const won = G.over === 'won';
@@ -3324,7 +3324,7 @@ function applyPreset(p){
 function openNewRun(onStart){
   const cur = mainRun();
   const live = cur && !cur.over && ((cur.stage || 0) > 0 || cur.turn > 1);
-  const pick = { mono: null, nopc: false, rich: false, onelife: false, secrets: false, ticket: null, noitems: false, nolegend: false, hardgyms: false, tight: false };
+  const pick = { mono: null, nopc: false, rich: false, onelife: false, gauntlet: false, ticket: null, noitems: false, nolegend: false, hardgyms: false, tight: false };
   const lastGens = cleanGens(String(PREF.get('gens', '1')).split(',').map(Number)).filter(n => GENS_READY.includes(n));
   let gens = lastGens.length ? lastGens : [1];   // 4.0.0: remembered from your last run
   const allTypes = Object.keys(TYPES);
@@ -3338,7 +3338,7 @@ function openNewRun(onStart){
     <div class="mods">
       <button class="modt" data-mod="mono"><b>${chalBadge('mono', 'sm')}Mono-type</b><span>Pick a type: the Daycare sells only that type. Opponents are tuned so every type is about as hard. Clear it for the Mono Badge.</span></button>
       <div class="monotypes" hidden>${allTypes.map(t => `<button class="ntype" data-type="${t}" style="--c:${TYPES[t].color}">${t}</button>`).join('')}</div>
-      <button class="modt" data-mod="secrets"><b>${esc(MOD_INFO.secrets.name())}</b><span>${esc(MOD_INFO.secrets.text())}<em class="gneed"></em></span></button>
+      <button class="modt" data-mod="gauntlet"><b>${esc(MOD_INFO.gauntlet.name())}</b><span>${esc(MOD_INFO.gauntlet.text())}</span></button>
       <button class="modt" data-mod="rich"><b>${esc(MOD_INFO.rich.name())}</b><span>${esc(MOD_INFO.rich.text())}</span></button>
     </div>
     <h4>Challenges <span class="dim">a badge each</span></h4>
@@ -3360,11 +3360,7 @@ function openNewRun(onStart){
     d.querySelectorAll('.ntype').forEach(b => b.hidden = !types.includes(b.dataset.type));
     note.textContent = gens.length > 1 ? `8 of the ${gens.length * 8} gym leaders and 4 of the Elite Four are drawn and shuffled; each is scaled to the slot they land in. Each run also draws 3 Focus lines the Daycare shows more often, and 4 open cross-gen evolutions.`
       : `${GENS[gens[0]].region}: its own gym leaders, Elite Four and Champion.`;
-    const gOk = gens.includes(1) && gens.includes(2) && ticketCount('red') > 0 && ticketCount('oak') > 0;
-    if(pick.secrets && !gOk) pick.secrets = false;
-    const gb = d.querySelector('[data-mod="secrets"]'); gb.classList.toggle('off', !gOk);
-    gb.querySelector('.gneed').textContent = gOk ? '' : ` Locked: ${!(gens.includes(1) && gens.includes(2)) ? 'turn on Gen 1 and Gen 2' : 'needs a Red ticket and an Oak ticket'}.`;
-    if(pick.secrets) pick.ticket = null;
+    if(pick.gauntlet) pick.ticket = null;   // 6.22.0: every secret boss already waits in a Gauntlet run
     if(pick.ticket && !gens.includes(SECRETS[pick.ticket].gen)) pick.ticket = null;
     d.querySelectorAll('[data-tkt]').forEach(b => { const ok = gens.includes(SECRETS[b.dataset.tkt].gen); b.classList.toggle('on', pick.ticket === b.dataset.tkt); b.classList.toggle('off', !ok); b.setAttribute('aria-disabled', ok ? 'false' : 'true'); });
     d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.classList.toggle('on', b.dataset.mod === 'mono' ? !!pick.mono || !types$.hidden : !!pick[b.dataset.mod]));
@@ -3377,7 +3373,6 @@ function openNewRun(onStart){
   };
   d.querySelectorAll('.modt:not([data-tkt])').forEach(b => b.onclick = () => {
     const k = b.dataset.mod; SFX.play('tap');
-    if(k === 'secrets' && b.classList.contains('off')){ say(b.querySelector('.gneed').textContent.trim()); return; }
     if(k === 'mono'){ if(types$.hidden){ types$.hidden = false; } else { types$.hidden = true; pick.mono = null; } }
     else pick[k] = !pick[k];
     sync();
@@ -3385,7 +3380,7 @@ function openNewRun(onStart){
   d.querySelectorAll('[data-tkt]').forEach(b => b.onclick = () => {
     const id = b.dataset.tkt; SFX.play('tap');
     if(!gens.includes(SECRETS[id].gen)){ say(`${SECRETS[id].name} needs ${GENS[SECRETS[id].gen].name} in the run.`); return; }
-    pick.ticket = pick.ticket === id ? null : id; if(pick.ticket) pick.secrets = false; sync();
+    pick.ticket = pick.ticket === id ? null : id; if(pick.ticket) pick.gauntlet = false; sync();
   });
   d.querySelectorAll('.ntype').forEach(b => b.onclick = () => { pick.mono = b.dataset.type; SFX.play('tap'); sync(); });
   d.querySelectorAll('.gent').forEach(b => b.onclick = () => {
@@ -3400,8 +3395,6 @@ function openNewRun(onStart){
     if(G && !G.daily) noteQuit();
     PREF.set('gens', gens);
     const secret = pick.ticket && gens.includes(SECRETS[pick.ticket].gen) && useTicket(pick.ticket) ? pick.ticket : null;
-    if(pick.secrets && !(ticketCount('red') > 0 && ticketCount('oak') > 0)) pick.secrets = false;
-    if(pick.secrets){ useTicket('red'); useTicket('oak'); }
     const { ticket: _t, ...mods } = pick;
     newRun({ mods, gens, secret });
     undo = null; drawnPhase = null; render();
@@ -4391,6 +4384,14 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.22.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'The Gauntlet: a bosses-only run, and one Secret Boss Badge', items:[
+    'New run rule: Gauntlet. Bosses only: the eight gym leaders, the Elite Four and the Champion, then the secret boss of every generation in the run (Professor Oak for Gen 1, Red for Gen 2, Steven for Gen 3), back to back, one try each. Works with any generations, and needs no tickets.',
+    'No trainer battles, so the first turn and the turn after each gym win are big turns: they pay and train like four ordinary turns, and the shop moves on as far. A retry after a lost gym is an ordinary turn.',
+    'Gauntlet opponents are measured so a run is cleared about as often as a normal run of the same generations (opponents at 77\u201383% strength, by generations).',
+    'Clear a Gauntlet run, every secret boss included, for the Gauntlet Badge.',
+    'Red\'s Badge and Oak\'s Badge become one Secret Boss Badge, earned by beating any secret boss, Steven included. It shows which ones you have beaten and turns gold once you have beaten all three. Badges you already earned carry over.',
+    'The Secret Gauntlet (Red and Oak with tickets) is replaced by the Gauntlet; a run already on it finishes as it was.',
+  ] },
   { v:'6.21.2', date:'Oct 18, 2026', title:'Visual bug fixes', sub:'Pok\u00e9dex: secret bosses by gen, close button below the status bar', items:[
     'Pok\u00e9dex: each secret boss shows only under the gen it belongs to, and with All gens they are listed in order (Gen 1, Gen 2, Gen 3).',
     'Pok\u00e9dex: in the home-screen app on an iPhone the close button no longer hides under the clock and battery.',
@@ -5156,10 +5157,23 @@ function hcBadge(cls = ''){
    Sprites folder to replace the drawn badge. */
 const secretBoss = () => secretOf(G) || RED;
 const SECRET_HOW = { red:'Beat Red on Mt. Silver. He turns up in about one Gen 2 run in six, after the Champion.',
-                     oak:'Beat Professor Oak in Pallet Town. He turns up in about one Gen 1 run in six, after the Champion.' };
-const GAUNT_HOW = 'Beat both Red and Oak in one Secret Gauntlet run (Gen 1 + Gen 2, costs a ticket for each).';
+                     oak:'Beat Professor Oak in Pallet Town. He turns up in about one Gen 1 run in six, after the Champion.',
+                     steven:'Beat Steven at Meteor Falls. He turns up in about one Gen 3 run in six, after the Champion.' };
+/* 6.22.0 (Sean): one Secret Boss Badge for beating any secret boss (it lists who), gold once all three are beaten; the
+   Gauntlet Badge is for clearing a Gauntlet run. Both are read from the per-boss records, so badges already earned carry over. */
+const SECRET_IDS = () => Object.keys(GEN_SECRET).map(Number).sort((a, b) => a - b).map(g => GEN_SECRET[g]).filter(id => SECRETS[id]);
+const SECRET_BADGE_HOW = 'Beat any secret boss: Professor Oak (Gen 1), Red (Gen 2) or Steven (Gen 3). Each turns up after the Champion in about one run in six, or call one with a Secret Boss Ticket. Beat all three and the badge turns gold.';
+const GAUNT_HOW = 'Clear a Gauntlet run (New Run → Gauntlet): every gym leader, the Elite Four, the Champion and the secret boss of every generation in the run.';
+function secretBadgeRec(){
+  const R = records(), hs = SECRET_IDS().map(id => R[id]).filter(h => h && h.count);
+  if(!hs.length) return null;
+  const who = SECRET_IDS().filter(id => R[id] && R[id].count);
+  return { count: hs.reduce((n, h) => n + h.count, 0), first: hs.map(h => h.first).filter(Boolean).sort()[0] || null,
+           last: hs.map(h => h.last).filter(Boolean).sort().pop() || null, who, gold: who.length >= SECRET_IDS().length ? 1 : 0 };
+}
 function redBadge(cls = ''){ return secretBadge('red', cls); }
 function secretBadge(id, cls = ''){
+  if(id === 'secret') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Secret Boss Badge"><circle cx="16" cy="16" r="14.5" fill="#1d2440" stroke="#e0a526" stroke-width="2"/><circle cx="16" cy="16" r="10.5" fill="none" stroke="#e0a526" stroke-width="1" opacity=".55"/><path d="M16 6.5l2.6 6 6.4.6-4.9 4.2 1.5 6.3L16 20.3l-5.6 3.3 1.5-6.3-4.9-4.2 6.4-.6z" fill="#ffd23a" stroke="#2b1a22" stroke-width="1"/><circle cx="16" cy="15.5" r="2" fill="#2b1a22"/></svg>`;
   if(id === 'gauntlet') return `<svg class="hcb rdb ${cls}" viewBox="0 0 32 32" role="img" aria-label="Gauntlet Badge"><circle cx="16" cy="16" r="14.5" fill="#2b1a22" stroke="#e0a526" stroke-width="2"/><path d="M1.5 16a14.5 14.5 0 0 1 14.5-14.5v29A14.5 14.5 0 0 1 1.5 16z" fill="#d6342c"/><path d="M16 1.5a14.5 14.5 0 0 1 0 29z" fill="#3d9a4c"/><circle cx="16" cy="16" r="6" fill="#fff" stroke="#2b1a22" stroke-width="1.5"/><polygon points="17,10 13,17 16,17 15,22 19,15 16.2,15" fill="#ffd23a" stroke="#2b1a22" stroke-width=".8"/></svg>`;
   const nm = id === 'oak' ? 'Oak\u2019s Badge' : 'Red\u2019s Badge', img = id === 'oak' ? SPRITES.oakbadge : SPRITES.redbadge;
   if(img) return `<img class="hcb rdb ${cls}" src="${img}" alt="${nm}">`;
@@ -5281,10 +5295,8 @@ const mergeChal = (a, b) => {
 /** Every special badge — secret bosses first, then challenges — with its record (or null). */
 function specialBadges(){
   const R = records();
-  const sec = [['red', 'Red’s Badge', 'Red'], ['oak', 'Oak’s Badge', 'Oak'], ['gauntlet', 'Gauntlet Badge', 'Gauntlet']].map(([id, name, short]) => {
-    const rec = R[id] && R[id].count ? R[id] : null;
-    return { id, kind:'sec', name, short, rec, how: id === 'gauntlet' ? GAUNT_HOW : SECRET_HOW[id], icon: cls => secretBadge(id, cls) };
-  });
+  const sec = [{ id:'secret', kind:'sec', name:'Secret Boss Badge', short:'Secret', rec:secretBadgeRec(), how:SECRET_BADGE_HOW, icon: cls => secretBadge('secret', cls) },
+               { id:'gauntlet', kind:'sec', name:'Gauntlet Badge', short:'Gauntlet', rec: R.gauntlet && R.gauntlet.count ? R.gauntlet : null, how:GAUNT_HOW, icon: cls => secretBadge('gauntlet', cls) }];
   const ch = CHAL.map(c => ({ id:c.id, kind:'chal', name:c.name, short:c.short, rec:chalRec(c.id), how:c.how, icon: cls => chalBadge(c.id, cls) }));
   return { sec, ch, all:[...sec, ...ch] };
 }
@@ -5298,11 +5310,13 @@ function titleBadgesHtml(){
 }
 function sbInfoHtml(b){
   if(!b) return `<span class="dim">Tap a badge to see what it is and how to earn it.</span>`;
-  const r = b.rec, tk = (b.id === 'red' || b.id === 'oak') && ticketCount(b.id) ? ` <em class="tkt">🎫 ${ticketCount(b.id)} ticket${ticketCount(b.id) === 1 ? '' : 's'}</em>` : '';
-  const gold = r && r.gold ? ` · <b class="gtxt">gold ×${r.gold}</b>` : '';
+  const r = b.rec, tks = b.id === 'secret' ? SECRET_IDS().filter(id => ticketCount(id)) : [];
+  const tk = tks.length ? ` <em class="tkt">🎫 ${tks.map(id => `${esc(SECRETS[id].name)} ×${ticketCount(id)}`).join(', ')}</em>` : '';
+  const gold = r && r.gold ? (b.id === 'secret' ? ' · <b class="gtxt">gold: all three beaten</b>' : ` · <b class="gtxt">gold ×${r.gold}</b>`) : '';
+  const who = b.id === 'secret' && r ? `<span class="sbwho">${SECRET_IDS().map(id => `<i class="${r.who.includes(id) ? 'on' : ''}">${r.who.includes(id) ? '\u2714' : '\u2013'} ${esc(SECRETS[id].name)}</i>`).join('')}</span>` : '';
   const types = b.id === 'mono' && r && r.types && r.types.length ? `<span class="sbtypes">${r.types.map(t => `<i style="--c:${(TYPES[t] || {}).color || '#888'}">${esc(t)}</i>`).join('')}</span>` : '';
   const goldHow = b.kind === 'chal' ? ` Clear with ${GOLD_AT} or more challenges on at once for the gold version.` : '';
-  return `${b.icon(r ? (r.gold ? 'gold' : '') : 'locked')}<div><b>${esc(b.name)}</b><span>${r ? esc(hcLine(r)) + gold : 'Not earned yet.'} ${esc(b.how)}${goldHow}${tk}</span>${types}</div>`;
+  return `${b.icon(r ? (r.gold ? 'gold' : '') : 'locked')}<div><b>${esc(b.name)}</b><span>${r ? esc(b.id === 'secret' ? `${r.count} secret boss win${r.count === 1 ? '' : 's'}${r.first ? ` · first ${prettyDate(r.first)}` : ''}` : hcLine(r)) + gold : 'Not earned yet.'} ${esc(b.how)}${goldHow}${tk}</span>${who}${types}</div>`;
 }
 function specialBadgesHtml(){
   const S = specialBadges();
