@@ -3351,6 +3351,7 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
 .dslot .unit{height:auto;flex:0 0 auto}
 .dslot > .dcard-item,.dslot > select,.dslot > .dctl{flex:0 0 auto}
 .dslot > .dcard-item,.dslot > select{margin-top:auto}
+.dslot > .dcard-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .dslot.empty{justify-content:center;--pb:34px}
 .dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
 /* 6.18.0: box filter (role buttons, type, sort) */
@@ -3514,7 +3515,12 @@ const TUNING = {
   eggCap:       12,
   /* Duels (multiplayer branch): a 30-slot box, six per team, three games, a power budget per team. Budget = the median
      'six best pokémon from one winning run' (4188 in 140 bot clears), so the six strongest in a mixed box don't fit. */
-  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200 },
+  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200,
+    /* 6.20.0 (Sean): a battle-effect item costs power in a duel. Each number is the part of the item's worth that its
+       stat bonus does not already count, as a share of the holder's own power, by the holder's role (an item is worth
+       more on some roles: Life Orb on a Cannon, Iron Ball on a Tank). Measured with duelitemreport.js (2000 duels per
+       item and role, ±1 point); under 2 points counts as nothing. Plain stat items are already counted in full. */
+    itemPower: { lefto:{ tank:0.04, bruiser:0.05, support:0.06, cannon:0.04 }, sitrus:{ tank:0.11, bruiser:0.07, support:0.03 }, focus:{ tank:0.16, bruiser:0.1, support:0.07, cannon:0.04 }, coat:{ tank:0.12, bruiser:0.07, support:0.05, cannon:0.02 }, bell:{ tank:0.03, bruiser:0.07, support:0.05, cannon:0.08 }, helmet:{ tank:0.07, bruiser:0.05, support:0.04, cannon:0.02 }, orb:{ tank:0.04, bruiser:0.14, support:0.16, cannon:0.21 }, iron:{ tank:0.22, bruiser:0.09, support:0.05, cannon:0.04 }, scale:{ tank:0.03, bruiser:0.03, support:0.17, cannon:0.03 }, char:{ bruiser:0.03, support:0.05, cannon:0.06 }, sbell:0.08, plate:0.07 } },
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -7059,7 +7065,7 @@ const snapUnit = (u, bid, from) => ({ bid: bid || ('b' + Math.random().toString(
 function thawUnit(s, pos, item){
   const u = makeUnit(s.id, s.exp);
   u.hp = s.hp; u.atk = s.atk; u.spd = s.spd; u.bid = s.bid;
-  u.held = item === undefined ? (s.held || null) : (item || null);
+  u.held = duelItem(item === undefined ? s.held : item);
   if(Number.isInteger(pos)) u.pos = pos;
   return u;
 }
@@ -7071,7 +7077,15 @@ function inDuelGens(fn){
   if(g.join() !== GENS_READY.join()) setActiveGens(GENS_READY); ACTIVE_POOL = null;
   try{ return fn(); } finally { if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); ACTIVE_POOL = pool; }
 }
-const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + unitPower(u), 0));
+/** 6.20.0 (Sean): run-economy items (Lucky Egg, Amulet Coin) are switched off in a duel: no effect, no power, not in the item pool. */
+const duelItem = id => (id && HELD_ITEMS[id] && HELD_ITEMS[id].kind !== 'economy') ? id : null;
+/** A pokémon's power in a duel: its stats with the item, plus what a battle-effect item is worth (TUNING.duel.itemPower). */
+function duelUnitPower(u){
+  const h = u.held && HELD_ITEMS[u.held], c = h && (!h.when || h.when(u)) ? TUNING.duel.itemPower[u.held] : 0;
+  const extra = typeof c === 'number' ? c : (c && c[roleOf(u)]) || 0;
+  return unitPower(u) + extra * (u.hp + u.atk + TUNING.spdPower * u.spd);
+}
+const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + duelUnitPower(u), 0));
 /** Which pokémon can be brought to the next game, and which are resting. */
 function duelEligible(set, box){
   const rest = new Set(set.rest || []);
@@ -7079,7 +7093,7 @@ function duelEligible(set, box){
 }
 function newDuelSet(me, ver){ return { proto:DUEL_PROTO, ver:ver || '', me:me || 'Trainer', opp:'', id:'', game:1, games:[], pool:null, rest:[], budget:TUNING.duel.budget, locked:null, over:null }; }
 /** Items the set may use: every item on the six brought to game 1. */
-const duelPoolOf = (box, picks) => picks.map(p => (box.find(s => s.bid === p.bid) || {}).held).filter(Boolean);
+const duelPoolOf = (box, picks) => picks.map(p => duelItem((box.find(s => s.bid === p.bid) || {}).held)).filter(Boolean);
 /** Check a team of picks ({bid,pos,item}) against the rules. Returns '' when fine, otherwise why not. */
 function duelCheckPicks(set, box, picks){ return inDuelGens(() => checkPicks(set, box, picks)); }
 function checkPicks(set, box, picks){
@@ -7094,7 +7108,7 @@ function checkPicks(set, box, picks){
   }
   const pool = set.pool || duelPoolOf(box, picks);
   if(!set.pool){                       // game 1: everyone holds what they were saved with
-    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if((p.item || null) !== (s.held || null)) return 'Items cannot move before game 1.'; } }
+    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if(duelItem(p.item) !== duelItem(s.held)) return 'Items cannot move before game 1.'; } }
   const left = pool.slice();
   for(const p of picks) if(p.item){ const i = left.indexOf(p.item); if(i < 0) return `You have no spare ${HELD_ITEMS[p.item] ? HELD_ITEMS[p.item].name : p.item} in this set.`; left.splice(i, 1); }
   const power = Math.round(duelPower(units));
@@ -7104,7 +7118,7 @@ function checkPicks(set, box, picks){
 /** The lock-in code: your six, frozen, plus enough about the set for the other side to check it. */
 function duelCode(set, box, picks){
   const t = picks.map(p => { const s = box.find(x => x.bid === p.bid);
-    return [s.id, s.hp, s.atk, s.spd, s.exp, p.item || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
+    return [s.id, s.hp, s.atk, s.spd, s.exp, duelItem(p.item) || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
   const body = { p:DUEL_PROTO, ver:set.ver, n:set.me, s:set.id, g:set.game, b:set.budget, t };
   const json = JSON.stringify(body), ck = hash32(json).toString(36);
   const b64 = (typeof btoa !== 'undefined') ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64');
@@ -7122,7 +7136,7 @@ function duelParse(code){
   }catch(e){ return { err:'That is not a duel code.' }; }
 }
 const duelUnits = parsed => parsed.units.map(r => { const u = makeUnit(r[0], r[4] | 0); u.hp = Math.max(1, r[1] | 0); u.atk = Math.max(0, r[2] | 0); u.spd = Math.max(1, r[3] | 0);
-  u.held = r[5] && HELD_ITEMS[r[5]] ? r[5] : null; u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
+  u.held = duelItem(r[5]); u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
 /** Is the opponent's code a legal move in this set? '' when yes. */
 function duelCheckOpponent(set, parsed){ return inDuelGens(() => checkOpponent(set, parsed)); }
 function checkOpponent(set, parsed){
@@ -7143,7 +7157,7 @@ function checkOpponent(set, parsed){
     for(const u of units) if(sat.has(u.bid)) return `${u.nm} fainted last game and should be sitting this one out.`;
   }
   /* items: game 1 is whatever they were saved with; later games may only use the game-1 pool */
-  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => u.held).filter(Boolean)).slice();
+  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => duelItem(u.held)).filter(Boolean)).slice();
   if(set.game > 1){ for(const u of units) if(u.held){ const i = pool.indexOf(u.held); if(i < 0) return 'Their team has an item they did not bring to the set.'; pool.splice(i, 1); } }
   return '';
 }
@@ -7165,9 +7179,9 @@ const duelWins = set => ({ me: set.games.filter(g => g.result === 'win').length,
 function duelApply(set, out){
   const first = !set.games.length;
   if(first){ set.opp = out.theirs.name; set.id = hash32(out.iAmP ? out.mine.raw + '|' + out.theirs.raw : out.theirs.raw + '|' + out.mine.raw).toString(36);   // same on both devices
-    set.pool = out.mine.units.map(r => r[5]).filter(Boolean); }     // the items on the six brought to game 1
+    set.pool = out.mine.units.map(r => duelItem(r[5])).filter(Boolean); }     // the items on the six brought to game 1
   set.games.push({ result: out.myResult, myFainted: out.myFainted, theirFainted: out.theirFainted, mine: out.mine.units.map(r => r[7]),
-    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => r[5]).filter(Boolean) : set.games[0].theirPool });
+    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => duelItem(r[5])).filter(Boolean) : set.games[0].theirPool });
   set.rest = out.myFainted.slice();             // fainted: sits out the next game only
   const w = duelWins(set);
   if(w.me >= 2 || w.opp >= 2 || set.games.length >= TUNING.duel.games){
@@ -8290,7 +8304,7 @@ if(typeof module !== 'undefined' && module.exports){
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
-    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
+    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelUnitPower, duelItem, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
@@ -8707,7 +8721,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.19.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.20.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -13083,6 +13097,11 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.20.0', date:'Oct 18, 2026', title:'Balance patch', sub:'Duels: battle items cost power, Lucky Egg and Amulet Coin switched off', items:[
+    'Lucky Egg and Amulet Coin only help during a run, so in a duel they are switched off: no effect, no power, and not part of the set\'s item pool. Your saved pok\u00e9mon still keep them.',
+    'Items with a battle effect now count against the duel power budget, by what they are worth on the pok\u00e9mon holding them (measured over 2000 duels per item and role): Life Orb +21% on a Cannon, Iron Ball +22% and Focus Band +16% on a Tank, Heart Scale +17% on a Support, Assault Vest +12% and Sitrus Berry +11% on a Tank, Shell Bell +8% on a Cannon, Soothe Bell +8%, Bulk Plate +7% on top of its HP, Rocky Helmet +7% on a Tank, Leftovers +4\u20136%, Expert Belt +3\u20136% on top of its Attack. The same item costs less on a pok\u00e9mon that makes less of it.',
+    'Plain stat items (Muscle Band, Quick Claw, Scope Lens, Black Belt, Choice Band, Eviolite) cost the same as before: just their stats.',
+  ] },
   { v:'6.19.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: Eviolite works the same on both phones', items:[
     'Eviolite in a duel no longer depends on the run each phone has open. A pok\u00e9mon counts as able to evolve if it has a later evolution anywhere in the game (Golbat, Onix, Scyther and others now always get the +50% HP). Before, two phones could show different HP and different fights.',
   ] },
@@ -14870,9 +14889,12 @@ const putDuelSet = s => { try{ if(s) localStorage.setItem(DUEL_SET_KEY, JSON.str
 const duelDev = () => { try{ if(location.hash === '#dev') localStorage.setItem('pkb_dev', '1'); return localStorage.getItem('pkb_dev') === '1'; }catch(e){ return false; } };
 const DUEL = TUNING.duel;
 const itemName = id => (HELD_ITEMS[id] || {}).name || '';
+/** 6.20.0: what a saved item shows on its card; run-economy items say they are switched off in duels. */
+const itemLine = id => !id ? '<span class="dim">no item</span>' : duelItem(id) ? '🎒 ' + esc(itemName(id))
+  : `<span class="dim" title="Only helps during a run, so it is switched off in duels">🎒 <s>${esc(itemName(id))}</s> off</span>`;
 const cardOf = (s, extra) => { const u = thawUnit(s); u.uid = 'd' + s.bid;
   return `<div class="slot dcard ${extra && extra.cls || ''}" ${extra && extra.attr || ''} style="border-style:solid">${unitHtml(u, { held:false })}
-    ${extra && extra.noitem ? '' : `<div class="dcard-item">${s.held ? '🎒 ' + esc(itemName(s.held)) : '<span class="dim">no item</span>'}</div>`}${extra && extra.foot || ''}</div>`; };
+    ${extra && extra.noitem ? '' : `<div class="dcard-item">${itemLine(s.held)}</div>`}${extra && extra.foot || ''}</div>`; };
 
 /* ---------------- live link (WebRTC, no server) ----------------
    One player hosts and gets a 4-letter code; the other types it. The free PeerJS matchmaking server only introduces the
@@ -15140,7 +15162,8 @@ function openDuelHow(){
     <p><b>Your box.</b> It holds ${DUEL.boxSize} pokémon, saved exactly as they were: their level, stats and held item are frozen. At the end of a run you save up to ${DUEL.saveWin} from a win, or ${DUEL.saveLoss} from a loss.</p>
     <p><b>A set.</b> Best of ${DUEL.games}: first to two wins. Each game you bring up to ${DUEL.bring} from your box, and the team has to fit the power budget (${DUEL.budget}).</p>
     <p><b>Fainting.</b> A pokémon that faints sits out the next game only, so you need about twelve usable.</p>
-    <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.</p>
+    <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.
+      Items with a battle effect (Leftovers, Focus Band, Life Orb and the like) add to a pokémon's power, so they count against the budget. Lucky Egg and Amulet Coin only help during a run, so they are switched off in duels.</p>
     <p><b>Playing.</b> One of you taps Host and reads out the 4-letter code, the other taps Join and types it. Pick your team and lock it in: your friend only sees that you are locked in, never your team, until you both press Fight and watch the same battle together.</p>
     <div class="btnrow"><button class="btn primary" data-m="close">Got it</button></div>`);
   d.addEventListener('click', ev => { if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); } });
@@ -15152,7 +15175,7 @@ const BOXF = { role:'', type:'', by:'power' };
 const BOX_SORTS = { power:'Power', atk:'Attack', hp:'HP', spd:'Speed', name:'Name', new:'Newest' };
 const snapType = s => (SPECIES[s.id] || {}).type || '';
 function boxSorted(list){
-  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -unitPower(u) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
+  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -duelPower([u]) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
   return list.filter(s => (!BOXF.role || roleOf(s.id) === BOXF.role) && (!BOXF.type || snapType(s) === BOXF.type))
     .map(s => ({ s, k:key(s), n:(SPECIES[s.id] || {}).name || '' })).sort((a, b) => a.k - b.k || a.n.localeCompare(b.n)).map(x => x.s);
 }
@@ -15232,7 +15255,7 @@ function openDuelSet(){
     const dr = duelDraft || (duelDraft = { picks: [] });
     if(b.dataset.pick){ const i = dr.picks.findIndex(p => p.bid === b.dataset.pick);
       if(i >= 0) dr.picks.splice(i, 1);
-      else if(dr.picks.length < DUEL.bring){ const s = box.find(x => x.bid === b.dataset.pick); dr.picks.push({ bid:s.bid, item: set.pool ? null : (s.held || null) }); }
+      else if(dr.picks.length < DUEL.bring){ const s = box.find(x => x.bid === b.dataset.pick); dr.picks.push({ bid:s.bid, item: set.pool ? null : duelItem(s.held) }); }
       paint(); return; }
     if(b.dataset.up){ const i = +b.dataset.up; if(i > 0){ [dr.picks[i - 1], dr.picks[i]] = [dr.picks[i], dr.picks[i - 1]]; } paint(); return; }
     if(b.dataset.down){ const i = +b.dataset.down; if(i < dr.picks.length - 1){ [dr.picks[i + 1], dr.picks[i]] = [dr.picks[i], dr.picks[i + 1]]; } paint(); return; }
@@ -15315,7 +15338,7 @@ function teamSlot(set, box, dr, pool, i){
   const p = dr.picks[i], s = p && box.find(x => x.bid === p.bid);
   if(!s) return `<div class="slot empty dslot"></div>`;
   const pooled = set.pool ? `<select data-item="${i}" aria-label="Item"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>`
-    : `<div class="dcard-item ${s.held ? '' : 'dim'}">${s.held ? '🎒 ' + esc(itemName(s.held)) : 'no item'}</div>`;
+    : `<div class="dcard-item">${itemLine(s.held)}</div>`;
   return cardOf(s, { cls:'picked dslot', noitem:true, foot:`${pooled}<div class="dctl"><button class="btn small" data-up="${i}" aria-label="Move forward" ${i ? '' : 'disabled'}>◀</button><button class="btn small" data-down="${i}" aria-label="Move back" ${i < dr.picks.length - 1 ? '' : 'disabled'}>▶</button><button class="btn small ghost" data-drop="${i}" aria-label="Remove">✕</button></div>` });
 }
 
@@ -15341,7 +15364,7 @@ function duelSaveHtml(){
   const room = DUEL.boxSize - box.length;
   return `<div class="panel dsave"><h3 style="margin:0 0 4px">Save to your duel box</h3>
     <p class="dim">${won ? 'You won' : 'You lost'}: pick up to <b>${n}</b>. They are saved exactly as they are now and never change. ${room < n ? `Your box has room for ${room}; release some to fit more.` : ''}</p>
-    <div class="dgrid small">${units.map(u => `<div class="slot dcard ${mpSel.has(u.uid) ? 'sel' : ''}" data-act="mppick" data-uid="${u.uid}" role="button" style="border-style:solid">${unitHtml(u, { held:false })}<div class="dcard-item">${u.held ? '🎒 ' + esc(itemName(u.held)) : '<span class="dim">no item</span>'}</div></div>`).join('')}</div>
+    <div class="dgrid small">${units.map(u => `<div class="slot dcard ${mpSel.has(u.uid) ? 'sel' : ''}" data-act="mppick" data-uid="${u.uid}" role="button" style="border-style:solid">${unitHtml(u, { held:false })}<div class="dcard-item">${itemLine(u.held)}</div></div>`).join('')}</div>
     <div class="btnrow"><button class="btn primary" data-act="mpsave" ${mpSel.size && mpSel.size <= Math.min(n, room) ? '' : 'disabled'}>Save ${mpSel.size || ''} to my box</button>
       <button class="btn ghost" data-act="mpskip">Skip</button></div></div>`;
 }
