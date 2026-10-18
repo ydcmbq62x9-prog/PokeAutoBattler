@@ -3302,6 +3302,77 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb{grid-template-columns:48px 1fr 40px}
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popheld p,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pace small,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pacesub{display:none}
 }
+
+/* ---- duels (multiplayer branch) ---- */
+@media (max-height:700px){html.bc .tmi{padding:5px 14px!important}.tmi small{font-size:11px}}
+.dlive{margin:8px 0;padding:8px 10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;font-size:13px}.dlive p{margin:6px 0}.dlive textarea{width:100%}.dcode{font-size:30px;font-weight:800;letter-spacing:.2em;text-align:center;padding:6px 0;user-select:all}.dlive input{width:100%;box-sizing:border-box;font-size:16px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:inherit}.dcount{text-align:center;font-size:72px;font-weight:800;padding:48px 0 8px}
+.dstat{margin:8px 0;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:6px;margin:10px 0}
+.dgrid.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.dcard{position:relative;padding:6px 4px;text-align:center;cursor:default}
+.dcard[data-pick],.dcard[data-act]{cursor:pointer}
+.dcard.sel{outline:3px solid var(--gold);outline-offset:-3px}
+.dcard.rest{opacity:.45}
+.dcard-item{font-size:11px;margin-top:2px;min-height:14px}
+.dteam{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.dteam .dcard{padding-bottom:8px}
+.dteam select{width:100%;font-size:12px;margin:2px 0}
+.dpos{font-size:11px;opacity:.7;margin-top:2px}
+.btnrow.tight{gap:4px;margin:4px 0 0;flex-wrap:wrap;justify-content:center}
+.btn.small{padding:3px 8px;font-size:12px;min-height:0}
+.dmeter{position:relative;height:22px;background:rgba(255,255,255,.08);border-radius:11px;overflow:hidden;margin:8px 0}
+.dmeter i{position:absolute;inset:0 auto 0 0;background:var(--hp);transition:width .2s}
+.dmeter i.over{background:var(--bad)}
+.dmeter span{position:relative;display:block;text-align:center;font-size:12px;line-height:22px;font-weight:700}
+.dmsg{background:rgba(255,80,80,.16);border:1px solid rgba(255,80,80,.4);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:13px}
+.dhist{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.dres{padding:2px 8px;border-radius:10px;font-size:12px;background:rgba(255,255,255,.1)}
+.dres.win{background:rgba(70,200,110,.3)}.dres.lose{background:rgba(255,80,80,.3)}
+.dverdict{font-size:20px;font-weight:800;text-align:center;margin:14px 0}
+.dverdict.win{color:var(--hp)}.dverdict.lose{color:var(--bad)}
+.modal textarea{width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;border-radius:8px;padding:6px;background:rgba(0,0,0,.35);color:inherit;border:1px solid rgba(255,255,255,.2)}
+.dsave{margin:12px 0}
+/* 6.17.1: Duels picker. Wider window on big screens; cards fill their column; the team is six fixed places
+   (Front / Middle / Back) that keep their size, so the box below never moves while you pick. */
+.modal.duel .box{max-width:760px}
+.modal.duel h3{margin-bottom:2px}
+.dsub{font-size:13px;margin-bottom:8px}
+.dgrid .slot,.dteam .slot{max-width:none;min-height:0}
+.dgrid .slot{justify-content:flex-start;gap:4px}.dgrid .slot .unit{height:auto;flex:0 0 auto}
+.dgrid .slot > .btn{margin-top:auto;width:100%}
+.modal .btnrow.dhub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dhub .btn{white-space:nowrap}
+@media (min-width:560px){ .modal .btnrow.dhub{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.modal .btnrow.ddev{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ddev select{grid-column:1/-1;font-size:13px;padding:6px;border-radius:8px}
+.dteam{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.drank{display:flex;flex-direction:column;gap:6px;min-width:0}
+.drank > .dpos{text-align:center;font-weight:700;opacity:.8;margin:0}
+/* sized from the sprite (which follows the screen width) plus the name, stats, item line and buttons */
+.dslot{height:calc(clamp(30px,8.6vw,52px) * 1.1 + 125px);box-sizing:border-box;justify-content:flex-start;gap:3px;padding:5px 4px}
+.dslot .unit{height:auto;flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select,.dslot > .dctl{flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select{margin-top:auto}
+.dslot > .dcard-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dslot.empty{justify-content:center;--pb:34px}
+.dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
+/* 6.18.0: box filter (role buttons, type, sort) */
+.dfilter{display:flex;flex-direction:column;gap:6px;margin:6px 0 2px}
+.dfroles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.dfroles .btn.small{padding:5px 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:440px){ .dfroles .dfname{display:none} .dfroles .btn.small{font-size:15px;padding:3px 0} }
+.dfroles .btn.small.on{background:var(--gold);color:#10131a;border-color:var(--gold)}
+.dfsel{display:flex;gap:6px}
+.dfsel select{flex:1 1 0;min-width:0;font-size:13px;padding:5px 6px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,0,0,.25);color:inherit}
+.dfcount{font-size:12px}
+.linkish{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer}
+/* the message and Lock button ride at the bottom of the window, so their changing size never moves the box */
+.dfoot{position:sticky;bottom:-13px;margin:8px -13px -13px;padding:8px 13px 10px;background:var(--panel);border-top:1px solid var(--line2);z-index:2}
+html.bc .dfoot{background:#0e1426;box-shadow:0 -8px 16px rgba(0,0,0,.4)}
+.dfoot .dmsg,.dfoot .dim{margin:0 0 6px;font-size:13px}.dfoot .btnrow{margin:0}
+@media (max-height:500px){ .dfoot{display:flex;gap:10px;align-items:center;padding-top:6px;padding-bottom:6px} .dfoot > div:first-child{flex:1;margin:0} .dfoot .btnrow{flex:0 0 auto;flex-wrap:nowrap} .dfoot .btn{white-space:nowrap} }
+.dctl{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.dctl .btn.small{padding:0;height:28px;font-size:14px;flex:1 1 0;min-width:0}
+.dctl .btn[disabled]{opacity:.35}
+@media (min-width:700px){ .dteam{grid-template-columns:repeat(3,minmax(0,1fr))} .drank{flex-direction:row;flex-wrap:wrap} .drank > .dpos{flex:1 0 100%} .drank > .slot{flex:1 1 0} }
 </style>
 </head>
 <body>
@@ -3442,6 +3513,14 @@ const TUNING = {
     fln: { name:'Flinch',    icon:'😵', short:'FLN', actions:1, repeat:true },
   },
   eggCap:       12,
+  /* Duels (multiplayer branch): a 30-slot box, six per team, three games, a power budget per team. Budget = the median
+     'six best pokémon from one winning run' (4188 in 140 bot clears), so the six strongest in a mixed box don't fit. */
+  duel:         { boxSize:30, bring:6, games:3, saveWin:3, saveLoss:1, budget:4200,
+    /* 6.20.0 (Sean): a battle-effect item costs power in a duel. Each number is the part of the item's worth that its
+       stat bonus does not already count, as a share of the holder's own power, by the holder's role (an item is worth
+       more on some roles: Life Orb on a Cannon, Iron Ball on a Tank). Measured with duelitemreport.js (2000 duels per
+       item and role, ±1 point); under 2 points counts as nothing. Plain stat items are already counted in full. */
+    itemPower: { lefto:{ tank:0.04, bruiser:0.05, support:0.06, cannon:0.04 }, sitrus:{ tank:0.11, bruiser:0.07, support:0.03 }, focus:{ tank:0.16, bruiser:0.1, support:0.07, cannon:0.04 }, coat:{ tank:0.12, bruiser:0.07, support:0.05, cannon:0.02 }, bell:{ tank:0.03, bruiser:0.07, support:0.05, cannon:0.08 }, helmet:{ tank:0.07, bruiser:0.05, support:0.04, cannon:0.02 }, orb:{ tank:0.04, bruiser:0.14, support:0.16, cannon:0.21 }, iron:{ tank:0.22, bruiser:0.09, support:0.05, cannon:0.04 }, scale:{ tank:0.03, bruiser:0.03, support:0.17, cannon:0.03 }, char:{ bruiser:0.03, support:0.05, cannon:0.06 }, sbell:0.08, plate:0.07 } },
   /* 6.5.1: Training Manuals per pokémon: `base` to start, +1 for every `badgesPer` badges, never above `max`. */
   manual:       { base: 1, badgesPer: 2, max: 5 },
   /* 4.1.0: Red, the secret last boss. Roughly one run in six that clears the
@@ -5709,37 +5788,31 @@ function evoFamily(id){
    use out of the shop entirely.
    =================================================================== */
 const ITEMS = {
-  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', text:'+9 Attack, permanently.',
-                  eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{atk:9}) },
-  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', text:'+8 HP, permanently.',
-                  eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:8}) },
-  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', text:'+10 Speed, permanently.',
-                  eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{spd:10}) },
+  protein:      { name:'Protein', icon:'💊', tier:1, cost:3, vitamin:true, rarity:'common', boost:{atk:9},
+                  eligible:u => vitaminsTaken(u, 'protein') < TUNING.vitaminCap, },
+  hpup:         { name:'HP Up',   icon:'🧃', tier:1, cost:3, vitamin:true, rarity:'common', boost:{hp:8},
+                  eligible:u => vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  carbos:       { name:'Carbos',  icon:'🥤', tier:2, cost:3, vitamin:true, rarity:'common', boost:{spd:10},
+                  eligible:u => vitaminsTaken(u, 'carbos') < TUNING.vitaminCap, },
   /* 6.5.0 — role medicine. Each is a stronger vitamin that only a pokémon of
      one role can take. They share the cap of the vitamin they replace (`group`),
      so ten of any mix is still the most a pokémon can have: a role vitamin makes
      a slot worth more, it does not raise the ceiling. */
-  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', text:'+9 HP, permanently. Tanks only.',
-                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:9}) },
-  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', text:'+10 Attack, permanently. Cannons only.',
-                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{atk:10}) },
-  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', text:'+5 HP and +6 Speed, permanently. Supports only.',
-                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:5, spd:6}) },
-  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', text:'+4 HP, +4 Attack and +4 Speed, permanently. Bruisers only.',
-                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap,
-                  apply:(u,G)=>G.boost(u,{hp:4, atk:4, spd:4}) },
+  ironvit:      { name:'Iron', icon:'🧲', tier:2, cost:3, vitamin:true, group:'hpup', role:'tank', rarity:'uncommon', boost:{hp:9},
+                  eligible:u => roleOf(u) === 'tank' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  calcium:      { name:'Calcium', icon:'🦴', tier:2, cost:3, vitamin:true, group:'protein', role:'cannon', rarity:'uncommon', boost:{atk:10},
+                  eligible:u => roleOf(u) === 'cannon' && vitaminsTaken(u, 'protein') < TUNING.vitaminCap, },
+  zinc:         { name:'Zinc', icon:'🔹', tier:2, cost:3, vitamin:true, group:'hpup', role:'support', rarity:'uncommon', boost:{hp:5, spd:6},
+                  eligible:u => roleOf(u) === 'support' && vitaminsTaken(u, 'hpup') < TUNING.vitaminCap, },
+  energyroot:   { name:'Energy Root', icon:'🌿', tier:2, cost:3, vitamin:true, group:'carbos', role:'bruiser', rarity:'uncommon', boost:{hp:4, atk:4, spd:4},
+                  eligible:u => roleOf(u) === 'bruiser' && vitaminsTaken(u, 'carbos') < TUNING.vitaminCap, },
   /* Training: stat growth shaped by the pokémon's own role (a Tank takes it as HP,
      a Cannon as Attack), without a level. At most 3 per pokémon. */
   manual:       { name:'Training Manual', icon:'📘', tier:2, cost:4, rarity:'uncommon', cat:'boost',
                   text:`Trains it as if it had grown a little, in the way its role grows (a Tank mostly HP, a Cannon mostly Attack). Each pokémon can take ${TUNING.manual.base} at first, and one more for every ${TUNING.manual.badgesPer} badges you win (up to ${TUNING.manual.max}).`,
                   eligible:(u, G) => ((u && u.manuals) || 0) < manualCap(G),
-                  apply:(u,G)=>{ G.train(u, { hp:6, atk:6, spd:6 }); u.manuals = (u.manuals || 0) + 1; } },
+                  train:{ hp:6, atk:6, spd:6 },
+                  apply:(u,G)=>{ G.train(u, ITEMS.manual.train); u.manuals = (u.manuals || 0) + 1; } },
   candy:        { name:'Rare Candy', icon:'🍬', tier:3, cost:4, rarity:'uncommon',
                   text:'Counts as one extra copy of the pokémon: a step toward its next level, and maybe an evolution.',
                   eligible:u => !isLegend(u),   // 2.1.0: a legendary never levels
@@ -5767,6 +5840,15 @@ const ITEMS = {
   metalcoat:    { name:'Metal Coat', icon:'🔩', tier:3, cost:4, rarity:'uncommon', text:'Evolves Onix into Steelix, or Scyther into Scizor.',
                   eligible:u => stonesFor(u.id).includes('metalcoat'), apply:(u,G)=>G.evolve(u, 'metalcoat') },
 };
+
+/* 6.13.0 — a vitamin's numbers live in ONE place (`boost`); its tap effect and its
+   text are made from them, so a balance patch is a one-number edit and the card
+   can never disagree with the effect. */
+{ const STAT = { hp:'HP', atk:'Attack', spd:'Speed' }, ROLE = { tank:'Tanks', bruiser:'Bruisers', support:'Supports', cannon:'Cannons' };
+  const list = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  for(const [k, d] of Object.entries(ITEMS)){ if(!d.boost) continue;
+    d.apply = (u, G) => G.boost(u, d.boost);
+    d.text = `${list(Object.entries(d.boost).map(([s, n]) => `+${n} ${STAT[s]}`))}, permanently.${d.role ? ' ' + ROLE[d.role] + ' only.' : ''}`; } }
 
 /** How many of a vitamin this pokémon has had. */
 /** How many Training Manuals one pokémon can take right now: grows with badges (6.5.1). */
@@ -6961,6 +7043,162 @@ function importTeam(code){
 }
 
 /* ===================================================================
+   DUELS (the multiplayer branch) — friend-code, best-of-3 sets.
+   Pure functions on plain data, so both players' devices reach the same result:
+   a battle is deterministic given two teams and a seed, and the seed is a hash
+   of both players' lock-in codes. No server.
+
+   The multiplayer BOX holds frozen snapshots ({bid,id,hp,atk,spd,exp,held}).
+   A set is three games (first to two wins). Rules (Sean, Oct 2026):
+     · a team is 6 from the box, within a POWER BUDGET (sum of unitPower, held items counted)
+     · a pokémon that faints sits out the NEXT game only
+     · an item stays on the pokémon it was saved with; the set's item pool is the items on
+       the six brought to game 1. From game 2 on those can move freely among the six you
+       bring, and a pokémon swapped in from the box arrives without its saved item
+     · hidden picks: you lock your team before the opponent's code can be opened
+     · everything resets when the set ends; the box itself never changes
+   =================================================================== */
+const DUEL_PROTO = 1;
+const hash32 = str => { let h = 0x811c9dc5; for(let i = 0; i < str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; };
+const snapUnit = (u, bid, from) => ({ bid: bid || ('b' + Math.random().toString(36).slice(2, 9)), id:u.id, hp:u.hp, atk:u.atk, spd:u.spd, exp:u.exp || 0, held:u.held || null, from:from || 'run', at:Date.now() });
+/** A saved pokémon as a live unit. Frozen: nothing grows it. `item` overrides what it holds (undefined = its saved one). */
+function thawUnit(s, pos, item){
+  const u = makeUnit(s.id, s.exp);
+  u.hp = s.hp; u.atk = s.atk; u.spd = s.spd; u.bid = s.bid;
+  u.held = duelItem(item === undefined ? s.held : item);
+  if(Number.isInteger(pos)) u.pos = pos;
+  return u;
+}
+/* 6.19.0: a duel never depends on the run each phone has open. Eviolite asks "can it still evolve?", and that
+   followed the run's generations (a Golbat only evolves with Gen 2 on), so two phones could see different HP and
+   different fights. Duels always check and fight with every generation on and no evolution pool. */
+function inDuelGens(fn){
+  const g = ACTIVE_GENS, pool = ACTIVE_POOL;
+  if(g.join() !== GENS_READY.join()) setActiveGens(GENS_READY); ACTIVE_POOL = null;
+  try{ return fn(); } finally { if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); ACTIVE_POOL = pool; }
+}
+/** 6.20.0 (Sean): run-economy items (Lucky Egg, Amulet Coin) are switched off in a duel: no effect, no power, not in the item pool. */
+const duelItem = id => (id && HELD_ITEMS[id] && HELD_ITEMS[id].kind !== 'economy') ? id : null;
+/** A pokémon's power in a duel: its stats with the item, plus what a battle-effect item is worth (TUNING.duel.itemPower). */
+function duelUnitPower(u){
+  const h = u.held && HELD_ITEMS[u.held], c = h && (!h.when || h.when(u)) ? TUNING.duel.itemPower[u.held] : 0;
+  const extra = typeof c === 'number' ? c : (c && c[roleOf(u)]) || 0;
+  return unitPower(u) + extra * (u.hp + u.atk + TUNING.spdPower * u.spd);
+}
+const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + duelUnitPower(u), 0));
+/** Which pokémon can be brought to the next game, and which are resting. */
+function duelEligible(set, box){
+  const rest = new Set(set.rest || []);
+  return { ready: box.filter(s => !rest.has(s.bid)), resting: box.filter(s => rest.has(s.bid)) };
+}
+function newDuelSet(me, ver){ return { proto:DUEL_PROTO, ver:ver || '', me:me || 'Trainer', opp:'', id:'', game:1, games:[], pool:null, rest:[], budget:TUNING.duel.budget, locked:null, over:null }; }
+/** Items the set may use: every item on the six brought to game 1. */
+const duelPoolOf = (box, picks) => picks.map(p => duelItem((box.find(s => s.bid === p.bid) || {}).held)).filter(Boolean);
+/** Check a team of picks ({bid,pos,item}) against the rules. Returns '' when fine, otherwise why not. */
+function duelCheckPicks(set, box, picks){ return inDuelGens(() => checkPicks(set, box, picks)); }
+function checkPicks(set, box, picks){
+  const D = TUNING.duel;
+  if(!picks.length || picks.length > D.bring) return `Bring between 1 and ${D.bring} pokémon.`;
+  if(new Set(picks.map(p => p.bid)).size !== picks.length) return 'The same pokémon is in the team twice.';
+  const rest = new Set(set.rest || []), units = [];
+  for(const p of picks){
+    const s = box.find(x => x.bid === p.bid); if(!s) return 'A pokémon in that team is not in your box.';
+    if(rest.has(p.bid)) return `${SPECIES[s.id].name} fainted last game and sits this one out.`;
+    units.push(thawUnit(s, p.pos, p.item));
+  }
+  const pool = set.pool || duelPoolOf(box, picks);
+  if(!set.pool){                       // game 1: everyone holds what they were saved with
+    for(const p of picks){ const s = box.find(x => x.bid === p.bid); if(duelItem(p.item) !== duelItem(s.held)) return 'Items cannot move before game 1.'; } }
+  const left = pool.slice();
+  for(const p of picks) if(p.item){ const i = left.indexOf(p.item); if(i < 0) return `You have no spare ${HELD_ITEMS[p.item] ? HELD_ITEMS[p.item].name : p.item} in this set.`; left.splice(i, 1); }
+  const power = Math.round(duelPower(units));
+  if(power > set.budget) return `That team is ${power - set.budget} over the power budget (${power} of ${set.budget}).`;
+  return '';
+}
+/** The lock-in code: your six, frozen, plus enough about the set for the other side to check it. */
+function duelCode(set, box, picks){
+  const t = picks.map(p => { const s = box.find(x => x.bid === p.bid);
+    return [s.id, s.hp, s.atk, s.spd, s.exp, duelItem(p.item) || '', Number.isInteger(p.pos) ? p.pos : -1, s.bid]; });
+  const body = { p:DUEL_PROTO, ver:set.ver, n:set.me, s:set.id, g:set.game, b:set.budget, t };
+  const json = JSON.stringify(body), ck = hash32(json).toString(36);
+  const b64 = (typeof btoa !== 'undefined') ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64');
+  return 'PKD1-' + ck + '-' + b64.replace(/=+$/, '');
+}
+function duelParse(code){
+  try{
+    const m = /^PKD1-([0-9a-z]+)-(.+)$/.exec(String(code).trim().replace(/\s+/g, '')); if(!m) return { err:'That is not a duel code.' };
+    const json = (typeof atob !== 'undefined') ? decodeURIComponent(escape(atob(m[2]))) : Buffer.from(m[2], 'base64').toString('utf8');
+    if(hash32(json).toString(36) !== m[1]) return { err:'That code is damaged or was edited.' };
+    const p = JSON.parse(json);
+    if(!p || p.p !== DUEL_PROTO || !Array.isArray(p.t)) return { err:'That code is from a different version of the duel rules.' };
+    for(const r of p.t) if(!SPECIES[r[0]]) return { err:'That code has a pokémon this version does not know.' };
+    return { ok:true, raw:String(code).trim().replace(/\s+/g, ''), name:p.n || 'Trainer', ver:p.ver, setId:p.s || '', game:p.g | 0, budget:p.b | 0, units:p.t };
+  }catch(e){ return { err:'That is not a duel code.' }; }
+}
+const duelUnits = parsed => parsed.units.map(r => { const u = makeUnit(r[0], r[4] | 0); u.hp = Math.max(1, r[1] | 0); u.atk = Math.max(0, r[2] | 0); u.spd = Math.max(1, r[3] | 0);
+  u.held = duelItem(r[5]); u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
+/** Is the opponent's code a legal move in this set? '' when yes. */
+function duelCheckOpponent(set, parsed){ return inDuelGens(() => checkOpponent(set, parsed)); }
+function checkOpponent(set, parsed){
+  const D = TUNING.duel;
+  if(parsed.ver !== set.ver) return `They are on version ${parsed.ver || '?'}, you are on ${set.ver}. Both of you need the same version.`;
+  if(parsed.budget !== set.budget) return 'Your power budgets do not match.';
+  if(parsed.game !== set.game) return `That code is for game ${parsed.game}; this is game ${set.game}.`;
+  if(set.game > 1 && parsed.setId !== set.id) return 'That code is from a different set.';
+  if(set.opp && set.game > 1 && parsed.name !== set.opp) return `That code is from ${parsed.name}, not ${set.opp}.`;
+  if(!parsed.units.length || parsed.units.length > D.bring) return `Teams are up to ${D.bring} pokémon.`;
+  const units = duelUnits(parsed);
+  if(new Set(units.map(u => u.bid)).size !== units.length) return 'Their team has the same pokémon twice.';
+  const power = Math.round(duelPower(units));
+  if(power > set.budget) return `Their team is over the power budget (${power} of ${set.budget}).`;
+  const prev = set.games.length ? set.games[set.games.length - 1] : null;
+  if(prev){
+    const sat = new Set(prev.theirFainted || []);
+    for(const u of units) if(sat.has(u.bid)) return `${u.nm} fainted last game and should be sitting this one out.`;
+  }
+  /* items: game 1 is whatever they were saved with; later games may only use the game-1 pool */
+  const pool = (set.games.length ? set.games[0].theirPool : units.map(u => duelItem(u.held)).filter(Boolean)).slice();
+  if(set.game > 1){ for(const u of units) if(u.held){ const i = pool.indexOf(u.held); if(i < 0) return 'Their team has an item they did not bring to the set.'; pool.splice(i, 1); } }
+  return '';
+}
+/** One game. Both devices call this with the same two codes and get the same battle. The lower code plays the 'p' side. */
+function duelSim(set, myCode, theirCode){ return inDuelGens(() => simDuel(set, myCode, theirCode)); }
+function simDuel(set, myCode, theirCode){
+  const mine = duelParse(myCode), theirs = duelParse(theirCode);
+  const iAmP = mine.raw < theirs.raw;
+  const seed = hash32(`${set.id || 'new'}|${set.game}|${iAmP ? mine.raw : theirs.raw}|${iAmP ? theirs.raw : mine.raw}`);
+  const P = duelUnits(iAmP ? mine : theirs), Eu = duelUnits(iAmP ? theirs : mine);
+  const sim = simulateBattle(P, Eu, seed);
+  const mySide = iAmP ? 'p' : 'e';
+  const myResult = sim.result === 'draw' ? 'draw' : ((sim.result === 'win') === iAmP ? 'win' : 'lose');
+  const fainted = side => sim.stats.filter(s => s.side === side && s.fainted).map(s => { const pool = side === 'p' ? P : Eu; return (pool.find(u => u.uid === s.uid) || {}).bid; }).filter(Boolean);
+  return { sim, seed, iAmP, mySide, myResult, myFainted: fainted(mySide), theirFainted: fainted(iAmP ? 'e' : 'p'), mine, theirs };
+}
+const duelWins = set => ({ me: set.games.filter(g => g.result === 'win').length, opp: set.games.filter(g => g.result === 'lose').length });
+/** Record a finished game on `set` and advance it. Returns the set. */
+function duelApply(set, out){
+  const first = !set.games.length;
+  if(first){ set.opp = out.theirs.name; set.id = hash32(out.iAmP ? out.mine.raw + '|' + out.theirs.raw : out.theirs.raw + '|' + out.mine.raw).toString(36);   // same on both devices
+    set.pool = out.mine.units.map(r => duelItem(r[5])).filter(Boolean); }     // the items on the six brought to game 1
+  set.games.push({ result: out.myResult, myFainted: out.myFainted, theirFainted: out.theirFainted, mine: out.mine.units.map(r => r[7]),
+    theirs: out.theirs.units.map(r => r[7]), theirPool: first ? out.theirs.units.map(r => duelItem(r[5])).filter(Boolean) : set.games[0].theirPool });
+  set.rest = out.myFainted.slice();             // fainted: sits out the next game only
+  const w = duelWins(set);
+  if(w.me >= 2 || w.opp >= 2 || set.games.length >= TUNING.duel.games){
+    set.over = w.me > w.opp ? 'win' : w.me < w.opp ? 'lose' : 'draw';
+  } else set.game = set.games.length + 1;
+  set.locked = null;
+  return set;
+}
+/** A winning run saves up to 3, a losing run 1; the box holds 30. Returns { ok, why, box }. */
+function duelBoxAdd(box, snaps){
+  const room = TUNING.duel.boxSize - box.length;
+  if(snaps.length > room) return { ok:false, why:`Your box has room for ${room} more.`, box };
+  return { ok:true, box: box.concat(snaps) };
+}
+const duelSavesFor = won => won ? TUNING.duel.saveWin : TUNING.duel.saveLoss;
+
+/* ===================================================================
    GAME STATE
    =================================================================== */
 /* 2.0.0 — run modifiers, chosen at New Run (the daily challenge draws one):
@@ -8066,7 +8304,7 @@ if(typeof module !== 'undefined' && module.exports){
     GYMS, ELITE_FOUR, CHAMPION, ALL_BOSSES, RIVAL, GYMS2, ELITE_FOUR2, CHAMPION2, RIVAL2, EVERY_BOSS, GEN_BOSSES, GENS, GENS_READY, gen2Linked, KANTO_ONLY, HOENN_LIVING, hoennBossHas, inBossPool, cleanGens, genOf, inGens, buyableFor, monoTypesFor, setActiveGens, useGens, drawBossPlan, drawEvoPool, drawFocus, drawRed, drawSecret, secretOf, RED, OAK, SECRETS, CROSS_EVOS, FOCUS_CHANCE, bossPlanOf, rivalOf, gymAt, homeOf, bossCalib, personOf, evoOpts, pickLevelEvo,  RIVAL_STARTERS, rivalStages, rivalMeeting, isRivalStage, partyType, rivalCore, rivalLineup, rivalPrize, rivalEevo, bossById, themePool, evoDepth, unitPower, teamPower, playerPowerAt,
     daycareSlotsFor, martSlotsFor, AI_DIFFICULTY, AI_PARTY_PACE, AI_NAMES, trainerName, makeUnit, unitLevel, isLegend, freeAttemptsFor, championLegend,
     expPipsToNext, levelFromExp, moveOf, MOD_INFO, HANDICAPS, monoFoesFor, modFoes, modList, modName, modText, genLabel, genText, modsLabel, cleanMods, dailySeed, dailyMods, dailyGens, LEGENDS, rollEncounter, peekEncounter, encounterOpen, recruitLegend, opponentFor0, evoLine, evoNext, evoParent, evoFamily, stoneFor, stonesFor, syncUid, pw, pct, sc, simulateBattle,
-    generateAiTeam, Net, exportTeam, importTeam, newGame, rollShop, rollDaycare, rollMart,
+    generateAiTeam, Net, exportTeam, importTeam, snapUnit, thawUnit, duelPower, duelUnitPower, duelItem, duelEligible, newDuelSet, duelPoolOf, duelCheckPicks, duelCode, duelParse, duelUnits, duelCheckOpponent, duelSim, duelWins, duelApply, duelBoxAdd, duelSavesFor, hash32, newGame, rollShop, rollDaycare, rollMart,
     buyPokemon, buyToPc, pcToParty, partyToPc, releaseFromPc, pcMergeTarget, pcTwinInBox, pcCanMerge, pcMerge, pcRoom,
     sellUnit, moveUnit, buyItem, buyBattleItem, canUseItem, manualCap, VIT_GROUPS, vitMembers, endTurnEffects,
     applyBattleResult, grantBattleExp, incomeFor, nextTurn, mergeInto, addExp, applyLevelUp,
@@ -8483,7 +8721,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.12.0', date:'Oct 13, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.21.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -10067,7 +10305,7 @@ function renderBattle(){
 
   <div class="shopbar">
     ${done
-      ? `<button class="btn primary" data-act="afterbattle">${battle.exhibition ? 'Back to the Mart' : winningBadge ? 'Choose your reward ▶' : 'Continue ▶'}</button>`
+      ? `<button class="btn primary" data-act="afterbattle">${battle.duel ? 'Back to the set' : battle.exhibition ? 'Back to the Mart' : winningBadge ? 'Choose your reward ▶' : 'Continue ▶'}</button>`
       : `<div class="speed" role="group" aria-label="Playback speed">
            ${SPEEDS.map(v => `<button class="sp ${v === speed ? 'on' : ''}" data-act="speed" data-i="${v}"
              aria-pressed="${v === speed}">${v}×</button>`).join('')}
@@ -11535,12 +11773,12 @@ function renderOver(){
     ${G.daily ? `<p class="dim">Daily Challenge · ${esc(prettyDate(G.daily))}${modList(G).length ? ` · ${esc(modsLabel(G))}` : ''}</p>` : modList(G).length ? `<p class="dim">Rules: ${esc(modsLabel(G))}</p>` : ''}
     ${runSummaryHtml()}
     <div class="row overteam" style="margin:14px 0">${G.team.map((u, i) => u ? `<div class="slot" style="border-style:solid" data-act="overcard" data-i="${i}" role="button">${unitHtml(u)}</div>` : '').join('')}</div>
+    ${duelSaveHtml()}
     <div class="shopbar">
       ${G.daily ? `<button class="btn" data-act="runimage">Save summary image</button>
       <button class="btn" data-act="dailyshare">Copy result</button>
       <button class="btn primary" data-act="totitle">Title screen</button>`
       : `<button class="btn" data-act="runimage">Save summary image</button>
-      <button class="btn" data-act="export">Share Team Code</button>
       <button class="btn primary" data-act="restart">New Run</button>`}
     </div>
   </div>`;
@@ -12211,7 +12449,6 @@ function handle(act, i, data){
       lineUpByRole(G);
       sel = null; say('Lined up: Tanks in front, Cannons at the back.'); break;
     }
-    case 'export':  openExport(); return;
     case 'restart': openNewRun(); return;
     /* ----- 2.0.0 ----- */
     case 'undo': {
@@ -12232,6 +12469,7 @@ function handle(act, i, data){
     }
     case 'legendpass': if(G.encounter){ G.encounter.taken = 'passed'; say(`The ${SPECIES[G.encounter.id].name} flew off.`); } return;
     case 'presets': openPresets(); return;
+    case 'mppick': case 'mpsave': case 'mpskip': case 'mpbox': if(duelSaveAct(act, { dataset: data })) return; break;
     case 'totitle': showTitle(afterTitle); return;
     case 'dailyshare': copyDailyResult(); return;
   }
@@ -12747,7 +12985,7 @@ async function afterBattle(opts){
   if(!battle) return;
   clearTimeout(battle.timer);
   if(SFX.held) SFX.hold(false);   // 4.17.3: a battle finished (or left) while paused no longer leaves the game silent
-  if(battle.exhibition){ battle = null; phase = 'shop'; render(); return; }
+  if(battle.exhibition){ const cb = battle.onDone, back = battle.back; battle = null; phase = back && back.phase === 'over' ? 'over' : 'shop'; render(); if(cb) cb(); return; }   // 6.17.0: a duel goes back to where it started
   const result = battle.result;
   await Net.reportResult(G, result);
   const opp = battle.opp, gn = battle.gauntlet;
@@ -12859,6 +13097,67 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.21.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: every copy of the game uses the Cloudflare relay', items:[
+    'The live link now always goes through Pok\u00e9Arena\'s relay on Cloudflare, whichever copy of the game you play, so the home-screen app on GitHub Pages can link up too once Duels joins it.',
+    'The relay only lets in Pok\u00e9Arena\'s own sites.',
+  ] },
+  { v:'6.20.0', date:'Oct 18, 2026', title:'Balance patch', sub:'Duels: battle items cost power, Lucky Egg and Amulet Coin switched off', items:[
+    'Lucky Egg and Amulet Coin only help during a run, so in a duel they are switched off: no effect, no power, and not part of the set\'s item pool. Your saved pok\u00e9mon still keep them.',
+    'Items with a battle effect now count against the duel power budget, by what they are worth on the pok\u00e9mon holding them (measured over 2000 duels per item and role): Life Orb +21% on a Cannon, Iron Ball +22% and Focus Band +16% on a Tank, Heart Scale +17% on a Support, Assault Vest +12% and Sitrus Berry +11% on a Tank, Shell Bell +8% on a Cannon, Soothe Bell +8%, Bulk Plate +7% on top of its HP, Rocky Helmet +7% on a Tank, Leftovers +4\u20136%, Expert Belt +3\u20136% on top of its Attack. The same item costs less on a pok\u00e9mon that makes less of it.',
+    'Plain stat items (Muscle Band, Quick Claw, Scope Lens, Black Belt, Choice Band, Eviolite) cost the same as before: just their stats.',
+  ] },
+  { v:'6.19.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: Eviolite works the same on both phones', items:[
+    'Eviolite in a duel no longer depends on the run each phone has open. A pok\u00e9mon counts as able to evolve if it has a later evolution anywhere in the game (Golbat, Onix, Scyther and others now always get the +50% HP). Before, two phones could show different HP and different fights.',
+  ] },
+  { v:'6.18.0', date:'Oct 16, 2026', title:'Minor gameplay changes', sub:'Duels: filter and sort your box, plus a tidy-up', items:[
+    'Filter your duel box by role (Tank, Bruiser, Cannon, Support) or type, and sort it by power, Attack, HP, Speed, name or newest. Works in the team picker and in My box.',
+    'My box: the Release button no longer overlaps the card.',
+    'Duels menu buttons sit in a neat grid instead of squashing their words.',
+    'The live link box is now called Play a friend, since it is how every fight starts.',
+    'A finished set shows its final score.',
+  ] },
+  { v:'6.17.1', date:'Oct 16, 2026', title:'Visual bug fixes', sub:'Duels team picker: the box no longer jumps', items:[
+    'Picking a pok\u00e9mon from your duel box no longer moves the box under your finger.',
+    'Your team shows as six fixed places (Front, Middle, Back) with smaller move and remove buttons.',
+    'The message and Lock in button stay at the bottom of the window, always in reach.',
+    'Box cards fill the width, and the Duels window is wider on a computer.',
+  ] },
+  { v:'6.17.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels clean-up: live link only, and a finished duel no longer opens a run', items:[
+    'A duel now goes back to where you started it: the title screen, or the run you had open. Before, finishing a duel from the title screen dropped you into a new run.',
+    'Duels are played over the live link only: the long copy-and-paste codes are gone. Host gets a 4-letter code, your friend types it.',
+    'Team code and Vs friend are gone from the menu (Duels replaces them).',
+    'The button after a duel says Back to the set.',
+  ] },
+  { v:'6.16.0', date:'Oct 14, 2026', title:'Minor gameplay changes', sub:'Duels: live link works on any network', items:[
+    'Live link now goes through Pok\u00e9Arena\u2019s own relay on the Cloudflare copy, so phones on mobile data or strict Wi-Fi can still link up.',
+    'The direct link and swapping codes by hand still work as before when the relay can\u2019t be reached.',
+  ] },
+  { v:'6.15.0', date:'Oct 13, 2026', title:'Minor gameplay changes', sub:'Duels: join with a 4-letter code', items:[
+    'Host taps Host and gets a 4-letter code; your friend taps Join and types it. No more long codes.',
+    'A free matchmaking server only introduces the two phones; teams never pass through it.',
+    'Inside the claude.ai preview the shared live room carries the same code.',
+    'Swapping team codes by hand still works as a backup.',
+  ] },
+  { v:'6.14.1', date:'Oct 13, 2026', title:'Visual bug fixes', sub:'Live link no longer errors on the preview page', items:[
+    'Direct phone links are blocked on the claude.ai preview page, so the live link now says so instead of failing.',
+    'On that page you can use a shared live room instead: one player creates a room code, the other joins it.',
+    'Installed app and normal browsers still use the direct link.',
+  ] },
+  { v:'6.14.0', date:'Oct 13, 2026', title:'Minor gameplay changes', sub:'Duels can be watched live by both players', items:[
+    'Connect two phones once with a pair of link codes, no server needed.',
+    'Teams swap on their own once both are locked in, and stay hidden until then.',
+    'Both press Fight, a 3-2-1 runs, and the same battle plays on both screens.',
+    'Swapping codes by hand still works if the link drops or your network blocks it.',
+  ] },
+  { v:'6.13.1', date:'Oct 13, 2026', title:'Visual bug fixes', sub:'Developer tools can be switched on by tapping the Duels heading five times', items:[
+    'The #dev page address trick does not work inside the published page, so tap the Duels heading five times to show or hide the developer tools (add maxed pok\u00e9mon, fill the box, clear).',
+  ] },
+  { v:'6.13.0', date:'Oct 13, 2026', title:'Major gameplay update', sub:'Duels preview: save pok\u00e9mon from your runs and battle a friend by code', items:[
+    'New Duels screen on the title menu and in-game menu. Finish a run and save up to 3 pok\u00e9mon from a win, or 1 from a loss, into a 30-slot duel box. Saved pok\u00e9mon are frozen: their level, stats and held item never change.',
+    'A set is best of three, six against six, with each team inside a power budget of 4200. A pok\u00e9mon that faints sits out the next game only. The items on your first six are your pool for the set, and from game 2 you can move them around; a pok\u00e9mon swapped in from the box arrives without its own item.',
+    'Friend codes only: lock in your team to get a code, send it, paste your friend\'s and you both watch the same battle (it is decided by a seed made from both codes, so no server is needed). You can only open their code after yours is locked, so nobody can peek and counter-pick. A code from a different game version, a damaged code or a team over budget is refused.',
+    'Preview: this lives on its own branch and page while it is tested. Add #dev to the page address once to get developer tools that fill your box with maxed pok\u00e9mon.',
+  ] },
   { v:'6.12.0', date:'Oct 13, 2026', title:'Balance patch', sub:'Amulet Coin halved, Lucky Egg stronger, Exp. Share cheaper', items:[
     'The money and EXP items were measured with full bot runs. Amulet Coin (+2\u20bd a turn) was worth about 9.5 points of clear rate, the strongest item in the game, so it now gives +1\u20bd a turn (about 6 points, in line with the role items).',
     'Lucky Egg was worth about 5 points for a Rare item, so each pok\u00e9mon can now take 12 bonus rounds instead of 10 (about 6.5 points).',
@@ -13390,8 +13689,7 @@ function openMenu(){
   const items = [
     ['trainer', 'Trainer', 'Your badges, this run and your records.'],
     ['dex',     'Pokédex', 'Every pokémon, leader and item.'],
-    ['export',  'Team code', 'Copy your team code to send a friend.'],
-    ['versus',  'Vs friend', 'Paste a friend’s team code and battle it.'],
+    ['duels',   'Duels', 'Your duel box, and best-of-three sets with a friend by code.'],
     ['transfer','Transfer save', 'Move this run to another device or the home-screen app with a code.'],
     ['news',    'What’s new', `What changed in ${GAME_VERSION.v}.`],
     ['help',    'How to play', 'Rules, roles and statuses.'],
@@ -13434,8 +13732,7 @@ function openMenu(){
     }
     if(m === 'title') showTitle(afterTitle);
     if(m === 'trainer') openTrainerCard();
-    if(m === 'export')  openExport();
-    if(m === 'versus')  openVersus();
+    if(m === 'duels')   openDuels();
     if(m === 'transfer') openTransfer();
     if(m === 'help')    openHelp();
     if(m === 'news')    openChangelog();
@@ -13867,7 +14164,7 @@ function openOptions(){
     <div class="optrow"><span>Effects</span>${seg('fx', fxLevel(), [['full', 'Full'], ['light', 'Light'], ['off', 'Off']])}</div>
     <div class="optrow"><span>Item hints</span>${seg('itemhint', PREF.get('itemhint', 'on'), [['on', 'Show'], ['off', 'Hide']])}</div>
     <div class="optrow"><span>Transitions</span>${seg('wipe', PREF.get('wipe', 'auto'), [['auto', 'Camera'], ['quick', 'Quick'], ['off', 'Off']])}</div>
-    <p class="hint optnote">Your name goes on your Trainer Card and your team code. System theme follows your phone or computer. These settings stay on this device.
+    <p class="hint optnote">Your name goes on your Trainer Card and your duel teams. System theme follows your phone or computer. These settings stay on this device.
       If your phone or computer asks apps for less motion, the game follows it. Transitions on Auto play the full pokéball wipe for your first ${WIPE_FULL_BATTLES} battles each time you open the game, then a quick one.
       On an iPhone the silent switch mutes the sound, and iPhones don't let web pages vibrate, so Haptics only works on Android.
       Battle look changes the pieces on the stadium table: squares, miniatures on round bases, or paper standees.
@@ -13928,24 +14225,6 @@ function typeInspect(){
   }
 }
 
-function openExport(){
-  const code = exportTeam(G.team, playerName());
-  const d = modal(`<h3>Your Team Code</h3>
-    <p>Send this to a friend — they can paste it into <b>Menu → Vs friend</b> and fight your exact party.</p>
-    <textarea readonly>${esc(code)}</textarea>
-    <div class="btnrow"><button class="btn primary" data-m="copy">Copy</button>
-    <button class="btn ghost" data-m="close">Close</button></div>`);
-  d.querySelector('textarea').onclick = e => e.target.select();
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
-    if(b.dataset.m === 'copy'){
-      const ta = d.querySelector('textarea'); ta.select();
-      try{ navigator.clipboard ? navigator.clipboard.writeText(code) : document.execCommand('copy'); }catch(e){}
-      b.textContent = 'Copied!'; return;
-    }
-    d.remove();
-  });
-}
-
 /* ===================================================================
    1.3.0 · TRANSFER CODES
    Each copy of the game keeps its own save (the claude.ai link, the
@@ -13977,7 +14256,7 @@ async function makeTransferCode(){
 async function readTransferCode(raw){
   const code = String(raw || '').replace(/\s+/g, '');
   if(!code) return { ok:false, why:'Paste a transfer code first.' };
-  if(/^PKB\d-/.test(code)) return { ok:false, why:'That’s a team code (for Vs friend), not a transfer code.' };
+  if(/^PKB\d-/.test(code)) return { ok:false, why:'That’s an old team code, not a transfer code.' };
   if(!code.startsWith(XFER_PREFIX)) return { ok:false, why:'That doesn’t look like a transfer code — they start with PKBSAVE-.' };
   const rest = code.slice(XFER_PREFIX.length), cut = rest.lastIndexOf('-');
   if(cut < 2) return { ok:false, why:'This code is cut short. Copy the whole thing and try again.' };
@@ -14070,25 +14349,6 @@ function openTransfer(){
   });
 }
 
-function openVersus(){
-  const d = modal(`<h3>Battle a Friend</h3>
-    <p>Paste their team code. This is an exhibition match — your lives and wins don't change.</p>
-    <textarea placeholder="PKB3-..."></textarea>
-    <div class="btnrow"><button class="btn primary" data-m="go">Fight</button>
-    <button class="btn ghost" data-m="close">Cancel</button></div>`);
-  d.querySelectorAll('[data-m]').forEach(b => b.onclick = () => {
-    if(b.dataset.m === 'close'){ d.remove(); return; }
-    const parsed = importTeam(d.querySelector('textarea').value);
-    if(!parsed){ b.textContent = 'Bad code — try again'; return; }
-    if(!G.team.length){ b.textContent = 'You need a party first'; return; }
-    d.remove();
-    const sim = simulateBattle(G.team, parsed.team, (G.seed + 31) * 7);
-    battle = { steps: sim.steps, i:0, result: sim.result, oppName: parsed.name, timer:null, exhibition:true };
-    sessionBattles++;
-    transition(() => { phase = 'battle'; render(); }, beginPlayback);
-  });
-}
-
 function typeRingHtml(){
   /* 3.0.0: the real Gen 1 types — each row is a type with what it is weak to and resists. */
   const chips = l => l.length ? l.map(t => `<span class="chip" style="background:${TYPES[t].color}">${t}</span>`).join('') : '<span class="dim">nothing</span>';
@@ -14109,7 +14369,7 @@ function openTutorial(){
     { ids:['snorlax','zapdos'], title:'Fights have stakes',
       text:`Lose a battle and you lose a life, and with ${T.startingLives} lives gone the run is over. Every gym gives you a badge reward to choose. After gym ${T.legend.fromBadge} a legendary may turn up for one turn: recruit it or let it go.` },
     { ids:['eevee','pikachu','mew'], title:'Make it yours',
-      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Team code lets you battle a friend.' },
+      text:'The Menu button opens your Pokédex, Trainer Card, run history and Options. New Run lets you choose generations, rules and challenges (each challenge clears for a badge). The Daily Challenge is one shared run each day, and Duels lets you battle a friend.' },
   ];
   let i = 0;
   const d = modal('', true); d.classList.add('tutorial');
@@ -14560,6 +14820,7 @@ function showTitle(then){
       ${cont ? `<button class="tmi cur" role="menuitem" data-t="continue">Continue<small>${runLine}</small></button>` : ''}
       <button class="tmi ${cont ? '' : 'cur'}" role="menuitem" data-t="new">New run<small>with rules, if you like</small></button>
       <button class="tmi" role="menuitem" data-t="daily">Daily challenge<small>${dres ? `today: ${esc(dres.cleared ? 'Champion!' : bestRunLabel(dres.best))}${dres.hardcore ? ' · Hardcore' : ''}` : esc(prettyDate(localDate()))}</small></button>
+      <button class="tmi" role="menuitem" data-t="duels">Duels<small>battle a friend with saved pokémon, by code</small></button>
       <button class="tmi" role="menuitem" data-t="dex">Pokédex<small>${dexHave} / ${dexTotal} seen · cards, trainers, items</small></button>
       <button class="tmi" role="menuitem" data-t="trainer">Trainer card<small>${sbEarned().length ? `${sbEarned().length} special badge${sbEarned().length === 1 ? '' : 's'} · records` : 'your badges and records'}</small></button>
       <button class="tmi" role="menuitem" data-t="options">Options</button>
@@ -14589,6 +14850,7 @@ function showTitle(then){
     } else if(t === 'continue'){ if(G && G.daily) switchSlot(SAVE_KEY); leave(); }
     else if(t === 'new'){ if(document.activeElement) document.activeElement.blur(); openNewRun(leave); }
     else if(t === 'daily'){ if(document.activeElement) document.activeElement.blur(); openDaily(leave); }
+    else if(t === 'duels'){ if(document.activeElement) document.activeElement.blur(); openDuels(); }
     else if(t === 'dex'){ if(document.activeElement) document.activeElement.blur(); openDex(); }
     else if(t === 'trainer'){ if(document.activeElement) document.activeElement.blur(); openTrainerCard(true); }
     else if(t === 'options'){ if(document.activeElement) document.activeElement.blur(); openOptions(); }
@@ -14615,6 +14877,516 @@ function showTitle(then){
   d.addEventListener('pointermove', e => { const b = e.target.closest('.tmi'); if(b && !b.disabled && !b.classList.contains('cur')){ SFX.play('move'); items().forEach(x => x.classList.toggle('cur', x === b)); } });
   document.addEventListener('keydown', onKey, true);
 }
+
+/* ===================================================================
+   DUELS — screens (6.13.0, multiplayer branch)
+   The rules live in engine.js (duel*). This file is the box, the team picker, the
+   code exchange and the run-over save picker. Everything is a modal over whatever
+   screen you came from, so a duel never touches the run you have going.
+   =================================================================== */
+const DUEL_BOX_KEY = 'pkb_duel_box', DUEL_SET_KEY = 'pkb_duel_set';
+const duelJSON = (k, d) => { try{ const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } };
+const duelBox = () => duelJSON(DUEL_BOX_KEY, []).filter(s => s && SPECIES[s.id]);
+const saveDuelBox = b => { try{ localStorage.setItem(DUEL_BOX_KEY, JSON.stringify(b)); }catch(e){} };
+const getDuelSet = () => duelJSON(DUEL_SET_KEY, null);
+const putDuelSet = s => { try{ if(s) localStorage.setItem(DUEL_SET_KEY, JSON.stringify(s)); else localStorage.removeItem(DUEL_SET_KEY); }catch(e){} };
+const duelDev = () => { try{ if(location.hash === '#dev') localStorage.setItem('pkb_dev', '1'); return localStorage.getItem('pkb_dev') === '1'; }catch(e){ return false; } };
+const DUEL = TUNING.duel;
+const itemName = id => (HELD_ITEMS[id] || {}).name || '';
+/** 6.20.0: what a saved item shows on its card; run-economy items say they are switched off in duels. */
+const itemLine = id => !id ? '<span class="dim">no item</span>' : duelItem(id) ? '🎒 ' + esc(itemName(id))
+  : `<span class="dim" title="Only helps during a run, so it is switched off in duels">🎒 <s>${esc(itemName(id))}</s> off</span>`;
+const cardOf = (s, extra) => { const u = thawUnit(s); u.uid = 'd' + s.bid;
+  return `<div class="slot dcard ${extra && extra.cls || ''}" ${extra && extra.attr || ''} style="border-style:solid">${unitHtml(u, { held:false })}
+    ${extra && extra.noitem ? '' : `<div class="dcard-item">${itemLine(s.held)}</div>`}${extra && extra.foot || ''}</div>`; };
+
+/* ---------------- live link (WebRTC, no server) ----------------
+   One player hosts and gets a 4-letter code; the other types it. The free PeerJS matchmaking server only introduces the
+   two phones (it never sees teams); after that they talk directly (WebRTC). Teams are exchanged on lock-in (a fingerprint
+   first, the team only once both are locked), then both press Fight and a 3-2-1 starts the same battle on both screens.
+   Inside the claude.ai preview page neither is reachable, so the page's own live room carries the same code instead.
+   If the link drops, connecting again picks up where the set left off (6.17.0: the long copy-and-paste codes are gone). */
+const LIVE = { pc:null, dc:null, tr:null, cleanup:null, room:undefined, code:'', step:'idle', err:'', out:'', peer:{}, mine:{}, hook:null, go:null, starting:false };
+const livePaint = () => { try{ if(LIVE.hook) LIVE.hook(); }catch(e){} };
+const liveOn = () => LIVE.step === 'on' && !!LIVE.tr && LIVE.tr.ok();
+const liveSend = o => { try{ if(liveOn()) LIVE.tr.send(JSON.stringify(o)); }catch(e){} };
+/** Can this window make a direct (WebRTC) link? The preview page on claude.ai blocks it, so test by really trying. */
+let _rtc;
+const liveRtcOk = () => { if(_rtc === undefined){ try{ const t = new RTCPeerConnection(); t.close(); _rtc = true; }catch(e){ _rtc = false; } } return _rtc; };
+/** Fallback inside the preview page: the page's own live room (needs the viewer signed in with access to the page). */
+async function liveProbe(){
+  if(LIVE.room !== undefined) return; LIVE.room = null;
+  try{ if(window.claude && typeof claude.use === 'function') LIVE.room = (await claude.use('room')) || null; }catch(e){}
+  livePaint();
+}
+const liveCommit = code => hash32(code).toString(36) + '.' + hash32('live|' + code).toString(36);
+function liveReset(keepErr){
+  const pc = LIVE.pc, dc = LIVE.dc, cl = LIVE.cleanup; LIVE.pc = LIVE.dc = LIVE.tr = LIVE.cleanup = null; LIVE.code = '';
+  try{ cl && cl(); }catch(e){} try{ dc && dc.close(); }catch(e){} try{ pc && pc.close(); }catch(e){}
+  LIVE.step = 'idle'; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; LIVE.starting = false; if(!keepErr) LIVE.err = '';
+}
+function liveAttach(dc){
+  LIVE.dc = dc; LIVE.tr = { send:s => dc.send(s), ok:() => dc.readyState === 'open', close:() => dc.close() };
+  dc.onopen = () => { if(LIVE.dc !== dc) return; try{ if(LIVE.cleanup) LIVE.cleanup(); }catch(e){} LIVE.cleanup = null; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); };
+  dc.onclose = () => { if(LIVE.dc !== dc) return; const was = LIVE.step === 'on'; liveReset(true); if(was) LIVE.err = 'The live link dropped. Connect again to keep playing.'; livePaint(); };
+  dc.onmessage = e => liveMsg(e.data);
+}
+/** Lock-in handshake: send a fingerprint of my locked team; once I have theirs too, send the team itself. */
+function liveSync(){
+  if(!liveOn()) return; const set = getDuelSet(); if(!set || !set.locked) return;
+  if(!LIVE.mine.commit){ LIVE.mine.commit = liveCommit(set.locked.code); liveSend({ t:'commit', h:LIVE.mine.commit }); }
+  if(LIVE.peer.commit && !LIVE.mine.sent){ LIVE.mine.sent = true; liveSend({ t:'code', c:set.locked.code }); }
+}
+function liveMsg(raw){
+  let m; try{ m = JSON.parse(raw); }catch(e){ return; } if(!m || typeof m.t !== 'string') return;
+  if(m.t === 'commit' && typeof m.h === 'string' && m.h.length < 40){ if(!LIVE.peer.code){ LIVE.peer = { commit:m.h }; liveSync(); } }
+  else if(m.t === 'unlock'){ if(!LIVE.peer.code) LIVE.peer = {}; }
+  else if(m.t === 'code' && LIVE.peer.commit && !LIVE.peer.code && typeof m.c === 'string' && m.c.length < 4000){
+    const p = duelParse(m.c);
+    if(p.err || liveCommit(p.raw) !== LIVE.peer.commit){ LIVE.err = 'Your friend’s team did not match what they locked in. Connect again.'; LIVE.peer = {}; }
+    else LIVE.peer.code = p.raw;
+  }
+  else if(m.t === 'ready' && LIVE.peer.code){ LIVE.peer.ready = true; if(LIVE.mine.ready && !LIVE.starting && LIVE.go){ LIVE.starting = true; LIVE.go(); return; } }
+  else if(m.t === 'unready'){ LIVE.peer.ready = false; }
+  livePaint();
+}
+async function liveRoom(code){
+  const room = LIVE.room; if(!room) throw new Error('Live rooms are not available in this window.');
+  liveReset(); LIVE.step = 'rwait'; LIVE.code = code; livePaint();
+  const nr = await room.join('pkd-' + String(code).toLowerCase()), me = Math.random().toString(36).slice(2, 10);
+  let peer = null, seen = 0, iv = 0, unsub = () => {};
+  const emit = d => { try{ nr.emit('m', Object.assign({ id:me }, d)).catch(() => {}); }catch(e){} };
+  const tr = { send:s => emit({ to:peer, m:s }), ok:() => !!peer, close:() => cleanup() };
+  const cleanup = () => { clearInterval(iv); try{ unsub(); }catch(e){} try{ nr.leave().catch(() => {}); }catch(e){} };
+  LIVE.cleanup = cleanup;
+  const pair = id => { peer = id; seen = Date.now(); LIVE.tr = tr; LIVE.step = 'on'; LIVE.err = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); };
+  unsub = nr.on('m', msg => {
+    const d = msg && msg.data; if(!d || msg.isMe || typeof d.id !== 'string') return;
+    if(d.hi){        // the first one to say hello is the only one ever heard; replies are addressed so a stranger can't pick them up
+      if(d.id === peer){ seen = Date.now(); if(d.needy) emit({ hi:1, to:peer }); return; }
+      if(!peer && (d.needy || d.to === me)){ pair(d.id); if(d.needy) emit({ hi:1, to:d.id }); }
+      return; }
+    if(d.id !== peer || d.to !== me) return; seen = Date.now();
+    if(d.hb) return; if(typeof d.m === 'string') liveMsg(d.m);
+  });
+  iv = setInterval(() => {
+    if(!peer) emit({ hi:1, needy:1 });
+    else { emit({ hb:1, to:peer }); if(Date.now() - seen > 12000){ liveReset(true); LIVE.err = 'Your friend left the room. Connect again to keep playing.'; livePaint(); } }
+  }, 1500);
+  emit({ hi:1, needy:1 });
+}
+
+const LIVE_ICE = [{ urls:'stun:stun.l.google.com:19302' }, { urls:'stun:stun1.l.google.com:19302' }];
+const liveBroker = () => window.__peerBroker || { host:'0.peerjs.com', port:443, secure:true, path:'/peerjs', key:'peerjs' };
+const LIVE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const liveNewCode = () => Array.from({ length:4 }, () => LIVE_CHARS[Math.floor(Math.random() * LIVE_CHARS.length)]).join('');
+const liveId = code => 'pkarena-' + String(code).toLowerCase();
+/** Open the matchmaking socket under `id`. Rejects 'taken' (id in use) or 'blocked' (unreachable). */
+function liveSignal(id){
+  return new Promise((res, rej) => {
+    const B = liveBroker(); let ws, hb = 0, done = false;
+    const sig = { send:(type, dst, payload) => { try{ ws.send(JSON.stringify({ type, dst, payload:Object.assign({ from:id }, payload) })); }catch(e){} }, onmsg:null, close:() => { clearInterval(hb); try{ ws.close(); }catch(e){} } };
+    const fail = why => { if(done) return; done = true; clearTimeout(t); sig.close(); rej(new Error(why)); };
+    const t = setTimeout(() => fail('blocked'), 7000);
+    try{ ws = new WebSocket(`${B.secure ? 'wss' : 'ws'}://${B.host}:${B.port}${B.path}?key=${B.key}&id=${id}&token=${Math.random().toString(36).slice(2)}`); }catch(e){ return fail('blocked'); }
+    ws.onmessage = e => { let m; try{ m = JSON.parse(e.data); }catch(_){ return; } if(!m) return;
+      if(m.type === 'OPEN' && !done){ done = true; clearTimeout(t); hb = setInterval(() => { try{ ws.send('{"type":"HEARTBEAT"}'); }catch(_){} }, 5000); res(sig); }
+      else if(m.type === 'ID-TAKEN') fail('taken');
+      else if(m.type === 'INVALID-KEY' || m.type === 'ERROR') fail('blocked');
+      else if(sig.onmsg){ m.src = m.src || (m.payload && m.payload.from); sig.onmsg(m); } };
+    ws.onerror = () => fail('blocked'); ws.onclose = () => fail('blocked');
+  });
+}
+/** One side of the direct link. `remote` is the other phone's id on the matchmaking server. */
+function liveNewPc(sig, remote){
+  const pc = new RTCPeerConnection({ iceServers:LIVE_ICE }), pend = []; pc._ready = false;
+  pc.onicecandidate = e => { if(e.candidate) sig.send('CANDIDATE', remote, { candidate:e.candidate }); };
+  pc.onconnectionstatechange = () => { if(LIVE.pc !== pc || pc.connectionState !== 'failed') return; liveReset(true); LIVE.err = 'Could not link directly (some phone networks block it). Try again, or on another network.'; livePaint(); };
+  pc._cand = c => { if(pc._ready) pc.addIceCandidate(c).catch(() => {}); else pend.push(c); };
+  pc._flush = () => { pc._ready = true; pend.splice(0).forEach(c => pc.addIceCandidate(c).catch(() => {})); };
+  return pc;
+}
+/* Our own relay (6.16.0). The Cloudflare copy of the game carries a tiny room per code at <its address>/relay/<CODE>
+   (relay/worker.js). Both phones talk to it like loading a page, so it works on networks that block the direct link.
+   It is tried first; where it isn't there (GitHub Pages, a file) the direct link above is used as before. */
+/* 6.21.0: every copy talks to the one relay on Sean's Cloudflare account, so the GitHub Pages app links up too (the relay lets in
+   only PokéArena's own sites; relay/worker.js). A page opened as a file has none, so it uses the direct link; tests set window.__relay. */
+const LIVE_RELAY = 'wss://pokeautobattler.ydcmbq62x9.workers.dev/relay/';
+const liveRelayUrl = () => window.__relay || (/^https?:$/.test(location.protocol) ? LIVE_RELAY : '');
+/** Open the relay room for `code`. Resolves once the relay says 'wait' (host) or 'peer' (join); rejects 'taken', 'nobody', 'full' or 'blocked'. */
+function liveRelay(code, role){
+  return new Promise((res, rej) => {
+    let ws, done = false, peer = false, pong = Date.now(), iv = 0;
+    const tr = { send:s => ws.send(s), ok:() => peer && ws.readyState === 1, close:() => { clearInterval(iv); try{ ws.close(); }catch(e){} } };
+    const mine = () => LIVE.cleanup === tr.close;
+    const fail = why => { if(done) return; done = true; clearTimeout(t); if(mine()) LIVE.cleanup = null; tr.close(); rej(new Error(why)); };
+    const t = setTimeout(() => fail('blocked'), 5000);
+    const up = () => { if(done) return; done = true; clearTimeout(t); res(tr);
+      iv = setInterval(() => { if(Date.now() - pong > 15000) return tr.close(); try{ ws.send('ping'); }catch(e){} }, 5000); };
+    const lost = msg => { if(!mine()) return; liveReset(true); LIVE.err = msg; livePaint(); };
+    LIVE.cleanup = tr.close;
+    try{ ws = new WebSocket(liveRelayUrl() + code + '?role=' + role); }catch(e){ return fail('blocked'); }
+    ws.onmessage = e => {
+      if(e.data === 'pong'){ pong = Date.now(); return; }
+      let m = null; try{ m = JSON.parse(e.data); }catch(_){}
+      if(m && typeof m._ === 'string'){
+        if(m._ === 'wait') up();
+        else if(m._ === 'peer'){ up(); if(!mine()) return; peer = true; LIVE.tr = tr; LIVE.code = code; LIVE.step = 'on'; LIVE.err = ''; LIVE.out = ''; LIVE.peer = {}; LIVE.mine = {}; liveSync(); livePaint(); }
+        else if(m._ === 'left') lost('The live link dropped (your friend left). Connect again to keep playing.');
+        else fail(m._);
+        return; }
+      if(peer) liveMsg(e.data);
+    };
+    ws.onerror = () => fail('blocked');
+    ws.onclose = () => { clearInterval(iv); if(!done) return fail('blocked');
+      lost(peer ? 'The live link dropped. Connect again to keep playing.' : 'Lost the connection while waiting. Host again.'); };
+  });
+}
+/** The shared code for both transports: hosts wait on it, joiners type it. */
+async function liveHost(){
+  liveReset(); LIVE.step = 'making'; livePaint();
+  if(liveRelayUrl()) for(let i = 0; i < 6; i++){
+    const code = liveNewCode();
+    try{ await liveRelay(code, 'host'); if(LIVE.step !== 'on'){ LIVE.step = 'rwait'; LIVE.code = code; livePaint(); } return; }
+    catch(e){ if(LIVE.step !== 'making') return; if(e.message !== 'taken') break; }
+  }
+  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Open the game in your browser or the installed app.'); return liveRoom(liveNewCode()); }
+  let sig = null, code = '';
+  for(let i = 0; i < 6 && !sig; i++){
+    code = liveNewCode();
+    try{ sig = await liveSignal(liveId(code)); }
+    catch(e){ if(e.message !== 'taken'){ if(LIVE.room) return liveRoom(liveNewCode()); throw new Error('Could not reach the matchmaking server. Check your connection and try again.'); } }
+  }
+  if(!sig) throw new Error('Could not get a free code. Try again.');
+  let accepted = null, pc = null, timer = 0;
+  LIVE.cleanup = () => { clearTimeout(timer); sig.close(); };
+  LIVE.step = 'rwait'; LIVE.code = code; livePaint();
+  sig.onmsg = async m => {
+    try{
+      if(m.type === 'OFFER' && !accepted){
+        accepted = m.src; pc = liveNewPc(sig, accepted); LIVE.pc = pc;
+        pc.ondatachannel = e => { liveAttach(e.channel); clearTimeout(timer); };
+        timer = setTimeout(() => { if(!liveOn()){ try{ pc.close(); }catch(e){} accepted = null; LIVE.pc = null; } }, 20000);   // a stranger who never completes frees the seat
+        await pc.setRemoteDescription(m.payload.sdp); pc._flush();
+        await pc.setLocalDescription(await pc.createAnswer()); sig.send('ANSWER', accepted, { sdp:pc.localDescription });
+      } else if(m.type === 'CANDIDATE' && m.src === accepted && pc) pc._cand(m.payload.candidate);
+    }catch(e){}
+  };
+}
+async function liveJoin(code){
+  code = String(code).trim().toUpperCase();
+  if(!/^[A-Z0-9]{4}$/.test(code)) throw new Error('Codes are 4 letters or numbers.');
+  liveReset(); LIVE.step = 'connecting'; LIVE.code = code; livePaint();
+  if(liveRelayUrl()){
+    try{ await liveRelay(code, 'join'); return; }
+    catch(e){ if(LIVE.step !== 'connecting') return; if(e.message === 'full') throw new Error(code + ' already has two players. Check the code.'); }
+    // 'nobody' falls through too: the host may be on the direct link if the relay was out of reach for them
+  }
+  if(!liveRtcOk()){ if(!LIVE.room) throw new Error('Live link is not available in this window. Open the game in your browser or the installed app.'); return liveRoom(code); }
+  const me = 'pkj-' + Math.random().toString(36).slice(2, 10); let sig;
+  try{ sig = await liveSignal(me); }catch(e){ if(LIVE.room) return liveRoom(code); throw new Error('Could not reach the matchmaking server. Check your connection and try again.'); }
+  const host = liveId(code), pc = liveNewPc(sig, host); LIVE.pc = pc;
+  let timer = 0; const giveUp = msg => { if(LIVE.pc === pc && !liveOn()){ liveReset(true); LIVE.err = msg; livePaint(); } };
+  LIVE.cleanup = () => { clearTimeout(timer); sig.close(); };
+  sig.onmsg = async m => {
+    try{
+      if(m.type === 'ANSWER' && m.src === host){ await pc.setRemoteDescription(m.payload.sdp); pc._flush(); }
+      else if(m.type === 'CANDIDATE' && m.src === host) pc._cand(m.payload.candidate);
+      else if(m.type === 'EXPIRE') giveUp('Nobody is hosting ' + code + '. Check the code.');
+    }catch(e){}
+  };
+  timer = setTimeout(() => giveUp('Could not connect to ' + code + '. Check the code and try again.'), 15000);
+  liveAttach(pc.createDataChannel('duel'));
+  await pc.setLocalDescription(await pc.createOffer()); sig.send('OFFER', host, { sdp:pc.localDescription });
+}
+async function liveAct(a, body){
+  try{
+    if(a === 'host') await liveHost();
+    else if(a === 'join'){ liveReset(); LIVE.step = 'rjoinin'; }
+    else if(a === 'go') await liveJoin(((body.querySelector('#lk_in') || {}).value) || '');
+    else if(a === 'cancel') liveReset();
+  }catch(e){
+    LIVE.err = (e && e.message) || 'Could not connect.';
+    if(LIVE.step === 'making' || LIVE.step === 'connecting' || LIVE.step === 'rwait') liveReset(true);
+  }
+  livePaint();
+}
+function liveCardHtml(){
+  const L = LIVE, err = L.err ? `<div class="dmsg">${esc(L.err)}</div>` : '';
+  let h;
+  if(L.step === 'on') h = `<b>● Live link on.</b> You will both watch the fight at the same moment. ${L.peer.commit ? 'Your friend has locked in.' : ''}
+    <div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Disconnect</button></div>`;
+  else if(L.step === 'making') h = '<b>Live link</b> · getting a code…';
+  else if(L.step === 'rwait') h = `<b>Your code</b><div class="dcode">${esc(L.code)}</div><p class="dim">Tell your friend this code. It links up by itself when they join.</p>
+    <div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
+  else if(L.step === 'rjoinin') h = `<b>Join a friend</b><p>Type the 4-letter code on their screen.</p><input id="lk_in" type="text" autocapitalize="characters" autocomplete="off" maxlength="4" placeholder="CODE">
+    <div class="btnrow tight"><button class="btn small primary" data-l="go">Join</button><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
+  else if(L.step === 'connecting') h = `<b>Live link</b> · connecting to ${esc(L.code)}…<div class="btnrow tight"><button class="btn small ghost" data-l="cancel">Cancel</button></div>`;
+  else if(!liveRtcOk() && !L.room && !liveRelayUrl()) h = `<b>Live link</b><p class="dim">Not available in this window${L.room === undefined ? ' (checking…)' : ''}. Open the game in your browser or the installed app to play a friend.</p>`;
+  else h = `<b>Play a friend</b><p class="dim">One of you hosts and gets a 4-letter code, the other types it. Then you both watch each fight live.</p>
+    <div class="btnrow tight"><button class="btn small" data-l="host">Host</button><button class="btn small" data-l="join">Join</button></div>`;
+  return `<div class="dlive">${err}${h}</div>`;
+}
+
+/* ---------------- the hub ---------------- */
+function openDuels(){
+  const box = duelBox(), set = getDuelSet();
+  const w = set && duelWins(set);
+  const d = modal(`<h3>Duels</h3>
+    <p class="dim">Battle a friend with pokémon you saved from your runs. One of you hosts and gets a 4-letter code, the other types it: no accounts. Best of three, six against six, within a power budget of ${DUEL.budget}.</p>
+    <div class="dstat"><b>${box.length} / ${DUEL.boxSize}</b> in your box${box.length ? '' : ' — finish a run and save a pokémon to start'}</div>
+    ${set ? `<div class="dstat">${set.over ? `Set against <b>${esc(set.opp || 'a friend')}</b> finished: ${set.over === 'win' ? 'you won' : set.over === 'lose' ? 'you lost' : 'a draw'} ${w.me}–${w.opp}.`
+      : `A set${set.opp ? ' against <b>' + esc(set.opp) + '</b>' : ''} is in progress · game ${set.game} of ${DUEL.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}.`}</div>` : ''}
+    <div class="btnrow dhub">
+      <button class="btn primary" data-m="set" ${box.length ? '' : 'disabled'}>${set ? (set.over ? 'See the result' : 'Resume the set') : 'Start a set'}</button>
+      <button class="btn" data-m="box">My box</button>
+      <button class="btn" data-m="how">How it works</button>
+      <button class="btn ghost" data-m="close">Close</button></div>
+    ${duelDev() ? `<hr><div class="dim">Developer tools</div><div class="btnrow ddev">
+      <select id="devsp">${Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && SPRITES[k] && evoLine(k)[evoLine(k).length - 1] === k).sort().map(k => `<option value="${k}">${esc(SPECIES[k].name)}</option>`).join('')}</select>
+      <button class="btn" data-m="devadd">Add maxed</button><button class="btn" data-m="devfill">Fill the box</button>
+      <button class="btn ghost" data-m="devclear">Clear box + set</button></div>` : ''}`);
+  /* the page address can't be edited inside the published page, so tapping the heading five times turns developer tools on (and off) */
+  let taps = 0; d.querySelector('h3').addEventListener('click', () => { if(++taps >= 5){ try{ localStorage.setItem('pkb_dev', duelDev() ? '0' : '1'); }catch(e){} d.remove(); openDuels(); } });
+  d.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-m]'); if(!b) return; const m = b.dataset.m;
+    if(m === 'close') d.remove();
+    else if(m === 'box'){ d.remove(); openDuelBox(); }
+    else if(m === 'how'){ d.remove(); openDuelHow(); }
+    else if(m === 'set'){ d.remove(); openDuelSet(); }
+    else if(m === 'devadd'){ const k = d.querySelector('#devsp').value; saveDuelBox(duelBoxAdd(duelBox().slice(0, DUEL.boxSize - 1), [maxedSnap(k)]).box); d.remove(); openDuels(); }
+    else if(m === 'devfill'){ const have = duelBox(), ks = Object.keys(SPECIES).filter(k => !SPECIES[k].legendary && SPRITES[k] && evoLine(k)[evoLine(k).length - 1] === k).sort(() => Math.random() - .5);
+      const add = []; for(const k of ks){ if(have.length + add.length >= DUEL.boxSize) break; add.push(maxedSnap(k)); } saveDuelBox(have.concat(add)); d.remove(); openDuels(); }
+    else if(m === 'devclear'){ saveDuelBox([]); putDuelSet(null); d.remove(); openDuels(); }
+  });
+  return d;
+}
+/** Dev only: a finished pokémon at level 3 with every vitamin taken. */
+function maxedSnap(id){ const u = makeUnit(id, TUNING.expForLevel3 + 1); const cap = TUNING.vitaminCap;
+  u.hp += 8 * cap; u.atk += 9 * cap; u.spd += 10 * cap; return snapUnit(u, undefined, 'dev'); }
+function openDuelHow(){
+  const d = modal(`<h3>How duels work</h3>
+    <p><b>Your box.</b> It holds ${DUEL.boxSize} pokémon, saved exactly as they were: their level, stats and held item are frozen. At the end of a run you save up to ${DUEL.saveWin} from a win, or ${DUEL.saveLoss} from a loss.</p>
+    <p><b>A set.</b> Best of ${DUEL.games}: first to two wins. Each game you bring up to ${DUEL.bring} from your box, and the team has to fit the power budget (${DUEL.budget}).</p>
+    <p><b>Fainting.</b> A pokémon that faints sits out the next game only, so you need about twelve usable.</p>
+    <p><b>Items.</b> A pokémon keeps the item it was saved with. The items on your first six are your pool for the set: from game 2 you can move those around, but a pokémon swapped in arrives without its own item.
+      Items with a battle effect (Leftovers, Focus Band, Life Orb and the like) add to a pokémon's power, so they count against the budget. Lucky Egg and Amulet Coin only help during a run, so they are switched off in duels.</p>
+    <p><b>Playing.</b> One of you taps Host and reads out the 4-letter code, the other taps Join and types it. Pick your team and lock it in: your friend only sees that you are locked in, never your team, until you both press Fight and watch the same battle together.</p>
+    <div class="btnrow"><button class="btn primary" data-m="close">Got it</button></div>`);
+  d.addEventListener('click', ev => { if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); } });
+}
+
+/* ---------------- 6.18.0: box filter and sort ----------------
+   One setting for the team picker and My box; it stays while the game is open. */
+const BOXF = { role:'', type:'', by:'power' };
+const BOX_SORTS = { power:'Power', atk:'Attack', hp:'HP', spd:'Speed', name:'Name', new:'Newest' };
+const snapType = s => (SPECIES[s.id] || {}).type || '';
+function boxSorted(list){
+  const key = s => { const u = thawUnit(s); return BOXF.by === 'power' ? -duelPower([u]) : BOXF.by === 'atk' ? -effAtk(u) : BOXF.by === 'hp' ? -effHp(u) : BOXF.by === 'spd' ? -effSpd(u) : BOXF.by === 'new' ? -(s.at || 0) : 0; };
+  return list.filter(s => (!BOXF.role || roleOf(s.id) === BOXF.role) && (!BOXF.type || snapType(s) === BOXF.type))
+    .map(s => ({ s, k:key(s), n:(SPECIES[s.id] || {}).name || '' })).sort((a, b) => a.k - b.k || a.n.localeCompare(b.n)).map(x => x.s);
+}
+function boxFilterHtml(all, shown){
+  const types = [...new Set(all.map(snapType).filter(Boolean))].sort();
+  if(BOXF.type && !types.includes(BOXF.type)) BOXF.type = '';
+  const on = BOXF.role || BOXF.type;
+  return `<div class="dfilter" role="group" aria-label="Filter the box">
+    <div class="dfroles">${[['', 'All'], ...Object.keys(ROLES).map(r => [r, `${ROLES[r].icon}<span class="dfname"> ${ROLES[r].name}</span>`])].map(([r, l]) => `<button class="btn small ${BOXF.role === r ? 'on' : 'ghost'}" data-frole="${r}" aria-pressed="${BOXF.role === r}" ${r ? `aria-label="${ROLES[r].name}" title="${ROLES[r].name}"` : ''}>${l}</button>`).join('')}</div>
+    <div class="dfsel"><select data-ftype aria-label="Type"><option value="">All types</option>${types.map(t => `<option value="${t}" ${BOXF.type === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+      <select data-fsort aria-label="Sort by">${Object.keys(BOX_SORTS).map(k => `<option value="${k}" ${BOXF.by === k ? 'selected' : ''}>Sort: ${BOX_SORTS[k]}</option>`).join('')}</select></div>
+    <div class="dfcount dim">${on ? `Showing ${shown} of ${all.length}${shown ? '' : ' · <button class="linkish" data-fclear>Clear filter</button>'}` : `${all.length} pokémon`}</div></div>`;
+}
+/** Filter taps and choices for a window that shows the box; `redraw` paints it again. Returns true if it handled the event. */
+function boxFilterAct(ev, redraw){
+  const f = ev.target.closest('[data-frole],[data-fclear]');
+  if(f && ev.type === 'click'){ if(f.dataset.fclear != null){ BOXF.role = BOXF.type = ''; } else BOXF.role = f.dataset.frole; redraw(); return true; }
+  const sel = ev.type === 'change' && ev.target.closest('[data-ftype],[data-fsort]');
+  if(sel){ if(sel.dataset.ftype != null) BOXF.type = sel.value; else BOXF.by = sel.value; redraw(); return true; }
+  return false;
+}
+
+/* ---------------- the box ---------------- */
+function openDuelBox(){
+  const box = duelBox(), shown = boxSorted(box);
+  const d = modal(`<h3>My box <span class="dim">${box.length} / ${DUEL.boxSize}</span></h3>
+    <p class="dim">Frozen: nothing here grows or evolves. Tap Release to make room.</p>
+    ${box.length ? boxFilterHtml(box, shown.length) : ''}
+    <div class="dgrid">${shown.map(s => cardOf(s, { foot:`<button class="btn small ghost" data-rel="${s.bid}">Release</button>` })).join('') || (box.length ? '' : '<p class="dim">Empty. Finish a run and save a pokémon to fill it.</p>')}</div>
+    <div class="btnrow"><button class="btn" data-m="back">Back</button></div>`); d.classList.add('duel');
+  const again = () => { const y = d.querySelector('.boxscroll').scrollTop; d.remove(); const n = openDuelBox(); n.querySelector('.boxscroll').scrollTop = y; };
+  d.addEventListener('change', ev => { boxFilterAct(ev, again); });
+  d.addEventListener('click', ev => {
+    if(boxFilterAct(ev, again)) return;
+    const r = ev.target.closest('[data-rel]');
+    if(r){ if(r.dataset.sure !== '1'){ r.dataset.sure = '1'; r.textContent = 'Really release?'; return; }
+      saveDuelBox(duelBox().filter(s => s.bid !== r.dataset.rel)); again(); return; }
+    if(ev.target.closest('[data-m]')){ d.remove(); openDuels(); }
+  });
+  return d;
+}
+
+/* ---------------- a set ---------------- */
+let duelDraft = null;     // { picks:[{bid,item}] } while choosing a team
+function openDuelSet(){
+  let set = getDuelSet();
+  if(!set){ set = newDuelSet(playerName(), GAME_VERSION.v); putDuelSet(set); }
+  const d = modal('', true); d.classList.add('duel');
+  const body = d.querySelector('.boxscroll');
+  const KEEP = ['#lk_in'];
+  const paint = () => {
+    const kept = KEEP.map(q => { const e = body.querySelector(q); return e ? e.value : null; });
+    const g0 = body.querySelector('.dgrid'), y0 = g0 && g0.getBoundingClientRect().top;
+    set = getDuelSet(); body.innerHTML = setHtml(set);
+    KEEP.forEach((q, i) => { const e = body.querySelector(q); if(e && kept[i] != null) e.value = kept[i]; });
+    const g1 = g0 && body.querySelector('.dgrid'); if(g1) body.scrollTop += g1.getBoundingClientRect().top - y0;   // 6.17.1: the box stays put
+  };
+  const close = () => { LIVE.hook = LIVE.go = null; if(LIVE.mine.ready){ LIVE.mine.ready = false; liveSend({ t:'unready' }); } d.remove(); duelDraft = null; };
+  /* checks their code and, if it's a legal move, records the game and shows the battle. Returns an error message or ''. */
+  const runFight = raw => {
+    set = getDuelSet(); const parsed = duelParse(raw);
+    if(parsed.err) return parsed.err;
+    if(parsed.raw === set.locked.code) return 'That is your own code. Paste your friend’s.';
+    const why = duelCheckOpponent(set, parsed); if(why) return why;
+    const out = duelSim(set, set.locked.code, parsed.raw);
+    duelApply(set, out); putDuelSet(set); duelDraft = null;      // recorded now, so a reload can't replay it with a different team
+    LIVE.hook = LIVE.go = null; LIVE.peer = {}; LIVE.mine = {}; LIVE.starting = false;
+    d.remove(); playDuelBattle(out, set); return '';
+  };
+  LIVE.hook = () => { if(!d.isConnected){ LIVE.hook = LIVE.go = null; } else if(!LIVE.starting) paint(); };
+  paint(); liveSync(); liveProbe();
+  d.addEventListener('click', ev => {
+    if(boxFilterAct(ev, paint)) return;
+    const b = ev.target.closest('[data-m],[data-l],[data-pick],[data-up],[data-down],[data-drop]'); if(!b) return;
+    if(b.dataset.l){ liveAct(b.dataset.l, body); return; }
+    set = getDuelSet(); const box = duelBox();
+    const dr = duelDraft || (duelDraft = { picks: [] });
+    if(b.dataset.pick){ const i = dr.picks.findIndex(p => p.bid === b.dataset.pick);
+      if(i >= 0) dr.picks.splice(i, 1);
+      else if(dr.picks.length < DUEL.bring){ const s = box.find(x => x.bid === b.dataset.pick); dr.picks.push({ bid:s.bid, item: set.pool ? null : duelItem(s.held) }); }
+      paint(); return; }
+    if(b.dataset.up){ const i = +b.dataset.up; if(i > 0){ [dr.picks[i - 1], dr.picks[i]] = [dr.picks[i], dr.picks[i - 1]]; } paint(); return; }
+    if(b.dataset.down){ const i = +b.dataset.down; if(i < dr.picks.length - 1){ [dr.picks[i + 1], dr.picks[i]] = [dr.picks[i], dr.picks[i + 1]]; } paint(); return; }
+    if(b.dataset.drop){ dr.picks.splice(+b.dataset.drop, 1); paint(); return; }
+    const m = b.dataset.m;
+    if(m === 'hub'){ close(); openDuels(); }
+    else if(m === 'finish'){ putDuelSet(null); close(); openDuels(); }
+    else if(m === 'lock'){
+      const picks = dr.picks.map((p, i) => ({ bid:p.bid, item:p.item, pos:i }));
+      const why = duelCheckPicks(set, box, picks); if(why){ toastDuel(body, why); return; }
+      set.locked = { picks, code: duelCode(set, box, picks) }; putDuelSet(set); paint(); liveSync(); }
+    else if(m === 'unlock'){ set.locked = null; putDuelSet(set); if(LIVE.mine.commit){ liveSend({ t:'unlock' }); LIVE.mine = {}; } paint(); }
+    else if(m === 'fight'){
+      if(!liveOn()) return;                                // 6.17.0: fights only over the live link
+      if(!LIVE.peer.code || LIVE.mine.ready) return;
+      const parsed = duelParse(LIVE.peer.code), why = parsed.err || duelCheckOpponent(set, parsed);
+      if(why){ toastDuel(body, why); return; }
+      LIVE.mine.ready = true; liveSend({ t:'ready' });
+      LIVE.go = () => {                                  // 3-2-1, then the same battle on both screens
+        LIVE.starting = true; let n = 3;
+        const tick = () => { if(!d.isConnected) return;
+          if(n === 0){ const e = runFight(LIVE.peer.code); if(e){ LIVE.starting = false; paint(); toastDuel(body, e); } return; }
+          body.innerHTML = `<div class="dcount">${n}</div><p class="dim" style="text-align:center">Both screens start together…</p>`; n--; setTimeout(tick, 1000); };
+        tick(); };
+      if(LIVE.peer.ready){ LIVE.starting = true; LIVE.go(); } else paint();
+    }
+  });
+  d.addEventListener('change', ev => {
+    if(boxFilterAct(ev, paint)) return;
+    const sel = ev.target.closest('[data-item]'); if(!sel || !duelDraft) return;
+    duelDraft.picks[+sel.dataset.item].item = sel.value || null; paint();
+  });
+  return d;
+}
+const toastDuel = (body, msg) => { let t = body.querySelector('.dmsg'); if(!t){ t = document.createElement('div'); t.className = 'dmsg'; body.prepend(t); } t.textContent = msg; t.scrollIntoView({ block:'nearest' }); };
+
+function setHtml(set){
+  const box = duelBox(), D = DUEL, w = duelWins(set);
+  const head = `<h3>Set vs ${esc(set.opp || 'a friend')}</h3><div class="dsub dim">${set.over ? `Final score ${w.me}–${w.opp}` : `Game ${Math.min(set.game, D.games)} of ${D.games}${set.games.length ? ` · ${w.me}–${w.opp}` : ''}`}</div>`;
+  const hist = set.games.length ? `<div class="dhist">${set.games.map((g, i) => `<span class="dres ${g.result}">Game ${i + 1}: ${g.result === 'win' ? 'won' : g.result === 'lose' ? 'lost' : 'drawn'}</span>`).join('')}</div>` : '';
+  if(set.over){
+    return `${head}${hist}<div class="dverdict ${set.over}">${set.over === 'win' ? 'You won the set!' : set.over === 'lose' ? 'You lost the set.' : 'The set is a draw.'} <span class="dim">${w.me}–${w.opp}</span></div>
+      <p class="dim">Everything goes back to how it was: the pokémon in your box are unchanged.</p>
+      <div class="btnrow"><button class="btn primary" data-m="finish">Finish set</button></div>`;
+  }
+  const live = liveCardHtml();
+  if(set.locked && liveOn()){
+    const P = LIVE.peer, who = esc(P.code ? duelParse(P.code).name : (set.opp || 'your friend'));
+    const st = P.code ? `${who} is locked in${P.ready ? ' and ready' : ''}. Their team stays hidden until the fight.` : P.commit ? 'Swapping teams…' : `Waiting for ${who} to lock in…`;
+    return `${head}${hist}${live}<p><b>Your team is locked in.</b> ${st}</p>
+      <div class="btnrow"><button class="btn primary" data-m="fight" ${P.code && !LIVE.mine.ready ? '' : 'disabled'}>${LIVE.mine.ready ? `Waiting for ${who}…` : `Fight game ${set.game}`}</button>
+      ${LIVE.mine.sent ? '' : '<button class="btn ghost" data-m="unlock">Change my team</button>'}<button class="btn ghost" data-m="hub">Close</button></div>`;
+  }
+  if(set.locked){
+    return `${head}${hist}${live}<p><b>Your team is locked in.</b> Link up with ${esc(set.opp || 'your friend')} above (Host or Join) and the fight is ready once they lock in too.</p>
+      <div class="btnrow"><button class="btn ghost" data-m="unlock">Change my team</button><button class="btn ghost" data-m="hub">Close</button></div>`;
+  }
+  const dr = duelDraft || { picks: [] }, pool = (set.pool || []).slice();
+  const el = duelEligible(set, box), units = dr.picks.map((p, i) => { const s = box.find(x => x.bid === p.bid); return s ? thawUnit(s, i, p.item) : null; }).filter(Boolean);
+  const power = Math.round(duelPower(units)), over = power > set.budget;
+  const picksForCheck = dr.picks.map((p, i) => ({ bid:p.bid, item:p.item, pos:i }));
+  const why = dr.picks.length ? duelCheckPicks(set, box, picksForCheck) : 'Tap pokémon in your box to pick your team.';
+  const left = pool.slice(); dr.picks.forEach(p => { const i = left.indexOf(p.item); if(p.item && i >= 0) left.splice(i, 1); });
+  const rw = TUNING.rankWidth, ready = boxSorted(el.ready), resting = boxSorted(el.resting);
+  return `${head}${hist}${live}
+    <div class="dmeter"><i style="width:${Math.min(100, power / set.budget * 100)}%" class="${over ? 'over' : ''}"></i><span>Power ${power} / ${set.budget}</span></div>
+    <div class="dteam">${['Front', 'Middle', 'Back'].slice(0, Math.ceil(DUEL.bring / rw)).map((rank, r) => `<div class="drank"><div class="dpos">${rank}</div>
+      ${Array.from({ length:rw }, (_, k) => teamSlot(set, box, dr, pool, r * rw + k)).join('')}</div>`).join('')}</div>
+    ${set.pool ? `<p class="dim">Items you can still hand out: ${left.length ? left.map(id => esc(itemName(id))).join(', ') : 'none (all in use)'}. A pokémon brought in from the box arrives without its saved item.</p>` : '<p class="dim">Game 1: every pokémon holds the item it was saved with. Those items become your pool for the set.</p>'}
+    <h4>Your box</h4><p class="dim">Tap to add or remove.${el.resting.length ? ' Pokémon that fainted last game are resting.' : ''}</p>
+    ${boxFilterHtml(el.ready.concat(el.resting), ready.length + resting.length)}
+    <div class="dgrid">${ready.map(s => cardOf(s, { cls: dr.picks.some(p => p.bid === s.bid) ? 'sel' : '', attr:`data-pick="${s.bid}" role="button"` })).join('')}
+      ${resting.map(s => cardOf(s, { cls:'rest', foot:'<div class="dpos">Resting this game</div>' })).join('')}</div>
+    <div class="dfoot"><div class="${why && dr.picks.length ? 'dmsg' : 'dim'}">${esc(why || 'Ready. Lock it in when you are happy.')}</div>
+      <div class="btnrow"><button class="btn primary" data-m="lock" ${why ? 'disabled' : ''}>Lock in my team</button><button class="btn ghost" data-m="hub">Close</button></div></div>`;
+}
+
+/** 6.17.1: one of the six team places. Empty places keep their size, so the box below never moves while you pick. */
+function teamSlot(set, box, dr, pool, i){
+  const p = dr.picks[i], s = p && box.find(x => x.bid === p.bid);
+  if(!s) return `<div class="slot empty dslot"></div>`;
+  const pooled = set.pool ? `<select data-item="${i}" aria-label="Item"><option value="">no item</option>${[...new Set(pool)].map(id => `<option value="${id}" ${p.item === id ? 'selected' : ''}>${esc(itemName(id))}${pool.filter(x => x === id).length > 1 ? ' ×' + pool.filter(x => x === id).length : ''}</option>`).join('')}</select>`
+    : `<div class="dcard-item">${itemLine(s.held)}</div>`;
+  return cardOf(s, { cls:'picked dslot', noitem:true, foot:`${pooled}<div class="dctl"><button class="btn small" data-up="${i}" aria-label="Move forward" ${i ? '' : 'disabled'}>◀</button><button class="btn small" data-down="${i}" aria-label="Move back" ${i < dr.picks.length - 1 ? '' : 'disabled'}>▶</button><button class="btn small ghost" data-drop="${i}" aria-label="Remove">✕</button></div>` });
+}
+
+/* ---------------- the battle ---------------- */
+function playDuelBattle(out, set){
+  const back = { phase, title: !!titleEl };        // 6.17.0: where to go back to afterwards (the title, or the run you had open)
+  if(titleEl){ const t = document.getElementById('title'); if(t) t.remove(); titleEl = null; document.body.classList.remove('titled'); }
+  const sim = out.sim, flip = !out.iAmP;
+  battle = { steps: sim.steps, i:0, result: flip ? (sim.result === 'win' ? 'lose' : sim.result === 'lose' ? 'win' : 'draw') : sim.result,
+             oppName: set.opp, timer:null, exhibition:true, duel:true, flip,
+             back, onDone: () => { if(back.title) showTitle(afterTitle); openDuelSet(); } };
+  sessionBattles++;
+  transition(() => { phase = 'battle'; render(); window.scrollTo(0, 0); }, beginPlayback);
+}
+
+/* ---------------- run over: save to the box ---------------- */
+let mpSel = new Set();
+function duelSaveHtml(){
+  if(!G || !G.over) return '';
+  const won = G.over === 'won', n = duelSavesFor(won), box = duelBox();
+  if(G.mpSaved) return `<div class="panel dsave"><b>Saved to your duel box.</b> <button class="btn small" data-act="mpbox">Open box</button></div>`;
+  const units = G.team.concat(G.pc || []).filter(Boolean);
+  const room = DUEL.boxSize - box.length;
+  return `<div class="panel dsave"><h3 style="margin:0 0 4px">Save to your duel box</h3>
+    <p class="dim">${won ? 'You won' : 'You lost'}: pick up to <b>${n}</b>. They are saved exactly as they are now and never change. ${room < n ? `Your box has room for ${room}; release some to fit more.` : ''}</p>
+    <div class="dgrid small">${units.map(u => `<div class="slot dcard ${mpSel.has(u.uid) ? 'sel' : ''}" data-act="mppick" data-uid="${u.uid}" role="button" style="border-style:solid">${unitHtml(u, { held:false })}<div class="dcard-item">${itemLine(u.held)}</div></div>`).join('')}</div>
+    <div class="btnrow"><button class="btn primary" data-act="mpsave" ${mpSel.size && mpSel.size <= Math.min(n, room) ? '' : 'disabled'}>Save ${mpSel.size || ''} to my box</button>
+      <button class="btn ghost" data-act="mpskip">Skip</button></div></div>`;
+}
+function duelSaveAct(act, el){
+  const won = G.over === 'won', n = duelSavesFor(won);
+  if(act === 'mppick'){ const uid = +el.dataset.uid; if(mpSel.has(uid)) mpSel.delete(uid); else if(mpSel.size < n) mpSel.add(uid); render(); return true; }
+  if(act === 'mpsave'){
+    const snaps = G.team.concat(G.pc || []).filter(u => u && mpSel.has(u.uid)).map(u => snapUnit(u, undefined, won ? 'win' : 'loss'));
+    const r = duelBoxAdd(duelBox(), snaps); if(!r.ok){ say(r.why); return true; }
+    saveDuelBox(r.box); G.mpSaved = true; mpSel = new Set(); save(); SFX.play('levelup'); render(); return true; }
+  if(act === 'mpskip'){ G.mpSaved = true; mpSel = new Set(); save(); render(); return true; }
+  if(act === 'mpbox'){ openDuelBox(); return true; }
+  return false;
+}
+
 
 /* ===================================================================
    BOOT
