@@ -7063,7 +7063,15 @@ function thawUnit(s, pos, item){
   if(Number.isInteger(pos)) u.pos = pos;
   return u;
 }
-const duelPower = units => units.reduce((n, u) => n + unitPower(u), 0);
+/* 6.19.0: a duel never depends on the run each phone has open. Eviolite asks "can it still evolve?", and that
+   followed the run's generations (a Golbat only evolves with Gen 2 on), so two phones could see different HP and
+   different fights. Duels always check and fight with every generation on and no evolution pool. */
+function inDuelGens(fn){
+  const g = ACTIVE_GENS, pool = ACTIVE_POOL;
+  if(g.join() !== GENS_READY.join()) setActiveGens(GENS_READY); ACTIVE_POOL = null;
+  try{ return fn(); } finally { if(g.join() !== ACTIVE_GENS.join()) setActiveGens(g); ACTIVE_POOL = pool; }
+}
+const duelPower = units => inDuelGens(() => units.reduce((n, u) => n + unitPower(u), 0));
 /** Which pokémon can be brought to the next game, and which are resting. */
 function duelEligible(set, box){
   const rest = new Set(set.rest || []);
@@ -7073,7 +7081,8 @@ function newDuelSet(me, ver){ return { proto:DUEL_PROTO, ver:ver || '', me:me ||
 /** Items the set may use: every item on the six brought to game 1. */
 const duelPoolOf = (box, picks) => picks.map(p => (box.find(s => s.bid === p.bid) || {}).held).filter(Boolean);
 /** Check a team of picks ({bid,pos,item}) against the rules. Returns '' when fine, otherwise why not. */
-function duelCheckPicks(set, box, picks){
+function duelCheckPicks(set, box, picks){ return inDuelGens(() => checkPicks(set, box, picks)); }
+function checkPicks(set, box, picks){
   const D = TUNING.duel;
   if(!picks.length || picks.length > D.bring) return `Bring between 1 and ${D.bring} pokémon.`;
   if(new Set(picks.map(p => p.bid)).size !== picks.length) return 'The same pokémon is in the team twice.';
@@ -7115,7 +7124,8 @@ function duelParse(code){
 const duelUnits = parsed => parsed.units.map(r => { const u = makeUnit(r[0], r[4] | 0); u.hp = Math.max(1, r[1] | 0); u.atk = Math.max(0, r[2] | 0); u.spd = Math.max(1, r[3] | 0);
   u.held = r[5] && HELD_ITEMS[r[5]] ? r[5] : null; u.bid = r[7]; if(r[6] >= 0 && r[6] < TUNING.maxTeam) u.pos = r[6]; return u; });
 /** Is the opponent's code a legal move in this set? '' when yes. */
-function duelCheckOpponent(set, parsed){
+function duelCheckOpponent(set, parsed){ return inDuelGens(() => checkOpponent(set, parsed)); }
+function checkOpponent(set, parsed){
   const D = TUNING.duel;
   if(parsed.ver !== set.ver) return `They are on version ${parsed.ver || '?'}, you are on ${set.ver}. Both of you need the same version.`;
   if(parsed.budget !== set.budget) return 'Your power budgets do not match.';
@@ -7138,7 +7148,8 @@ function duelCheckOpponent(set, parsed){
   return '';
 }
 /** One game. Both devices call this with the same two codes and get the same battle. The lower code plays the 'p' side. */
-function duelSim(set, myCode, theirCode){
+function duelSim(set, myCode, theirCode){ return inDuelGens(() => simDuel(set, myCode, theirCode)); }
+function simDuel(set, myCode, theirCode){
   const mine = duelParse(myCode), theirs = duelParse(theirCode);
   const iAmP = mine.raw < theirs.raw;
   const seed = hash32(`${set.id || 'new'}|${set.game}|${iAmP ? mine.raw : theirs.raw}|${iAmP ? theirs.raw : mine.raw}`);
@@ -8696,7 +8707,7 @@ const SPRITES = {
    BIG = a big mechanical update · MEDIUM = patches, things added or removed ·
    SMALL = very minor visual and small text fixes. Before 1.2.0 updates were
    numbered v1…v54; those entries keep their old names in the changelog. */
-const GAME_VERSION = { v:'6.18.0', date:'Oct 16, 2026' };   // the date shows only in What's new (1.3.0, Sean)
+const GAME_VERSION = { v:'6.19.0', date:'Oct 18, 2026' };   // the date shows only in What's new (1.3.0, Sean)
 const versionTag = () => `<div class="vtag">PokéArena ${GAME_VERSION.v}</div>`;
 
 const $ = sel => document.querySelector(sel);
@@ -13072,6 +13083,9 @@ function openBadgeInfo(){
    Add the new version's entry here every time GAME_VERSION is bumped —
    test.js fails if the current version has no entry. ---------------- */
 const CHANGELOG = [
+  { v:'6.19.0', date:'Oct 18, 2026', title:'Minor gameplay changes', sub:'Duels: Eviolite works the same on both phones', items:[
+    'Eviolite in a duel no longer depends on the run each phone has open. A pok\u00e9mon counts as able to evolve if it has a later evolution anywhere in the game (Golbat, Onix, Scyther and others now always get the +50% HP). Before, two phones could show different HP and different fights.',
+  ] },
   { v:'6.18.0', date:'Oct 16, 2026', title:'Minor gameplay changes', sub:'Duels: filter and sort your box, plus a tidy-up', items:[
     'Filter your duel box by role (Tank, Bruiser, Cannon, Support) or type, and sort it by power, Attack, HP, Speed, name or newest. Works in the team picker and in My box.',
     'My box: the Release button no longer overlaps the card.',
