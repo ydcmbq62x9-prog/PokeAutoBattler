@@ -129,7 +129,10 @@ function liveNewPc(sig, remote){
 /* Our own relay (6.16.0). The Cloudflare copy of the game carries a tiny room per code at <its address>/relay/<CODE>
    (relay/worker.js). Both phones talk to it like loading a page, so it works on networks that block the direct link.
    It is tried first; where it isn't there (GitHub Pages, a file) the direct link above is used as before. */
-const liveRelayUrl = () => window.__relay || (/^https?:$/.test(location.protocol) ? location.protocol.replace('http', 'ws') + '//' + location.host + '/relay/' : '');
+/* 6.21.0: every copy talks to the one relay on Sean's Cloudflare account, so the GitHub Pages app links up too (the relay lets in
+   only PokéArena's own sites; relay/worker.js). A page opened as a file has none, so it uses the direct link; tests set window.__relay. */
+const LIVE_RELAY = 'wss://pokeautobattler.ydcmbq62x9.workers.dev/relay/';
+const liveRelayUrl = () => window.__relay || (/^https?:$/.test(location.protocol) ? LIVE_RELAY : '');
 /** Open the relay room for `code`. Resolves once the relay says 'wait' (host) or 'peer' (join); rejects 'taken', 'nobody', 'full' or 'blocked'. */
 function liveRelay(code, role){
   return new Promise((res, rej) => {

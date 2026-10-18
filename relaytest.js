@@ -23,12 +23,14 @@ let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + m
     ws.on('close', () => { if(clients.get(id) === ws) clients.delete(id); });
   });
   const br = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium', args:['--disable-features=WebRtcHideLocalIpsWithMdns', '--no-proxy-server'] });
-  const mk = async name => {
+  const RELAY_WS = URL.replace(/^http/, 'ws') + '/relay/';   // 6.21.0: the game points at the real relay unless told otherwise
+  const mk = async (name, page = URL) => {
     const ctx = await br.newContext({ viewport:{ width:390, height:844 } }); const p = await ctx.newPage(); const errs = [];
     p.on('pageerror', e => errs.push(String(e))); p.on('dialog', d => d.dismiss());
     await p.addInitScript(n => { try{ localStorage.setItem('pkb_dev', '1'); localStorage.setItem('pkb_name', n); localStorage.setItem('pkb_title', 'off'); }catch(e){}
       window.__peerBroker = { host:'localhost', port:9099, secure:false, path:'/peerjs', key:'peerjs' }; }, name);
-    await p.goto(URL); await p.waitForTimeout(400);
+    await p.addInitScript(r => { window.__relay = r; }, RELAY_WS);
+    await p.goto(page); await p.waitForTimeout(400);
     await p.evaluate(() => { document.querySelectorAll('.modal,#title').forEach(e => e.remove()); document.body.classList.remove('titled'); });
     await p.evaluate(() => openDuels()); await p.click('[data-m="devfill"]'); await p.waitForSelector('[data-m="set"]'); await p.click('[data-m="set"]');
     await p.waitForSelector('[data-pick]');
@@ -76,5 +78,23 @@ let bad = 0; const check = (ok, msg) => { console.log((ok ? '✓ ' : '✗ ') + m
   for(const P of [A, C]) await P.p.waitForFunction(() => liveOn(), null, { timeout:8000 });
   check(true, 'after a drop a new pair can link up');
   for(const P of [A, B, C]) check(P.errs.length === 0, `${P.name}: no page errors ${P.errs[0] || ''}`);
+  /* 6.21.0: a copy on another site (like the GitHub Pages app) links up through the same relay */
+  const other = require('child_process').spawn('python3', ['-m', 'http.server', '8791', '--bind', '127.0.0.1'], { cwd: process.env.SITE_PUBLIC || require('path').join(require('./pkbpaths').OUT, 'duels-site', 'public'), stdio:'ignore' });
+  await new Promise(r => setTimeout(r, 1200));
+  try{
+    const X = await mk('Xia', 'http://127.0.0.1:8791/'), Y = await mk('Yan', 'http://127.0.0.1:8791/');
+    await X.p.click('[data-l="host"]'); await X.p.waitForSelector('.dcode', { timeout:8000 }); const c3 = await X.p.textContent('.dcode');
+    await Y.p.click('[data-l="join"]'); await Y.p.fill('#lk_in', c3); await Y.p.click('[data-l="go"]');
+    for(const P of [X, Y]) await P.p.waitForFunction(() => liveOn(), null, { timeout:8000 });
+    check(true, 'two phones on another site link up through the relay');
+    const def = await X.p.evaluate(() => { const r = window.__relay; delete window.__relay; const u = liveRelayUrl(); window.__relay = r; return u; });
+    check(def === 'wss://pokeautobattler.ydcmbq62x9.workers.dev/relay/', `a normal web page uses the Cloudflare relay (${def})`);
+  } finally { other.kill(); }
+  // the relay's guest list: PokéArena's sites only
+  const knock = origin => new Promise(res => { const h = origin ? { origin } : {};
+    const w = new WS(RELAY_WS + 'QQQQ?role=host', { headers:h }); w.on('open', () => { w.close(); res('open'); }); w.on('unexpected-response', (q, r) => res(r.statusCode)); w.on('error', () => res('error')); });
+  check(await knock('https://ydcmbq62x9-prog.github.io') === 'open', 'the GitHub Pages app is let in');
+  check(await knock('https://some-other-site.example') === 403, 'another website is turned away');
+  check(await knock('') === 403, 'a connection with no website is turned away');
   await br.close(); wss.close(); console.log(bad ? `\n${bad} FAILED` : '\nall passed'); process.exit(bad ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

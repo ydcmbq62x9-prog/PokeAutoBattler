@@ -176,7 +176,10 @@ Transport, in order of preference:
    Object per code, hibernating sockets, `ping`/`pong` auto-response). Host opens it (`taken` if the code is in use → new code), the
    first joiner pairs (`peer`), later joiners get `full`, a join with no host gets `nobody`; either side leaving sends `left` to the other.
    Relay frames are JSON with a `_` key; everything else is forwarded untouched, so the same lock-in messages as below ride on it.
-   `liveRelay` in `duelui.js` tries it first on any http(s) page (`<page host>/relay/`, or `window.__relay`), then falls back to (1).
+   `liveRelay` in `duelui.js` tries it first on any http(s) page, then falls back to (1). Since 6.21.0 every copy (the GitHub Pages
+   app too) uses the one relay, `LIVE_RELAY` = wss://pokeautobattler.ydcmbq62x9.workers.dev/relay/ (tests set `window.__relay`), and the
+   relay only lets in its own address, https://ydcmbq62x9-prog.github.io and localhost (`SITES` in `relay/worker.js`; add a domain
+   there if the game moves).
    Why it exists: on real phones the PeerJS link reached the server but the direct link never opened ("Could not connect to CODE")
    — networks blocking WebRTC. Test: `./relay/site.sh`, `cd $PKB_OUT/duels-site && npx wrangler dev --port 8787`, then
    `RELAY=http://127.0.0.1:8787 node relaytest.js` (18 checks; needs `npm i ws wrangler`). Cloudflare free plan covers it.
