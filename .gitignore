@@ -17,4 +17,6 @@ ui.new.js
 !/*.sh
 !/bump.py
 !/DEV.md
+!/duelui.js
 !/CLAUDE.md
+!/relay/

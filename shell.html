@@ -3292,6 +3292,77 @@ html.bc .panel.legend{box-shadow:0 0 0 2px var(--gold,#ffd23a),0 0 24px rgba(255
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popbars .sb{grid-template-columns:48px 1fr 40px}
   body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .popheld p,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pace small,body.inscompact.picking.inspecting[data-phase=shop] .bcL > #inspect .pacesub{display:none}
 }
+
+/* ---- duels (multiplayer branch) ---- */
+@media (max-height:700px){html.bc .tmi{padding:5px 14px!important}.tmi small{font-size:11px}}
+.dlive{margin:8px 0;padding:8px 10px;border:1px dashed rgba(255,255,255,.25);border-radius:10px;font-size:13px}.dlive p{margin:6px 0}.dlive textarea{width:100%}.dcode{font-size:30px;font-weight:800;letter-spacing:.2em;text-align:center;padding:6px 0;user-select:all}.dlive input{width:100%;box-sizing:border-box;font-size:16px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:inherit}.dcount{text-align:center;font-size:72px;font-weight:800;padding:48px 0 8px}
+.dstat{margin:8px 0;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:6px;margin:10px 0}
+.dgrid.small{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.dcard{position:relative;padding:6px 4px;text-align:center;cursor:default}
+.dcard[data-pick],.dcard[data-act]{cursor:pointer}
+.dcard.sel{outline:3px solid var(--gold);outline-offset:-3px}
+.dcard.rest{opacity:.45}
+.dcard-item{font-size:11px;margin-top:2px;min-height:14px}
+.dteam{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.dteam .dcard{padding-bottom:8px}
+.dteam select{width:100%;font-size:12px;margin:2px 0}
+.dpos{font-size:11px;opacity:.7;margin-top:2px}
+.btnrow.tight{gap:4px;margin:4px 0 0;flex-wrap:wrap;justify-content:center}
+.btn.small{padding:3px 8px;font-size:12px;min-height:0}
+.dmeter{position:relative;height:22px;background:rgba(255,255,255,.08);border-radius:11px;overflow:hidden;margin:8px 0}
+.dmeter i{position:absolute;inset:0 auto 0 0;background:var(--hp);transition:width .2s}
+.dmeter i.over{background:var(--bad)}
+.dmeter span{position:relative;display:block;text-align:center;font-size:12px;line-height:22px;font-weight:700}
+.dmsg{background:rgba(255,80,80,.16);border:1px solid rgba(255,80,80,.4);border-radius:8px;padding:6px 10px;margin:6px 0;font-size:13px}
+.dhist{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.dres{padding:2px 8px;border-radius:10px;font-size:12px;background:rgba(255,255,255,.1)}
+.dres.win{background:rgba(70,200,110,.3)}.dres.lose{background:rgba(255,80,80,.3)}
+.dverdict{font-size:20px;font-weight:800;text-align:center;margin:14px 0}
+.dverdict.win{color:var(--hp)}.dverdict.lose{color:var(--bad)}
+.modal textarea{width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;border-radius:8px;padding:6px;background:rgba(0,0,0,.35);color:inherit;border:1px solid rgba(255,255,255,.2)}
+.dsave{margin:12px 0}
+/* 6.17.1: Duels picker. Wider window on big screens; cards fill their column; the team is six fixed places
+   (Front / Middle / Back) that keep their size, so the box below never moves while you pick. */
+.modal.duel .box{max-width:760px}
+.modal.duel h3{margin-bottom:2px}
+.dsub{font-size:13px;margin-bottom:8px}
+.dgrid .slot,.dteam .slot{max-width:none;min-height:0}
+.dgrid .slot{justify-content:flex-start;gap:4px}.dgrid .slot .unit{height:auto;flex:0 0 auto}
+.dgrid .slot > .btn{margin-top:auto;width:100%}
+.modal .btnrow.dhub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.dhub .btn{white-space:nowrap}
+@media (min-width:560px){ .modal .btnrow.dhub{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.modal .btnrow.ddev{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ddev select{grid-column:1/-1;font-size:13px;padding:6px;border-radius:8px}
+.dteam{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.drank{display:flex;flex-direction:column;gap:6px;min-width:0}
+.drank > .dpos{text-align:center;font-weight:700;opacity:.8;margin:0}
+/* sized from the sprite (which follows the screen width) plus the name, stats, item line and buttons */
+.dslot{height:calc(clamp(30px,8.6vw,52px) * 1.1 + 125px);box-sizing:border-box;justify-content:flex-start;gap:3px;padding:5px 4px}
+.dslot .unit{height:auto;flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select,.dslot > .dctl{flex:0 0 auto}
+.dslot > .dcard-item,.dslot > select{margin-top:auto}
+.dslot > .dcard-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dslot.empty{justify-content:center;--pb:34px}
+.dteam select{width:100%;font-size:11px;margin:2px 0;min-width:0}
+/* 6.18.0: box filter (role buttons, type, sort) */
+.dfilter{display:flex;flex-direction:column;gap:6px;margin:6px 0 2px}
+.dfroles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.dfroles .btn.small{padding:5px 2px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:440px){ .dfroles .dfname{display:none} .dfroles .btn.small{font-size:15px;padding:3px 0} }
+.dfroles .btn.small.on{background:var(--gold);color:#10131a;border-color:var(--gold)}
+.dfsel{display:flex;gap:6px}
+.dfsel select{flex:1 1 0;min-width:0;font-size:13px;padding:5px 6px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,0,0,.25);color:inherit}
+.dfcount{font-size:12px}
+.linkish{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;font:inherit;cursor:pointer}
+/* the message and Lock button ride at the bottom of the window, so their changing size never moves the box */
+.dfoot{position:sticky;bottom:-13px;margin:8px -13px -13px;padding:8px 13px 10px;background:var(--panel);border-top:1px solid var(--line2);z-index:2}
+html.bc .dfoot{background:#0e1426;box-shadow:0 -8px 16px rgba(0,0,0,.4)}
+.dfoot .dmsg,.dfoot .dim{margin:0 0 6px;font-size:13px}.dfoot .btnrow{margin:0}
+@media (max-height:500px){ .dfoot{display:flex;gap:10px;align-items:center;padding-top:6px;padding-bottom:6px} .dfoot > div:first-child{flex:1;margin:0} .dfoot .btnrow{flex:0 0 auto;flex-wrap:nowrap} .dfoot .btn{white-space:nowrap} }
+.dctl{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.dctl .btn.small{padding:0;height:28px;font-size:14px;flex:1 1 0;min-width:0}
+.dctl .btn[disabled]{opacity:.35}
+@media (min-width:700px){ .dteam{grid-template-columns:repeat(3,minmax(0,1fr))} .drank{flex-direction:row;flex-wrap:wrap} .drank > .dpos{flex:1 0 100%} .drank > .slot{flex:1 1 0} }
 </style>
 </head>
 <body>

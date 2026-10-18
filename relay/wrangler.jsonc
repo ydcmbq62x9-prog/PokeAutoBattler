@@ -1,0 +1,9 @@
+// Cloudflare settings for the Duels preview (game files + relay). The name must match the Worker on Cloudflare.
+{
+  "name": "pokeautobattler",
+  "main": "worker.js",
+  "compatibility_date": "2025-06-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "durable_objects": { "bindings": [{ "name": "ROOMS", "class_name": "Room" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }]
+}

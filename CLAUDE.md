@@ -34,8 +34,8 @@ Champion. It ships as **one self-contained HTML file** (no dependencies, no serv
 7. **Balance changes appear on the Balance Sheet for that update only** (not carried into later updates).
 8. Don't write words in ALL CAPS in the game's lettering (menus, title, etc.). Don't call things "Game Boy" — that look was retired.
 9. No need to send tester checklists or design docs with each update.
-10. Keep the **multiplayer (Duels) work separate from the main game for now** (own branch, own preview). Sean wants it merged only
-    when he decides.
+10. Duels (multiplayer) was kept on its own branch until Sean decided; he merged it into the main game at 6.21.0 (Oct 2026).
+    New big features still go on their own branch with their own preview first (as Duels and the gen packs did).
 11. Gen packs are added on their own branch first, then merged once Sean is happy (this is how Gen 2 and Gen 3 landed).
 12. Don't hint/telegraph secret bosses (the 1-in-6 chance is pure luck by design).
 
@@ -51,8 +51,8 @@ Two of its branches hold **built files, not source** — never merge source into
 
 | branch | version | what it is |
 |---|---|---|
-| `merge610` | 6.12.0 | **The main game source.** Gens 1+2+3, roles/subroles, items, economy, dev tooling. Start here. |
-| `multiplayer` | 6.16.0 | `merge610` + Duels (friend-code sets, power budget, live link, Cloudflare relay). Separate preview, not merged. |
+| `merge610` | 6.21.0 | **The main game source**, Duels included. Gens 1+2+3, roles/subroles, items, economy, dev tooling. Start here. |
+| `multiplayer` | 6.21.0 | where Duels was built; merged into `merge610` at 6.21.0. Use it only for a new multiplayer experiment. |
 | `gen2` | 5.12.2 | older source line, kept for history |
 | `old-main` | 4.1.0 | very old source (was called `main` in the Cowork bundle) |
 | `main` | built | **The live app on GitHub Pages** (index.html, sw.js, manifest, icons from a `merge610` build). Update only on "push it". |
@@ -157,7 +157,7 @@ Everything numeric has been **measured, not guessed**, with scripts that run the
   existing same-slot bosses.
 - Always re-run `./runtests.sh` after anything economic. Verify tests catch a regression by sabotage when you add one.
 
-## 8. Multiplayer: Duels (branch `multiplayer`, 6.16.0)
+## 8. Multiplayer: Duels (part of the main game since 6.21.0)
 
 Built on a branch so the main game stays safe. Everything lives in `engine.js` (DUELS section + `TUNING.duel`) and `duelui.js`
 (injected into the build at `/*@DUELUI@*/` in `ui.js`).
@@ -176,7 +176,10 @@ Transport, in order of preference:
    Object per code, hibernating sockets, `ping`/`pong` auto-response). Host opens it (`taken` if the code is in use → new code), the
    first joiner pairs (`peer`), later joiners get `full`, a join with no host gets `nobody`; either side leaving sends `left` to the other.
    Relay frames are JSON with a `_` key; everything else is forwarded untouched, so the same lock-in messages as below ride on it.
-   `liveRelay` in `duelui.js` tries it first on any http(s) page (`<page host>/relay/`, or `window.__relay`), then falls back to (1).
+   `liveRelay` in `duelui.js` tries it first on any http(s) page, then falls back to (1). Since 6.21.0 every copy (the GitHub Pages
+   app too) uses the one relay, `LIVE_RELAY` = wss://pokeautobattler.ydcmbq62x9.workers.dev/relay/ (tests set `window.__relay`), and the
+   relay only lets in its own address, https://ydcmbq62x9-prog.github.io and localhost (`SITES` in `relay/worker.js`; add a domain
+   there if the game moves).
    Why it exists: on real phones the PeerJS link reached the server but the direct link never opened ("Could not connect to CODE")
    — networks blocking WebRTC. Test: `./relay/site.sh`, `cd $PKB_OUT/duels-site && npx wrangler dev --port 8787`, then
    `RELAY=http://127.0.0.1:8787 node relaytest.js` (18 checks; needs `npm i ws wrangler`). Cloudflare free plan covers it.
@@ -184,7 +187,7 @@ Transport, in order of preference:
    matchmaking server** (`0.peerjs.com`, message format: OPEN/ID-TAKEN/OFFER/ANSWER/CANDIDATE) and then the phones talk directly over
    a WebRTC data channel (the server never sees teams). Messages: commit fingerprint → team once both are locked → ready → 3-2-1 →
    both devices run the same deterministic battle. The first OFFER wins the seat; strangers are ignored. Against the real server it reached
-   signalling but the direct link failed on Sean's phones (Oct 2026); otherwise tested only against a local stand-in (`livetest.js` uses a `ws` mock). Test it for
+   signalling but the direct link failed on Sean's phones (Oct 2026); otherwise tested only against a local stand-in (`livetest.js` uses a `ws` mock; `npm i ws` to run it). Test it for
    real first: if the PeerJS server's behaviour differs, `liveSignal`/`liveHost`/`liveJoin` in `duelui.js` are the places to look.
 2. **Shared room fallback** for the claude.ai preview page, where WebRTC/WebSocket to other hosts are blocked: the artifact `room`
    capability carries the same 4-letter code (`liveRoom`). Needs viewers signed in with access to the artifact. Not used in a normal
@@ -214,8 +217,8 @@ for the code-swap path; saves live in localStorage and can be edited.
 
 ## 10. Open items and ideas (nothing here is committed to)
 
-- **Real-phone test of the relay** (6.16.0, on Cloudflare) — not yet confirmed working on real phones at the time of writing.
-  Idea: point other copies (GitHub Pages) at the workers.dev relay via `liveRelayUrl` so the installed app gets it too once merged.
+- The relay worked on Sean's two phones (6.17.0, Cloudflare copy). Since 6.21.0 the GitHub Pages app uses it too; confirm a real
+  duel there after the first update. The Cloudflare copy (`duels-preview`) can stay as a test site or be retired.
 - Tune the duel budget (4200) and save counts (3/1) after real play. Maybe mirrored replay for the 'e' side.
 - Subroles: no playtest data yet on whether 0.2–0.5 weights are felt.
 - Vitamins are weak; buffing needs a boss retune. Attack vitamins weakest.

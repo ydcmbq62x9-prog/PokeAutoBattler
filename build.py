@@ -18,6 +18,8 @@ if sprites.exists():
     placeholder = ui.split('const SPRITES = {};')
     assert len(placeholder) == 2, 'SPRITES placeholder not found in ui.js'
     ui = placeholder[0] + sprites.read_text().strip() + placeholder[1]
+duelui = pathlib.Path('duelui.js')
+if duelui.exists() and '/*@DUELUI@*/' in ui: ui = ui.replace('/*@DUELUI@*/', duelui.read_text(), 1)   # the multiplayer branch's screens
 js = engine + "\n\n" + ui
 assert '</script>' not in js, 'JS contains a literal closing script tag'
 out = shell.replace('<script>\n"use strict";\n</script>', '<!--BUILT-->\n<script>\n"use strict";\n' + js + '\n</script>')
