@@ -129,10 +129,13 @@ python3 build.py                          # writes $PKB_OUT/pokebattler.html, $P
   The Mart **guarantees at least one evolution stone per shelf** (swaps the last open consumable slot for an eligible stone).
   X items: +5% party-wide, 2 uses per battle. Vitamins are intentionally weak; buffing them raises clear rate 6–9 points and needs a
   boss retune.
-- **Run rules**: Mono (one type), No PC, Rich, One Life (→ Hardcore Badge); Daily Challenge (own save slot); opt-in challenges earn
+- **Run rules**: Mono (one type), No PC, Rich, One Life (→ Hardcore Badge), Gauntlet (6.22.0: bosses only — 8 gyms, Elite Four, Champion, then
+  every on-gen secret boss; big turns pay/train/clock ×(battlesPerBadge+1) after each gym win; `gauntletFoes` by gens; `gauntletStart(G)`,
+  `rushOn(G)`; tune with gauntlettune.js / gauntletreport.js; test bossrushtest.js); Daily Challenge (own save slot); opt-in challenges earn
   Trainer Card badges. Legendaries are encounter-only (no tier, never level, higher base stats and growth); one guaranteed by badge 7;
   support legendaries Celebi and Mew; the Champion fields one.
-- **Secret bosses** (1-in-6 after the Champion, one chance, a named badge, optional Secret Boss Tickets, Gauntlet rule): Red (Gen 2),
+- **Secret bosses** (1-in-6 after the Champion, one chance, optional Secret Boss Tickets; since 6.22.0 one Secret Boss Badge for any of
+  them, gold for all three, read from the per-boss records; the old two-boss Secret Gauntlet rule was replaced by the Gauntlet): Red (Gen 2),
   Professor Oak (Gen 1), Steven Stone (Gen 3); `drawSecret` uses the per-gen map `GEN_SECRET`.
 - **Rival** (Blue/Silver/May by gen): three ambushes per run, persistent team, priced off *your* team's power, pays ₽ + a held item,
   and the Champion leads with his starter's final form.
